@@ -1,0 +1,18 @@
+export const ALL_TOOLS = [
+  "chat_fast",
+  "chat_pro",
+  "chat_reasoning",
+  "perplexta_analysis",
+  "ads_copilot",
+  "image",
+  "video",
+  "stt",
+  "tts",
+  "code",
+  "canvas",
+  "perplexta_music",
+  "sovereign_memory",
+  "sovereign_search",
+  "x402_api",
+  "storage_mb",
+] as const;

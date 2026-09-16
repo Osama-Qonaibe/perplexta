@@ -1,0 +1,11 @@
+{
+  "name": "Remix perplexta",
+  "description": "A professional platform featuring advanced multimodal AI capabilities and in-depth forensic technical analysis, offering advanced image and video tools for content creators and software developers.",
+  "requestFramePermissions": [
+    "camera",
+    "microphone"
+  ],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}

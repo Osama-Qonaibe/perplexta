@@ -1,0 +1,96 @@
+import React from 'react';
+import { Radio, Video, Clapperboard } from 'lucide-react';
+import { BulletinAvatar } from '../BulletinAvatar';
+import { toast } from '@/design-system';
+
+export interface AdComposerProps {
+  user: any;
+  token: string | null;
+  isRtl: boolean;
+  setIsAdModalOpen: (open: boolean) => void;
+  setIsStreamSetupOpen: (open: boolean) => void;
+  openPostUploadModal: () => void;
+  openReelUploadModal: () => void;
+}
+
+export const AdComposer: React.FC<AdComposerProps> = ({
+  user,
+  token,
+  isRtl,
+  setIsAdModalOpen,
+  setIsStreamSetupOpen,
+  openPostUploadModal,
+  openReelUploadModal,
+}) => {
+  return (
+    <div className="p-3 sm:p-4 bg-[var(--surface-card)] rounded-xl border border-[var(--border-default)] shadow-xs flex flex-col gap-3 w-full">
+      <div className="flex items-center gap-2.5 w-full">
+        <BulletinAvatar
+          src={user?.avatar}
+          alt={user?.name || 'User'}
+          size="md"
+        />
+        <button
+          type="button"
+          onClick={() => {
+            if (!token) {
+              toast.error(isRtl ? 'يرجى تسجيل الدخول أولاً' : 'Please log in first');
+              return;
+            }
+            setIsAdModalOpen(true);
+          }}
+          className="flex-1 min-w-0 text-start px-3.5 h-10 rounded-shape-sm bg-[var(--surface-subtle)] hover:bg-[var(--surface-card)] text-xs text-[var(--text-muted)] font-medium transition-all duration-150 border border-[var(--border-default)] hover:border-accent/40 cursor-pointer truncate flex items-center shadow-2xs"
+        >
+          {isRtl ? 'بم تفكر اليوم؟' : "What's on your mind?"}
+        </button>
+      </div>
+
+      <div className="flex items-center justify-around border-t border-[var(--border-default)] pt-2.5 text-[11px] sm:text-xs text-[var(--text-muted)] gap-1 w-full">
+        <button
+          type="button"
+          onClick={() => {
+            if (!token) {
+              toast.error(isRtl ? 'يرجى تسجيل الدخول أولاً' : 'Please log in first');
+              return;
+            }
+            setIsStreamSetupOpen(true);
+          }}
+          className="flex-1 h-8 flex items-center justify-center gap-1 sm:gap-1.5 px-2 rounded-shape-sm hover:bg-rose-500/10 font-bold transition-all duration-150 text-rose-500 whitespace-nowrap cursor-pointer shadow-2xs active:scale-95"
+        >
+          <Radio size={14} className="text-rose-500 shrink-0" />
+          <span className="truncate">{isRtl ? 'بث مباشر' : 'Live'}</span>
+        </button>
+
+        <button
+          type="button"
+          onClick={() => {
+            if (!token) {
+              toast.error(isRtl ? 'يرجى تسجيل الدخول أولاً' : 'Please log in first');
+              return;
+            }
+            openPostUploadModal();
+          }}
+          className="flex-1 h-8 flex items-center justify-center gap-1 sm:gap-1.5 px-2 rounded-shape-sm hover:bg-accent/10 font-bold transition-all duration-150 text-accent whitespace-nowrap cursor-pointer shadow-2xs active:scale-95"
+        >
+          <Video size={14} className="text-accent shrink-0" />
+          <span className="truncate">{isRtl ? 'فيديو/صورة' : 'Media'}</span>
+        </button>
+
+        <button
+          type="button"
+          onClick={() => {
+            if (!token) {
+              toast.error(isRtl ? 'يرجى تسجيل الدخول أولاً' : 'Please log in first');
+              return;
+            }
+            openReelUploadModal();
+          }}
+          className="flex-1 h-8 flex items-center justify-center gap-1 sm:gap-1.5 px-2 rounded-shape-sm hover:bg-purple-500/10 font-bold transition-all duration-150 text-purple-500 whitespace-nowrap cursor-pointer shadow-2xs active:scale-95"
+        >
+          <Clapperboard size={14} className="text-purple-500 shrink-0" />
+          <span className="truncate">{isRtl ? 'ريلز' : 'Reels'}</span>
+        </button>
+      </div>
+    </div>
+  );
+};

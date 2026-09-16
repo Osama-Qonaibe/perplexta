@@ -1,0 +1,130 @@
+import tailwindcss from '@tailwindcss/vite';
+import react from '@vitejs/plugin-react';
+import path from 'path';
+import { fileURLToPath } from 'url';
+import { defineConfig, loadEnv } from 'vite';
+import { VitePWA } from 'vite-plugin-pwa';
+
+const rootDir = path.dirname(fileURLToPath(import.meta.url));
+
+const pwaConfig: any = {
+  registerType: 'autoUpdate',
+  includeAssets: ['favicon.ico', 'app-assets/icon.png', 'app-assets/og-image.png'],
+  workbox: {
+    navigateFallback: '/index.html',
+    navigateFallbackDenylist: [/^\/api\//],
+    skipWaiting: true,
+    clientsClaim: true,
+    cleanupOutdatedCaches: true,
+    maximumFileSizeToCacheInBytes: 3 * 1024 * 1024,
+    runtimeCaching: [
+      {
+        urlPattern: /\/uploads\/.*/i,
+        handler: 'NetworkOnly',
+      },
+      {
+        urlPattern: /\/api\/.*/i,
+        handler: 'NetworkOnly',
+      },
+    ],
+  },
+  manifest: {
+    name: 'Perplexta Intelligence Platform',
+    short_name: 'Perplexta',
+    description: 'Next-Generation AI Intelligence Platform',
+    theme_color: '#0f172a',
+    background_color: '#0f172a',
+    display: 'standalone',
+    icons: [
+      {
+        src: 'pwa-192x192.png',
+        sizes: '192x192',
+        type: 'image/png'
+      },
+      {
+        src: 'pwa-512x512.png',
+        sizes: '512x512',
+        type: 'image/png'
+      }
+    ]
+  }
+};
+
+export default defineConfig(({ mode }) => {
+  const env = loadEnv(mode, rootDir, 'VITE_');
+  return {
+    root: rootDir,
+    base: '/',
+    publicDir: path.resolve(rootDir, 'public'),
+    plugins: [
+      react(),
+      tailwindcss(),
+      VitePWA(pwaConfig),
+    ],
+    define: {},
+    build: {
+      outDir: path.resolve(rootDir, 'dist'),
+      emptyOutDir: true,
+      sourcemap: false,
+      minify: 'esbuild',
+      target: 'esnext',
+      reportCompressedSize: false,
+      chunkSizeWarningLimit: 3000,
+      rollupOptions: {
+        input: 'index.html',
+        output: {
+          manualChunks: {
+            'react-vendor': ['react', 'react-dom', 'react-router-dom'],
+            'charts': ['recharts', 'd3'],
+            'query': ['@tanstack/react-query']
+          }
+        }
+      }
+    },
+    resolve: {
+      alias: {
+        '@': path.resolve(rootDir, 'src'),
+        '/src': path.resolve(rootDir, 'src'),
+        'react': path.resolve(rootDir, 'node_modules/react'),
+        'react-dom': path.resolve(rootDir, 'node_modules/react-dom'),
+      },
+    },
+    optimizeDeps: {
+      include: [
+        'react',
+        'react-dom',
+        'react-router-dom',
+        'lucide-react',
+        'motion',
+        '@tanstack/react-query',
+        'recharts',
+        'd3',
+      ],
+    },
+    server: {
+      host: '0.0.0.0',
+      allowedHosts: true,
+      headers: {
+        'Content-Security-Policy': "default-src * 'self' 'unsafe-inline' 'unsafe-eval' data: blob:; script-src * 'self' 'unsafe-inline' 'unsafe-eval' blob:; style-src * 'self' 'unsafe-inline'; img-src * 'self' data: blob:; connect-src * 'self' 'unsafe-inline' 'unsafe-eval' blob:; frame-ancestors * 'self';"
+      },
+      hmr: process.env.DISABLE_HMR === 'true' ? false : {
+        overlay: false
+      },
+      watch: {
+        ignored: [
+          '**/node_modules/**',
+          '**/dist/**',
+          '**/android/**',
+          '**/ios/**',
+          '**/uploads/**',
+          '**/.git/**',
+          '**/.github/**',
+        ],
+      },
+    },
+    preview: {
+      host: '0.0.0.0',
+      allowedHosts: true,
+    },
+  };
+});

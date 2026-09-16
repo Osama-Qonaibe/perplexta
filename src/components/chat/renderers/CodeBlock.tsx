@@ -1,0 +1,717 @@
+import React, { useState, useRef, useEffect, useMemo } from 'react';
+import { motion, AnimatePresence } from 'motion/react';
+import { 
+  Check, Copy, Download, Play, Square, RefreshCw, Loader2, ChevronDown, ChevronUp, Terminal, Eye 
+} from 'lucide-react';
+import Prism from 'prismjs';
+import 'prismjs/themes/prism-tomorrow.css';
+import 'prismjs/components/prism-javascript';
+import 'prismjs/components/prism-typescript';
+import 'prismjs/components/prism-css';
+import 'prismjs/components/prism-json';
+import 'prismjs/components/prism-python';
+import 'prismjs/components/prism-bash';
+import 'prismjs/components/prism-jsx';
+import 'prismjs/components/prism-tsx';
+import 'prismjs/components/prism-markup';
+import { toast } from '@/design-system';
+import { getCSPNonce } from '../../../utils/csp';
+import { useArtifact, ArtifactTab } from '../../../context/ArtifactContext';
+import { useAppContext } from '../../../context/AppContext';
+import { tryParseProjectJson } from '../../../utils/projectParser';
+
+interface CodeBlockProps {
+  children: any;
+  className?: string;
+  inline?: boolean;
+  dir: 'ltr' | 'rtl';
+  theme: string;
+  isGenerating?: boolean;
+  wasGenerating?: boolean;
+  isLastMessage?: boolean;
+}
+
+export const CodeBlock: React.FC<CodeBlockProps> = ({ 
+  children, 
+  className, 
+  inline, 
+  dir, 
+  theme: resolvedTheme,
+  isGenerating,
+  wasGenerating,
+  isLastMessage
+}) => {
+  const { language } = useAppContext();
+  const isAr = language === 'ar' || dir === 'rtl';
+  const [copied, setCopied] = useState(false);
+  const [isExpanded, setIsExpanded] = useState(true);
+  const match = /language-(\w+)/.exec(className || '');
+  const lang = match ? match[1] : 'text';
+  const codeContent = String(children).trim();
+
+  const isMediaUrl = (codeContent.startsWith('http') || codeContent.startsWith('/')) && (codeContent.includes('.png') || codeContent.includes('.jpg') || codeContent.includes('.mp4') || codeContent.includes('.gif') || codeContent.includes('.mp3') || codeContent.includes('.wav') || codeContent.includes('.ogg'));
+  const parsedProject = useMemo(() => {
+    if (lang.toLowerCase() === 'json' || codeContent.startsWith('{')) {
+      return tryParseProjectJson(codeContent);
+    }
+    return null;
+  }, [codeContent, lang]);
+
+  const fileNameDisplay = useMemo(() => {
+    if (lang === 'audio') return 'Perplexta Audio Slate';
+    if (parsedProject?.title) return parsedProject.title;
+    if (lang === 'html') return 'index.html';
+    if (lang === 'css') return 'styles.css';
+    if (['typescript', 'ts', 'jsx', 'tsx', 'js', 'javascript'].includes(lang.toLowerCase())) return 'App.tsx';
+    return lang;
+  }, [lang, parsedProject]);
+
+  const isExecutable = useMemo(() => {
+    if (isMediaUrl) return false;
+    const l = (lang || '').toLowerCase();
+    const previewableLangs = [
+      'javascript', 'js', 'jsx',
+      'typescript', 'ts', 'tsx',
+      'html', 'htm', 'css', 'svg',
+      'json', 'react', 'vue', 'svelte'
+    ];
+    if (previewableLangs.includes(l)) return true;
+    if (Boolean(parsedProject)) return true;
+    if (
+      codeContent.includes('import ') ||
+      codeContent.includes('export ') ||
+      codeContent.includes('function') ||
+      codeContent.includes('const ') ||
+      codeContent.includes('class ') ||
+      codeContent.includes('<')
+    ) {
+      return true;
+    }
+    return false;
+  }, [isMediaUrl, lang, parsedProject, codeContent]);
+
+  const artifactIdRef = useRef(`code-${lang}-${Math.random().toString(36).substring(2, 9)}`);
+
+  let artifactContext: any = null;
+  try {
+    artifactContext = useArtifact();
+  } catch (e) {}
+
+  const handleOpenInCanvas = (targetTab?: ArtifactTab) => {
+    if (artifactContext) {
+      if (targetTab) {
+        artifactContext.setActiveTab(targetTab);
+      } else {
+        artifactContext.setActiveTab('preview'); // default to preview instead of keeping current
+      }
+
+      if (parsedProject) {
+        const entryFile = parsedProject.files[parsedProject.entryPath];
+        artifactContext.setActiveArtifact({
+          id: artifactIdRef.current,
+          title: parsedProject.title || 'Project',
+          type: 'project',
+          language: entryFile?.type || 'html',
+          content: entryFile?.content || '',
+          version: 1,
+          files: parsedProject.files,
+          entryFilePath: parsedProject.entryPath,
+          activeFilePath: parsedProject.entryPath,
+          openFileTabs: [parsedProject.entryPath]
+        });
+      } else {
+        artifactContext.setActiveArtifact({
+          id: artifactIdRef.current,
+          title: lang === 'html' ? 'index.html' : lang === 'css' ? 'styles.css' : `App.${['typescript', 'ts', 'jsx', 'tsx'].includes(lang.toLowerCase()) ? 'tsx' : 'jsx'}`,
+          type: lang === 'html' ? 'html' : lang === 'svg' ? 'svg' : 'react',
+          language: lang,
+          content: codeContent,
+          version: 1
+        });
+      }
+      artifactContext.setIsArtifactOpen(true);
+    }
+  };
+
+  const [sandboxMode, setSandboxMode] = useState(false);
+  const [editableCode, setEditableCode] = useState(codeContent);
+  const [isPlaying, setIsPlaying] = useState(false);
+  const [isRunning, setIsRunning] = useState(false);
+  const [outputLogs, setOutputLogs] = useState<{ type: 'log' | 'info' | 'warn' | 'error'; text: string; time: string }[]>([]);
+  const [iframeSrc, setIframeSrc] = useState<string | null>(null);
+
+  const lineCount = useMemo(() => editableCode.split('\n').length, [editableCode]);
+
+  const mountedRef = useRef(true);
+  useEffect(() => {
+    mountedRef.current = true;
+    return () => {
+      mountedRef.current = false;
+    };
+  }, []);
+
+  useEffect(() => {
+    setEditableCode(codeContent);
+  }, [codeContent]);
+
+  useEffect(() => {
+    const handleResize = () => {
+      if (window.innerWidth < 768) {
+        setSandboxMode(false);
+        setIsPlaying(false);
+        setIframeSrc(null);
+        setOutputLogs([]);
+      }
+    };
+    handleResize(); 
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
+  // Update Canvas live if the code block is still generating (streaming)
+  useEffect(() => {
+    if (!isExecutable) return;
+
+    if (
+      artifactContext &&
+      artifactContext.isArtifactOpen &&
+      artifactContext.activeArtifact?.id === artifactIdRef.current &&
+      artifactContext.activeArtifact?.content !== codeContent
+    ) {
+      if (parsedProject) {
+        const entryFile = parsedProject.files[parsedProject.entryPath];
+        artifactContext.setActiveArtifact({
+          id: artifactIdRef.current,
+          title: parsedProject.title || 'Project',
+          type: 'project',
+          language: entryFile?.type || 'html',
+          content: entryFile?.content || '',
+          version: 1,
+          files: parsedProject.files,
+          entryFilePath: parsedProject.entryPath,
+          activeFilePath: parsedProject.entryPath,
+          openFileTabs: [parsedProject.entryPath]
+        });
+      } else {
+        artifactContext.setActiveArtifact({
+          id: artifactIdRef.current,
+          title: lang === 'html' ? 'index.html' : lang === 'css' ? 'styles.css' : `App.${['typescript', 'ts', 'jsx', 'tsx'].includes(lang.toLowerCase()) ? 'tsx' : 'jsx'}`,
+          type: lang === 'html' ? 'html' : lang === 'svg' ? 'svg' : 'react',
+          language: lang,
+          content: codeContent,
+          version: 1
+        });
+      }
+    }
+  }, [codeContent, isExecutable, parsedProject]);
+
+  const internalWasGeneratingRef = useRef(isGenerating);
+
+  useEffect(() => {
+    if (isGenerating) {
+      internalWasGeneratingRef.current = true;
+    }
+  }, [isGenerating]);
+
+  useEffect(() => {
+    if (!isExecutable) return;
+    
+    // Auto-open in Canvas and focus preview once generation transitions from true to false
+    // Only auto-open if it is the last message to avoid stealing focus on history rendering
+    console.log(`[CodeBlock] isGenerating: ${isGenerating}, wasGenerating: ${wasGenerating}, internalWasGenerating: ${internalWasGeneratingRef.current}, isLastMessage: ${isLastMessage}`);
+    
+    const wasGen = wasGenerating || internalWasGeneratingRef.current;
+    
+    if (isLastMessage && wasGen && isGenerating === false) {
+      console.log(`[CodeBlock] Triggering auto-open in canvas!`);
+      
+      // Delay opening canvas to let React DOM update finish streaming
+      setTimeout(() => {
+        setIsExpanded(false);
+        handleOpenInCanvas('preview');
+      }, 50);
+      
+      // Reset after triggering so we don't trigger again
+      internalWasGeneratingRef.current = false;
+    }
+  }, [isGenerating, wasGenerating, isExecutable, isLastMessage]);
+
+  const highlightedCode = useMemo(() => {
+    const language = lang.toLowerCase();
+    let prismLang = language;
+    if (language === 'js') prismLang = 'javascript';
+    if (language === 'ts') prismLang = 'typescript';
+    if (language === 'py') prismLang = 'python';
+    if (language === 'sh') prismLang = 'bash';
+    if (language === 'html' || language === 'xml' || language === 'svg') prismLang = 'markup';
+
+    const hasGrammar = Prism.languages[prismLang];
+    if (hasGrammar) {
+      try {
+        return Prism.highlight(editableCode, Prism.languages[prismLang], prismLang);
+      } catch (e) {}
+    }
+    return editableCode
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#039;');
+  }, [editableCode, lang]);
+
+  const copyToClipboard = () => {
+    navigator.clipboard.writeText(editableCode)
+      .then(() => {
+        setCopied(true);
+        toast.success(dir === 'rtl' ? 'تم نسخ الكود بنجاح' : 'Code copied to clipboard!');
+        setTimeout(() => setCopied(false), 2000);
+      })
+      .catch((err) => {
+        toast.error(dir === 'rtl' ? 'فشل نسخ الكود' : 'Failed to copy code');
+      });
+  };
+
+  const downloadCode = () => {
+    const blob = new Blob([editableCode], { type: 'text/plain' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `code.${lang}`;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
+  const downloadFile = (fileUrl: string) => {
+    const a = document.createElement('a');
+    a.href = fileUrl;
+    a.download = 'generated-file';
+    a.target = '_blank';
+    a.click();
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+    if (e.key === 'Tab') {
+      e.preventDefault();
+      const start = e.currentTarget.selectionStart;
+      const end = e.currentTarget.selectionEnd;
+      const newValue = editableCode.substring(0, start) + '  ' + editableCode.substring(end);
+      setEditableCode(newValue);
+      setTimeout(() => {
+        e.currentTarget.selectionStart = e.currentTarget.selectionEnd = start + 2;
+      }, 0);
+    }
+  };
+
+  const handleRun = async () => {
+    setIsPlaying(true);
+    setIframeSrc(null);
+    setOutputLogs([]);
+
+    const language = lang.toLowerCase();
+    if (['html', 'css'].includes(language)) {
+      setIsRunning(true);
+      try {
+        let fullHtml = '';
+        const isDark = resolvedTheme === 'dark';
+        const documentClass = isDark ? 'dark' : 'light';
+
+        if (language === 'html') {
+          fullHtml = `
+            <!DOCTYPE html>
+            <html class="${documentClass}">
+            <head>
+              <meta charset="utf-8">
+              <meta name="viewport" content="width=device-width, initial-scale=1">
+              <style>
+                body { 
+                  font-family: system-ui, -apple-system, sans-serif; 
+                  margin: 1rem; 
+                  padding: 0;
+                  color: ${isDark ? '#e2e8f0' : '#1e293b'}; 
+                  background-color: ${isDark ? '#0f0f11' : '#ffffff'}; 
+                }
+              </style>
+            </head>
+            <body>
+              ${editableCode}
+            </body>
+            </html>
+          `;
+        } else {
+          fullHtml = `
+            <!DOCTYPE html>
+            <html class="${documentClass}">
+            <head>
+              <meta charset="utf-8">
+              <meta name="viewport" content="width=device-width, initial-scale=1">
+              <style>
+                body { 
+                  font-family: system-ui, -apple-system, sans-serif; 
+                  margin: 1rem; 
+                  padding: 0;
+                  color: ${isDark ? '#e2e8f0' : '#1e293b'}; 
+                  background-color: ${isDark ? '#0f0f11' : '#ffffff'}; 
+                }
+                ${editableCode}
+              </style>
+            </head>
+            <body>
+              <div class="sandbox-demo-container">
+                <h1 class="demo-title">CSS Sandbox Preview</h1>
+                <p class="demo-text">Style standard selectors, utilities, classes, or ID attributes here!</p>
+                <div class="demo-card" style="border: 1px solid ${isDark ? '#334155' : '#e2e8f0'}; padding: 1.5rem; border-radius: 8px; margin: 1.5rem 0; background-color: ${isDark ? '#1a1a1c' : '#f8fafc'}; max-width: 450px;">
+                  <h3 style="margin-top: 0;">Interactive Demo Card</h3>
+                  <p style="font-size: 14px; opacity: 0.85;">This card mimics typical interface content to display visual styles clearly.</p>
+                  <button class="demo-button" style="padding: 0.5rem 1rem; border-radius: 4px; border: none; font-weight: bold; background-color: #334155; color: white;">Button One</button>
+                  <button class="demo-button outline" style="padding: 0.5rem 1rem; border-radius: 4px; border: 1px solid #334155; font-weight: bold; background-color: transparent; color: #334155; margin-left: 0.5rem;">Button Two</button>
+                </div>
+              </div>
+            </body>
+            </html>
+          `;
+        }
+        if (mountedRef.current) setIframeSrc(fullHtml);
+      } catch (err: any) {
+      } finally {
+        if (mountedRef.current) setIsRunning(false);
+      }
+    } else {
+      setIsRunning(true);
+      const startTime = performance.now();
+      const logsList: { type: 'log' | 'info' | 'warn' | 'error'; text: string; time: string }[] = [];
+      const getTimestamp = () => new Date().toLocaleTimeString([], { hour12: false });
+
+      let jsCode = editableCode;
+      if (['typescript', 'ts'].includes(language)) {
+        jsCode = jsCode
+          .replace(/import\s+[\s\S]*?\s+from\s+['"].*?['"];?/g, '')
+          .replace(/export\s+(default\s+)?/g, '')
+          .replace(/(?:interface|type)\s+\w+[\s\S]*?\{[\s\S]*?\}/g, '')
+          .replace(/(const|let|var)\s+(\w+)\s*:\s*\w+/g, '$1 $2')
+          .replace(/function\s+(\w+)\s*\((.*?)\)\s*:\s*\w+/g, 'function $1($2)')
+          .replace(/\((.*?)\)\s*:\s*\w+\s*=>/g, '($1) =>');
+      }
+
+      const nonceVal = getCSPNonce();
+      const nonceAttr = nonceVal ? ` nonce="${nonceVal}"` : '';
+
+      const iframe = document.createElement('iframe');
+      iframe.setAttribute('sandbox', 'allow-scripts');
+      iframe.style.display = 'none';
+
+      const scriptContent = `
+        <!DOCTYPE html>
+        <html>
+        <head>
+          <script${nonceAttr}>
+            const customConsole = {
+              log: (...args) => {
+                const text = args.map(arg => typeof arg === 'object' ? JSON.stringify(arg) : String(arg)).join(' ');
+                window.parent.postMessage({ type: 'PERPLEXTA_LOG', level: 'log', text }, '*');
+              },
+              info: (...args) => {
+                const text = args.map(arg => typeof arg === 'object' ? JSON.stringify(arg) : String(arg)).join(' ');
+                window.parent.postMessage({ type: 'PERPLEXTA_LOG', level: 'info', text }, '*');
+              },
+              warn: (...args) => {
+                const text = args.map(arg => typeof arg === 'object' ? JSON.stringify(arg) : String(arg)).join(' ');
+                window.parent.postMessage({ type: 'PERPLEXTA_LOG', level: 'warn', text }, '*');
+              },
+              error: (...args) => {
+                const text = args.map(arg => typeof arg === 'object' ? String(arg?.message || JSON.stringify(arg)) : String(arg)).join(' ');
+                window.parent.postMessage({ type: 'PERPLEXTA_LOG', level: 'error', text }, '*');
+              }
+            };
+            window.console = {
+              ...window.console,
+              ...customConsole
+            };
+            window.addEventListener('error', (e) => {
+              customConsole.error(e.error || e.message);
+            });
+          </script>
+        </head>
+        <body>
+          <script${nonceAttr}>
+            try {
+              ${jsCode}
+              window.parent.postMessage({ type: 'PERPLEXTA_DONE' }, '*');
+            } catch (err) {
+              window.parent.postMessage({ type: 'PERPLEXTA_LOG', level: 'error', text: err?.message || String(err) }, '*');
+              window.parent.postMessage({ type: 'PERPLEXTA_DONE' }, '*');
+            }
+          </script>
+        </body>
+        </html>
+      `;
+
+      iframe.srcdoc = scriptContent;
+      let runTimeout: any = null;
+
+      const cleanup = () => {
+        if (runTimeout) clearTimeout(runTimeout);
+        window.removeEventListener('message', messageHandler);
+        if (iframe && iframe.parentNode) {
+          iframe.parentNode.removeChild(iframe);
+        }
+      };
+
+      const messageHandler = (event: MessageEvent) => {
+        const data = event.data;
+        if (!data || typeof data !== 'object') return;
+
+        if (data.type === 'PERPLEXTA_LOG') {
+          logsList.push({
+            type: data.level,
+            text: data.text,
+            time: getTimestamp()
+          });
+          if (mountedRef.current) setOutputLogs([...logsList]);
+        } else if (data.type === 'PERPLEXTA_DONE') {
+          const duration = (performance.now() - startTime).toFixed(1);
+          logsList.push({
+            type: 'info',
+            text: `[SYSTEM] Process completed in ${duration}ms.`,
+            time: getTimestamp()
+          });
+          if (mountedRef.current) {
+            setOutputLogs([...logsList]);
+            setIsRunning(false);
+          }
+          cleanup();
+        }
+      };
+
+      window.addEventListener('message', messageHandler);
+      document.body.appendChild(iframe);
+
+      runTimeout = setTimeout(() => {
+        logsList.push({
+          type: 'warn',
+          text: `[SYSTEM] Process exceeded 3000ms limit. Execution aborted.`,
+          time: getTimestamp()
+        });
+        if (mountedRef.current) {
+          setOutputLogs([...logsList]);
+          setIsRunning(false);
+        }
+        cleanup();
+      }, 3000);
+    }
+  };
+
+  const handleStop = () => {
+    setIsPlaying(false);
+    setIframeSrc(null);
+    setOutputLogs([]);
+  };
+
+  const handleReset = () => {
+    setEditableCode(codeContent);
+    handleStop();
+    toast.success(dir === 'rtl' ? 'تمت إعادة تعيين الكود البرمجي' : 'Code reset for execution');
+  };
+
+  if (inline) return <code className={className}>{children}</code>;
+
+  return (
+    <div
+      dir="ltr"
+      style={{ direction: 'ltr', unicodeBidi: 'isolate', textAlign: 'left' }}
+      className="relative group mx-auto my-3 w-full rounded-shape-md shadow-2xs overflow-hidden border border-[var(--border-default)] bg-[var(--surface-card)] transition-colors perplexta-codeblock"
+    >
+      {/* Code Container Header */}
+      <div className="sticky top-0 z-20 h-9 flex items-center justify-between px-3 border-b border-[var(--border-default)] bg-[var(--surface-subtle)] text-[var(--text-secondary)] perplexta-codeblock-header select-none">
+        <div className="flex items-center gap-2 min-w-0">
+          <div className="flex items-center gap-1.5 h-7 px-2.5 rounded-shape-xs bg-[var(--surface-card)] border border-[var(--border-default)] text-[var(--text-primary)] text-[11px] font-mono font-bold shrink-0 shadow-2xs">
+            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 shrink-0" />
+            <span className="truncate max-w-[180px]">{fileNameDisplay}</span>
+          </div>
+        </div>
+
+        <div className="flex items-center gap-1.5 shrink-0">
+          {isExecutable && (
+            <button
+              type="button"
+              onClick={() => handleOpenInCanvas('preview')}
+              disabled={isGenerating}
+              className="h-7 px-2.5 text-[11px] font-bold bg-[var(--surface-card)] hover:bg-[var(--surface-subtle)] text-[var(--fg-accent)] hover:text-[var(--text-primary)] border border-[var(--border-default)] hover:border-[var(--border-accent)] rounded-shape-xs active:scale-95 transition-all cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-1.5 shrink-0 shadow-2xs touch-target-44 box-border relative before:absolute before:-inset-1.5 before:content-['']"
+              title={isAr ? 'معاينة الكود' : 'Preview'}
+            >
+              <Eye size={12} className="shrink-0 text-[var(--fg-accent)]" />
+              <span className="truncate">{isAr ? 'معاينة' : 'Preview'}</span>
+            </button>
+          )}
+
+          <div className="flex items-center gap-1 shrink-0">
+            {isMediaUrl ? (
+              <button 
+                onClick={() => downloadFile(children)} 
+                className="w-7 h-7 rounded-shape-xs bg-[var(--surface-card)] hover:bg-[var(--surface-subtle)] text-[var(--text-muted)] hover:text-[var(--text-primary)] border border-[var(--border-default)] transition-colors flex items-center justify-center shrink-0 touch-target-44 box-border relative before:absolute before:-inset-1.5 before:content-[''] shadow-2xs" 
+                title="Download"
+              >
+                <Download size={13} />
+              </button>
+            ) : (
+              <>
+                <button 
+                  onClick={copyToClipboard} 
+                  className="relative w-7 h-7 rounded-shape-xs bg-[var(--surface-card)] hover:bg-[var(--surface-subtle)] text-[var(--text-muted)] hover:text-[var(--text-primary)] border border-[var(--border-default)] transition-colors flex items-center justify-center shrink-0 touch-target-44 box-border before:absolute before:-inset-1.5 before:content-[''] shadow-2xs" 
+                  title={copied ? (dir === 'rtl' ? 'تم النسخ' : 'Copied!') : (dir === 'rtl' ? 'نسخ الكود' : 'Copy code')}
+                >
+                  {copied ? (
+                    <Check size={13} className="text-emerald-500 transition-transform duration-150" />
+                  ) : (
+                    <Copy size={13} className="transition-transform duration-150" />
+                  )}
+                  {copied && (
+                    <span className="absolute -top-7 left-1/2 -translate-x-1/2 bg-emerald-600 text-white text-[10px] px-1.5 py-0.5 rounded-shape-xs shadow-md whitespace-nowrap font-sans pointer-events-none z-30">
+                      {dir === 'rtl' ? 'تم النسخ!' : 'Copied!'}
+                    </span>
+                  )}
+                </button>
+                {!isMediaUrl && (
+                  <button 
+                    onClick={downloadCode} 
+                    className="w-7 h-7 rounded-shape-xs bg-[var(--surface-card)] hover:bg-[var(--surface-subtle)] text-[var(--text-muted)] hover:text-[var(--text-primary)] border border-[var(--border-default)] transition-colors flex items-center justify-center shrink-0 touch-target-44 box-border relative before:absolute before:-inset-1.5 before:content-[''] shadow-2xs" 
+                    title={dir === 'rtl' ? 'تنزيل الملف' : 'Download file'}
+                  >
+                    <Download size={13} />
+                  </button>
+                )}
+              </>
+            )}
+          </div>
+        </div>
+      </div>
+
+      <div className={`relative ${!isExpanded && lineCount > 25 ? 'max-h-[500px] overflow-hidden' : ''} transition-all duration-300`}>
+        {sandboxMode ? (
+          <div className="flex flex-col md:flex-row h-[600px] bg-[var(--surface-card)] transition-theme">
+            <div className="flex-1 flex flex-col border-r border-[var(--border-default)]">
+              <div className="flex items-center justify-between px-3 py-1.5 bg-[var(--surface-inset)] border-b border-[var(--border-default)]">
+                <span className="text-[9px] font-black text-accent uppercase tracking-widest">{dir === 'rtl' ? 'محرر الكود الحي' : 'LIVE CODE EDITOR'}</span>
+                <div className="flex items-center gap-2">
+                  <button onClick={handleReset} className="text-[9px] font-black text-[var(--text-muted)] hover:text-accent flex items-center gap-1 uppercase transition-colors">
+                    <RefreshCw size={10} />
+                    {dir === 'rtl' ? 'إعادة تعيين' : 'RESET'}
+                  </button>
+                </div>
+              </div>
+              <textarea
+                dir="ltr"
+                style={{ direction: 'ltr', unicodeBidi: 'isolate', textAlign: 'left' }}
+                value={editableCode}
+                onChange={(e) => setEditableCode(e.target.value)}
+                onKeyDown={handleKeyDown}
+                spellCheck={false}
+                className="flex-1 w-full p-4 font-mono text-sm bg-transparent resize-none focus:outline-none text-[var(--text-primary)] text-left dir-ltr"
+              />
+            </div>
+
+            <div className="flex-1 flex flex-col bg-[var(--surface-inset)]">
+              <div className="flex items-center justify-between px-3 py-1.5 bg-[var(--surface-inset)] border-b border-[var(--border-default)]">
+                <div className="flex items-center gap-2">
+                  <span className="text-[9px] font-black text-accent uppercase tracking-widest">{dir === 'rtl' ? 'نتيجة التنفيذ' : 'SANDBOX EXECUTION'}</span>
+                  {isRunning && <Loader2 size={10} className="animate-spin text-accent" />}
+                </div>
+                <div className="flex items-center gap-1.5">
+                  {isPlaying ? (
+                    <button onClick={handleStop} className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-shape-sm bg-rose-500/10 border border-rose-500/20 text-rose-500 text-[9px] font-black uppercase hover:bg-rose-500 hover:text-white transition-theme shadow-sm active:scale-95 cursor-pointer relative before:absolute before:-inset-1.5 before:content-['']">
+                      <Square size={10} className="fill-current" />
+                      {dir === 'rtl' ? 'إيقاف' : 'STOP'}
+                    </button>
+                  ) : (
+                    <button onClick={handleRun} disabled={isRunning} className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-shape-sm bg-accent/10 border border-accent/20 text-accent text-[9px] font-black uppercase hover:bg-accent hover:text-white transition-theme shadow-sm disabled:opacity-50 active:scale-95 cursor-pointer relative before:absolute before:-inset-1.5 before:content-['']">
+                      <Play size={10} className="fill-current" />
+                      {dir === 'rtl' ? 'تشغيل' : 'EXECUTE'}
+                    </button>
+                  )}
+                </div>
+              </div>
+
+              <div className="flex-1 relative overflow-hidden">
+                {!isPlaying ? (
+                  <div className="absolute inset-0 flex flex-col items-center justify-center text-center p-6 bg-[var(--surface-inset)] transition-theme">
+                    <Terminal size={40} className="text-accent/20 mb-3" />
+                    <h4 className="text-xs font-bold text-[var(--text-primary)] mb-1 uppercase tracking-wider">{dir === 'rtl' ? 'جاهز للتنفيذ' : 'READY TO EXECUTE'}</h4>
+                    <p className="text-[10px] text-[var(--text-muted)] max-w-[200px] leading-relaxed">
+                      {dir === 'rtl' ? 'انقر على "تشغيل" لمعاينة الأكواد التفاعلية في بيئة آمنة ومعزولة.' : 'Click "EXECUTE" to preview interactive code in a safe, isolated sandbox.'}
+                    </p>
+                  </div>
+                ) : ['html', 'css'].includes(lang.toLowerCase()) ? (
+                  iframeSrc ? (
+                    <iframe
+                      title="Perplexta Sandbox"
+                      srcDoc={iframeSrc}
+                      className="w-full h-full border-none bg-white"
+                      sandbox="allow-scripts"
+                    />
+                  ) : (
+                    <div className="flex items-center justify-center h-full">
+                      <Loader2 size={24} className="animate-spin text-accent" />
+                    </div>
+                  )
+                ) : (
+                  <div className="flex flex-col h-full font-mono text-[11px] p-3 overflow-y-auto bg-black text-emerald-400 custom-scrollbar">
+                    {outputLogs.length === 0 ? (
+                      <div className="text-gray-600 italic">{dir === 'rtl' ? 'في انتظار مخرجات الكونسول...' : 'Waiting for console output...'}</div>
+                    ) : (
+                      <div className="flex flex-col gap-1">
+                        {outputLogs.map((log, idx) => (
+                          <div key={`log-${idx}`} className={`flex gap-2 ${log.type === 'error' ? 'text-rose-400' : log.type === 'warn' ? 'text-amber-400' : log.type === 'info' ? 'text-sky-400' : 'text-emerald-400'}`}>
+                            <span className="opacity-40 shrink-0">[{log.time}]</span>
+                            <span className="font-bold shrink-0 uppercase">[{log.type}]</span>
+                            <span className="break-all whitespace-pre-wrap">{log.text}</span>
+                          </div>
+                        ))}
+                        <div ref={(el) => el?.scrollIntoView({ behavior: 'smooth' })} />
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        ) : (
+          <pre 
+            dir="ltr"
+            style={{ direction: 'ltr', unicodeBidi: 'isolate', textAlign: 'left' }}
+            className="p-4 overflow-x-auto custom-scrollbar bg-transparent transition-theme text-left dir-ltr"
+          >
+            <code 
+              dir="ltr"
+              style={{ direction: 'ltr', unicodeBidi: 'isolate', textAlign: 'left' }}
+              className={`language-${lang} block font-mono text-sm leading-relaxed text-left dir-ltr`}
+              dangerouslySetInnerHTML={{ __html: highlightedCode }}
+            />
+          </pre>
+        )}
+
+        {!isExpanded && lineCount > 25 && !sandboxMode && (
+          <div className="absolute bottom-0 inset-x-0 h-20 bg-gradient-to-t from-[var(--surface-card)] via-[var(--surface-card)]/80 to-transparent pointer-events-none z-10 flex items-end justify-center pb-3 transition-colors">
+            <button
+              onClick={() => setIsExpanded(true)}
+              className="px-3.5 py-1.5 rounded-shape-full bg-[var(--surface-subtle)] hover:bg-[var(--surface-card)] border border-[var(--border-default)] text-[var(--fg-accent)] text-[11px] font-bold uppercase tracking-wider backdrop-blur-md transition-colors pointer-events-auto shadow-md flex items-center gap-1.5 touch-target-44"
+            >
+              <ChevronDown size={12} />
+              <span>{dir === 'rtl' ? 'عرض الكود كاملاً' : 'SHOW FULL SOURCE'}</span>
+            </button>
+          </div>
+        )}
+      </div>
+
+      {isExpanded && lineCount > 25 && !sandboxMode && (
+        <div className="sticky bottom-0 z-20 flex justify-center pb-3 bg-gradient-to-t from-[var(--surface-card)] via-[var(--surface-card)]/90 to-transparent pt-6 transition-colors">
+          <button
+            onClick={() => setIsExpanded(false)}
+            className="px-3.5 py-1.5 rounded-shape-full bg-[var(--surface-subtle)] hover:bg-[var(--surface-card)] border border-[var(--border-default)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] text-[11px] font-bold uppercase tracking-wider backdrop-blur-md transition-colors shadow-md flex items-center gap-1.5 touch-target-44"
+          >
+            <ChevronUp size={12} />
+            <span>{dir === 'rtl' ? 'طي الكود البرمجي' : 'COLLAPSE SOURCE'}</span>
+          </button>
+        </div>
+      )}
+    </div>
+  );
+};

@@ -1,0 +1,15 @@
+import express from 'express';
+import { getCachedActivePlans, DEFAULT_FALLBACK_PLANS } from '../db/queries.js';
+
+const router = express.Router();
+
+router.get("/", async (req, res) => {
+  try {
+    const plans = await getCachedActivePlans();
+    res.json(plans && plans.length > 0 ? plans : DEFAULT_FALLBACK_PLANS);
+  } catch (error) {
+    res.json(DEFAULT_FALLBACK_PLANS);
+  }
+});
+
+export default router;
