@@ -4,34 +4,6 @@ import { authenticateToken } from '../middleware/auth.js';
 
 const router = express.Router();
 
-// Initialize Studio Schema
-const initSchema = async () => {
-  try {
-    await pool.query(`
-      CREATE TABLE IF NOT EXISTS studio_workspaces (
-        id VARCHAR(255) PRIMARY KEY,
-        user_id INTEGER NOT NULL,
-        title VARCHAR(255) NOT NULL,
-        framework_mode VARCHAR(50) DEFAULT 'html',
-        files JSONB DEFAULT '{}',
-        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-      );
-      CREATE TABLE IF NOT EXISTS studio_snapshots (
-        id SERIAL PRIMARY KEY,
-        workspace_id VARCHAR(255) REFERENCES studio_workspaces(id) ON DELETE CASCADE,
-        version_name VARCHAR(255) NOT NULL,
-        files JSONB DEFAULT '{}',
-        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-      );
-    `);
-  } catch (error) {
-    console.error('[Studio] Failed to initialize schema:', error);
-  }
-};
-
-initSchema();
-
 router.get('/workspaces', authenticateToken, async (req: any, res) => {
   try {
     const userId = req.user.userId;

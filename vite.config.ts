@@ -72,13 +72,6 @@ export default defineConfig(({ mode }) => {
       chunkSizeWarningLimit: 3000,
       rollupOptions: {
         input: 'index.html',
-        output: {
-          manualChunks: {
-            'react-vendor': ['react', 'react-dom', 'react-router-dom'],
-            'charts': ['recharts', 'd3'],
-            'query': ['@tanstack/react-query']
-          }
-        }
       }
     },
     resolve: {

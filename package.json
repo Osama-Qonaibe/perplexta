@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "tsx server/index.ts",
-    "build": "NODE_OPTIONS=\"--max-old-space-size=8192\" vite build && NODE_OPTIONS=\"--max-old-space-size=8192\" npx esbuild server/index.ts --bundle --platform=node --format=cjs --packages=external --outfile=dist/server.cjs",
+    "build": "NODE_OPTIONS=\"--max-old-space-size=2048\" vite build && NODE_OPTIONS=\"--max-old-space-size=2048\" npx esbuild server/index.ts --bundle --platform=node --format=cjs --packages=external --outfile=dist/server.cjs",
     "build:all": "bash scripts/build-all.sh",
     "start": "node dist/server.cjs",
     "preview": "vite preview",
@@ -19,7 +19,7 @@
     "validate:pwa": "tsx scripts/validate-pwa.ts",
     "validate:manifest": "tsx scripts/validate-pwa.ts",
     "db:verify": "tsx scripts/verify_distributed_dbs.ts",
-    "lint": "tsc --noEmit"
+    "lint": "NODE_OPTIONS=\"--max-old-space-size=2048\" tsc --noEmit"
   },
   "dependencies": {
     "@capacitor/cli": "^8.5.1",

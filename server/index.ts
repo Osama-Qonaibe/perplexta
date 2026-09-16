@@ -24,6 +24,7 @@ import { initSocket } from './config/socket.js';
 import { initializePerplextaPools, synchronizePerplextaPoolsFromRegistry, startConnectionHealthCheck, startPoolSaturationGuardian } from './db/index.js';
 import { createServer as createViteServer } from 'vite';
 import { runDatabaseMigrations, setIo, verifySchemaIntegrity } from './db/migrations.js';
+import { ensureDatabaseTables } from './services/database-initializer.js';
 import { syncSystemTemplates } from './services/email.js';
 import { refreshCachedAppName } from './services/system.js';
 import { initializeSystemAssetSuite } from './services/systemAssetManager.js';
@@ -52,6 +53,7 @@ async function initDatabase(): Promise<boolean> {
         process.env.SECURITY_DATABASE_URL || ''
       );
       await runDatabaseMigrations();
+      await ensureDatabaseTables();
       await synchronizePerplextaPoolsFromRegistry();
       await Promise.allSettled([
         syncSystemTemplates(),

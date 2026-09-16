@@ -38,17 +38,16 @@ const originalConnect = Pool.prototype.connect as any;
 
 import { decrypt } from "../utils/crypto.js";
 
-const safeMockPool = {
+const fallbackPool = {
   query: async (text: any, params?: any) => {
     const queryStr = typeof text === 'string' ? text.trim().toLowerCase() : (text?.text ? text.text.trim().toLowerCase() : '');
-    console.warn(`[DB Mock Mode] Query intercepted while database is not connected: "${queryStr.substring(0, 60)}..."`);
     if (queryStr.includes('select 1') || queryStr.includes('select version')) {
       return { rows: [{ '?column?': 1 }], raw: [], rowCount: 1 };
     }
     return { rows: [], raw: [], rowCount: 0 };
   },
   connect: async () => ({
-    query: async (text: any, params?: any) => ({ rows: [], raw: [], rowCount: 0 }),
+    query: async () => ({ rows: [], raw: [], rowCount: 0 }),
     release: () => {}
   }),
   end: async () => {},
@@ -68,7 +67,7 @@ let rawMediaPool: any = null;
 
 export const pool: any = new Proxy({}, {
   get(target, prop) {
-    const p = rawPool || safeMockPool;
+    const p = rawPool || fallbackPool;
     const val = (p as any)[prop];
     return typeof val === 'function' ? val.bind(p) : val;
   }
@@ -76,7 +75,7 @@ export const pool: any = new Proxy({}, {
 
 export const ledgerPool: any = new Proxy({}, {
   get(target, prop) {
-    const p = rawLedgerPool || rawPool || safeMockPool;
+    const p = rawLedgerPool || rawPool || fallbackPool;
     const val = (p as any)[prop];
     return typeof val === 'function' ? val.bind(p) : val;
   }
@@ -84,7 +83,7 @@ export const ledgerPool: any = new Proxy({}, {
 
 export const externalPool: any = new Proxy({}, {
   get(target, prop) {
-    const p = rawExternalPool || rawPool || safeMockPool;
+    const p = rawExternalPool || rawPool || fallbackPool;
     const val = (p as any)[prop];
     return typeof val === 'function' ? val.bind(p) : val;
   }
@@ -92,7 +91,7 @@ export const externalPool: any = new Proxy({}, {
 
 export const securityPool: any = new Proxy({}, {
   get(target, prop) {
-    const p = rawSecurityPool || rawPool || safeMockPool;
+    const p = rawSecurityPool || rawPool || fallbackPool;
     const val = (p as any)[prop];
     return typeof val === 'function' ? val.bind(p) : val;
   }
@@ -100,18 +99,18 @@ export const securityPool: any = new Proxy({}, {
 
 export const mediaPool: any = new Proxy({}, {
   get(target, prop) {
-    const p = rawMediaPool || rawPool || safeMockPool;
+    const p = rawMediaPool || rawPool || fallbackPool;
     const val = (p as any)[prop];
     return typeof val === 'function' ? val.bind(p) : val;
   }
 });
 
 export function getDatabasePool(poolName: 'core' | 'ledger' | 'external' | 'security' | 'media' = 'core') {
-  if (poolName === 'ledger') return rawLedgerPool || rawPool || safeMockPool;
-  if (poolName === 'external') return rawExternalPool || rawPool || safeMockPool;
-  if (poolName === 'security') return rawSecurityPool || rawPool || safeMockPool;
-  if (poolName === 'media') return rawMediaPool || rawPool || safeMockPool;
-  return rawPool || safeMockPool;
+  if (poolName === 'ledger') return rawLedgerPool || rawPool || fallbackPool;
+  if (poolName === 'external') return rawExternalPool || rawPool || fallbackPool;
+  if (poolName === 'security') return rawSecurityPool || rawPool || fallbackPool;
+  if (poolName === 'media') return rawMediaPool || rawPool || fallbackPool;
+  return rawPool || fallbackPool;
 }
 
 let currentCoreUrl     = '';

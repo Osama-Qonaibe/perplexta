@@ -330,12 +330,12 @@ export const ChatComposer: React.FC<ChatComposerProps> = ({
                   </button>
                 </div>
               </div>
-              <div className="text-[14px] text-slate-300 italic min-h-[36px] bg-slate-950/50 rounded-shape-sm px-3 py-2 flex items-center justify-between gap-3 border-0">
+              <div className="text-[14px] text-[var(--pub-text-secondary)] italic min-h-[36px] bg-[var(--pub-surface-subtle)] rounded-shape-sm px-3 py-2 flex items-center justify-between gap-3 border border-[var(--pub-border-subtle)]">
                 <span className="truncate max-w-[80%]">
                   {interimText ? (
-                    <span className="text-slate-100 font-bold not-italic font-sans">{interimText}</span>
+                    <span className="text-[var(--pub-text-primary)] font-bold not-italic font-sans">{interimText}</span>
                   ) : (
-                    <span className="text-slate-500 opacity-60 font-sans">
+                    <span className="text-[var(--pub-text-muted)] opacity-70 font-sans">
                       {dir === 'rtl' ? 'تحدث الآن ليتم تدوين كلامك هنا في الوقت الفعلي...' : 'Speak now to see real-time transcription here...'}
                     </span>
                   )}
@@ -347,7 +347,7 @@ export const ChatComposer: React.FC<ChatComposerProps> = ({
                       setQuery(query + ' ' + interimText);
                       setInterimText('');
                     }}
-                    className="text-[10px] font-black uppercase text-cyan-400 hover:text-cyan-300 border border-cyan-500/20 hover:bg-cyan-500/10 px-2 py-1 rounded-shape-xs transition-theme shrink-0"
+                    className="text-[10px] font-black uppercase text-cyan-600 dark:text-cyan-400 hover:text-cyan-700 dark:hover:text-cyan-300 border border-cyan-500/30 hover:bg-cyan-500/10 px-2 py-1 rounded-shape-xs transition-theme shrink-0 cursor-pointer"
                   >
                     {dir === 'rtl' ? 'إدراج' : 'Insert'}
                   </button>
@@ -358,22 +358,22 @@ export const ChatComposer: React.FC<ChatComposerProps> = ({
 
           {selectedFile && (
             <div className="px-2 pb-3 flex items-start gap-2">
-              <div className="relative group p-1.5 rounded-shape-md border border-slate-800 transition-theme bg-slate-900/90 flex-shrink-0 flex items-center gap-2">
+              <div className="relative group p-1.5 rounded-shape-md border border-[var(--pub-border-default)] transition-theme bg-[var(--pub-surface-subtle)] flex-shrink-0 flex items-center gap-2">
                 <div className="flex items-center gap-2 px-1.5 py-1 min-w-[120px]">
                   {previewUrl && selectedFile.type.startsWith('image/') ? (
-                    <div className="w-8 h-8 rounded-shape-sm overflow-hidden border-0 bg-slate-950">
+                    <div className="w-8 h-8 rounded-shape-sm overflow-hidden border border-[var(--pub-border-default)] bg-[var(--pub-surface-container)]">
                       <img src={previewUrl} alt="preview" className="w-full h-full object-cover" referrerPolicy="no-referrer" />
                     </div>
                   ) : (
-                    <div className="w-8 h-8 rounded-shape-sm flex items-center justify-center bg-slate-950 text-cyan-400 shadow-sm">
+                    <div className="w-8 h-8 rounded-shape-sm flex items-center justify-center bg-[var(--pub-surface-container)] text-cyan-600 dark:text-cyan-400 border border-[var(--pub-border-default)] shadow-xs">
                       {getFileIcon(selectedFile.type)}
                     </div>
                   )}
                   <div className="flex flex-col min-w-0 pr-6">
-                    <span className="text-[10px] font-bold text-slate-200 truncate max-w-[100px] font-sans">
+                    <span className="text-[10px] font-bold text-[var(--pub-text-primary)] truncate max-w-[100px] font-sans">
                       {selectedFile.name}
                     </span>
-                    <span className="text-[8px] text-slate-500 uppercase font-black tracking-tight font-mono">
+                    <span className="text-[8px] text-[var(--pub-text-muted)] uppercase font-black tracking-tight font-mono">
                       {(Number(selectedFile.size || 0) / 1024).toFixed(1)} KB
                     </span>
                   </div>
@@ -400,13 +400,13 @@ export const ChatComposer: React.FC<ChatComposerProps> = ({
                   <button
                     type="button"
                     onClick={triggerForensicDiagnostic}
-                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-shape-sm border border-transparent hover:border-cyan-500/30 hover:bg-cyan-500/5 text-xs font-semibold text-cyan-400 transition-theme shadow-none bg-transparent"
+                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-shape-sm border border-transparent hover:border-cyan-500/30 hover:bg-cyan-500/5 text-xs font-semibold text-cyan-600 dark:text-cyan-400 transition-theme shadow-none bg-transparent cursor-pointer"
                   >
-                    <Sparkles size={13} className="text-cyan-400 animate-pulse" />
+                    <Sparkles size={13} className="text-cyan-600 dark:text-cyan-400 animate-pulse" />
                     <span>{dir === 'rtl' ? 'فحص جنائي مباشر' : 'Run Forensic Scan'}</span>
                   </button>
 
-                  <div className="w-px h-5 bg-slate-800" />
+                  <div className="w-px h-5 bg-[var(--pub-border-default)]" />
 
                   <label className="flex items-center gap-2 cursor-pointer text-xs font-medium">
                     <div className="relative">
@@ -416,10 +416,10 @@ export const ChatComposer: React.FC<ChatComposerProps> = ({
                         onChange={(e) => setForensicMode(e.target.checked)}
                         className="sr-only"
                       />
-                      <div className={`w-8 h-4 bg-slate-900 rounded-full transition-theme ${forensicMode ? 'bg-cyan-500/80' : ''}`} />
-                      <div className={`absolute top-0.5 left-0.5 w-3 h-3 rounded-full bg-white shadow-md transition-transform duration-300 ${forensicMode ? 'transform translate-x-4 bg-cyan-500' : ''}`} />
+                      <div className={`w-8 h-4 bg-slate-300 dark:bg-slate-800 rounded-full transition-theme ${forensicMode ? 'bg-cyan-500 dark:bg-cyan-500/80' : ''}`} />
+                      <div className={`absolute top-0.5 left-0.5 w-3 h-3 rounded-full bg-white shadow-md transition-transform duration-300 ${forensicMode ? 'transform translate-x-4' : ''}`} />
                     </div>
-                    <span className={`text-[10px] font-bold font-sans ${forensicMode ? 'text-cyan-400' : 'text-slate-400'}`}>
+                    <span className={`text-[10px] font-bold font-sans ${forensicMode ? 'text-cyan-600 dark:text-cyan-400' : 'text-[var(--pub-text-muted)]'}`}>
                       {dir === 'rtl' ? 'وضع التحقيق الجنائي' : 'Forensic Mode'}
                     </span>
                   </label>
@@ -502,23 +502,23 @@ export const ChatComposer: React.FC<ChatComposerProps> = ({
                 ? (dir === 'rtl' ? 'يرجى تفعيل باقة اشتراك أو شحن الرصيد للبدء بالاستخدام...' : 'Please activate a subscription plan or top up your balance to start...')
                 : (dir === 'rtl' ? 'اكتب موضوع البحث أو التحليل المطلوب...' : 'Type search topic or required analysis...')
             }
-            className={`w-full bg-transparent text-[16px] sm:text-sm text-slate-100 placeholder:text-slate-500 focus:outline-none resize-none leading-relaxed font-sans min-h-[48px] ${dir === 'rtl' ? 'text-right' : 'text-left'} ${isInputDisabled ? 'cursor-not-allowed text-slate-400' : ''}`}
+            className={`w-full bg-transparent text-[16px] sm:text-sm text-[var(--pub-text-primary)] placeholder:text-[var(--pub-text-muted)] focus:outline-none resize-none leading-relaxed font-sans min-h-[48px] ${dir === 'rtl' ? 'text-right' : 'text-left'} ${isInputDisabled ? 'cursor-not-allowed opacity-60' : ''}`}
             dir={dir || "rtl"}
             rows={2}
             style={{ minHeight: '48px', maxHeight: '200px', height: '48px' }}
           />
 
           {query.length > 500 && (
-            <span className={`absolute bottom-[60px] ${dir === 'rtl' ? 'left-4' : 'right-4'} text-[10px] font-mono select-none pointer-events-none transition-theme ${query.length > 15000 ? 'text-red-500 font-bold drop-shadow-[0_0_4px_rgba(239,68,68,0.5)]' : 'text-slate-500'}`}>
+            <span className={`absolute bottom-[60px] ${dir === 'rtl' ? 'left-4' : 'right-4'} text-[10px] font-mono select-none pointer-events-none transition-theme ${query.length > 15000 ? 'text-red-500 font-bold drop-shadow-[0_0_4px_rgba(239,68,68,0.5)]' : 'text-[var(--pub-text-muted)]'}`}>
               {query.length.toLocaleString()} / 16,000
             </span>
           )}
 
           {/* Dedicated inset floating divider between the textarea and the bottom toolbar - perfectly centered */}
-          <div className="mx-4 h-px bg-gradient-to-r from-transparent via-slate-800/70 to-transparent -mt-2 mb-2" />
+          <div className="mx-4 h-px bg-gradient-to-r from-transparent via-[var(--pub-border-default)] to-transparent -mt-2 mb-2" />
 
           {/* 2. Bottom Toolbar (Single-Row Baseline & Language Button Visual Identity) */}
-          <div className="flex items-center justify-between px-3.5 py-2.5 flex-nowrap -mx-3.5 -mb-3.5 sm:-mx-3.5 sm:-mb-3.5 bg-[#090d16] rounded-b-[14px]">
+          <div className="flex items-center justify-between px-3.5 py-2.5 flex-nowrap -mx-3.5 -mb-3.5 sm:-mx-3.5 sm:-mb-3.5 bg-[var(--pub-surface-subtle)] border-t border-[var(--pub-border-subtle)] rounded-b-[14px] transition-colors">
             
             {/* Left Action Chips / Tools */}
             <div className="flex items-center gap-2 sm:gap-2 flex-nowrap min-w-0">
@@ -540,17 +540,17 @@ export const ChatComposer: React.FC<ChatComposerProps> = ({
                               }}
                               className={`w-8 h-8 sm:w-auto sm:px-2.5 sm:h-8 flex items-center justify-center gap-1 sm:gap-1.5 rounded-shape-sm border transition-all text-xs font-mono cursor-pointer shrink-0 ${
                                 isModelActive 
-                                  ? 'border-cyan-500/40 text-cyan-400 bg-cyan-500/10 font-bold' 
-                                  : 'border-[var(--pub-border-default)] bg-[var(--pub-surface-subtle)] hover:bg-cyan-500/10 hover:border-cyan-500/20 text-[var(--pub-text-muted)] hover:text-cyan-400'
+                                  ? 'border-cyan-500/40 text-cyan-600 dark:text-cyan-400 bg-cyan-500/10 font-bold' 
+                                  : 'border-[var(--pub-border-default)] bg-[var(--pub-surface-container)] hover:bg-cyan-500/10 hover:border-cyan-500/20 text-[var(--pub-text-muted)] hover:text-cyan-600 dark:hover:text-cyan-400 shadow-2xs'
                               }`}
                             >
                               <Zap className={`w-3.5 h-3.5 shrink-0 transition-all duration-300 ${
                                 isModelActive 
-                                  ? 'fill-cyan-400 text-cyan-400 drop-shadow-[0_0_8px_rgba(6,182,212,0.95)]' 
+                                  ? 'fill-cyan-500 text-cyan-500 dark:fill-cyan-400 dark:text-cyan-400 drop-shadow-[0_0_8px_rgba(6,182,212,0.6)]' 
                                   : 'text-[var(--pub-text-muted)]'
                               }`} />
                               <span className="hidden sm:inline whitespace-nowrap">{isModelActive ? currentModel?.label : (dir === 'rtl' ? 'سريع' : 'FAST')}</span>
-                              <ChevronDown className={`w-3 h-3 hidden sm:inline ml-0.5 shrink-0 transition-colors ${isModelActive ? 'text-cyan-400' : 'text-slate-500'}`} />
+                              <ChevronDown className={`w-3 h-3 hidden sm:inline ml-0.5 shrink-0 transition-colors ${isModelActive ? 'text-cyan-600 dark:text-cyan-400' : 'text-[var(--pub-text-muted)]'}`} />
                             </button>
 
                             {isModelMenuOpen && (
@@ -636,18 +636,18 @@ export const ChatComposer: React.FC<ChatComposerProps> = ({
                               }}
                               className={`w-8 h-8 sm:w-auto sm:px-2.5 sm:h-8 flex items-center justify-center gap-1 sm:gap-1.5 rounded-shape-sm border transition-all text-xs font-medium cursor-pointer shrink-0 ${
                                 isToolActive 
-                                  ? 'border-cyan-500/40 text-cyan-400 bg-cyan-500/10 font-bold' 
-                                  : 'border-[var(--pub-border-default)] bg-[var(--pub-surface-subtle)] hover:bg-cyan-500/10 hover:border-cyan-500/20 text-[var(--pub-text-muted)] hover:text-cyan-400'
+                                  ? 'border-cyan-500/40 text-cyan-600 dark:text-cyan-400 bg-cyan-500/10 font-bold' 
+                                  : 'border-[var(--pub-border-default)] bg-[var(--pub-surface-container)] hover:bg-cyan-500/10 hover:border-cyan-500/20 text-[var(--pub-text-muted)] hover:text-cyan-600 dark:hover:text-cyan-400 shadow-2xs'
                               }`}
                             >
                               {React.isValidElement(currentTool?.icon) 
                                 ? React.cloneElement(currentTool.icon as React.ReactElement<{ size?: number; className?: string }>, { 
                                     size: 14, 
-                                    className: `w-3.5 h-3.5 shrink-0 ${isToolActive ? 'text-cyan-400' : 'text-[var(--pub-text-muted)]'}` 
+                                    className: `w-3.5 h-3.5 shrink-0 ${isToolActive ? 'text-cyan-600 dark:text-cyan-400' : 'text-[var(--pub-text-muted)]'}` 
                                   })
-                                : <Search className={`w-3.5 h-3.5 shrink-0 ${isToolActive ? 'text-cyan-400' : 'text-[var(--pub-text-muted)]'}`} />}
+                                : <Search className={`w-3.5 h-3.5 shrink-0 ${isToolActive ? 'text-cyan-600 dark:text-cyan-400' : 'text-[var(--pub-text-muted)]'}`} />}
                               <span className="hidden sm:inline whitespace-nowrap">{currentTool?.label || (dir === 'rtl' ? 'تحليل' : 'Analysis')}</span>
-                              <ChevronDown className={`w-3 h-3 hidden sm:inline ml-0.5 shrink-0 ${isToolActive ? 'text-cyan-400' : 'text-slate-500'}`} />
+                              <ChevronDown className={`w-3 h-3 hidden sm:inline ml-0.5 shrink-0 ${isToolActive ? 'text-cyan-600 dark:text-cyan-400' : 'text-[var(--pub-text-muted)]'}`} />
                             </button>
 
                             {isAdvancedToolsOpen && (
@@ -712,7 +712,7 @@ export const ChatComposer: React.FC<ChatComposerProps> = ({
                                             <ArrowUpRight size={13} className="text-[var(--fg-accent)] shrink-0" />
                                           )}
                                           {tool.isNew && !isLocked && !isSelected && !tool.isRouter && (
-                                            <span className="px-1.5 py-[1px] rounded-[4px] bg-slate-800/80 border border-slate-700/50 text-slate-400 text-[8px] font-mono font-bold uppercase tracking-wider">
+                                            <span className="px-1.5 py-[1px] rounded-[4px] bg-slate-200 dark:bg-slate-800/80 border border-slate-300 dark:border-slate-700/50 text-slate-700 dark:text-slate-400 text-[8px] font-mono font-bold uppercase tracking-wider">
                                               NEW
                                             </span>
                                           )}
@@ -738,11 +738,11 @@ export const ChatComposer: React.FC<ChatComposerProps> = ({
                       disabled={isInputDisabled}
                       className={`w-8 h-8 sm:w-auto sm:px-2.5 sm:h-8 flex items-center justify-center gap-1 sm:gap-1.5 rounded-shape-sm border transition-all text-xs font-medium disabled:opacity-30 disabled:cursor-not-allowed shrink-0 cursor-pointer ${
                         isRecording 
-                          ? 'bg-rose-500/10 border-rose-500/40 text-rose-400 animate-pulse font-bold' 
-                          : 'border-[var(--pub-border-default)] bg-[var(--pub-surface-subtle)] hover:bg-cyan-500/10 hover:border-cyan-500/20 text-[var(--pub-text-muted)] hover:text-cyan-400'
+                          ? 'bg-rose-500/10 border-rose-500/40 text-rose-500 dark:text-rose-400 animate-pulse font-bold' 
+                          : 'border-[var(--pub-border-default)] bg-[var(--pub-surface-container)] hover:bg-cyan-500/10 hover:border-cyan-500/20 text-[var(--pub-text-muted)] hover:text-cyan-600 dark:hover:text-cyan-400 shadow-2xs'
                       }`}
                     >
-                      <Mic className={`w-3.5 h-3.5 shrink-0 ${isRecording ? 'text-rose-400' : 'text-[var(--pub-text-muted)]'}`} />
+                      <Mic className={`w-3.5 h-3.5 shrink-0 ${isRecording ? 'text-rose-500 dark:text-rose-400' : 'text-[var(--pub-text-muted)]'}`} />
                       <span className="hidden sm:inline whitespace-nowrap">{isRecording ? (dir === 'rtl' ? 'تسجيل...' : 'Recording...') : (dir === 'rtl' ? 'صوت' : 'Voice')}</span>
                     </button>
               </div>
@@ -756,7 +756,7 @@ export const ChatComposer: React.FC<ChatComposerProps> = ({
                   }
                 }}
                 disabled={isInputDisabled}
-                className="w-8 h-8 sm:w-auto sm:px-2.5 sm:h-8 flex items-center justify-center gap-1 sm:gap-1.5 rounded-shape-sm border border-[var(--pub-border-default)] bg-[var(--pub-surface-subtle)] hover:bg-cyan-500/10 hover:border-cyan-500/20 text-[var(--pub-text-muted)] hover:text-cyan-400 transition-all text-xs font-medium disabled:opacity-30 disabled:cursor-not-allowed shrink-0 cursor-pointer"
+                className="w-8 h-8 sm:w-auto sm:px-2.5 sm:h-8 flex items-center justify-center gap-1 sm:gap-1.5 rounded-shape-sm border border-[var(--pub-border-default)] bg-[var(--pub-surface-container)] hover:bg-cyan-500/10 hover:border-cyan-500/20 text-[var(--pub-text-muted)] hover:text-cyan-600 dark:hover:text-cyan-400 transition-all text-xs font-medium disabled:opacity-30 disabled:cursor-not-allowed shrink-0 cursor-pointer shadow-2xs"
               >
                 <Paperclip className="w-3.5 h-3.5 text-[var(--pub-text-muted)] shrink-0" />
                 <span className="hidden sm:inline whitespace-nowrap">{dir === 'rtl' ? 'إرفاق' : 'Attach'}</span>
@@ -770,15 +770,17 @@ export const ChatComposer: React.FC<ChatComposerProps> = ({
                 handleSendOrStop();
               }}
               disabled={!query.trim() && !isGenerating}
-              className={`w-8 h-8 rounded-shape-sm flex items-center justify-center shrink-0 active:scale-[0.98] transition-all duration-150 border ${
+              className={`w-8 h-8 rounded-shape-sm flex items-center justify-center shrink-0 active:scale-[0.98] transition-all duration-150 border cursor-pointer ${
                 isGenerating
-                  ? 'bg-rose-500 text-slate-950 border-rose-500 hover:bg-rose-400 font-bold shadow-md shadow-rose-500/30 cursor-pointer animate-pulse'
-                  : 'bg-cyan-500 text-slate-950 border-cyan-500 hover:bg-cyan-400 font-bold shadow-md shadow-cyan-500/30 cursor-pointer'
+                  ? 'bg-rose-500 text-white border-rose-500 hover:bg-rose-600 font-bold shadow-md shadow-rose-500/20 animate-pulse'
+                  : query.trim()
+                    ? 'bg-cyan-500 text-slate-950 dark:text-slate-950 border-cyan-500 hover:bg-cyan-400 font-bold shadow-md shadow-cyan-500/20'
+                    : 'bg-[var(--pub-surface-container)] text-[var(--pub-text-muted)] border-[var(--pub-border-default)] opacity-40 cursor-not-allowed'
               }`}
               title={isGenerating ? (dir === 'rtl' ? 'إيقاف التوليد' : 'Stop Generation') : (dir === 'rtl' ? 'إرسال' : 'Send')}
             >
               {isGenerating ? (
-                <Square className="w-3.5 h-3.5 fill-current shrink-0 text-slate-950" />
+                <Square className="w-3.5 h-3.5 fill-current shrink-0 text-white" />
               ) : (
                 <ArrowUp className="w-4 h-4 stroke-[2.5]" />
               )}
@@ -813,19 +815,19 @@ export const ChatComposer: React.FC<ChatComposerProps> = ({
                       onMouseEnter={() => setActiveSuggestionIndex(idx)}
                       className={`flex items-center justify-between h-8 w-full px-2.5 rounded-shape-sm text-xs cursor-pointer transition-all duration-150 ${
                         isHighlighted 
-                          ? 'bg-cyan-500/10 text-cyan-400 font-bold' 
+                          ? 'bg-cyan-500/10 text-cyan-600 dark:text-cyan-400 font-bold' 
                           : 'text-[var(--pub-text-secondary)] hover:text-[var(--pub-text-primary)] hover:bg-[var(--pub-surface-subtle)]'
                       }`}
                     >
                       <div className="flex items-center gap-2 min-w-0 truncate">
-                        <Search className={`w-3.5 h-3.5 shrink-0 ${isHighlighted ? 'text-cyan-400' : 'text-[var(--pub-text-muted)]'}`} />
+                        <Search className={`w-3.5 h-3.5 shrink-0 ${isHighlighted ? 'text-cyan-600 dark:text-cyan-400' : 'text-[var(--pub-text-muted)]'}`} />
                         <span className="inline-flex items-center gap-1.5 text-xs truncate">
                           {item.matchedPrefix ? (
                             <span className="text-[var(--pub-text-muted)] font-normal shrink-0">
                               {item.matchedPrefix}
                             </span>
                           ) : null}
-                          <span className={`font-semibold truncate ${isHighlighted ? 'text-cyan-400 font-bold' : 'text-[var(--pub-text-primary)]'}`}>
+                          <span className={`font-semibold truncate ${isHighlighted ? 'text-cyan-600 dark:text-cyan-400 font-bold' : 'text-[var(--pub-text-primary)]'}`}>
                             {item.remainingText}
                           </span>
                         </span>
@@ -833,7 +835,7 @@ export const ChatComposer: React.FC<ChatComposerProps> = ({
                       {categoryText ? (
                         <span className={`text-[10px] font-medium px-1.5 py-0.5 rounded border shrink-0 ${
                           isHighlighted 
-                            ? 'text-cyan-300 bg-cyan-500/5 border-cyan-500/20' 
+                            ? 'text-cyan-700 dark:text-cyan-300 bg-cyan-500/10 border-cyan-500/20' 
                             : 'text-[var(--pub-text-muted)] bg-[var(--pub-surface-subtle)] border-[var(--pub-border-default)]'
                         }`}>
                           {categoryText}

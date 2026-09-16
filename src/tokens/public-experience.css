@@ -81,21 +81,37 @@
 
 /* Scoped Utility Classes for Modern Developer IDE */
 .ide-input-box {
-  background-color: var(--pub-surface-container);
-  border: 1px solid var(--pub-border-default);
-  border-radius: var(--pub-radius-container);
+  background-color: var(--pub-surface-container, #ffffff);
+  border: 1px solid var(--pub-border-default, #e2e8f0);
+  border-radius: var(--pub-radius-container, 12px);
+  box-shadow: 0 4px 20px -2px rgba(15, 23, 42, 0.06), 0 2px 6px -1px rgba(15, 23, 42, 0.04);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
-  transition: border-color 0.2s ease-out, box-shadow 0.2s ease-out;
+  transition: border-color 0.2s ease-out, box-shadow 0.2s ease-out, background-color 0.2s ease-out;
 }
 
 .ide-input-box:hover {
-  border-color: rgba(6, 182, 212, 0.3);
+  border-color: rgba(6, 182, 212, 0.4);
 }
 
 .ide-input-box:focus-within {
-  border-color: rgba(6, 182, 212, 0.45);
+  border-color: var(--pub-accent-primary, #06b6d4);
+  box-shadow: 0 0 0 3px rgba(6, 182, 212, 0.15), 0 4px 20px -2px rgba(15, 23, 42, 0.08);
+}
+
+:is(.dark, [data-theme="dark"]) .ide-input-box {
+  background-color: var(--pub-surface-container, #0d131f);
+  border-color: var(--pub-border-default, rgba(30, 41, 59, 0.7));
   box-shadow: none;
+}
+
+:is(.dark, [data-theme="dark"]) .ide-input-box:hover {
+  border-color: rgba(6, 182, 212, 0.3);
+}
+
+:is(.dark, [data-theme="dark"]) .ide-input-box:focus-within {
+  border-color: rgba(6, 182, 212, 0.45);
+  box-shadow: 0 0 0 2px rgba(6, 182, 212, 0.15);
 }
 
 .ide-card,
@@ -414,24 +430,7 @@ aside *::-webkit-scrollbar-thumb {
 }
 
 
-/* Perplexta Precision Input Architecture */
-.ide-input-box {
-  background-color: var(--pub-surface-container, #0d131f);
-  border: 1px solid var(--pub-border-default, rgba(30, 41, 59, 0.7));
-  border-radius: var(--pub-radius-container, 12px);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  transition: border-color 0.2s ease-out, box-shadow 0.2s ease-out;
-}
-
-.ide-input-box:hover {
-  border-color: rgba(6, 182, 212, 0.3);
-}
-
-.ide-input-box:focus-within {
-  border-color: rgba(6, 182, 212, 0.45);
-}
-
+/* Perplexta Precision Input Architecture Textarea Scrollbar */
 .ide-textarea-scroll::-webkit-scrollbar {
   width: 4px;
 }
