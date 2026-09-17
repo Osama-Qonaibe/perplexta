@@ -43,13 +43,13 @@ type ActiveModal =
 const menuVariants = {
   closed: {
     opacity: 0,
-    scale: 0.96,
-    transition: { duration: 0.12, ease: [0.16, 1, 0.3, 1] as any }
+    scale: 0.98,
+    transition: { duration: 0.08, ease: [0.16, 1, 0.3, 1] as any }
   },
   open: {
     opacity: 1,
     scale: 1,
-    transition: { duration: 0.14, ease: [0.16, 1, 0.3, 1] as any }
+    transition: { duration: 0.10, ease: [0.16, 1, 0.3, 1] as any }
   }
 };
 
@@ -643,7 +643,7 @@ export const PostOptionsMenu: React.FC<PostOptionsMenuProps> = ({
               onClick={(e) => e.stopPropagation()}
               onMouseDown={(e) => e.stopPropagation()}
               onTouchStart={(e) => e.stopPropagation()}
-              className={`absolute top-full mt-1.5 ${alignClass} ${alignClass === 'right-0' ? 'origin-top-right' : 'origin-top-left'} w-max min-w-[210px] sm:min-w-[230px] max-w-[calc(100vw-32px)] rounded-xl border border-[var(--pub-border-default)] bg-[var(--pub-surface-container)] text-[var(--pub-text-primary)] shadow-2xl p-1 z-50 text-xs font-medium flex flex-col gap-0.5 backdrop-blur-xl ring-1 ring-black/5 dark:ring-white/10 transition-colors duration-150 max-h-[85vh] overflow-y-auto overscroll-contain custom-scrollbar ${className}`}
+              className={`absolute top-full mt-1.5 ${alignClass} ${alignClass === 'right-0' ? 'origin-top-right' : 'origin-top-left'} w-max min-w-[210px] sm:min-w-[230px] max-w-[calc(100vw-32px)] rounded-[14px] border border-[var(--border-default)] bg-[var(--surface-card)] text-[var(--text-primary)] shadow-2xl p-1.5 z-50 text-xs font-medium flex flex-col gap-0.5 backdrop-blur-2xl ring-1 ring-black/5 dark:ring-white/10 transition-colors duration-150 max-h-[85vh] overflow-y-auto overscroll-contain custom-scrollbar ${className}`}
               dir={isRtl ? 'rtl' : 'ltr'}
             >
               {/* Hierarchically Sorted Main Actions */}
@@ -654,19 +654,17 @@ export const PostOptionsMenu: React.FC<PostOptionsMenuProps> = ({
                     key={item.id}
                     type="button"
                     onClick={item.action}
-                    className="w-full h-[34px] min-h-[34px] flex items-center gap-2 px-2 rounded-[var(--pub-radius-control)] border border-transparent hover:bg-cyan-500/10 hover:border-cyan-500/20 hover:text-cyan-400 group transition-all duration-150 cursor-pointer select-none text-start"
+                    className="group w-full h-[36px] min-h-[36px] flex items-center gap-2.5 px-3 py-2 rounded-[8px] border border-transparent bg-transparent hover:bg-[var(--surface-subtle)] transition-all duration-150 cursor-pointer select-none text-start"
                   >
-                    <div className="w-6 h-6 rounded-[var(--pub-radius-micro)] border border-transparent group-hover:bg-cyan-500/15 group-hover:border-cyan-500/25 flex items-center justify-center shrink-0 transition-all duration-150">
-                      <Icon size={13} className={`${item.iconColor || 'text-[var(--pub-text-muted)]'} group-hover:text-cyan-400 transition-all duration-150 shrink-0`} />
-                    </div>
-                    <span className="truncate min-w-0 flex-1 text-xs font-medium text-[var(--pub-text-primary)] group-hover:text-cyan-400 transition-colors">
+                    <Icon size={14} className={`${item.iconColor || 'text-[var(--text-muted)]'} group-hover:text-cyan-400 shrink-0 transition-colors duration-150`} />
+                    <span className="truncate min-w-0 flex-1 text-xs font-medium text-[var(--text-secondary)] group-hover:text-[var(--text-primary)] transition-colors duration-150">
                       {item.label}
                     </span>
                   </button>
                 );
               })}
 
-              <div className="my-0.5 h-px bg-[var(--pub-border-default)] mx-1" />
+              <div className="my-0.5 h-px bg-[var(--border-default)] mx-1" />
 
               {/* Hierarchically Sorted Bottom Actions */}
               {sortedBottom.map((item) => {
@@ -676,20 +674,14 @@ export const PostOptionsMenu: React.FC<PostOptionsMenuProps> = ({
                     key={item.id}
                     type="button"
                     onClick={item.action}
-                    className={`w-full h-[34px] min-h-[34px] flex items-center gap-2 px-2 rounded-[var(--pub-radius-control)] border border-transparent transition-all duration-150 cursor-pointer select-none text-start ${
+                    className={`group w-full h-[36px] min-h-[36px] flex items-center gap-2.5 px-3 py-2 rounded-[8px] border border-transparent transition-all duration-150 cursor-pointer select-none text-start ${
                       item.isDestructive
-                        ? 'text-rose-500 hover:bg-rose-500/10 hover:border-rose-500/20 hover:text-rose-400 font-bold group'
-                        : 'text-[var(--pub-text-primary)] hover:bg-cyan-500/10 hover:border-cyan-500/20 hover:text-cyan-400 group'
+                        ? 'bg-transparent hover:bg-rose-500/10 text-rose-500'
+                        : 'bg-transparent hover:bg-[var(--surface-subtle)]'
                     }`}
                   >
-                    <div className={`w-6 h-6 rounded-[var(--pub-radius-micro)] border border-transparent flex items-center justify-center shrink-0 transition-all duration-150 ${
-                      item.isDestructive
-                        ? 'group-hover:bg-rose-500/15 group-hover:border-rose-500/25'
-                        : 'group-hover:bg-cyan-500/15 group-hover:border-cyan-500/25'
-                    }`}>
-                      <Icon size={13} className={`${item.isDestructive ? 'text-rose-500 group-hover:text-rose-400' : 'text-[var(--pub-text-muted)] group-hover:text-cyan-400'} transition-all duration-150 shrink-0`} />
-                    </div>
-                    <span className={`truncate min-w-0 flex-1 text-xs ${item.isDestructive ? 'font-bold text-rose-500 group-hover:text-rose-400' : 'font-medium text-[var(--pub-text-primary)] group-hover:text-cyan-400'} transition-colors`}>
+                    <Icon size={14} className={`${item.isDestructive ? 'text-rose-500 group-hover:text-rose-400' : 'text-[var(--text-muted)] group-hover:text-cyan-400'} shrink-0 transition-colors duration-150`} />
+                    <span className={`truncate min-w-0 flex-1 text-xs ${item.isDestructive ? 'font-bold text-rose-500 group-hover:text-rose-400' : 'font-medium text-[var(--text-secondary)] group-hover:text-[var(--text-primary)]'} transition-colors duration-150`}>
                       {item.label}
                     </span>
                   </button>

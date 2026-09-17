@@ -117,25 +117,22 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({
                 onClick={() => {
                   if (onClose) onClose();
                 }}
-                className={`group flex items-center gap-2.5 px-3 py-2 min-h-[40px] rounded-[var(--radius-sm)] transition-all duration-150 border cursor-pointer touch-target-44 ${
+                className={`group flex items-center gap-2.5 px-3 py-2.5 min-h-[44px] rounded-[var(--radius-sm)] transition-all duration-150 border cursor-pointer touch-target-44 ${
                   isItemActive
-                    ? 'bg-cyan-500/15 text-cyan-400 border-cyan-500/30 font-black shadow-xs'
+                    ? 'bg-[var(--surface-card)] text-[var(--text-primary)] border-[var(--border-default)] border-s-2 border-s-cyan-500 dark:border-s-cyan-400 font-bold shadow-2xs'
                     : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--surface-subtle)] border-transparent'
                 }`}
               >
-                <div className="w-7 h-7 flex-shrink-0 flex items-center justify-center relative">
-                  <div className={`absolute inset-0 m-auto w-7 h-7 rounded-[var(--radius-xs)] border border-transparent transition-theme ${
-                    isItemActive ? 'bg-cyan-500/20 border-cyan-500/40' : 'group-hover:bg-[var(--surface-subtle)]'
-                  }`} />
-                  <div className={`relative z-10 flex items-center justify-center transition-theme ${
-                    isItemActive 
-                      ? 'text-cyan-400' 
-                      : 'text-[var(--text-muted)] group-hover:text-cyan-400'
-                  }`}>
-                    {React.isValidElement(item.icon) ? React.cloneElement(item.icon as React.ReactElement, { size: 16 } as any) : item.icon}
-                  </div>
+                <div className={`w-6 h-6 flex-shrink-0 flex items-center justify-center transition-colors duration-200 ${
+                  isItemActive 
+                    ? 'text-cyan-500 dark:text-cyan-400' 
+                    : 'text-[var(--text-muted)] group-hover:text-[var(--text-primary)]'
+                }`}>
+                  {React.isValidElement(item.icon) ? React.cloneElement(item.icon as React.ReactElement, { size: 17 } as any) : item.icon}
                 </div>
-                <span className={`font-bold text-xs tracking-tight transition-theme ${isItemActive ? 'text-cyan-400' : ''}`}>
+                <span className={`font-bold text-xs tracking-tight transition-colors duration-200 leading-normal ${
+                  isItemActive ? 'text-[var(--text-primary)]' : 'text-[var(--text-secondary)] group-hover:text-[var(--text-primary)]'
+                }`}>
                   {item.label}
                 </span>
               </NavLink>
@@ -151,18 +148,17 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({
               triggerHaptic('medium');
               if (onClose) onClose();
             }}
-            className="group flex items-center justify-between px-3 py-2 rounded-[var(--radius-sm)] transition-all border border-[var(--border-default)] bg-[var(--surface-card)] hover:bg-cyan-500/10 hover:border-cyan-500/30 active:scale-95 touch-target-44 shadow-2xs"
+            className="group flex items-center justify-between px-3 py-2.5 min-h-[44px] rounded-[var(--radius-sm)] transition-all border border-[var(--border-default)] bg-[var(--surface-card)] hover:bg-[var(--surface-subtle)] hover:border-[var(--border-accent)] active:scale-95 touch-target-44 shadow-2xs cursor-pointer"
             title={language === 'ar' ? 'الخروج من لوحة التحكم والعودة للتطبيق' : 'Exit Admin to App'}
           >
-            <div className="flex items-center gap-2">
-              <div className="w-7 h-7 flex items-center justify-center rounded-[var(--radius-xs)] text-[var(--text-muted)] group-hover:text-cyan-400 transition-theme">
+            <div className="flex items-center gap-2.5">
+              <div className="w-6 h-6 flex items-center justify-center rounded-[var(--radius-xs)] text-[var(--text-muted)] group-hover:text-cyan-500 dark:group-hover:text-cyan-400 transition-colors">
                 <ArrowRight size={15} className={dir === 'rtl' ? 'rotate-180' : ''} />
               </div>
-              <span className="font-bold text-xs text-[var(--text-secondary)] group-hover:text-[var(--text-primary)] transition-theme">
+              <span className="font-bold text-xs text-[var(--text-secondary)] group-hover:text-[var(--text-primary)] transition-colors">
                 {language === 'ar' ? 'العودة للمنصة' : 'Exit to App'}
               </span>
             </div>
-            <div className="w-1.5 h-1.5 rounded-full bg-cyan-400 opacity-0 group-hover:opacity-100 transition-theme shadow-[0_0_6px_rgba(6,182,212,0.8)]" />
           </NavLink>
         </div>
       </aside>

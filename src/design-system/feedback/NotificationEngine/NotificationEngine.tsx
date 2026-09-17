@@ -1,16 +1,16 @@
 /**
- * 🔔 PERPLEXTA DESIGN SYSTEM — NOTIFICATION ENGINE
+ * 🔔 PERPLEXTA DESIGN SYSTEM — UNIFIED NOTIFICATION ENGINE
  * 
  * Centralized, high-performance toast and system alerts engine.
- * Supports auto-deduplication, pause-on-hover, custom durations,
- * rich actions, native push events, and bidirectional RTL/LTR layout.
+ * Unified bottom-center rising presentation, ultra-concise text normalization,
+ * single-active-instance deduplication, smooth collapse animations,
+ * green success / red error styling, and bidirectional RTL/LTR support.
  */
 
 import React, { createContext, useContext, useState, useCallback, useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import { motion, AnimatePresence } from 'motion/react';
-import { CheckCircle2, AlertOctagon, AlertTriangle, Info, X, Sparkles, Loader2 } from 'lucide-react';
-import { MOTION_TIMINGS, MOTION_EASINGS } from '../../tokens/motion';
+import { CheckCircle2, AlertOctagon, AlertTriangle, Info, X, Loader2 } from 'lucide-react';
 
 export type NotificationType = 'success' | 'error' | 'warning' | 'info' | 'loading';
 
@@ -68,9 +68,78 @@ let globalShowNotification: ((options: NotificationOptions) => string) | null = 
 let globalDismissNotification: ((id: string) => void) | null = null;
 let globalClearAllNotifications: (() => void) | null = null;
 
-// Track recent notifications to prevent duplicate toasts
+// Track recent notifications to prevent duplicate toasts within short interval
 const recentNotificationsCache = new Map<string, number>();
-const DEDUP_WINDOW_MS = 1800;
+const DEDUP_WINDOW_MS = 1500;
+
+/**
+ * Format and normalize raw message string into ultra-concise, emoji-free text.
+ */
+const formatConciseText = (rawMessage?: string, rawTitle?: string, type: NotificationType = 'info', isRtl = true): string => {
+  const text = (rawMessage || rawTitle || '').trim();
+  if (!text) {
+    if (type === 'success') return isRtl ? 'تم بنجاح' : 'Success';
+    if (type === 'error') return isRtl ? 'فشل الإجراء' : 'Error';
+    if (type === 'warning') return isRtl ? 'تنبيه' : 'Warning';
+    if (type === 'loading') return isRtl ? 'جاري المعالجة' : 'Processing';
+    return isRtl ? 'إشعار' : 'Notice';
+  }
+
+  // Remove emojis and special glyphs
+  let cleaned = text
+    .replace(/[\u{1F600}-\u{1F64F}\u{1F300}-\u{1F5FF}\u{1F680}-\u{1F6FF}\u{1F700}-\u{1F77F}\u{1F780}-\u{1F7FF}\u{1F800}-\u{1F8FF}\u{1F900}-\u{1F9FF}\u{1FA00}-\u{1FA6F}\u{1FA70}-\u{1FAFF}\u{2600}-\u{26FF}\u{2700}-\u{27BF}]/gu, '')
+    .trim();
+
+  // Smart normalization to ultra-brief phrases
+  if (isRtl) {
+    if (cleaned.includes('نسخ') || cleaned.toLowerCase().includes('copy') || cleaned.toLowerCase().includes('copied')) {
+      return 'تم النسخ';
+    }
+    if (cleaned.includes('حفظ') || cleaned.toLowerCase().includes('save') || cleaned.toLowerCase().includes('saved')) {
+      if (cleaned.includes('فشل') || cleaned.includes('خطأ') || type === 'error') return 'فشل الحفظ';
+      return 'تم الحفظ';
+    }
+    if (cleaned.includes('حذف') || cleaned.toLowerCase().includes('delete') || cleaned.toLowerCase().includes('deleted')) {
+      if (cleaned.includes('فشل') || cleaned.includes('خطأ') || type === 'error') return 'فشل الحذف';
+      return 'تم الحذف';
+    }
+    if (cleaned.includes('نشر') || cleaned.toLowerCase().includes('publish') || cleaned.toLowerCase().includes('posted')) {
+      if (cleaned.includes('فشل') || cleaned.includes('خطأ') || type === 'error') return 'فشل النشر';
+      return 'تم النشر';
+    }
+    if (cleaned.includes('تحديث') || cleaned.toLowerCase().includes('update') || cleaned.toLowerCase().includes('updated')) {
+      if (cleaned.includes('فشل') || cleaned.includes('خطأ') || type === 'error') return 'فشل التحديث';
+      return 'تم التحديث';
+    }
+    if (cleaned.includes('إرسال') || cleaned.toLowerCase().includes('sent')) {
+      if (cleaned.includes('فشل') || cleaned.includes('خطأ') || type === 'error') return 'فشل الإرسال';
+      return 'تم الإرسال';
+    }
+  } else {
+    if (cleaned.toLowerCase().includes('copy') || cleaned.toLowerCase().includes('copied')) return 'Copied';
+    if (cleaned.toLowerCase().includes('save') || cleaned.toLowerCase().includes('saved')) {
+      if (cleaned.toLowerCase().includes('fail') || cleaned.toLowerCase().includes('error') || type === 'error') return 'Save failed';
+      return 'Saved';
+    }
+    if (cleaned.toLowerCase().includes('delete') || cleaned.toLowerCase().includes('deleted') || cleaned.toLowerCase().includes('remove')) {
+      if (cleaned.toLowerCase().includes('fail') || cleaned.toLowerCase().includes('error') || type === 'error') return 'Delete failed';
+      return 'Deleted';
+    }
+    if (cleaned.toLowerCase().includes('publish') || cleaned.toLowerCase().includes('post') || cleaned.toLowerCase().includes('posted')) {
+      if (cleaned.toLowerCase().includes('fail') || cleaned.toLowerCase().includes('error') || type === 'error') return 'Publish failed';
+      return 'Published';
+    }
+    if (cleaned.toLowerCase().includes('update') || cleaned.toLowerCase().includes('updated')) {
+      if (cleaned.toLowerCase().includes('fail') || cleaned.toLowerCase().includes('error') || type === 'error') return 'Update failed';
+      return 'Updated';
+    }
+  }
+
+  // Remove redundant suffix words like "بنجاح" or "successfully"
+  cleaned = cleaned.replace(/بنجاح!?/g, '').replace(/successfully!?/gi, '').replace(/[!🎉✨🏪🛡️🎥🎯]/g, '').trim();
+
+  return cleaned || (type === 'success' ? (isRtl ? 'تم بنجاح' : 'Success') : (isRtl ? 'إشعار' : 'Notice'));
+};
 
 export const showToast = (type: NotificationType, title: string, description?: string, duration?: number): string => {
   return globalShowNotification?.({
@@ -86,15 +155,15 @@ export const notifySuccess = (title = 'تم بنجاح', description?: string): 
   return showToast('success', title, description);
 };
 
-export const notifySave = (title = 'تم الحفظ بنجاح', description?: string): string => {
+export const notifySave = (title = 'تم الحفظ', description?: string): string => {
   return showToast('success', title, description);
 };
 
-export const notifyRename = (title = 'تمت إعادة التسمية بنجاح', description?: string): string => {
+export const notifyRename = (title = 'تم التحديث', description?: string): string => {
   return showToast('success', title, description);
 };
 
-export const notifyError = (title = 'حدث خطأ غير متوقع', description?: string): string => {
+export const notifyError = (title = 'فشل الإجراء', description?: string): string => {
   return showToast('error', title, description);
 };
 
@@ -134,7 +203,7 @@ export const toast = {
 
 export const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [notifications, setNotifications] = useState<NotificationItem[]>([]);
-  const [isRtl, setIsRtl] = useState<boolean>(false);
+  const [isRtl, setIsRtl] = useState<boolean>(true);
 
   useEffect(() => {
     const checkDir = () => {
@@ -158,7 +227,7 @@ export const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({ 
 
   const showNotification = useCallback((options: NotificationOptions): string => {
     const now = Date.now();
-    const dedupKey = `${options.id || ''}:${options.type || 'info'}:${options.message}`;
+    const dedupKey = `${options.type || 'info'}:${options.message || options.title || ''}`;
 
     // Check duplicate within window
     const lastSeen = recentNotificationsCache.get(dedupKey);
@@ -167,8 +236,8 @@ export const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({ 
     }
     recentNotificationsCache.set(dedupKey, now);
 
-    // Clean up old dedup entries
-    if (recentNotificationsCache.size > 50) {
+    // Clean old dedup entries
+    if (recentNotificationsCache.size > 30) {
       for (const [k, v] of recentNotificationsCache.entries()) {
         if (now - v > DEDUP_WINDOW_MS * 2) {
           recentNotificationsCache.delete(k);
@@ -179,10 +248,10 @@ export const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({ 
     const id = options.id || `toast-${now}-${Math.random().toString(36).substring(2, 7)}`;
     const newItem: NotificationItem = {
       id,
-      message: options.message || options.description || '',
+      message: options.message || options.description || options.title || '',
       title: options.title,
       type: options.type || 'info',
-      duration: options.duration ?? 3200,
+      duration: options.duration ?? 2800,
       action: options.action,
       createdAt: now,
       image: options.image,
@@ -190,10 +259,8 @@ export const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({ 
       description: options.description,
     };
 
-    setNotifications((prev) => {
-      const filtered = prev.filter((item) => item.id !== id && item.message !== options.message);
-      return [...filtered.slice(-4), newItem];
-    });
+    // STRICT UNIFIED POLICY: Replace previous active toast immediately so ONLY 1 toast exists at a time!
+    setNotifications([newItem]);
 
     return id;
   }, []);
@@ -207,14 +274,12 @@ export const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({ 
       const customEvent = event as CustomEvent;
       if (customEvent && customEvent.detail) {
         const notif = customEvent.detail;
-        const title = notif.title || '';
-        const body = notif.body || notif.message || '';
-        if (title || body) {
+        const body = notif.body || notif.message || notif.title || '';
+        if (body) {
           showNotification({
-            title,
             message: body,
             type: 'info',
-            duration: 5000,
+            duration: 4000,
           });
         }
       }
@@ -312,7 +377,7 @@ const ToastCard: React.FC<{ item: NotificationItem; onDismiss: (id: string) => v
     if (item.duration <= 0 || paused) return;
 
     startTimeRef.current = Date.now();
-    const intervalTime = 40;
+    const intervalTime = 30;
 
     const timer = setInterval(() => {
       const elapsed = Date.now() - startTimeRef.current;
@@ -331,48 +396,40 @@ const ToastCard: React.FC<{ item: NotificationItem; onDismiss: (id: string) => v
     return () => clearInterval(timer);
   }, [item.duration, item.id, onDismiss, paused]);
 
+  const conciseText = formatConciseText(item.message, item.title, item.type, isRtl);
+
   const getVariantStyles = () => {
     switch (item.type) {
       case 'success':
         return {
-          iconBadge: 'bg-emerald-500/15 border-emerald-500/30 text-emerald-400',
-          actionBtnBg: 'bg-emerald-600 hover:bg-emerald-500 text-white',
+          iconBadge: 'bg-emerald-500/10 border-emerald-500/30 text-emerald-500',
           progressBarBg: 'bg-emerald-500',
-          icon: <CheckCircle2 size={15} className="shrink-0" />,
-          defaultTitle: isRtl ? 'تم بنجاح' : 'Success',
+          icon: <CheckCircle2 size={15} className="shrink-0 text-emerald-500" />,
         };
       case 'error':
         return {
-          iconBadge: 'bg-rose-500/15 border-rose-500/30 text-rose-400',
-          actionBtnBg: 'bg-rose-600 hover:bg-rose-500 text-white',
+          iconBadge: 'bg-rose-500/10 border-rose-500/30 text-rose-500',
           progressBarBg: 'bg-rose-500',
-          icon: <AlertOctagon size={15} className="shrink-0" />,
-          defaultTitle: isRtl ? 'حدث خطأ' : 'Error',
+          icon: <AlertOctagon size={15} className="shrink-0 text-rose-500" />,
         };
       case 'warning':
         return {
-          iconBadge: 'bg-amber-500/15 border-amber-500/30 text-amber-400',
-          actionBtnBg: 'bg-amber-600 hover:bg-amber-500 text-white',
+          iconBadge: 'bg-amber-500/10 border-amber-500/30 text-amber-500',
           progressBarBg: 'bg-amber-500',
-          icon: <AlertTriangle size={15} className="shrink-0" />,
-          defaultTitle: isRtl ? 'تنبيه' : 'Warning',
+          icon: <AlertTriangle size={15} className="shrink-0 text-amber-500" />,
         };
       case 'loading':
         return {
-          iconBadge: 'bg-cyan-500/15 border-cyan-500/30 text-cyan-400',
-          actionBtnBg: 'bg-cyan-600 hover:bg-cyan-500 text-white',
+          iconBadge: 'bg-cyan-500/10 border-cyan-500/30 text-cyan-400',
           progressBarBg: 'bg-cyan-500',
-          icon: <Loader2 size={15} className="animate-spin shrink-0" />,
-          defaultTitle: isRtl ? 'جاري المعالجة...' : 'Processing...',
+          icon: <Loader2 size={15} className="animate-spin shrink-0 text-cyan-400" />,
         };
       case 'info':
       default:
         return {
-          iconBadge: 'bg-cyan-500/15 border-cyan-500/30 text-cyan-400',
-          actionBtnBg: 'bg-cyan-600 hover:bg-cyan-500 text-white',
+          iconBadge: 'bg-cyan-500/10 border-cyan-500/30 text-cyan-400',
           progressBarBg: 'bg-cyan-500',
-          icon: <Sparkles size={15} className="shrink-0" />,
-          defaultTitle: isRtl ? 'إشعار النظام' : 'System Notice',
+          icon: <Info size={15} className="shrink-0 text-cyan-400" />,
         };
     }
   };
@@ -382,25 +439,26 @@ const ToastCard: React.FC<{ item: NotificationItem; onDismiss: (id: string) => v
   return (
     <motion.div
       layout
-      initial={{ opacity: 0, y: 12, scale: 0.96 }}
+      initial={{ opacity: 0, y: -12, scale: 0.95 }}
       animate={{ opacity: 1, y: 0, scale: 1 }}
-      exit={{ opacity: 0, y: 8, scale: 0.96 }}
-      transition={{ duration: MOTION_TIMINGS.modal, ease: MOTION_EASINGS.standard }}
+      exit={{ opacity: 0, y: -12, scale: 0.92, height: 0, marginTop: 0 }}
+      transition={{ duration: 0.18, ease: [0.16, 1, 0.3, 1] }}
       onMouseEnter={() => setPaused(true)}
       onMouseLeave={() => setPaused(false)}
-      className="toast-floating relative overflow-hidden flex items-center gap-2 px-3 py-2 min-h-[44px] rounded-xl bg-[var(--surface-card)]/95 border border-[var(--border-default)] backdrop-blur-xl shadow-2xl ring-1 ring-black/5 dark:ring-white/10 text-[var(--text-primary)] transition-theme min-w-[200px] max-w-[340px]"
+      dir={isRtl ? 'rtl' : 'ltr'}
+      className="relative overflow-hidden flex items-center justify-between gap-2 px-2.5 min-h-[36px] py-1.5 rounded-shape-sm bg-[var(--surface-card)] border border-[var(--border-main)] backdrop-blur-xl shadow-xl ring-1 ring-black/5 dark:ring-white/10 text-[var(--text-primary)] transition-all min-w-[150px] max-w-[calc(100vw-32px)] sm:max-w-[320px] select-none"
     >
-      {/* Icon Badge */}
-      <div className={`w-6 h-6 rounded-lg border flex items-center justify-center shrink-0 ${variant.iconBadge}`}>
-        {React.isValidElement(item.icon) 
-          ? React.cloneElement(item.icon as React.ReactElement<any>, { size: 15 }) 
+      {/* Icon Circular Badge */}
+      <div className={`w-5.5 h-5.5 rounded-shape-xs border flex items-center justify-center shrink-0 ${variant.iconBadge}`}>
+        {React.isValidElement(item.icon)
+          ? React.cloneElement(item.icon as React.ReactElement<any>, { size: 12 })
           : variant.icon}
       </div>
 
-      {/* Typography & Message */}
-      <div className="flex-1 min-w-0">
-        <p className="text-xs font-bold leading-snug truncate text-[var(--text-primary)]">
-          {item.message || item.title || variant.defaultTitle}
+      {/* Typography & Concise Message */}
+      <div className="flex-1 min-w-0 shrink-0">
+        <p className="text-[11px] font-bold leading-none text-[var(--text-primary)] whitespace-nowrap truncate">
+          {conciseText}
         </p>
       </div>
 
@@ -413,7 +471,7 @@ const ToastCard: React.FC<{ item: NotificationItem; onDismiss: (id: string) => v
               item.action?.onClick();
               onDismiss(item.id);
             }}
-            className={`h-6 px-2.5 text-[10px] font-bold rounded-md transition-all active:scale-95 cursor-pointer ${variant.actionBtnBg}`}
+            className="h-5.5 px-2 text-[10px] font-bold rounded-shape-xs bg-cyan-500 hover:bg-cyan-400 text-slate-950 transition-all cursor-pointer shrink-0 whitespace-nowrap"
           >
             {item.action.label}
           </button>
@@ -421,25 +479,19 @@ const ToastCard: React.FC<{ item: NotificationItem; onDismiss: (id: string) => v
         <button
           type="button"
           onClick={() => onDismiss(item.id)}
-          className="w-6 h-6 rounded-md flex items-center justify-center text-[var(--text-muted)] hover:text-[var(--text-primary)] hover:bg-[var(--surface-subtle)] transition-colors cursor-pointer"
+          className="w-5 h-5 rounded-shape-xs flex items-center justify-center text-[var(--text-muted)] hover:text-[var(--text-primary)] hover:bg-[var(--surface-subtle)] transition-colors cursor-pointer shrink-0"
           aria-label={isRtl ? 'إغلاق' : 'Dismiss'}
         >
-          <X size={13} />
+          <X size={12} />
         </button>
       </div>
 
-      {/* Auto-Dismiss Progress Bar Visual */}
+      {/* Auto-Dismiss Progress Line at Bottom Edge */}
       {item.duration > 0 && item.type !== 'loading' && (
-        <div className="absolute bottom-0 inset-x-0 h-[2px] bg-slate-800/30 dark:bg-white/5 overflow-hidden rounded-b-xl pointer-events-none">
-          <motion.div
-            className={`h-full ${variant.progressBarBg}`}
-            style={{
-              width: `${progress}%`,
-            }}
-            transition={{
-              duration: MOTION_TIMINGS.fast,
-              ease: 'linear',
-            }}
+        <div className="absolute bottom-0 inset-x-0 h-[2px] bg-black/10 dark:bg-white/5 overflow-hidden pointer-events-none">
+          <div
+            className={`h-full ${variant.progressBarBg} transition-all duration-75 ease-linear`}
+            style={{ width: `${progress}%` }}
           />
         </div>
       )}
@@ -454,16 +506,23 @@ const NotificationContainer: React.FC<{
 }> = ({ notifications, onDismiss, isRtl }) => {
   if (typeof document === 'undefined') return null;
 
+  // Positioned at top of screen directly below header (~56px) centered on mobile, right/left aligned on desktop
+  const posClass = isRtl
+    ? 'top-[calc(56px+env(safe-area-inset-top,0px))] left-1/2 -translate-x-1/2 sm:translate-x-0 sm:left-6 sm:right-auto'
+    : 'top-[calc(56px+env(safe-area-inset-top,0px))] left-1/2 -translate-x-1/2 sm:translate-x-0 sm:right-6 sm:left-auto';
+
   return createPortal(
     <div
-      className={`toast-container-floating ${isRtl ? 'pos-bottom-start' : 'pos-bottom-end'}`}
+      className={`fixed ${posClass} z-[99999] pointer-events-none flex flex-col items-center sm:items-start justify-start select-none transition-all duration-300 max-w-[calc(100vw-24px)]`}
       style={{
         direction: isRtl ? 'rtl' : 'ltr',
       }}
     >
-      <AnimatePresence mode="sync">
-        {notifications.map((item, nIdx) => (
-          <ToastCard key={`toast-${item.id || nIdx}-${nIdx}`} item={item} onDismiss={onDismiss} isRtl={isRtl} />
+      <AnimatePresence mode="popLayout">
+        {notifications.slice(-1).map((item) => (
+          <div key={item.id} className="pointer-events-auto">
+            <ToastCard item={item} onDismiss={onDismiss} isRtl={isRtl} />
+          </div>
         ))}
       </AnimatePresence>
     </div>,

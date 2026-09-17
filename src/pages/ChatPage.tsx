@@ -49,7 +49,8 @@ const ChatPage: React.FC = () => {
     t, 
     theme, 
     socket,
-    setIsAuthModalOpen
+    setIsAuthModalOpen,
+    isMobile
   } = useAppContext();
   const { chatContainerRef, contentPaddingClass, contentMaxWidthClass } = useCanvasLayout();
 
@@ -126,15 +127,21 @@ const ChatPage: React.FC = () => {
   const toolsMenuRef = useRef<HTMLDivElement>(null);
   const modelsMenuRef = useRef<HTMLDivElement>(null);
 
-  const advancedTools = [
-    { id: 'perplexta_analysis', label: dir === 'rtl' ? 'تحليل' : 'Analysis', icon: <Search size={14} />, isNew: true },
-    { id: 'sovereign_search', label: dir === 'rtl' ? 'البحوث والدراسات' : 'Research & Studies', icon: <BookOpen size={14} />, isNew: true },
-    { id: 'image', label: dir === 'rtl' ? 'صورة' : 'Image', icon: <ImageIcon size={14} />, isNew: true },
-    { id: 'video', label: dir === 'rtl' ? 'فيديو' : 'Video', icon: <Video size={14} />, isNew: true },
-    { id: 'code', label: dir === 'rtl' ? 'كود' : 'Code', icon: <Code size={14} />, isNew: true },
-    { id: 'ads_copilot', label: dir === 'rtl' ? 'مساعد الإعلانات' : 'Ads Copilot', icon: <Megaphone size={14} />, isNew: true },
-    { id: 'audio_studio', label: dir === 'rtl' ? 'استوديو الصوت' : 'Audio Studio', icon: <Music size={14} />, isRouter: true },
-  ];
+  const advancedTools = useMemo(() => {
+    const list = [
+      { id: 'perplexta_analysis', label: dir === 'rtl' ? 'تحليل' : 'Analysis', icon: <Search size={14} />, isNew: true },
+      { id: 'sovereign_search', label: dir === 'rtl' ? 'البحوث والدراسات' : 'Research & Studies', icon: <BookOpen size={14} />, isNew: true },
+      { id: 'image', label: dir === 'rtl' ? 'صورة' : 'Image', icon: <ImageIcon size={14} />, isNew: true },
+      { id: 'video', label: dir === 'rtl' ? 'فيديو' : 'Video', icon: <Video size={14} />, isNew: true },
+      { id: 'code', label: dir === 'rtl' ? 'كود' : 'Code', icon: <Code size={14} />, isNew: true },
+      { id: 'ads_copilot', label: dir === 'rtl' ? 'مساعد الإعلانات' : 'Ads Copilot', icon: <Megaphone size={14} />, isNew: true },
+      { id: 'audio_studio', label: dir === 'rtl' ? 'استوديو الصوت' : 'Audio Studio', icon: <Music size={14} />, isRouter: true },
+    ];
+    if (isMobile) {
+      return list.filter(t => t.id !== 'code' && t.id !== 'audio_studio');
+    }
+    return list;
+  }, [dir, isMobile]);
 
   const models = [
     { id: 'fast', label: dir === 'rtl' ? 'سريع' : 'Fast', icon: <Zap size={14} />, color: 'text-[var(--fg-accent)]' },
@@ -575,21 +582,47 @@ const ChatPage: React.FC = () => {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-  // Session protection protocol: draft query auto-save & recovery
-  useEffect(() => {
-    const savedDraft = sessionStorage.getItem('perplexta_chat_draft');
-    if (savedDraft && !query) {
-      setQuery(savedDraft);
-    }
-  }, []);
+  // Active draft storage key computed dynamically per chat ID or new session
+  const activeDraftKey = useMemo(() => {
+    return activeRouteChatId ? `perplexta_chat_draft_${activeRouteChatId}` : 'perplexta_chat_draft_new';
+  }, [activeRouteChatId]);
 
+  // Session & Local Storage protection protocol: draft query background auto-save & recovery
+  useEffect(() => {
+    try {
+      const savedLocal = localStorage.getItem(activeDraftKey);
+      const savedSession = sessionStorage.getItem(activeDraftKey) || sessionStorage.getItem('perplexta_chat_draft');
+      const draftToRestore = savedLocal || savedSession;
+      if (draftToRestore) {
+        setQuery(draftToRestore);
+      } else {
+        setQuery('');
+      }
+    } catch {
+      // Ignore quota or storage restriction errors
+    }
+  }, [activeRouteChatId, activeDraftKey]);
+
+  // Background Auto-Save on draft input change
   useEffect(() => {
     if (query && query.trim()) {
-      sessionStorage.setItem('perplexta_chat_draft', query);
+      try {
+        localStorage.setItem(activeDraftKey, query);
+        sessionStorage.setItem(activeDraftKey, query);
+        sessionStorage.setItem('perplexta_chat_draft', query);
+      } catch {
+        // Ignore storage errors
+      }
     } else {
-      sessionStorage.removeItem('perplexta_chat_draft');
+      try {
+        localStorage.removeItem(activeDraftKey);
+        sessionStorage.removeItem(activeDraftKey);
+        sessionStorage.removeItem('perplexta_chat_draft');
+      } catch {
+        // Ignore storage errors
+      }
     }
-  }, [query]);
+  }, [query, activeDraftKey]);
 
   // Session protection protocol: prevent accidental exit / loss on refresh
   useEffect(() => {
@@ -607,8 +640,14 @@ const ChatPage: React.FC = () => {
   // Listen to clear-chat event to reset state and clear thread
   useEffect(() => {
     const handleClearChat = () => {
-      sessionStorage.removeItem('perplexta_active_chat_id');
-      sessionStorage.removeItem('perplexta_chat_draft');
+      try {
+        localStorage.removeItem(activeDraftKey);
+        localStorage.removeItem('perplexta_chat_draft_new');
+        sessionStorage.removeItem('perplexta_active_chat_id');
+        sessionStorage.removeItem('perplexta_chat_draft');
+      } catch {
+        // Ignore storage errors
+      }
       setMessages([]);
       setQuery('');
       setSelectedFile(null);
@@ -621,7 +660,7 @@ const ChatPage: React.FC = () => {
     };
     window.addEventListener('clear-chat', handleClearChat);
     return () => window.removeEventListener('clear-chat', handleClearChat);
-  }, [navigate, setMessages, setQuery, setSelectedFile, setPreviewUrl, setForensicReport, setForensicMode]);
+  }, [navigate, setMessages, setQuery, setSelectedFile, setPreviewUrl, setForensicReport, setForensicMode, activeDraftKey]);
 
   // Dispatch pinned messages count to Header
   useEffect(() => {

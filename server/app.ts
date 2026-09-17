@@ -223,18 +223,16 @@ app.use((req, res, next) => {
   next();
 });
 
-app.use(compression({
+const normalCompression = compression({
   level: 6,
   threshold: 1024,
   filter: (req: any, res: any) => {
     if (req.headers['x-no-compression']) {
       return false;
     }
-    // Disable compression for range requests to prevent breaking video streaming
     if (req.headers.range) {
       return false;
     }
-    // Disable compression for uploads and media files
     const isMedia = req.path && (
       req.path.startsWith('/uploads/') ||
       /\.(mp4|webm|mov|ogg|mp3|wav|m4a|aac|flac|png|jpg|jpeg|gif|webp)$/i.test(req.path)
@@ -244,7 +242,45 @@ app.use(compression({
     }
     return compression.filter(req, res);
   }
-}) as any);
+}) as any;
+
+const aggressiveCompression = compression({
+  level: 9, // Maximum zlib/gzip compression level for slow/metered connections
+  threshold: 128, // Lower threshold to compress smaller JSON/API payloads
+  memLevel: 9, // Maximum memory allocation window for compression
+  filter: (req: any, res: any) => {
+    if (req.headers['x-no-compression']) {
+      return false;
+    }
+    if (req.headers.range) {
+      return false;
+    }
+    const isMedia = req.path && (
+      req.path.startsWith('/uploads/') ||
+      /\.(mp4|webm|mov|ogg|mp3|wav|m4a|aac|flac|png|jpg|jpeg|gif|webp)$/i.test(req.path)
+    );
+    if (isMedia) {
+      return false;
+    }
+    return compression.filter(req, res);
+  }
+}) as any;
+
+app.use((req: any, res: any, next: any) => {
+  const isSaveDataHeader = req.headers['save-data'] === 'on';
+  const isCustomHeader = req.headers['x-data-saver'] === 'true' || req.headers['x-aggressive-compression'] === 'true';
+  const isCookie = req.cookies?.data_saver === 'true' || req.cookies?.data_saver === '1' || (req.headers.cookie && /data_saver=(true|1)/i.test(req.headers.cookie));
+  const isUserDataSaver = req.user?.data_saver === true;
+
+  if (isSaveDataHeader || isCustomHeader || isCookie || isUserDataSaver) {
+    req.isAggressiveCompression = true;
+    res.setHeader('X-Content-Compression-Mode', 'Aggressive-Level-9');
+    res.setHeader('Vary', 'Accept-Encoding, Save-Data, X-Data-Saver');
+    return aggressiveCompression(req, res, next);
+  }
+
+  return normalCompression(req, res, next);
+});
 
 app.use((req, res, next) => {
   if (!req.path.startsWith('/api/')) {

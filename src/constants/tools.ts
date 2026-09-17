@@ -11,7 +11,6 @@ export const ALL_TOOLS = [
   "code",
   "canvas",
   "perplexta_music",
-  "sovereign_memory",
   "sovereign_search",
   "x402_api",
   "storage_mb",

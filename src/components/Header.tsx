@@ -288,7 +288,7 @@ export const Header: React.FC<{ activeLanguage?: string }> = ({ activeLanguage }
             triggerHaptic('medium');
             setIsSidebarOpen(true);
           }}
-          className="group/logo-btn relative w-8 h-8 rounded-shape-sm overflow-hidden border border-transparent bg-transparent transition-all duration-200 flex items-center justify-center flex-shrink-0 cursor-pointer active:scale-95 before:absolute before:-inset-1.5 before:content-['']"
+          className="group/logo-btn relative w-8 h-8 rounded-[var(--radius-sm)] overflow-hidden border border-[var(--border-default)] hover:border-cyan-500/60 dark:hover:border-cyan-400/60 bg-transparent hover:bg-[var(--surface-subtle)] transition-all duration-150 flex items-center justify-center flex-shrink-0 cursor-pointer active:scale-95 before:absolute before:-inset-1.5 before:content-['']"
           title={language === 'ar' ? 'فتح الشريط الجانبي' : 'Open Sidebar'}
           aria-label="Open Sidebar"
         >
@@ -333,8 +333,8 @@ export const Header: React.FC<{ activeLanguage?: string }> = ({ activeLanguage }
           </div>
 
           {/* Full Glassy Outward Arrow Button Effect on Hover */}
-          <div className="absolute inset-0 flex items-center justify-center opacity-0 scale-75 group-hover/logo-btn:opacity-100 group-hover/logo-btn:scale-100 transition-all duration-150 pointer-events-none bg-[var(--pub-surface-container)]/95 backdrop-blur-md">
-            <div className="w-6 h-6 rounded-shape-xs bg-cyan-500/15 border border-cyan-500/30 text-cyan-400 flex items-center justify-center shadow-xs">
+          <div className="absolute inset-0 flex items-center justify-center opacity-0 scale-75 group-hover/logo-btn:opacity-100 group-hover/logo-btn:scale-100 transition-all duration-150 pointer-events-none bg-[var(--surface-subtle)]">
+            <div className="w-6 h-6 rounded-[var(--radius-xs)] bg-[var(--surface-card)] border border-[var(--border-default)] text-[var(--text-primary)] flex items-center justify-center shadow-2xs">
               {language === 'ar' ? <ChevronLeft size={14} className="stroke-[2.5]" /> : <ChevronRight size={14} className="stroke-[2.5]" />}
             </div>
           </div>
@@ -343,7 +343,7 @@ export const Header: React.FC<{ activeLanguage?: string }> = ({ activeLanguage }
         <NavLink 
           to="/" 
           onClick={handleNewChat} 
-          className="group/logo-link relative w-8 h-8 rounded-shape-sm overflow-hidden border border-[var(--pub-border-default)] hover:border-cyan-500/30 bg-transparent hover:bg-cyan-500/10 transition-all duration-150 flex items-center justify-center flex-shrink-0 active:scale-95 before:absolute before:-inset-1.5 before:content-['']"
+          className="group/logo-link relative w-8 h-8 rounded-[var(--radius-sm)] overflow-hidden border border-[var(--border-default)] hover:border-cyan-500/60 dark:hover:border-cyan-400/60 bg-transparent hover:bg-[var(--surface-subtle)] transition-all duration-150 flex items-center justify-center flex-shrink-0 active:scale-95 before:absolute before:-inset-1.5 before:content-['']"
           title={t('appName') || "Perplexta"}
         >
           {(siteSettings.logoBase64 || siteSettings.logoLightBase64) ? (
@@ -351,7 +351,7 @@ export const Header: React.FC<{ activeLanguage?: string }> = ({ activeLanguage }
               className="w-full h-full overflow-hidden flex items-center justify-center"
               animate={isStreaming ? {
                 scale: [1, 1.03, 1],
-                borderColor: ["var(--pub-border-default)", "rgba(6,182,212,0.4)", "var(--pub-border-default)"]
+                borderColor: ["var(--border-default)", "rgba(6,182,212,0.4)", "var(--border-default)"]
               } : {}}
               transition={isStreaming ? {
                 duration: 1.8,
@@ -369,7 +369,7 @@ export const Header: React.FC<{ activeLanguage?: string }> = ({ activeLanguage }
             </motion.div>
           ) : (
             <motion.div
-              className="flex items-center justify-center text-[var(--pub-text-primary)]"
+              className="flex items-center justify-center text-[var(--text-primary)]"
               animate={isStreaming ? {
                 scale: [1, 1.05, 1]
               } : {}}
@@ -392,20 +392,20 @@ export const Header: React.FC<{ activeLanguage?: string }> = ({ activeLanguage }
       {!isPathBlocked('/viralbook', siteSettings?.blocked_paths, isMobileView) && (
         <NavLink
           to="/viralbook"
-          className={`hidden sm:flex items-center justify-center w-8 h-8 rounded-shape-sm border transition-all duration-150 active:scale-95 group shrink-0 relative before:absolute before:-inset-1.5 before:content-[''] ${
+          className={`hidden sm:flex items-center justify-center w-8 h-8 rounded-[var(--radius-sm)] border transition-all duration-150 active:scale-95 group shrink-0 relative cursor-pointer before:absolute before:-inset-1.5 before:content-[''] ${
             isViralbookActive
-              ? 'bg-cyan-500/15 border-cyan-500/30 text-cyan-400 shadow-[0_0_12px_rgba(6,182,212,0.08)] font-bold' 
-              : 'bg-transparent border-[var(--pub-border-default)] hover:bg-cyan-500/10 hover:border-cyan-500/20 text-[var(--pub-text-muted)] hover:text-cyan-400'
+              ? 'bg-[var(--surface-card)] text-[var(--text-primary)] border-[var(--border-default)] font-bold shadow-2xs' 
+              : 'bg-transparent border-[var(--border-default)] hover:border-cyan-500/60 dark:hover:border-cyan-400/60 hover:bg-[var(--surface-subtle)] text-[var(--text-secondary)] hover:text-[var(--text-primary)]'
           }`}
           title={language === 'ar' ? 'فيرال بوك والمجتمع التفاعلي' : 'ViralBook & Community Feed'}
           aria-label={language === 'ar' ? 'فيرال بوك' : 'ViralBook'}
         >
           <Megaphone 
             size={14} 
-            className={`transition-all duration-150 ${
+            className={`transition-colors duration-150 ${
               isViralbookActive
-                ? 'text-cyan-400' 
-                : 'text-[var(--pub-text-muted)] group-hover:text-cyan-400'
+                ? 'text-cyan-500 dark:text-cyan-400' 
+                : 'text-[var(--text-muted)] group-hover:text-[var(--text-primary)]'
             }`} 
           />
         </NavLink>
@@ -413,20 +413,20 @@ export const Header: React.FC<{ activeLanguage?: string }> = ({ activeLanguage }
       {!isPathBlocked('/studio', siteSettings?.blocked_paths, isMobileView) && (
         <NavLink
           to="/Studio"
-          className={`flex items-center justify-center w-8 h-8 rounded-shape-sm border transition-all duration-150 active:scale-95 group shrink-0 relative before:absolute before:-inset-1.5 before:content-[''] ${
+          className={`flex items-center justify-center w-8 h-8 rounded-[var(--radius-sm)] border transition-all duration-150 active:scale-95 group shrink-0 relative cursor-pointer before:absolute before:-inset-1.5 before:content-[''] ${
             location.pathname === '/Studio' || location.pathname === '/studio' 
-              ? 'bg-cyan-500/15 border-cyan-500/30 text-cyan-400 shadow-[0_0_12px_rgba(6,182,212,0.08)] font-bold' 
-              : 'bg-transparent border-[var(--pub-border-default)] hover:bg-cyan-500/10 hover:border-cyan-500/20 text-[var(--pub-text-muted)] hover:text-cyan-400'
+              ? 'bg-[var(--surface-card)] text-[var(--text-primary)] border-[var(--border-default)] font-bold shadow-2xs' 
+              : 'bg-transparent border-[var(--border-default)] hover:border-cyan-500/60 dark:hover:border-cyan-400/60 hover:bg-[var(--surface-subtle)] text-[var(--text-secondary)] hover:text-[var(--text-primary)]'
           }`}
           title={language === 'ar' ? 'استوديو بيربليكستا للمطورين' : 'Perplexta Developer Studio'}
           aria-label={language === 'ar' ? 'استوديو بيربليكستا' : 'Perplexta Developer Studio'}
         >
           <Cpu 
             size={14} 
-            className={`transition-all duration-150 ${
+            className={`transition-colors duration-150 ${
               location.pathname === '/Studio' || location.pathname === '/studio'
-                ? 'text-cyan-400' 
-                : 'text-[var(--pub-text-muted)] group-hover:text-cyan-400'
+                ? 'text-cyan-500 dark:text-cyan-400' 
+                : 'text-[var(--text-muted)] group-hover:text-[var(--text-primary)]'
             }`} 
           />
         </NavLink>
@@ -459,19 +459,19 @@ export const Header: React.FC<{ activeLanguage?: string }> = ({ activeLanguage }
           triggerHaptic('light');
           toggleLanguage();
         }}
-        className={`items-center justify-center w-8 h-8 rounded-shape-sm bg-transparent border border-[var(--pub-border-default)] hover:bg-cyan-500/10 hover:border-cyan-500/20 text-[var(--pub-text-muted)] hover:text-cyan-400 transition-all duration-150 active:scale-95 group shrink-0 cursor-pointer relative before:absolute before:-inset-1.5 before:content-[''] ${
+        className={`items-center justify-center w-8 h-8 rounded-[var(--radius-sm)] bg-transparent border border-[var(--border-default)] hover:border-cyan-500/60 dark:hover:border-cyan-400/60 hover:bg-[var(--surface-subtle)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-all duration-150 active:scale-95 group shrink-0 cursor-pointer relative before:absolute before:-inset-1.5 before:content-[''] ${
           isChatPage && chatHeaderData && chatHeaderData.hasMessages ? 'hidden sm:flex' : 'flex'
         }`}
         title={language === 'ar' ? 'تغيير اللغة (English)' : 'Change Language (العربية)'}
         aria-label={language === 'ar' ? 'تغيير اللغة' : 'Change Language'}
       >
-        <Languages size={14} className="text-[var(--pub-text-muted)] group-hover:text-cyan-400 transition-all duration-150" />
+        <Languages size={14} className="text-[var(--text-muted)] group-hover:text-[var(--text-primary)] transition-colors duration-150" />
       </button>
 
       <ThemeToggleButton 
         variant="icon-button" 
         size="sm" 
-        className={`rounded-shape-sm relative before:absolute before:-inset-1.5 before:content-[''] ${
+        className={`rounded-[var(--radius-sm)] relative before:absolute before:-inset-1.5 before:content-[''] ${
           isChatPage && chatHeaderData && chatHeaderData.hasMessages ? 'hidden sm:flex' : 'flex'
         }`} 
       />
@@ -486,20 +486,20 @@ export const Header: React.FC<{ activeLanguage?: string }> = ({ activeLanguage }
                 navigate('/viralbook?tab=inquiries');
                 window.dispatchEvent(new CustomEvent('open-bulletin-inquiries'));
               }}
-              className={`hidden sm:flex items-center justify-center w-8 h-8 rounded-shape-sm border transition-all duration-150 relative active:scale-95 group shrink-0 cursor-pointer before:absolute before:-inset-1.5 before:content-[''] ${
+              className={`hidden sm:flex items-center justify-center w-8 h-8 rounded-[var(--radius-sm)] border transition-all duration-150 relative active:scale-95 group shrink-0 cursor-pointer before:absolute before:-inset-1.5 before:content-[''] ${
                 location.pathname.includes('/inquiries') || location.search.includes('tab=inquiries')
-                  ? 'bg-cyan-500/15 border-cyan-500/30 text-cyan-400 shadow-[0_0_12px_rgba(6,182,212,0.08)] font-bold'
-                  : 'bg-transparent border-[var(--pub-border-default)] hover:bg-cyan-500/10 hover:border-cyan-500/20 text-[var(--pub-text-muted)] hover:text-cyan-400'
+                  ? 'bg-[var(--surface-card)] text-[var(--text-primary)] border-[var(--border-default)] font-bold shadow-2xs'
+                  : 'bg-transparent border-[var(--border-default)] hover:border-cyan-500/60 dark:hover:border-cyan-400/60 hover:bg-[var(--surface-subtle)] text-[var(--text-secondary)] hover:text-[var(--text-primary)]'
               }`}
               title={language === 'ar' ? 'صندوق المحادثات والرسائل' : 'Messages & Inquiries Inbox'}
               aria-label={language === 'ar' ? 'صندوق المحادثات والرسائل' : 'Messages & Inquiries Inbox'}
             >
               <MessageSquare 
                 size={14} 
-                className={`transition-all duration-150 ${
+                className={`transition-colors duration-150 ${
                   location.pathname.includes('/inquiries') || location.search.includes('tab=inquiries')
-                    ? 'text-cyan-400'
-                    : 'text-[var(--pub-text-muted)] group-hover:text-cyan-400'
+                    ? 'text-cyan-500 dark:text-cyan-400'
+                    : 'text-[var(--text-muted)] group-hover:text-[var(--text-primary)]'
                 }`} 
               />
             </button>
@@ -512,15 +512,15 @@ export const Header: React.FC<{ activeLanguage?: string }> = ({ activeLanguage }
                 setIsNotifOpen(!isNotifOpen);
               }}
               aria-label={language === 'ar' ? 'الإشعارات' : 'Notifications'}
-              className={`flex items-center justify-center w-8 h-8 rounded-shape-sm bg-transparent border transition-all duration-150 relative active:scale-95 group shrink-0 cursor-pointer before:absolute before:-inset-1.5 before:content-[''] ${
+              className={`flex items-center justify-center w-8 h-8 rounded-[var(--radius-sm)] bg-transparent border transition-all duration-150 relative active:scale-95 group shrink-0 cursor-pointer before:absolute before:-inset-1.5 before:content-[''] ${
                 isNotifOpen 
-                  ? 'border-cyan-500/30 bg-cyan-500/15 text-cyan-400 shadow-[0_0_12px_rgba(6,182,212,0.08)]' 
-                  : 'border-[var(--pub-border-default)] hover:bg-cyan-500/10 hover:border-cyan-500/20 text-[var(--pub-text-muted)] hover:text-cyan-400'
+                  ? 'bg-[var(--surface-card)] text-[var(--text-primary)] border-[var(--border-default)] shadow-2xs' 
+                  : 'border-[var(--border-default)] hover:border-cyan-500/60 dark:hover:border-cyan-400/60 hover:bg-[var(--surface-subtle)] text-[var(--text-secondary)] hover:text-[var(--text-primary)]'
               }`}
             >
-              <Bell size={14} className={`transition-all duration-150 ${unreadCount > 0 ? "text-cyan-400" : isNotifOpen ? "text-cyan-400" : "text-[var(--pub-text-muted)] group-hover:text-cyan-400"}`} />
+              <Bell size={14} className={`transition-colors duration-150 ${unreadCount > 0 ? "text-cyan-500 dark:text-cyan-400" : isNotifOpen ? "text-cyan-500 dark:text-cyan-400" : "text-[var(--text-muted)] group-hover:text-[var(--text-primary)]"}`} />
               {unreadCount > 0 && (
-                <span className="absolute top-1.5 right-1.5 w-1.5 h-1.5 bg-cyan-400 rounded-full border border-[var(--pub-surface-canvas)] shadow-[0_0_6px_rgba(6,182,212,0.8)]"></span>
+                <span className="absolute top-1.5 right-1.5 w-1.5 h-1.5 bg-cyan-400 rounded-full border border-[var(--surface-page)] shadow-[0_0_6px_rgba(6,182,212,0.8)]"></span>
               )}
             </button>
 
@@ -531,20 +531,20 @@ export const Header: React.FC<{ activeLanguage?: string }> = ({ activeLanguage }
                   animate={{ opacity: 1, scale: 1 }}
                   exit={{ opacity: 0, scale: 0.96 }}
                   transition={{ duration: 0.14, ease: [0.16, 1, 0.3, 1] }}
-                  className={`absolute top-full mt-2 w-[280px] xs:w-80 sm:w-96 max-h-[350px] sm:max-h-[480px] overflow-hidden rounded-shape-md border shadow-2xl z-[100] flex flex-col bg-[var(--pub-surface-container)] border-[var(--pub-border-default)] overscroll-contain ${
+                  className={`absolute top-full mt-2 w-[280px] xs:w-80 sm:w-96 max-h-[350px] sm:max-h-[480px] overflow-hidden rounded-[var(--radius-md)] border shadow-2xl z-[100] flex flex-col bg-[var(--surface-card)] border-[var(--border-default)] overscroll-contain ${
                     dir === 'rtl' ? 'left-0 origin-top-left' : 'right-0 origin-top-right'
                   }`}
                 >
-                  <div className="p-3 sm:p-4 border-b border-[var(--pub-border-default)] flex items-center justify-between">
-                    <h3 className="font-bold text-xs sm:text-sm text-[var(--pub-text-primary)]">{language === 'ar' ? 'الإشعارات' : 'Notifications'}</h3>
+                  <div className="p-3 sm:p-4 border-b border-[var(--border-default)] flex items-center justify-between">
+                    <h3 className="font-bold text-xs sm:text-sm text-[var(--text-primary)]">{language === 'ar' ? 'الإشعارات' : 'Notifications'}</h3>
                     <div className="flex items-center gap-2 sm:gap-3">
                       <button 
                         onClick={unreadCount > 0 ? markAllAsRead : undefined}
                         disabled={unreadCount === 0}
                         className={`text-[9px] sm:text-[10px] font-bold flex items-center gap-1 transition-all duration-150 ${
                           unreadCount > 0 
-                            ? 'text-cyan-400 hover:text-cyan-300 cursor-pointer' 
-                            : 'text-[var(--pub-text-muted)] opacity-40 cursor-not-allowed'
+                            ? 'text-cyan-500 dark:text-cyan-400 hover:opacity-80 cursor-pointer' 
+                            : 'text-[var(--text-muted)] opacity-40 cursor-not-allowed'
                         }`}
                       >
                         <Check size={11} />
@@ -556,7 +556,7 @@ export const Header: React.FC<{ activeLanguage?: string }> = ({ activeLanguage }
                         className={`text-[9px] sm:text-[10px] font-bold flex items-center gap-1 transition-all duration-150 ${
                           notifications.length > 0 
                             ? 'text-rose-500 hover:text-rose-400 cursor-pointer' 
-                            : 'text-[var(--pub-text-muted)] opacity-40 cursor-not-allowed'
+                            : 'text-[var(--text-muted)] opacity-40 cursor-not-allowed'
                         }`}
                       >
                         <Trash2 size={11} />
@@ -580,13 +580,13 @@ export const Header: React.FC<{ activeLanguage?: string }> = ({ activeLanguage }
                               setIsNotifOpen(false);
                             }
                           }}
-                          className={`w-full p-2.5 sm:p-4 flex gap-2 sm:gap-3 text-right hover:bg-cyan-500/5 transition-all duration-150 border-b border-[var(--pub-border-default)] last:border-0 group relative cursor-pointer ${
-                            !notif.is_read ? 'bg-cyan-500/[0.04] border-r-2 border-r-cyan-500' : ''
+                          className={`w-full p-2.5 sm:p-4 flex gap-2 sm:gap-3 text-right hover:bg-[var(--surface-subtle)] transition-all duration-150 border-b border-[var(--border-default)] last:border-0 group relative cursor-pointer ${
+                            !notif.is_read ? 'bg-[var(--surface-subtle)]/70 border-r-2 border-r-cyan-500' : ''
                           }`}
                           dir={dir}
                         >
-                          <div className={`mt-0.5 h-7 w-7 sm:h-8 sm:w-8 rounded-shape-sm flex items-center justify-center shrink-0 transition-all duration-150 overflow-hidden ${
-                            !notif.is_read ? 'bg-cyan-500/20 text-cyan-400 font-bold' : 'bg-[var(--pub-surface-subtle)] text-[var(--pub-text-muted)]'
+                          <div className={`mt-0.5 h-7 w-7 sm:h-8 sm:w-8 rounded-[var(--radius-sm)] flex items-center justify-center shrink-0 transition-all duration-150 overflow-hidden ${
+                            !notif.is_read ? 'bg-cyan-500/20 text-cyan-500 dark:text-cyan-400 font-bold' : 'bg-[var(--surface-subtle)] text-[var(--text-muted)]'
                           }`}>
                             <NotificationIconRenderer 
                               src={notif.image || notif.icon_url || notif.avatar || null}
@@ -599,15 +599,15 @@ export const Header: React.FC<{ activeLanguage?: string }> = ({ activeLanguage }
                               {!notif.is_read && (
                                 <span className="w-1.5 h-1.5 bg-cyan-400 rounded-full shrink-0 shadow-[0_0_6px_rgba(6,182,212,0.8)]" />
                               )}
-                              <h4 className={`text-[11px] sm:text-xs font-bold truncate transition-all duration-150 ${!notif.is_read ? 'text-cyan-400' : 'text-[var(--pub-text-primary)]'}`}>
+                              <h4 className={`text-[11px] sm:text-xs font-bold truncate transition-all duration-150 ${!notif.is_read ? 'text-cyan-500 dark:text-cyan-400' : 'text-[var(--text-primary)]'}`}>
                                 {language === 'ar' ? notif.title_ar : notif.title_en}
                               </h4>
                             </div>
-                            <p className="text-[9px] sm:text-[10px] text-[var(--pub-text-muted)] mt-0.5 line-clamp-2 leading-relaxed transition-all duration-150">
+                            <p className="text-[9px] sm:text-[10px] text-[var(--text-muted)] mt-0.5 line-clamp-2 leading-relaxed transition-all duration-150">
                               {language === 'ar' ? notif.message_ar : notif.message_en}
                             </p>
                             <div className="flex items-center justify-between mt-1.5 sm:mt-2.5">
-                              <div className="flex items-center gap-1 text-[8px] sm:text-[9px] text-[var(--pub-text-muted)] transition-all duration-150">
+                              <div className="flex items-center gap-1 text-[8px] sm:text-[9px] text-[var(--text-muted)] transition-all duration-150">
                                 <Clock size={9} />
                                 <span>{new Date(notif.created_at).toLocaleTimeString(language === 'ar' ? 'ar-EG' : 'en-US', { hour: '2-digit', minute: '2-digit' })}</span>
                               </div>
@@ -615,7 +615,7 @@ export const Header: React.FC<{ activeLanguage?: string }> = ({ activeLanguage }
                                 {!notif.is_read && (
                                   <button 
                                     onClick={(e) => { e.stopPropagation(); markAsRead(notif.id); }}
-                                    className="p-0.5 sm:p-1 text-cyan-400/70 hover:text-cyan-400 opacity-100 sm:opacity-0 group-hover:opacity-100 transition-all duration-150 cursor-pointer"
+                                    className="p-0.5 sm:p-1 text-cyan-500/70 hover:text-cyan-400 opacity-100 sm:opacity-0 group-hover:opacity-100 transition-all duration-150 cursor-pointer"
                                     title={language === 'ar' ? 'تحديد كمقروء' : 'Mark as read'}
                                   >
                                     <Check size={11} className="stroke-[3px]" />
@@ -634,15 +634,15 @@ export const Header: React.FC<{ activeLanguage?: string }> = ({ activeLanguage }
                         </div>
                       ))
                     ) : (
-                      <div className="py-12 flex flex-col items-center justify-center text-[var(--pub-text-muted)] opacity-30 transition-all duration-150">
+                      <div className="py-12 flex flex-col items-center justify-center text-[var(--text-muted)] opacity-30 transition-all duration-150">
                         <Bell size={32} className="mb-2" />
                         <span className="text-xs">{language === 'ar' ? 'لا توجد إشعارات' : 'No notifications'}</span>
                       </div>
                     )}
                   </div>
                   
-                  <div className="p-2 sm:p-3 border-t border-[var(--pub-border-default)] text-center bg-[var(--pub-surface-subtle)]">
-                    <span className="text-[9px] sm:text-[10px] text-[var(--pub-text-muted)] font-medium transition-all duration-150">
+                  <div className="p-2 sm:p-3 border-t border-[var(--border-default)] text-center bg-[var(--surface-subtle)]">
+                    <span className="text-[9px] sm:text-[10px] text-[var(--text-muted)] font-medium transition-all duration-150">
                       {language === 'ar' ? 'البروتوكول الصامت للمنصة' : 'Silent Platform Protocol'}
                     </span>
                   </div>
@@ -707,10 +707,10 @@ export const Header: React.FC<{ activeLanguage?: string }> = ({ activeLanguage }
                       triggerHaptic('light');
                       window.dispatchEvent(new CustomEvent('chat-set-tab', { detail: 'answer' }));
                     }}
-                    className={`w-8 h-8 rounded-shape-sm border flex items-center justify-center transition-all duration-150 cursor-pointer shrink-0 relative active:scale-95 ${
+                    className={`w-8 h-8 rounded-[var(--radius-sm)] border flex items-center justify-center transition-all duration-150 cursor-pointer shrink-0 relative active:scale-95 group ${
                       chatHeaderData.activeChatTab === 'answer'
-                        ? 'bg-cyan-500/15 border-cyan-500/30 text-cyan-400 shadow-[0_0_12px_rgba(6,182,212,0.08)] font-bold'
-                        : 'bg-transparent border-[var(--pub-border-default)] hover:bg-cyan-500/10 hover:border-cyan-500/20 text-[var(--pub-text-muted)] hover:text-cyan-400'
+                        ? 'bg-[var(--surface-card)] text-[var(--text-primary)] border-[var(--border-default)] font-bold shadow-2xs'
+                        : 'bg-transparent border-[var(--border-default)] hover:border-cyan-500/60 dark:hover:border-cyan-400/60 hover:bg-[var(--surface-subtle)] text-[var(--text-secondary)] hover:text-[var(--text-primary)]'
                     }`}
                     title={globalLang === 'ar' ? 'الإجابة والتحليل' : 'Answer'}
                     aria-label={globalLang === 'ar' ? 'الإجابة والتحليل' : 'Answer'}
@@ -728,17 +728,17 @@ export const Header: React.FC<{ activeLanguage?: string }> = ({ activeLanguage }
                       triggerHaptic('light');
                       window.dispatchEvent(new CustomEvent('chat-set-tab', { detail: 'links' }));
                     }}
-                    className={`h-8 min-w-[32px] px-1.5 rounded-shape-sm border flex items-center justify-center gap-1 transition-all duration-150 cursor-pointer shrink-0 relative active:scale-95 ${
+                    className={`h-8 min-w-[32px] px-1.5 rounded-[var(--radius-sm)] border flex items-center justify-center gap-1 transition-all duration-150 cursor-pointer shrink-0 relative active:scale-95 group ${
                       chatHeaderData.activeChatTab === 'links'
-                        ? 'bg-cyan-500/15 border-cyan-500/30 text-cyan-400 shadow-[0_0_12px_rgba(6,182,212,0.08)] font-bold'
-                        : 'bg-transparent border-[var(--pub-border-default)] hover:bg-cyan-500/10 hover:border-cyan-500/20 text-[var(--pub-text-muted)] hover:text-cyan-400'
+                        ? 'bg-[var(--surface-card)] text-[var(--text-primary)] border-[var(--border-default)] font-bold shadow-2xs'
+                        : 'bg-transparent border-[var(--border-default)] hover:border-cyan-500/60 dark:hover:border-cyan-400/60 hover:bg-[var(--surface-subtle)] text-[var(--text-secondary)] hover:text-[var(--text-primary)]'
                     }`}
                     title={globalLang === 'ar' ? `المصادر (${chatHeaderData.citationsCount})` : `Sources (${chatHeaderData.citationsCount})`}
                     aria-label={globalLang === 'ar' ? `المصادر (${chatHeaderData.citationsCount})` : `Sources (${chatHeaderData.citationsCount})`}
                   >
-                    <Globe size={14} />
+                    <Globe size={14} className="text-[var(--text-muted)] group-hover:text-[var(--text-primary)] transition-colors duration-150" />
                     {chatHeaderData.citationsCount > 0 && (
-                      <span className="px-1.5 py-0.2 rounded-full text-[10px] bg-cyan-500/20 text-cyan-400 font-mono font-bold">
+                      <span className="px-1.5 py-0.2 rounded-full text-[10px] bg-cyan-500/20 text-cyan-500 dark:text-cyan-400 font-mono font-bold">
                         {chatHeaderData.citationsCount}
                       </span>
                     )}
@@ -750,17 +750,17 @@ export const Header: React.FC<{ activeLanguage?: string }> = ({ activeLanguage }
                       triggerHaptic('light');
                       window.dispatchEvent(new CustomEvent('chat-set-tab', { detail: 'images' }));
                     }}
-                    className={`h-8 min-w-[32px] px-1.5 rounded-shape-sm border flex items-center justify-center gap-1 transition-all duration-150 cursor-pointer shrink-0 relative active:scale-95 ${
+                    className={`h-8 min-w-[32px] px-1.5 rounded-[var(--radius-sm)] border flex items-center justify-center gap-1 transition-all duration-150 cursor-pointer shrink-0 relative active:scale-95 group ${
                       chatHeaderData.activeChatTab === 'images'
-                        ? 'bg-cyan-500/15 border-cyan-500/30 text-cyan-400 shadow-[0_0_12px_rgba(6,182,212,0.08)] font-bold'
-                        : 'bg-transparent border-[var(--pub-border-default)] hover:bg-cyan-500/10 hover:border-cyan-500/20 text-[var(--pub-text-muted)] hover:text-cyan-400'
+                        ? 'bg-[var(--surface-card)] text-[var(--text-primary)] border-[var(--border-default)] font-bold shadow-2xs'
+                        : 'bg-transparent border-[var(--border-default)] hover:border-cyan-500/60 dark:hover:border-cyan-400/60 hover:bg-[var(--surface-subtle)] text-[var(--text-secondary)] hover:text-[var(--text-primary)]'
                     }`}
                     title={globalLang === 'ar' ? `الوسائط (${chatHeaderData.imagesCount})` : `Media (${chatHeaderData.imagesCount})`}
                     aria-label={globalLang === 'ar' ? `الوسائط (${chatHeaderData.imagesCount})` : `Media (${chatHeaderData.imagesCount})`}
                   >
-                    <ImageIcon size={14} />
+                    <ImageIcon size={14} className="text-[var(--text-muted)] group-hover:text-[var(--text-primary)] transition-colors duration-150" />
                     {chatHeaderData.imagesCount > 0 && (
-                      <span className="px-1.5 py-0.2 rounded-full text-[10px] bg-cyan-500/20 text-cyan-400 font-mono font-bold">
+                      <span className="px-1.5 py-0.2 rounded-full text-[10px] bg-cyan-500/20 text-cyan-500 dark:text-cyan-400 font-mono font-bold">
                         {chatHeaderData.imagesCount}
                       </span>
                     )}
@@ -776,7 +776,7 @@ export const Header: React.FC<{ activeLanguage?: string }> = ({ activeLanguage }
                         triggerHaptic('light');
                         window.dispatchEvent(new CustomEvent('chat-action-pinned'));
                       }}
-                      className="h-8 px-2.5 rounded-shape-sm text-amber-500 border border-amber-500/30 bg-amber-500/10 hover:bg-amber-500/20 flex items-center justify-center gap-1 transition-all duration-150 cursor-pointer shrink-0 box-border relative active:scale-95"
+                      className="h-8 px-2.5 rounded-[var(--radius-sm)] text-amber-500 border border-amber-500/30 bg-amber-500/10 hover:bg-amber-500/20 flex items-center justify-center gap-1 transition-all duration-150 cursor-pointer shrink-0 box-border relative active:scale-95"
                       title={globalLang === 'ar' ? 'الرسائل المثبتة' : 'Pinned'}
                     >
                       <Pin size={13} className="fill-amber-500 shrink-0" />
@@ -797,15 +797,15 @@ export const Header: React.FC<{ activeLanguage?: string }> = ({ activeLanguage }
                         setHeaderMenuTarget({ rect });
                       }
                     }}
-                    className={`w-8 h-8 rounded-shape-sm border flex items-center justify-center transition-all duration-150 cursor-pointer shrink-0 relative active:scale-95 ${
+                    className={`w-8 h-8 rounded-[var(--radius-sm)] border border-[var(--border-default)] hover:border-cyan-500/60 dark:hover:border-cyan-400/60 hover:bg-[var(--surface-subtle)] flex items-center justify-center transition-all duration-150 cursor-pointer shrink-0 relative active:scale-95 group bg-transparent ${
                       headerMenuTarget 
-                        ? 'bg-cyan-500/15 border-cyan-500/30 text-cyan-400 shadow-[0_0_12px_rgba(6,182,212,0.08)] font-bold' 
-                        : 'bg-transparent border-[var(--pub-border-default)] hover:bg-cyan-500/10 hover:border-cyan-500/20 text-[var(--pub-text-muted)] hover:text-cyan-400'
+                        ? 'bg-[var(--surface-card)] text-[var(--text-primary)] shadow-2xs' 
+                        : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)]'
                     }`}
                     title={globalLang === 'ar' ? 'خيارات' : 'Options'}
                     aria-label={globalLang === 'ar' ? 'خيارات' : 'Options'}
                   >
-                    <MoreHorizontal size={14} className="text-[var(--pub-text-muted)] group-hover:text-cyan-400 transition-all duration-150" />
+                    <MoreHorizontal size={14} className={`transition-colors duration-150 ${headerMenuTarget ? 'text-cyan-500 dark:text-cyan-400' : 'text-[var(--text-muted)] group-hover:text-[var(--text-primary)]'}`} />
                   </button>
                 </div>
               </div>
@@ -823,10 +823,10 @@ export const Header: React.FC<{ activeLanguage?: string }> = ({ activeLanguage }
                     triggerHaptic('light');
                     window.dispatchEvent(new CustomEvent('chat-set-tab', { detail: 'answer' }));
                   }}
-                  className={`w-7 h-7 rounded-shape-sm border flex items-center justify-center transition-all duration-150 cursor-pointer shrink-0 relative active:scale-95 ${
+                  className={`w-7 h-7 rounded-[var(--radius-sm)] border flex items-center justify-center transition-all duration-150 cursor-pointer shrink-0 relative active:scale-95 group ${
                     chatHeaderData.activeChatTab === 'answer'
-                      ? 'bg-cyan-500/15 border-cyan-500/30 text-cyan-400 shadow-[0_0_12px_rgba(6,182,212,0.08)] font-bold'
-                      : 'bg-transparent border-[var(--pub-border-default)] hover:bg-cyan-500/10 hover:border-cyan-500/20 text-[var(--pub-text-muted)] hover:text-cyan-400'
+                      ? 'bg-[var(--surface-card)] text-[var(--text-primary)] border-[var(--border-default)] font-bold shadow-2xs'
+                      : 'bg-transparent border-[var(--border-default)] hover:border-cyan-500/60 dark:hover:border-cyan-400/60 hover:bg-[var(--surface-subtle)] text-[var(--text-secondary)] hover:text-[var(--text-primary)]'
                   }`}
                   title={globalLang === 'ar' ? 'الإجابة والتحليل' : 'Answer'}
                 >
@@ -843,16 +843,16 @@ export const Header: React.FC<{ activeLanguage?: string }> = ({ activeLanguage }
                     triggerHaptic('light');
                     window.dispatchEvent(new CustomEvent('chat-set-tab', { detail: 'links' }));
                   }}
-                  className={`h-7 min-w-[28px] px-1 rounded-shape-sm border flex items-center justify-center gap-1 transition-all duration-150 cursor-pointer shrink-0 relative active:scale-95 ${
+                  className={`h-7 min-w-[28px] px-1 rounded-[var(--radius-sm)] border flex items-center justify-center gap-1 transition-all duration-150 cursor-pointer shrink-0 relative active:scale-95 group ${
                     chatHeaderData.activeChatTab === 'links'
-                      ? 'bg-cyan-500/15 border-cyan-500/30 text-cyan-400 shadow-[0_0_12px_rgba(6,182,212,0.08)] font-bold'
-                      : 'bg-transparent border-[var(--pub-border-default)] hover:bg-cyan-500/10 hover:border-cyan-500/20 text-[var(--pub-text-muted)] hover:text-cyan-400'
+                      ? 'bg-[var(--surface-card)] text-[var(--text-primary)] border-[var(--border-default)] font-bold shadow-2xs'
+                      : 'bg-transparent border-[var(--border-default)] hover:border-cyan-500/60 dark:hover:border-cyan-400/60 hover:bg-[var(--surface-subtle)] text-[var(--text-secondary)] hover:text-[var(--text-primary)]'
                   }`}
                   title={globalLang === 'ar' ? `المصادر (${chatHeaderData.citationsCount})` : `Sources (${chatHeaderData.citationsCount})`}
                 >
-                  <Globe size={13} />
+                  <Globe size={13} className="text-[var(--text-muted)] group-hover:text-[var(--text-primary)] transition-colors duration-150" />
                   {chatHeaderData.citationsCount > 0 && (
-                    <span className="px-1 py-0.2 rounded-full text-[9px] bg-cyan-500/20 text-cyan-400 font-mono font-bold">
+                    <span className="px-1 py-0.2 rounded-full text-[9px] bg-cyan-500/20 text-cyan-500 dark:text-cyan-400 font-mono font-bold">
                       {chatHeaderData.citationsCount}
                     </span>
                   )}
@@ -864,16 +864,16 @@ export const Header: React.FC<{ activeLanguage?: string }> = ({ activeLanguage }
                     triggerHaptic('light');
                     window.dispatchEvent(new CustomEvent('chat-set-tab', { detail: 'images' }));
                   }}
-                  className={`h-7 min-w-[28px] px-1 rounded-shape-sm border flex items-center justify-center gap-1 transition-all duration-150 cursor-pointer shrink-0 relative active:scale-95 ${
+                  className={`h-7 min-w-[28px] px-1 rounded-[var(--radius-sm)] border flex items-center justify-center gap-1 transition-all duration-150 cursor-pointer shrink-0 relative active:scale-95 group ${
                     chatHeaderData.activeChatTab === 'images'
-                      ? 'bg-cyan-500/15 border-cyan-500/30 text-cyan-400 shadow-[0_0_12px_rgba(6,182,212,0.08)] font-bold'
-                      : 'bg-transparent border-[var(--pub-border-default)] hover:bg-cyan-500/10 hover:border-cyan-500/20 text-[var(--pub-text-muted)] hover:text-cyan-400'
+                      ? 'bg-[var(--surface-card)] text-[var(--text-primary)] border-[var(--border-default)] font-bold shadow-2xs'
+                      : 'bg-transparent border-[var(--border-default)] hover:border-cyan-500/60 dark:hover:border-cyan-400/60 hover:bg-[var(--surface-subtle)] text-[var(--text-secondary)] hover:text-[var(--text-primary)]'
                   }`}
                   title={globalLang === 'ar' ? `الوسائط (${chatHeaderData.imagesCount})` : `Media (${chatHeaderData.imagesCount})`}
                 >
-                  <ImageIcon size={13} />
+                  <ImageIcon size={13} className="text-[var(--text-muted)] group-hover:text-[var(--text-primary)] transition-colors duration-150" />
                   {chatHeaderData.imagesCount > 0 && (
-                    <span className="px-1 py-0.2 rounded-full text-[9px] bg-cyan-500/20 text-cyan-400 font-mono font-bold">
+                    <span className="px-1 py-0.2 rounded-full text-[9px] bg-cyan-500/20 text-cyan-500 dark:text-cyan-400 font-mono font-bold">
                       {chatHeaderData.imagesCount}
                     </span>
                   )}
@@ -886,7 +886,7 @@ export const Header: React.FC<{ activeLanguage?: string }> = ({ activeLanguage }
                       triggerHaptic('light');
                       window.dispatchEvent(new CustomEvent('chat-action-pinned'));
                     }}
-                    className="h-7 px-1.5 rounded-shape-sm text-amber-500 border border-amber-500/30 bg-amber-500/10 hover:bg-amber-500/20 flex items-center justify-center gap-1 transition-all duration-150 cursor-pointer shrink-0 box-border relative active:scale-95"
+                    className="h-7 px-1.5 rounded-[var(--radius-sm)] text-amber-500 border border-amber-500/30 bg-amber-500/10 hover:bg-amber-500/20 flex items-center justify-center gap-1 transition-all duration-150 cursor-pointer shrink-0 box-border relative active:scale-95"
                     title={globalLang === 'ar' ? 'الرسائل المثبتة' : 'Pinned'}
                   >
                     <Pin size={12} className="fill-amber-500 shrink-0" />
@@ -907,14 +907,14 @@ export const Header: React.FC<{ activeLanguage?: string }> = ({ activeLanguage }
                       setHeaderMenuTarget({ rect });
                     }
                   }}
-                  className={`w-7 h-7 rounded-shape-sm border flex items-center justify-center transition-all duration-150 cursor-pointer shrink-0 relative active:scale-95 ${
+                  className={`w-7 h-7 rounded-[var(--radius-sm)] border border-[var(--border-default)] hover:border-cyan-500/60 dark:hover:border-cyan-400/60 hover:bg-[var(--surface-subtle)] flex items-center justify-center transition-all duration-150 cursor-pointer shrink-0 relative active:scale-95 group bg-transparent ${
                     headerMenuTarget 
-                      ? 'bg-cyan-500/15 border-cyan-500/30 text-cyan-400 shadow-[0_0_12px_rgba(6,182,212,0.08)] font-bold' 
-                      : 'bg-transparent border-[var(--pub-border-default)] hover:bg-cyan-500/10 hover:border-cyan-500/20 text-[var(--pub-text-muted)] hover:text-cyan-400'
+                      ? 'bg-[var(--surface-card)] text-[var(--text-primary)] shadow-2xs' 
+                      : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)]'
                   }`}
                   title={globalLang === 'ar' ? 'خيارات' : 'Options'}
                 >
-                  <MoreHorizontal size={13} className="text-[var(--pub-text-muted)]" />
+                  <MoreHorizontal size={13} className={`transition-colors duration-150 ${headerMenuTarget ? 'text-cyan-500 dark:text-cyan-400' : 'text-[var(--text-muted)] group-hover:text-[var(--text-primary)]'}`} />
                 </button>
               </div>
             </div>
@@ -955,8 +955,7 @@ export const Header: React.FC<{ activeLanguage?: string }> = ({ activeLanguage }
       width="auto"
     >
       {headerMenuTarget && (() => {
-        // Group 1: General Actions
-        const rawActions = [
+        const allMenuItems = [
           {
             id: 'rename',
             label: globalLang === 'ar' ? 'إعادة تسمية' : 'Rename',
@@ -1003,18 +1002,7 @@ export const Header: React.FC<{ activeLanguage?: string }> = ({ activeLanguage }
               }
               setHeaderMenuTarget(null);
             }
-          }
-        ];
-
-        // Hierarchical Sort (Ascending label length: 1, 22, 333, 4444)
-        const sortedActions = [...rawActions].sort((a, b) => {
-          const lenA = a.label.trim().length;
-          const lenB = b.label.trim().length;
-          return lenA !== lenB ? lenA - lenB : a.label.localeCompare(b.label);
-        });
-
-        // Group 2: Export Formats
-        const rawExports = [
+          },
           {
             id: 'pdf',
             label: globalLang === 'ar' ? 'تصدير كـ PDF' : 'Export as PDF',
@@ -1041,20 +1029,31 @@ export const Header: React.FC<{ activeLanguage?: string }> = ({ activeLanguage }
               window.dispatchEvent(new CustomEvent('export-chat', { detail: 'md' }));
               setHeaderMenuTarget(null);
             }
+          },
+          {
+            id: 'delete',
+            label: globalLang === 'ar' ? 'حذف المحادثة' : 'Delete Chat',
+            icon: Trash2,
+            isDanger: true,
+            action: () => {
+              window.dispatchEvent(new CustomEvent('chat-action-delete'));
+              setHeaderMenuTarget(null);
+            }
           }
         ];
 
-        // Hierarchical Sort (Ascending label length: 1, 22, 333, 4444)
-        const sortedExports = [...rawExports].sort((a, b) => {
+        // Hierarchical Sort (Shortest name at top -> Longest name at bottom)
+        const sortedMenuItems = [...allMenuItems].sort((a, b) => {
           const lenA = a.label.trim().length;
           const lenB = b.label.trim().length;
           return lenA !== lenB ? lenA - lenB : a.label.localeCompare(b.label);
         });
 
         return (
-          <div className="flex flex-col gap-0.5 p-1 font-sans w-max min-w-[190px]" dir={globalLang === 'ar' ? 'rtl' : 'ltr'}>
-            {sortedActions.map((item) => {
+          <div className="flex flex-col gap-0.5 p-1.5 font-sans w-max min-w-[190px]" dir={globalLang === 'ar' ? 'rtl' : 'ltr'}>
+            {sortedMenuItems.map((item) => {
               const Icon = item.icon;
+              const isDanger = item.isDanger;
               return (
                 <button
                   key={item.id}
@@ -1063,55 +1062,32 @@ export const Header: React.FC<{ activeLanguage?: string }> = ({ activeLanguage }
                     e.stopPropagation();
                     item.action();
                   }}
-                  className="w-full h-[34px] min-h-[34px] flex items-center gap-2 px-2.5 rounded-[var(--pub-radius-control)] border border-transparent hover:bg-cyan-500/10 hover:border-cyan-500/20 hover:text-cyan-400 group transition-all duration-150 cursor-pointer select-none text-start"
+                  className={`group w-full h-[36px] min-h-[36px] flex items-center gap-2.5 px-3 py-2 rounded-[8px] border border-transparent transition-all duration-150 cursor-pointer select-none text-start text-xs font-medium ${
+                    isDanger
+                      ? 'bg-transparent hover:bg-rose-500/10 text-rose-500'
+                      : 'bg-transparent hover:bg-[var(--surface-subtle)] text-[var(--text-secondary)] hover:text-[var(--text-primary)]'
+                  }`}
                 >
-                  <Icon size={14} className="text-[var(--pub-text-muted)] group-hover:text-cyan-400 transition-colors shrink-0" />
-                  <span className="truncate min-w-0 flex-1 text-xs font-medium text-[var(--pub-text-primary)] group-hover:text-cyan-400 transition-colors">
+                  <Icon
+                    size={14}
+                    className={`shrink-0 transition-colors duration-150 ${
+                      isDanger
+                        ? 'text-rose-500 group-hover:text-rose-400'
+                        : 'text-[var(--text-muted)] group-hover:text-cyan-400'
+                    }`}
+                  />
+                  <span
+                    className={`truncate min-w-0 flex-1 text-xs transition-colors duration-150 ${
+                      isDanger
+                        ? 'font-bold text-rose-500 group-hover:text-rose-400'
+                        : 'font-medium text-[var(--text-primary)] group-hover:text-[var(--text-primary)]'
+                    }`}
+                  >
                     {item.label}
                   </span>
                 </button>
               );
             })}
-
-            <div className="h-px bg-[var(--pub-border-default)] my-0.5 mx-1" />
-
-            {sortedExports.map((item) => {
-              const Icon = item.icon;
-              return (
-                <button
-                  key={item.id}
-                  type="button"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    item.action();
-                  }}
-                  className="w-full h-[34px] min-h-[34px] flex items-center gap-2 px-2.5 rounded-[var(--pub-radius-control)] border border-transparent hover:bg-cyan-500/10 hover:border-cyan-500/20 hover:text-cyan-400 group transition-all duration-150 cursor-pointer select-none text-start"
-                >
-                  <Icon size={14} className="text-[var(--pub-text-muted)] group-hover:text-cyan-400 transition-colors shrink-0" />
-                  <span className="truncate min-w-0 flex-1 text-xs font-medium text-[var(--pub-text-primary)] group-hover:text-cyan-400 transition-colors">
-                    {item.label}
-                  </span>
-                </button>
-              );
-            })}
-
-            <div className="h-px bg-[var(--pub-border-default)] my-0.5 mx-1" />
-
-            {/* Delete Chat */}
-            <button
-              type="button"
-              onClick={(e) => {
-                e.stopPropagation();
-                window.dispatchEvent(new CustomEvent('chat-action-delete'));
-                setHeaderMenuTarget(null);
-              }}
-              className="w-full h-[34px] min-h-[34px] flex items-center gap-2 px-2.5 rounded-[var(--pub-radius-control)] border border-transparent hover:bg-rose-500/10 hover:border-rose-500/20 text-rose-500 hover:text-rose-400 group transition-all duration-150 cursor-pointer select-none text-start"
-            >
-              <Trash2 size={14} className="text-rose-500 group-hover:text-rose-400 transition-colors shrink-0" />
-              <span className="truncate min-w-0 flex-1 text-xs font-bold text-rose-500 group-hover:text-rose-400 transition-colors">
-                {globalLang === 'ar' ? 'حذف المحادثة' : 'Delete Chat'}
-              </span>
-            </button>
           </div>
         );
       })()}

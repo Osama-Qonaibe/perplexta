@@ -78,22 +78,47 @@ export const ThinkingSteps: React.FC<ThinkingStepsProps> = ({
       <button
         type="button"
         onClick={() => setIsCollapsed(!isCollapsed)}
-        className="group inline-flex items-center gap-2 py-1 px-2 rounded-shape-sm text-xs font-bold bg-[var(--surface-subtle)] hover:bg-[var(--surface-container-high)] border border-[var(--border-default)] transition-all cursor-pointer select-none"
+        className="group inline-flex items-center gap-2 h-8 px-2.5 sm:px-3 rounded-shape-sm text-xs font-medium bg-[var(--surface-card)] hover:bg-[var(--surface-subtle)] border border-[var(--border-default)] hover:border-cyan-500/60 dark:hover:border-cyan-400/60 transition-colors cursor-pointer select-none shadow-2xs"
       >
         <div className="flex items-center gap-1.5 min-w-0">
-          <div className="relative flex items-center justify-center shrink-0">
+          <div className="relative flex items-center justify-center shrink-0 w-[22px] h-[22px]">
             <AssistantIcon 
-              size={13} 
-              isSpinning={isCurrentlyProcessing} 
+              size={12} 
+              fallbackType="cpu"
+              isSpinning={false} 
               dir={dir} 
-              className="text-accent shrink-0" 
+              className="text-accent shrink-0 relative z-10" 
             />
-            {isCurrentlyProcessing && (
-              <motion.div
-                animate={{ rotate: 360 }}
-                transition={{ repeat: Infinity, duration: 2.5, ease: 'linear' }}
-                className="absolute -inset-1 rounded-full border border-dashed border-accent/50 pointer-events-none"
-              />
+            {isCurrentlyProcessing ? (
+              <motion.svg
+                viewBox="0 0 24 24"
+                className="absolute inset-0 w-full h-full pointer-events-none"
+                animate={{ rotate: dir === 'rtl' ? -360 : 360 }}
+                transition={{ repeat: Infinity, duration: 2.2, ease: 'linear' }}
+              >
+                <circle
+                  cx="12"
+                  cy="12"
+                  r="10"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="1.5"
+                  strokeDasharray="4.5 2.5"
+                  className="text-accent/70"
+                />
+              </motion.svg>
+            ) : (
+              <svg viewBox="0 0 24 24" className="absolute inset-0 w-full h-full pointer-events-none">
+                <circle
+                  cx="12"
+                  cy="12"
+                  r="10"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="1.2"
+                  className="text-accent/25"
+                />
+              </svg>
             )}
           </div>
           <span className="font-bold text-xs text-[var(--text-secondary)] group-hover:text-[var(--text-primary)] transition-colors">

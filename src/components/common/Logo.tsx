@@ -10,6 +10,7 @@ export interface LogoProps {
   showName?: boolean;
   nameClassName?: string;
   fallbackType?: 'cpu' | 'sparkles';
+  shape?: 'rounded' | 'circle';
 }
 
 export const Logo: React.FC<LogoProps> = ({
@@ -17,10 +18,12 @@ export const Logo: React.FC<LogoProps> = ({
   className = '',
   showName = false,
   nameClassName = 'font-bold text-sm text-[var(--text-primary)] font-sans tracking-tight',
-  fallbackType = 'cpu'
+  fallbackType = 'cpu',
+  shape = 'rounded',
 }) => {
   const { siteSettings, theme, language } = useAppContext();
   const isRtl = language === 'ar';
+  const shapeClass = shape === 'circle' ? 'rounded-full' : 'rounded-shape-sm';
 
   const rawLogo = (theme === 'light' && siteSettings?.logoLightBase64) 
     ? siteSettings?.logoLightBase64 
@@ -32,7 +35,7 @@ export const Logo: React.FC<LogoProps> = ({
 
   const fallback = (
     <div 
-      className="w-8 h-8 rounded-shape-sm bg-[var(--surface-subtle)] border border-[var(--border-default)] flex items-center justify-center text-accent shadow-2xs shrink-0 box-border overflow-hidden"
+      className={`w-8 h-8 ${shapeClass} bg-[var(--surface-subtle)] border border-[var(--border-default)] flex items-center justify-center text-accent shadow-2xs shrink-0 box-border overflow-hidden`}
       style={{ width: `${size}px`, height: `${size}px` }}
     >
       {fallbackType === 'cpu' ? (
@@ -46,7 +49,7 @@ export const Logo: React.FC<LogoProps> = ({
   return (
     <div className={`inline-flex items-center gap-2 shrink-0 box-border select-none ${className}`}>
       <div 
-        className="w-8 h-8 rounded-shape-sm overflow-hidden border border-[var(--border-default)] bg-[var(--surface-subtle)] flex items-center justify-center shrink-0 box-border shadow-2xs relative"
+        className={`w-8 h-8 ${shapeClass} overflow-hidden border border-[var(--border-default)] bg-[var(--surface-subtle)] flex items-center justify-center shrink-0 box-border shadow-2xs relative`}
         style={{ width: `${size}px`, height: `${size}px` }}
       >
         {logoUrl ? (

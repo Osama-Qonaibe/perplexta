@@ -932,7 +932,7 @@ export const InteractiveAudioPlayer: React.FC<InteractiveAudioPlayerProps> = ({
                   type="button"
                   onClick={handleSaveTrackToLibrary}
                   disabled={isSavingTrack || isTrackSaved}
-                  className={`py-2.5 px-4 rounded-shape-sm border border-accent/30 bg-accent/10 text-accent font-bold text-[11px] uppercase tracking-wider flex items-center justify-center gap-2 transition-theme hover:bg-accent/20 disabled:opacity-50 disabled:cursor-not-allowed`}
+                  className="py-2 px-3.5 rounded-shape-xs border border-[var(--border-default)] bg-[var(--surface-subtle)] hover:bg-[var(--surface-card)] text-[var(--text-primary)] font-bold text-xs flex items-center justify-center gap-1.5 transition-colors disabled:opacity-50 disabled:cursor-not-allowed shadow-2xs touch-target-44 box-border relative before:absolute before:-inset-1.5 before:content-['']"
                 >
                   {isSavingTrack ? (
                     <>
@@ -941,7 +941,7 @@ export const InteractiveAudioPlayer: React.FC<InteractiveAudioPlayerProps> = ({
                     </>
                   ) : isTrackSaved ? (
                     <>
-                      <Check size={13} className="text-accent" />
+                      <Check size={13} className="text-emerald-500" />
                       <span>{dir === 'rtl' ? 'تم الحفظ في مكتبتك' : 'SAVED TO LIBRARY'}</span>
                     </>
                   ) : (
@@ -956,7 +956,7 @@ export const InteractiveAudioPlayer: React.FC<InteractiveAudioPlayerProps> = ({
                 type="button"
                 onClick={handleGenerateLyria}
                 disabled={isLyriaGenerating || !lyriaPrompt.trim()}
-                className={`py-2.5 px-5 rounded-shape-sm bg-accent text-white font-black text-[11px] uppercase tracking-widest flex items-center justify-center gap-2 transition-theme hover:bg-accent disabled:opacity-50 disabled:cursor-not-allowed shadow-[0_0_20px_rgba(156,163,175,0.3)] hover:scale-[1.02] active:scale-[0.98] ${
+                className={`py-2 px-4 rounded-shape-xs bg-[var(--comp-button-primary-bg)] hover:bg-[var(--comp-button-primary-bg)]/90 text-[var(--comp-button-primary-fg)] border border-[var(--border-default)] font-bold text-xs flex items-center justify-center gap-2 transition-colors disabled:opacity-50 disabled:cursor-not-allowed shadow-2xs active:scale-98 touch-target-44 box-border relative before:absolute before:-inset-1.5 before:content-[''] ${
                   isLyriaGenerating ? 'animate-pulse' : ''
                 }`}
               >
@@ -967,7 +967,7 @@ export const InteractiveAudioPlayer: React.FC<InteractiveAudioPlayerProps> = ({
                   </>
                 ) : (
                   <>
-                    <Sparkles size={13} className="drop-shadow-[0_0_4px_rgba(255,255,255,0.6)]" />
+                    <Sparkles size={13} />
                     <span>{dir === 'rtl' ? 'توليد المسار الفني بالذكاء الاصطناعي' : 'GENERATE AI TRACK NOW'}</span>
                   </>
                 )}

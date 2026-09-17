@@ -184,7 +184,7 @@ export const OrchestratorView = ({
       labelAr: "البحث والمعرفة",
       labelEn: "Search & Knowledge",
       icon: Search,
-      filter: (id: string) => ["sovereign_search", "sovereign_memory", "perplexta_analysis"].includes(id)
+      filter: (id: string) => ["sovereign_search", "perplexta_analysis"].includes(id)
     },
     {
       id: "dev",
@@ -328,7 +328,6 @@ export const OrchestratorView = ({
                 tts: Volume2,
                 code: Code2,
                 canvas: Music,
-                sovereign_memory: Database,
                 sovereign_search: BookOpen,
                 x402_api: Cpu,
               };

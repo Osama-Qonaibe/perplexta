@@ -1445,7 +1445,19 @@ async function resolveCheckpointName(provider: any, modelId: string): Promise<st
       console.warn(`[GpuDispatcher] Model lookup warning for provider ${provider.name}:`, dbErr);
     }
     if (!checkpointName) {
-      checkpointName = 'flux1-dev-fp8.safetensors';
+      checkpointName = provider.config?.default_model || provider.config?.checkpoint || '';
+    }
+    if (!checkpointName) {
+      const anyProviderModel = await pool.query(
+        "SELECT model_id FROM gpu_provider_models WHERE provider_id = $1 ORDER BY id DESC LIMIT 1",
+        [provider.id]
+      ).catch(() => ({ rows: [] }));
+      if (anyProviderModel.rows.length > 0) {
+        checkpointName = anyProviderModel.rows[0].model_id;
+      }
+    }
+    if (!checkpointName) {
+      throw new Error(`[GpuDispatcher] No checkpoint model is registered in the database for GPU provider "${provider.name}". Please add a model in the GPU Infrastructure control panel.`);
     }
   }
   return checkpointName;

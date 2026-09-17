@@ -75,7 +75,7 @@ export const AdminTopBar: React.FC<AdminTopBarProps> = () => {
               <span className="font-black text-sm tracking-tight text-[var(--text-primary)]">
                 {resolvedSiteName}
               </span>
-              <span className="px-1.5 py-0.5 rounded-[4px] text-[9px] font-black uppercase tracking-wider bg-cyan-500/15 text-cyan-400 border border-cyan-500/30">
+              <span className="px-1.5 py-0.5 rounded-[var(--radius-xs)] text-[9px] font-bold uppercase tracking-wider bg-[var(--surface-subtle)] text-[var(--text-secondary)] border border-[var(--border-default)]">
                 {language === 'ar' ? 'الإدارة' : 'ADMIN'}
               </span>
             </div>
@@ -89,9 +89,6 @@ export const AdminTopBar: React.FC<AdminTopBarProps> = () => {
       {/* Center Section: Live Health Status Pill */}
       <div className="hidden md:flex items-center gap-2 px-3 py-1 rounded-full bg-[var(--surface-card)] border border-[var(--border-default)] shadow-2xs">
         <span className="relative flex h-2 w-2">
-          <span className={`animate-ping absolute inline-flex h-full w-full rounded-full opacity-75 ${
-            pulseOptimal ? 'bg-emerald-400' : 'bg-rose-400'
-          }`} />
           <span className={`relative inline-flex rounded-full h-2 w-2 ${
             pulseOptimal ? 'bg-emerald-500' : 'bg-rose-500'
           }`} />
@@ -113,14 +110,14 @@ export const AdminTopBar: React.FC<AdminTopBarProps> = () => {
         {/* Admin Identity Pill */}
         {user && (
           <div className="hidden sm:flex items-center gap-2 px-2.5 py-1 rounded-[var(--radius-sm)] bg-[var(--surface-card)] border border-[var(--border-default)]">
-            <div className="w-5 h-5 rounded-full bg-cyan-500/20 text-cyan-400 text-[10px] font-black flex items-center justify-center shrink-0">
+            <div className="w-5 h-5 rounded-full bg-[var(--surface-subtle)] text-[var(--text-primary)] border border-[var(--border-default)] text-[10px] font-bold flex items-center justify-center shrink-0">
               {(user.name || user.email || 'A')[0].toUpperCase()}
             </div>
             <div className="flex flex-col text-start">
               <span className="text-[11px] font-bold text-[var(--text-primary)] leading-none truncate max-w-[110px]">
                 {user.name || user.email?.split('@')[0]}
               </span>
-              <span className="text-[9px] font-mono font-bold text-cyan-400 uppercase leading-none mt-0.5">
+              <span className="text-[9px] font-bold text-[var(--text-muted)] uppercase leading-none mt-0.5">
                 {user.role === 'admin' 
                   ? (language === 'ar' ? 'مسؤول النظام' : 'Super Admin') 
                   : (language === 'ar' ? 'فريق الدعم' : 'Support')}
@@ -133,14 +130,14 @@ export const AdminTopBar: React.FC<AdminTopBarProps> = () => {
         <ThemeToggleButton 
           variant="icon-button" 
           size="sm" 
-          className="!w-8 !h-8 !rounded-shape-sm !border-[var(--border-default)] hover:!border-cyan-500/30 !bg-[var(--surface-card)] hover:!bg-cyan-500/10 !text-[var(--text-muted)] hover:!text-cyan-400 transition-all touch-target-44" 
+          className="!w-8 !h-8 !rounded-shape-sm !border-[var(--border-default)] hover:!border-[var(--border-accent)] !bg-[var(--surface-card)] hover:!bg-[var(--surface-subtle)] !text-[var(--text-secondary)] hover:!text-[var(--text-primary)] transition-all touch-target-44 cursor-pointer" 
         />
 
         {/* Language Switch */}
         <button
           type="button"
           onClick={toggleLanguage}
-          className="w-8 h-8 rounded-shape-sm border border-[var(--border-default)] bg-[var(--surface-card)] hover:bg-cyan-500/10 hover:border-cyan-500/30 text-[var(--text-muted)] hover:text-cyan-400 flex items-center justify-center cursor-pointer transition-all active:scale-95 touch-target-44"
+          className="w-8 h-8 rounded-shape-sm border border-[var(--border-default)] bg-[var(--surface-card)] hover:bg-[var(--surface-subtle)] hover:border-[var(--border-accent)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] flex items-center justify-center cursor-pointer transition-all active:scale-95 touch-target-44"
           title={language === 'ar' ? 'التبديل إلى الإنجليزية' : 'Switch to Arabic'}
           aria-label="Toggle Language"
         >

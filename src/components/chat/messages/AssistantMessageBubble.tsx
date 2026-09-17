@@ -126,7 +126,62 @@ export const AssistantMessageBubble: React.FC<AssistantMessageBubbleProps> = ({
         {/* Model Badge Header */}
         <div className={`flex items-center justify-between gap-2.5 select-none ${['image', 'video'].includes(msg.tool || '') ? 'mb-2 px-1' : 'mb-3 pb-1.5'}`}>
           <div className="flex items-center gap-2">
-            <Logo size={20} fallbackType="cpu" />
+            <div className="relative flex items-center justify-center shrink-0 w-[26px] h-[26px]">
+              <Logo size={20} fallbackType="cpu" shape="circle" />
+              {isGenerating && isLastMessage && (
+                <motion.svg
+                  viewBox="0 0 32 32"
+                  className="absolute inset-0 w-full h-full pointer-events-none text-accent"
+                  animate={{
+                    rotate: dir === 'rtl' ? [0, -170, -210, -360] : [0, 170, 210, 360]
+                  }}
+                  transition={{
+                    repeat: Infinity,
+                    duration: 1.8,
+                    times: [0, 0.38, 0.68, 1],
+                    ease: ["easeOut", "easeInOut", "easeIn"]
+                  }}
+                >
+                  {/* Subtle circular guideline track */}
+                  <circle
+                    cx="16"
+                    cy="16"
+                    r="13.5"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="1.2"
+                    strokeDasharray="3 2"
+                    className="opacity-30"
+                  />
+                  {/* Primary smooth circular arc with rounded caps */}
+                  <circle
+                    cx="16"
+                    cy="16"
+                    r="13.5"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="1.6"
+                    strokeDasharray="26 58"
+                    strokeLinecap="round"
+                    className="opacity-90"
+                  />
+                  {/* Inward directional arrow indicator embedded seamlessly on the orbit */}
+                  {dir === 'rtl' ? (
+                    <polygon
+                      points="13.8,2.2 16.5,0.8 15.8,2.2 16.5,3.6"
+                      fill="currentColor"
+                      className="opacity-95"
+                    />
+                  ) : (
+                    <polygon
+                      points="18.2,2.2 15.5,0.8 16.2,2.2 15.5,3.6"
+                      fill="currentColor"
+                      className="opacity-95"
+                    />
+                  )}
+                </motion.svg>
+              )}
+            </div>
             <span className="text-xs font-bold text-[var(--text-primary)] font-sans tracking-tight">
               {displayName}
             </span>

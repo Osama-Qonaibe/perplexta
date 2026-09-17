@@ -12,7 +12,7 @@ export const MainLayout: React.FC = () => {
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
-      transition={{ duration: 0.32, ease: [0.16, 1, 0.3, 1] }}
+      transition={{ duration: 0.12, ease: 'easeOut' }}
       className="w-full h-full bg-[var(--surface-page)] text-[var(--text-primary)] transition-theme"
     >
       {isMobile ? <MobileAppLayout /> : <DesktopLayout />}

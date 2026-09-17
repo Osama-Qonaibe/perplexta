@@ -7,6 +7,7 @@ import {
   Megaphone, 
   ArrowUpRight 
 } from 'lucide-react';
+import { useAppContext } from '../../../context/AppContext';
 
 export interface StarterPromptItem {
   id: string;
@@ -64,6 +65,14 @@ interface StarterPromptsProps {
 
 export const StarterPrompts: React.FC<StarterPromptsProps> = ({ dir, onSelectPrompt }) => {
   const isAr = dir === 'rtl';
+  const { isMobile } = useAppContext();
+
+  const prompts = React.useMemo(() => {
+    if (isMobile) {
+      return STARTER_PROMPTS.filter(p => p.id !== 'code' && p.tool !== 'code');
+    }
+    return STARTER_PROMPTS;
+  }, [isMobile]);
 
   return (
     <div className="w-full max-w-4xl mx-auto px-1">
@@ -74,7 +83,7 @@ export const StarterPrompts: React.FC<StarterPromptsProps> = ({ dir, onSelectPro
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-3">
-        {STARTER_PROMPTS.map((item, index) => {
+        {prompts.map((item, index) => {
           const Icon = item.icon;
           return (
             <motion.button

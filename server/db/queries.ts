@@ -532,11 +532,7 @@ export async function getCachedApiKeysVault(): Promise<any[]> {
       const hasGoogle = keys.some((k: any) => k.provider === 'google' || k.provider === 'gemini');
       if (!hasGoogle) {
         const geminiKey = process.env.GEMINI_API_KEY;
-        const defaultModels = JSON.stringify([
-          { id: 'gemini-2.5-flash', name: 'Gemini 2.5 Flash' },
-          { id: 'gemini-2.5-pro', name: 'Gemini 2.5 Pro' },
-          { id: 'gemini-1.5-flash', name: 'Gemini 1.5 Flash' }
-        ]);
+        const defaultModels = '[]';
 
         keys.push({
           id: 99999,
@@ -554,9 +550,14 @@ export async function getCachedApiKeysVault(): Promise<any[]> {
           `INSERT INTO api_keys_vault (provider, encrypted_key, is_active, models, updated_at)
            VALUES ('google', $1, true, $2, CURRENT_TIMESTAMP)
            ON CONFLICT (provider) DO UPDATE 
-           SET encrypted_key = EXCLUDED.encrypted_key, is_active = true, models = EXCLUDED.models, updated_at = CURRENT_TIMESTAMP`,
+           SET encrypted_key = EXCLUDED.encrypted_key, is_active = true, updated_at = CURRENT_TIMESTAMP`,
           [encrypt(geminiKey), defaultModels]
-        ).catch((err: any) => console.warn('[Queries] Failed to auto-sync GEMINI_API_KEY into api_keys_vault:', err.message));
+        ).then(() => {
+          // Dynamically fetch and sync the actual supported models directly from Google without hardcoding
+          import('../services/ai.js').then(m => m.syncProviderModelsInternal('google', geminiKey)).catch((err: any) => {
+            console.warn('[Queries] Dynamic model sync for Google skipped:', err.message);
+          });
+        }).catch((err: any) => console.warn('[Queries] Failed to auto-sync GEMINI_API_KEY into api_keys_vault:', err.message));
       }
     }
 

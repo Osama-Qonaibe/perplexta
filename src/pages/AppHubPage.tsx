@@ -182,23 +182,23 @@ export const AppHubPage: React.FC = () => {
   );
 
   return (
-    <div className="min-h-screen bg-[#080c14] text-slate-100 font-sans flex flex-col md:flex-row overflow-hidden">
+    <div className="min-h-screen bg-[var(--surface-page)] text-[var(--text-primary)] font-sans flex flex-col md:flex-row overflow-hidden transition-theme">
       {/* Chat-style Full-Height Sidebar */}
-      <aside className="w-full md:w-72 h-screen sticky top-0 bg-[#090d16] border-r border-slate-800/90 flex flex-col justify-between p-5 shrink-0 select-none">
+      <aside className="w-full md:w-72 h-screen sticky top-0 bg-[var(--surface-card)] border-r border-[var(--border-default)] flex flex-col justify-between p-5 shrink-0 select-none">
         
         {/* Top Section: Real Platform Logo & New Project CTA */}
         <div className="space-y-5">
-          <div className="flex items-center gap-3.5 pb-4 border-b border-slate-800/90">
+          <div className="flex items-center gap-3.5 pb-4 border-b border-[var(--border-default)]">
             <Logo size={32} showName={false} />
             <div className="overflow-hidden">
-              <h2 className="text-sm font-black uppercase tracking-wider truncate text-slate-100">{siteName}</h2>
+              <h2 className="text-sm font-bold uppercase tracking-wider truncate text-[var(--text-primary)]">{siteName}</h2>
             </div>
           </div>
 
           {/* New Project CTA Button */}
           <button
             onClick={() => setIsNewModalOpen(true)}
-            className="w-full py-2.5 px-4 rounded-shape-sm bg-accent text-white font-bold text-xs shadow-md hover:opacity-95 active:scale-[0.98] transition-all flex items-center justify-center gap-2 cursor-pointer"
+            className="w-full py-2.5 px-4 rounded-shape-sm bg-cyan-600 dark:bg-cyan-500 hover:bg-cyan-700 dark:hover:bg-cyan-400 text-white font-bold text-xs shadow-2xs hover:opacity-95 active:scale-[0.98] transition-all flex items-center justify-center gap-2 cursor-pointer"
           >
             <Plus size={16} />
             <span>{language === 'ar' ? 'مشروع جديد' : 'New Project'}</span>
@@ -210,15 +210,15 @@ export const AppHubPage: React.FC = () => {
               onClick={() => setActiveTab('projects')}
               className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-shape-sm text-xs font-bold transition-all cursor-pointer ${
                 activeTab === 'projects'
-                  ? 'bg-[#0d131f] text-accent border border-accent/40 shadow-xs'
-                  : 'text-slate-300 hover:bg-[#0d131f] hover:text-slate-100'
+                  ? 'bg-[var(--surface-subtle)] text-[var(--text-primary)] border border-[var(--border-default)] shadow-2xs'
+                  : 'text-[var(--text-secondary)] hover:bg-[var(--surface-subtle)] hover:text-[var(--text-primary)]'
               }`}
             >
               <div className="flex items-center gap-2.5">
                 <Folder size={15} />
                 <span>{language === 'ar' ? 'المشاريع النشطة' : 'Active Projects'}</span>
               </div>
-              <span className="px-2 py-0.5 rounded-full bg-[#080c14] text-[10px] text-slate-400 border border-slate-800/90">
+              <span className="px-2 py-0.5 rounded-full bg-[var(--surface-subtle)] text-[10px] text-[var(--text-muted)] border border-[var(--border-default)]">
                 {projects.length}
               </span>
             </button>
@@ -227,15 +227,15 @@ export const AppHubPage: React.FC = () => {
               onClick={() => setActiveTab('databases')}
               className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-shape-sm text-xs font-bold transition-all cursor-pointer ${
                 activeTab === 'databases'
-                  ? 'bg-[#0d131f] text-accent border border-accent/40 shadow-xs'
-                  : 'text-slate-300 hover:bg-[#0d131f] hover:text-slate-100'
+                  ? 'bg-[var(--surface-subtle)] text-[var(--text-primary)] border border-[var(--border-default)] shadow-2xs'
+                  : 'text-[var(--text-secondary)] hover:bg-[var(--surface-subtle)] hover:text-[var(--text-primary)]'
               }`}
             >
               <div className="flex items-center gap-2.5">
                 <Database size={15} />
                 <span>{language === 'ar' ? 'قواعد البيانات الافتراضية' : 'Virtual Databases'}</span>
               </div>
-              <span className="px-2 py-0.5 rounded-full bg-[#080c14] text-[10px] text-slate-400 border border-slate-800/90">
+              <span className="px-2 py-0.5 rounded-full bg-[var(--surface-subtle)] text-[10px] text-[var(--text-muted)] border border-[var(--border-default)]">
                 SQL
               </span>
             </button>
@@ -244,8 +244,8 @@ export const AppHubPage: React.FC = () => {
               onClick={() => setActiveTab('templates')}
               className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-shape-sm text-xs font-bold transition-all cursor-pointer ${
                 activeTab === 'templates'
-                  ? 'bg-[#0d131f] text-accent border border-accent/40 shadow-xs'
-                  : 'text-slate-300 hover:bg-[#0d131f] hover:text-slate-100'
+                  ? 'bg-[var(--surface-subtle)] text-[var(--text-primary)] border border-[var(--border-default)] shadow-2xs'
+                  : 'text-[var(--text-secondary)] hover:bg-[var(--surface-subtle)] hover:text-[var(--text-primary)]'
               }`}
             >
               <div className="flex items-center gap-2.5">
@@ -258,8 +258,8 @@ export const AppHubPage: React.FC = () => {
               onClick={() => setActiveTab('metrics')}
               className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-shape-sm text-xs font-bold transition-all cursor-pointer ${
                 activeTab === 'metrics'
-                  ? 'bg-[#0d131f] text-accent border border-accent/40 shadow-xs'
-                  : 'text-slate-300 hover:bg-[#0d131f] hover:text-slate-100'
+                  ? 'bg-[var(--surface-subtle)] text-[var(--text-primary)] border border-[var(--border-default)] shadow-2xs'
+                  : 'text-[var(--text-secondary)] hover:bg-[var(--surface-subtle)] hover:text-[var(--text-primary)]'
               }`}
             >
               <div className="flex items-center gap-2.5">
@@ -271,22 +271,22 @@ export const AppHubPage: React.FC = () => {
         </div>
 
         {/* Bottom Section: Auto-Save Status & Back to Studio Button */}
-        <div className="space-y-3 pt-4 border-t border-slate-800/90">
-          <div className="p-3 rounded-shape-sm bg-[#0d131f] border border-slate-800/90 space-y-1">
+        <div className="space-y-3 pt-4 border-t border-[var(--border-default)]">
+          <div className="p-3 rounded-shape-sm bg-[var(--surface-subtle)] border border-[var(--border-default)] space-y-1">
             <div className="flex items-center justify-between text-[11px] font-bold">
-              <span className="text-slate-400">{language === 'ar' ? 'الحفظ التلقائي' : 'Auto-Save'}</span>
+              <span className="text-[var(--text-muted)]">{language === 'ar' ? 'الحفظ التلقائي' : 'Auto-Save'}</span>
               <span className="text-emerald-500 flex items-center gap-1">
                 <CheckCircle2 size={12} /> {language === 'ar' ? 'مفعل' : 'Active'}
               </span>
             </div>
-            <p className="text-[10px] text-slate-400 leading-tight">
+            <p className="text-[10px] text-[var(--text-muted)] leading-tight">
               {language === 'ar' ? 'جميع التعديلات محفوظة آمنة.' : 'All edits are securely saved.'}
             </p>
           </div>
 
           <button
             onClick={() => navigate('/studio')}
-            className="w-full h-10 px-3 rounded-shape-sm bg-[#0d131f] border border-slate-800/90 text-slate-300 hover:text-accent hover:border-accent/50 text-xs font-bold transition-all cursor-pointer flex items-center justify-center gap-2"
+            className="w-full h-10 px-3 rounded-shape-sm bg-transparent hover:bg-[var(--surface-subtle)] border border-[var(--border-default)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] text-xs font-bold transition-all cursor-pointer flex items-center justify-center gap-2 shadow-2xs"
           >
             {dir === 'rtl' ? <ChevronRight size={16} /> : <ChevronLeft size={16} />}
             <span>{language === 'ar' ? 'العودة للاستوديو الرئيسي' : 'Back to Main Studio'}</span>
@@ -295,18 +295,18 @@ export const AppHubPage: React.FC = () => {
       </aside>
 
       {/* Main Content Area */}
-      <main className="flex-1 flex flex-col min-w-0 h-screen overflow-y-auto bg-[#080c14]">
+      <main className="flex-1 flex flex-col min-w-0 h-screen overflow-y-auto bg-[var(--surface-page)]">
         {/* Top Quick Metrics & Search Bar */}
-        <header className="sticky top-0 z-30 backdrop-blur-xl bg-[#080c14]/90 border-b border-slate-800/90 px-6 py-4 flex flex-col sm:flex-row items-center justify-between gap-4">
+        <header className="sticky top-0 z-30 backdrop-blur-md bg-[var(--surface-page)]/95 border-b border-[var(--border-default)] px-6 py-4 flex flex-col sm:flex-row items-center justify-between gap-4">
           <div className="flex items-center gap-6 w-full sm:w-auto">
             <div>
-              <h1 className="text-base font-black tracking-tight uppercase">
+              <h1 className="text-base font-bold tracking-tight text-[var(--text-primary)]">
                 {activeTab === 'projects' && (language === 'ar' ? 'لوحة المشاريع النشطة' : 'Active Projects Hub')}
                 {activeTab === 'databases' && (language === 'ar' ? 'إدارة قواعد البيانات الافتراضية' : 'Virtual Database Manager')}
                 {activeTab === 'templates' && (language === 'ar' ? 'معرض القوالب الذكية' : 'Templates Gallery')}
                 {activeTab === 'metrics' && (language === 'ar' ? 'إحصائيات الموارد والنسخ الاحتياطي' : 'Resource Metrics & Backups')}
               </h1>
-              <p className="text-xs text-slate-400">
+              <p className="text-xs text-[var(--text-secondary)]">
                 {language === 'ar' ? 'تحكم كامل بالمشاريع، قواعد البيانات SQLite، والتصدير السحابي.' : 'Full control over projects, SQLite databases, and cloud exports.'}
               </p>
             </div>
@@ -315,13 +315,13 @@ export const AppHubPage: React.FC = () => {
           <div className="flex items-center gap-3 w-full sm:w-auto justify-end">
             {activeTab === 'projects' && (
               <div className="relative w-full sm:w-64">
-                <Search size={14} className="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
+                <Search size={14} className="absolute right-3.5 top-1/2 -translate-y-1/2 text-[var(--text-muted)]" />
                 <input
                   type="text"
                   placeholder={language === 'ar' ? 'بحث في المشاريع...' : 'Search projects...'}
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-full h-9 pl-3 pr-9 rounded-shape-sm bg-[#0d131f] border border-slate-800/90 text-xs text-slate-100 focus:outline-none focus:border-accent"
+                  className="w-full h-9 pl-3 pr-9 rounded-shape-sm bg-[var(--surface-card)] border border-[var(--border-default)] text-xs text-[var(--text-primary)] focus:outline-none focus:border-cyan-500 shadow-2xs"
                 />
               </div>
             )}
@@ -332,30 +332,30 @@ export const AppHubPage: React.FC = () => {
         <div className="p-6 space-y-6 flex-1">
           {/* Quick Metrics Bar */}
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-            <div className="p-4 rounded-shape-sm bg-[#090d16] border border-slate-800/90 flex items-center justify-between shadow-xs">
+            <div className="p-4 rounded-shape-sm bg-[var(--surface-card)] border border-[var(--border-default)] flex items-center justify-between shadow-2xs">
               <div>
-                <p className="text-[11px] font-bold text-slate-400 uppercase">{language === 'ar' ? 'المشاريع النشطة' : 'Active Projects'}</p>
-                <h3 className="text-xl font-black text-slate-100 mt-1">{activeProjectsCount}</h3>
+                <p className="text-[11px] font-bold text-[var(--text-muted)] uppercase">{language === 'ar' ? 'المشاريع النشطة' : 'Active Projects'}</p>
+                <h3 className="text-xl font-bold text-[var(--text-primary)] mt-1">{activeProjectsCount}</h3>
               </div>
-              <div className="w-10 h-10 rounded-shape-sm bg-accent/10 text-accent flex items-center justify-center">
+              <div className="w-10 h-10 rounded-shape-sm bg-cyan-500/10 text-cyan-600 dark:text-cyan-400 flex items-center justify-center">
                 <Folder size={20} />
               </div>
             </div>
 
-            <div className="p-4 rounded-shape-sm bg-[#090d16] border border-slate-800/90 flex items-center justify-between shadow-xs">
+            <div className="p-4 rounded-shape-sm bg-[var(--surface-card)] border border-[var(--border-default)] flex items-center justify-between shadow-2xs">
               <div>
-                <p className="text-[11px] font-bold text-slate-400 uppercase">{language === 'ar' ? 'حجم تخزين SQLite' : 'SQLite Storage'}</p>
-                <h3 className="text-xl font-black text-slate-100 mt-1">{totalDbSize}</h3>
+                <p className="text-[11px] font-bold text-[var(--text-muted)] uppercase">{language === 'ar' ? 'حجم تخزين SQLite' : 'SQLite Storage'}</p>
+                <h3 className="text-xl font-bold text-[var(--text-primary)] mt-1">{totalDbSize}</h3>
               </div>
               <div className="w-10 h-10 rounded-shape-sm bg-emerald-500/10 text-emerald-500 flex items-center justify-center">
                 <Database size={20} />
               </div>
             </div>
 
-            <div className="p-4 rounded-shape-sm bg-[#090d16] border border-slate-800/90 flex items-center justify-between shadow-xs">
+            <div className="p-4 rounded-shape-sm bg-[var(--surface-card)] border border-[var(--border-default)] flex items-center justify-between shadow-2xs">
               <div>
-                <p className="text-[11px] font-bold text-slate-400 uppercase">{language === 'ar' ? 'آخر تصدير GitHub' : 'Last GitHub Export'}</p>
-                <h3 className="text-sm font-bold text-slate-100 mt-1">{lastGithubExport}</h3>
+                <p className="text-[11px] font-bold text-[var(--text-muted)] uppercase">{language === 'ar' ? 'آخر تصدير GitHub' : 'Last GitHub Export'}</p>
+                <h3 className="text-sm font-bold text-[var(--text-primary)] mt-1">{lastGithubExport}</h3>
               </div>
               <div className="w-10 h-10 rounded-shape-sm bg-indigo-500/10 text-indigo-500 flex items-center justify-center">
                 <Github size={20} />
@@ -371,21 +371,21 @@ export const AppHubPage: React.FC = () => {
                   <div
                     key={proj.id}
                     onClick={() => handleOpenProject(proj)}
-                    className="p-5 rounded-shape-sm bg-[#090d16] border border-slate-800/90 hover:border-accent/60 transition-colors cursor-pointer flex flex-col justify-between group shadow-xs space-y-4"
+                    className="p-5 rounded-shape-sm bg-[var(--surface-card)] border border-[var(--border-default)] hover:border-cyan-500/60 dark:hover:border-cyan-400/60 transition-all cursor-pointer flex flex-col justify-between group shadow-2xs space-y-4"
                   >
                     <div className="space-y-2.5">
                       <div className="flex items-center justify-between">
-                        <span className="px-2.5 py-1 rounded-shape-sm text-[10px] font-bold bg-[#0d131f] text-slate-400 border border-slate-800/90">
+                        <span className="px-2.5 py-1 rounded-shape-sm text-[10px] font-bold bg-[var(--surface-subtle)] text-[var(--text-muted)] border border-[var(--border-default)]">
                           {proj.techStack}
                         </span>
-                        <span className="text-[10px] text-slate-400">{proj.updatedAt}</span>
+                        <span className="text-[10px] text-[var(--text-muted)]">{proj.updatedAt}</span>
                       </div>
-                      <h3 className="text-sm font-black text-slate-100 group-hover:text-accent transition-colors">
+                      <h3 className="text-sm font-bold text-[var(--text-primary)] group-hover:text-cyan-600 dark:group-hover:text-cyan-400 transition-colors">
                         {proj.name}
                       </h3>
                       {/* RTL Fix for Arabic text and truncation */}
                       <p 
-                        className="text-xs text-slate-400 line-clamp-2 leading-relaxed"
+                        className="text-xs text-[var(--text-secondary)] line-clamp-2 leading-relaxed"
                         style={{
                           direction: language === 'ar' ? 'rtl' : 'ltr',
                           textAlign: language === 'ar' ? 'right' : 'left',
@@ -403,35 +403,35 @@ export const AppHubPage: React.FC = () => {
                           e.stopPropagation();
                           handleOpenProject(proj);
                         }}
-                        className="w-full py-2 px-3 rounded-shape-sm bg-accent/10 hover:bg-accent text-accent hover:text-white text-xs font-bold transition-colors flex items-center justify-center gap-1.5 border border-accent/40 cursor-pointer shadow-xs"
+                        className="w-full py-2 px-3 rounded-shape-sm bg-cyan-500/10 hover:bg-cyan-500 text-cyan-600 dark:text-cyan-400 hover:text-white text-xs font-bold transition-colors flex items-center justify-center gap-1.5 border border-cyan-500/30 cursor-pointer shadow-2xs"
                       >
                         <span>{language === 'ar' ? 'فتح في الاستوديو' : 'Open in Studio'}</span>
                         <ArrowUpRight size={14} className={dir === 'rtl' ? 'rotate-[-90deg]' : ''} />
                       </button>
 
-                      <div className="pt-2 border-t border-slate-800/90 flex items-center justify-between">
-                        <div className="flex items-center gap-1.5 text-[11px] text-slate-400">
+                      <div className="pt-2 border-t border-[var(--border-default)] flex items-center justify-between">
+                        <div className="flex items-center gap-1.5 text-[11px] text-[var(--text-muted)]">
                           <Database size={12} className="text-emerald-500" />
                           <span>{proj.dbSize} ({proj.tablesCount} {language === 'ar' ? 'جداول' : 'tables'})</span>
                         </div>
                         <div className="flex items-center gap-1">
                           <button
                             onClick={(e) => handleDownloadZip(proj, e)}
-                            className="p-1.5 rounded-shape-sm bg-[#0d131f] text-slate-400 hover:text-accent transition-colors"
+                            className="p-1.5 rounded-shape-sm bg-transparent hover:bg-[var(--surface-subtle)] text-[var(--text-muted)] hover:text-[var(--text-primary)] transition-colors border border-[var(--border-default)]"
                             title={language === 'ar' ? 'تحميل ZIP' : 'Download ZIP'}
                           >
                             <Download size={14} />
                           </button>
                           <button
                             onClick={(e) => handleDuplicate(proj, e)}
-                            className="p-1.5 rounded-shape-sm bg-[#0d131f] text-slate-400 hover:text-accent transition-colors"
+                            className="p-1.5 rounded-shape-sm bg-transparent hover:bg-[var(--surface-subtle)] text-[var(--text-muted)] hover:text-[var(--text-primary)] transition-colors border border-[var(--border-default)]"
                             title={language === 'ar' ? 'تكرار المشروع' : 'Duplicate project'}
                           >
                             <RefreshCw size={14} />
                           </button>
                           <button
                             onClick={(e) => handleDelete(proj.id, e)}
-                            className="p-1.5 rounded-shape-sm bg-[#0d131f] text-slate-400 hover:text-red-500 transition-colors"
+                            className="p-1.5 rounded-shape-sm bg-transparent hover:bg-rose-500/10 text-[var(--text-muted)] hover:text-rose-500 transition-colors border border-[var(--border-default)] hover:border-rose-500/30"
                             title={language === 'ar' ? 'حذف المشروع' : 'Delete project'}
                           >
                             <Trash2 size={14} />
@@ -448,19 +448,19 @@ export const AppHubPage: React.FC = () => {
           {/* TAB 2: VIRTUAL DATABASES */}
           {activeTab === 'databases' && (
             <div className="space-y-4">
-              <div className="p-5 rounded-shape-sm bg-[#090d16] border border-slate-800/90 space-y-4 shadow-xs">
+              <div className="p-5 rounded-shape-sm bg-[var(--surface-card)] border border-[var(--border-default)] space-y-4 shadow-2xs">
                 <div className="flex items-center justify-between">
                   <div>
-                    <h3 className="text-sm font-bold text-slate-100">
+                    <h3 className="text-sm font-bold text-[var(--text-primary)]">
                       {language === 'ar' ? 'مدير قواعد البيانات الافتراضية (Supabase / PlanetScale Style)' : 'Virtual Database Manager (Supabase / PlanetScale Style)'}
                     </h3>
-                    <p className="text-xs text-slate-400">
+                    <p className="text-xs text-[var(--text-secondary)]">
                       {language === 'ar' ? 'مراقبة استهلاك SQLite لكل مشروع مع جدول تفصيلي وخيارات الصيانة الفورية.' : 'Monitor SQLite storage per project with detailed tables and instant maintenance options.'}
                     </p>
                   </div>
                   <button 
                     onClick={() => toast.success(language === 'ar' ? 'تم تحديث حالة قواعد البيانات' : 'Database status updated')}
-                    className="h-8 px-3 rounded-shape-sm bg-[#0d131f] border border-slate-800/90 text-xs font-bold hover:bg-accent/10 hover:text-accent cursor-pointer flex items-center gap-1.5"
+                    className="h-8 px-3 rounded-shape-sm bg-transparent hover:bg-[var(--surface-subtle)] border border-[var(--border-default)] text-xs font-bold text-[var(--text-primary)] cursor-pointer flex items-center gap-1.5 shadow-2xs"
                   >
                     <RefreshCw size={12} /> {language === 'ar' ? 'تحديث' : 'Refresh'}
                   </button>
@@ -469,7 +469,7 @@ export const AppHubPage: React.FC = () => {
                 <div className="overflow-x-auto">
                   <table className="w-full text-right text-xs">
                     <thead>
-                      <tr className="border-b border-slate-800/90 text-slate-400 uppercase text-[10px]">
+                      <tr className="border-b border-[var(--border-default)] text-[var(--text-muted)] uppercase text-[10px]">
                         <th className="py-3 px-4">{language === 'ar' ? 'اسم المشروع' : 'Project Name'}</th>
                         <th className="py-3 px-4">{language === 'ar' ? 'الجداول' : 'Tables'}</th>
                         <th className="py-3 px-4">{language === 'ar' ? 'السجلات' : 'Records'}</th>
@@ -479,15 +479,15 @@ export const AppHubPage: React.FC = () => {
                     </thead>
                     <tbody className="divide-y divide-[var(--border-default)]">
                       {projects.map((proj) => (
-                        <tr key={proj.id} className="hover:bg-[#0d131f]/50 transition-colors">
-                          <td className="py-3.5 px-4 font-bold text-slate-100">{proj.name}</td>
-                          <td className="py-3.5 px-4 text-slate-300">{proj.tablesCount} tables</td>
-                          <td className="py-3.5 px-4 text-slate-300">{proj.recordsCount} rows</td>
+                        <tr key={proj.id} className="hover:bg-[var(--surface-subtle)] transition-colors">
+                          <td className="py-3.5 px-4 font-bold text-[var(--text-primary)]">{proj.name}</td>
+                          <td className="py-3.5 px-4 text-[var(--text-secondary)]">{proj.tablesCount} tables</td>
+                          <td className="py-3.5 px-4 text-[var(--text-secondary)]">{proj.recordsCount} rows</td>
                           <td className="py-3.5 px-4 font-mono text-emerald-500">{proj.dbSize}</td>
                           <td className="py-3.5 px-4 text-left flex items-center justify-end gap-2">
                             <button
                               onClick={() => toast.success(language === 'ar' ? `تم إفراغ جداول قاعدة بيانات ${proj.name}` : `Truncated tables for ${proj.name}`)}
-                              className="px-2.5 py-1 rounded-shape-sm bg-[#0d131f] border border-slate-800/90 text-[11px] font-bold text-slate-300 hover:text-red-500 cursor-pointer"
+                              className="px-2.5 py-1 rounded-shape-sm bg-transparent border border-[var(--border-default)] text-[11px] font-bold text-[var(--text-secondary)] hover:text-rose-500 hover:border-rose-500/30 cursor-pointer shadow-2xs"
                             >
                               {language === 'ar' ? 'إفراغ (Truncate)' : 'Truncate'}
                             </button>
@@ -497,7 +497,7 @@ export const AppHubPage: React.FC = () => {
                                 saveAs(blob, `${proj.name.replace(/\s+/g, '_')}_schema.sql`);
                                 toast.success(language === 'ar' ? 'تم تنزيل ملف schema.sql بنجاح' : 'schema.sql downloaded successfully');
                               }}
-                              className="px-2.5 py-1 rounded-shape-sm bg-accent/10 border border-accent/30 text-[11px] font-bold text-accent hover:bg-accent hover:text-white cursor-pointer flex items-center gap-1"
+                              className="px-2.5 py-1 rounded-shape-sm bg-cyan-500/10 border border-cyan-500/30 text-[11px] font-bold text-cyan-600 dark:text-cyan-400 hover:bg-cyan-500 hover:text-white cursor-pointer flex items-center gap-1 shadow-2xs"
                             >
                               <Download size={11} /> schema.sql
                             </button>
@@ -540,12 +540,12 @@ export const AppHubPage: React.FC = () => {
                   tag: 'Blog' 
                 }
               ].map((tpl) => (
-                <div key={tpl.id} className="p-5 rounded-shape-sm bg-[#090d16] border border-slate-800/90 flex flex-col justify-between space-y-4 shadow-xs hover:border-accent/50 transition-colors">
+                <div key={tpl.id} className="p-5 rounded-shape-sm bg-[var(--surface-card)] border border-[var(--border-default)] flex flex-col justify-between space-y-4 shadow-2xs hover:border-cyan-500/60 dark:hover:border-cyan-400/60 transition-all">
                   <div className="space-y-2">
-                    <span className="px-2.5 py-1 rounded-shape-sm text-[10px] font-bold bg-accent/10 text-accent">{tpl.tag}</span>
-                    <h3 className="text-sm font-bold text-slate-100">{tpl.title}</h3>
+                    <span className="px-2.5 py-1 rounded-shape-sm text-[10px] font-bold bg-cyan-500/10 text-cyan-600 dark:text-cyan-400 border border-cyan-500/20">{tpl.tag}</span>
+                    <h3 className="text-sm font-bold text-[var(--text-primary)]">{tpl.title}</h3>
                     <p 
-                      className="text-xs text-slate-400 leading-relaxed"
+                      className="text-xs text-[var(--text-secondary)] leading-relaxed"
                       style={{
                         direction: language === 'ar' ? 'rtl' : 'ltr',
                         textAlign: language === 'ar' ? 'right' : 'left',
@@ -572,7 +572,7 @@ export const AppHubPage: React.FC = () => {
                       toast.success(language === 'ar' ? 'تم إنشاء المشروع من القالب بنجاح!' : 'Created from template successfully!');
                       handleOpenProject(newProj);
                     }}
-                    className="w-full py-2.5 rounded-shape-sm bg-accent text-white text-xs font-bold hover:opacity-90 transition-colors cursor-pointer flex items-center justify-center gap-1.5 shadow-xs"
+                    className="w-full py-2.5 rounded-shape-sm bg-cyan-600 dark:bg-cyan-500 text-white text-xs font-bold hover:opacity-90 transition-colors cursor-pointer flex items-center justify-center gap-1.5 shadow-2xs"
                   >
                     <span>{language === 'ar' ? 'استخدام القالب بنقرة واحدة' : 'Use Template 1-Click'}</span>
                     <ArrowUpRight size={14} className={dir === 'rtl' ? 'rotate-[-90deg]' : ''} />
@@ -584,16 +584,16 @@ export const AppHubPage: React.FC = () => {
 
           {/* TAB 4: METRICS & BACKUPS */}
           {activeTab === 'metrics' && (
-            <div className="p-5 rounded-shape-sm bg-[#090d16] border border-slate-800/90 space-y-4 shadow-xs">
-              <h3 className="text-sm font-bold text-slate-100">
+            <div className="p-5 rounded-shape-sm bg-[var(--surface-card)] border border-[var(--border-default)] space-y-4 shadow-2xs">
+              <h3 className="text-sm font-bold text-[var(--text-primary)]">
                 {language === 'ar' ? 'تقرير استهلاك الموارد وحالة الخادم المحلي' : 'Resource Consumption & Local Server Status'}
               </h3>
-              <div className="space-y-3 text-xs text-slate-300">
-                <div className="flex justify-between p-3 rounded-shape-sm bg-[#0d131f] border border-slate-800/90">
+              <div className="space-y-3 text-xs text-[var(--text-secondary)]">
+                <div className="flex justify-between p-3 rounded-shape-sm bg-[var(--surface-subtle)] border border-[var(--border-default)]">
                   <span>{language === 'ar' ? 'الذاكرة المؤقتة (Local Storage VFS)' : 'Local Storage VFS'}</span>
-                  <span className="font-bold text-accent">1.4 MB / 50 MB</span>
+                  <span className="font-bold text-cyan-600 dark:text-cyan-400">1.4 MB / 50 MB</span>
                 </div>
-                <div className="flex justify-between p-3 rounded-shape-sm bg-[#0d131f] border border-slate-800/90">
+                <div className="flex justify-between p-3 rounded-shape-sm bg-[var(--surface-subtle)] border border-[var(--border-default)]">
                   <span>{language === 'ar' ? 'حالة المزامنة السحابية (Auto-Save)' : 'Cloud Auto-Save Sync'}</span>
                   <span className="font-bold text-emerald-500">{language === 'ar' ? 'متصل (مزامنة فورية)' : 'Connected (Real-time Sync)'}</span>
                 </div>
@@ -605,16 +605,16 @@ export const AppHubPage: React.FC = () => {
 
       {/* NEW PROJECT MODAL */}
       {isNewModalOpen && (
-        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="w-full max-w-lg rounded-shape-sm bg-[#090d16] border border-slate-800/90 shadow-2xl p-6 space-y-5">
+        <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-xs flex items-center justify-center p-4">
+          <div className="w-full max-w-lg rounded-shape-md bg-[var(--surface-card)] border border-[var(--border-default)] shadow-2xl p-6 space-y-5">
             <div className="flex items-center justify-between">
-              <h3 className="text-sm font-black uppercase tracking-wider flex items-center gap-2">
-                <Sparkles size={16} className="text-accent" />
+              <h3 className="text-sm font-bold tracking-wider flex items-center gap-2 text-[var(--text-primary)]">
+                <Sparkles size={16} className="text-cyan-500" />
                 {language === 'ar' ? 'إنشاء مشروع جديد عبر الذكاء الاصطناعي' : 'Create New AI Project'}
               </h3>
               <button 
                 onClick={() => setIsNewModalOpen(false)}
-                className="p-1 rounded-shape-sm hover:bg-[#0d131f] text-slate-400 cursor-pointer"
+                className="p-1 rounded-shape-sm hover:bg-[var(--surface-subtle)] text-[var(--text-muted)] cursor-pointer"
               >
                 <X size={16} />
               </button>
@@ -622,25 +622,25 @@ export const AppHubPage: React.FC = () => {
 
             <form onSubmit={handleCreateProject} className="space-y-4">
               <div className="space-y-1.5">
-                <label className="text-xs font-bold text-slate-300">{language === 'ar' ? 'اسم المشروع' : 'Project Name'}</label>
+                <label className="text-xs font-bold text-[var(--text-secondary)]">{language === 'ar' ? 'اسم المشروع' : 'Project Name'}</label>
                 <input
                   type="text"
                   required
                   placeholder={language === 'ar' ? 'مثال: متجر إلكتروني للملابس' : 'e.g., E-commerce Apparel Store'}
                   value={newProjectName}
                   onChange={(e) => setNewProjectName(e.target.value)}
-                  className="w-full h-10 px-3 rounded-shape-sm bg-[#0d131f] border border-slate-800/90 text-xs text-slate-100 focus:outline-none focus:border-accent"
+                  className="w-full h-10 px-3 rounded-shape-sm bg-[var(--surface-subtle)] border border-[var(--border-default)] text-xs text-[var(--text-primary)] focus:outline-none focus:border-cyan-500 shadow-2xs"
                 />
               </div>
 
               <div className="space-y-1.5">
-                <label className="text-xs font-bold text-slate-300">{language === 'ar' ? 'وصف الفكرة أو برومبت التوليد' : 'AI Prompt / Description'}</label>
+                <label className="text-xs font-bold text-[var(--text-secondary)]">{language === 'ar' ? 'وصف الفكرة أو برومبت التوليد' : 'AI Prompt / Description'}</label>
                 <textarea
                   rows={3}
                   placeholder={language === 'ar' ? 'صف تطبيقك المطلوب وسيقوم النظام بتوليد الهيكل وملفات الـ SQLite...' : 'Describe your app and AI will generate files and SQLite database...'}
                   value={newProjectPrompt}
                   onChange={(e) => setNewProjectPrompt(e.target.value)}
-                  className="w-full p-3 rounded-shape-sm bg-[#0d131f] border border-slate-800/90 text-xs text-slate-100 focus:outline-none focus:border-accent resize-none"
+                  className="w-full p-3 rounded-shape-sm bg-[var(--surface-subtle)] border border-[var(--border-default)] text-xs text-[var(--text-primary)] focus:outline-none focus:border-cyan-500 resize-none shadow-2xs"
                 />
               </div>
 
@@ -648,14 +648,14 @@ export const AppHubPage: React.FC = () => {
                 <button
                   type="button"
                   onClick={() => setIsNewModalOpen(false)}
-                  className="px-4 py-2 rounded-shape-sm bg-[#0d131f] text-xs font-bold text-slate-300 hover:bg-[#0d131f]/80 cursor-pointer"
+                  className="px-4 py-2 rounded-shape-sm bg-transparent hover:bg-[var(--surface-subtle)] border border-[var(--border-default)] text-xs font-bold text-[var(--text-secondary)] cursor-pointer shadow-2xs"
                 >
                   {language === 'ar' ? 'إلغاء' : 'Cancel'}
                 </button>
                 <button
                   type="submit"
                   disabled={isCreating}
-                  className="px-5 py-2 rounded-shape-sm bg-accent text-white text-xs font-bold hover:opacity-90 transition-colors cursor-pointer flex items-center gap-2"
+                  className="px-5 py-2 rounded-shape-sm bg-cyan-600 dark:bg-cyan-500 text-white text-xs font-bold hover:opacity-90 transition-colors cursor-pointer flex items-center gap-2 shadow-2xs"
                 >
                   {isCreating ? <RefreshCw size={14} className="animate-spin" /> : <Sparkles size={14} />}
                   <span>{isCreating ? (language === 'ar' ? 'جاري التوليد...' : 'Generating...') : (language === 'ar' ? 'بدء الإنشاء والتطوير' : 'Start Development')}</span>

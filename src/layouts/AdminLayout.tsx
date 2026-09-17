@@ -26,10 +26,10 @@ export const AdminLayout: React.FC = () => {
   return (
     <motion.div 
       dir={dir}
-      initial={{ opacity: 0, scale: 0.995 }}
-      animate={{ opacity: 1, scale: 1 }}
-      exit={{ opacity: 0, scale: 0.995 }}
-      transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      transition={{ duration: 0.12, ease: 'easeOut' }}
       className="fixed inset-0 z-[100] flex flex-col w-full h-[100dvh] overflow-hidden bg-[var(--surface-page)] text-[var(--text-primary)] select-none"
     >
       {/* Sovereign Admin Executive TopBar */}

@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { User, Mail, Lock, Camera, Edit2, ShieldCheck, CreditCard, Check, X, Loader2, Languages, Monitor, Archive, Trash2, AlertTriangle, Palette } from 'lucide-react';
+import { User, Mail, Lock, Camera, Edit2, ShieldCheck, CreditCard, Check, X, Loader2, Languages, Monitor, Archive, Trash2, AlertTriangle, Palette, Zap } from 'lucide-react';
 import { useAppContext } from '../context/AppContext';
 import { motion, AnimatePresence } from 'motion/react';
 import { resolveImageUrl } from '../utils/imageResolver';
@@ -453,7 +453,7 @@ export const AccountSettings: React.FC<AccountSettingsProps> = ({ user, onUpdate
         </div>
 
         {/* Email Notifications */}
-        <div className="flex items-center justify-between py-3 sm:py-4 group gap-2">
+        <div className="flex items-center justify-between py-3 sm:py-4 border-b border-[var(--pub-border-default)] group gap-2">
            <div className="flex items-center gap-3 sm:gap-4 min-w-0">
               <div className="p-2 sm:p-2.5 rounded-[var(--pub-radius-control)] bg-[var(--pub-surface-subtle)] text-[var(--pub-text-muted)] shrink-0 border border-transparent">
                 <Mail size={16} />
@@ -476,6 +476,58 @@ export const AccountSettings: React.FC<AccountSettingsProps> = ({ user, onUpdate
                 onClick={() => onUpdate({ email_notifications: false })}
                 className={`px-3 py-1 rounded-[var(--pub-radius-micro)] text-[10px] font-bold uppercase tracking-wider transition-all duration-150 cursor-pointer ${
                   user.email_notifications === false 
+                    ? 'bg-rose-500/20 border border-rose-500/30 text-rose-400' 
+                    : 'text-[var(--pub-text-muted)] hover:text-[var(--pub-text-primary)]'
+                }`}
+              >
+                {dir === 'rtl' ? 'تعطيل' : 'Disable'}
+              </button>
+           </div>
+        </div>
+
+        {/* Aggressive Data Saver & Content Compression Toggle */}
+        <div className="flex items-center justify-between py-3 sm:py-4 group gap-2">
+           <div className="flex items-center gap-3 sm:gap-4 min-w-0">
+              <div className="p-2 sm:p-2.5 rounded-[var(--pub-radius-control)] bg-[var(--pub-surface-subtle)] text-[var(--pub-text-muted)] shrink-0 border border-transparent">
+                <Zap size={16} />
+              </div>
+              <div className="min-w-0">
+                <p className="text-[10px] font-bold text-[var(--pub-text-muted)] uppercase tracking-wider mb-0.5">
+                  {dir === 'rtl' ? 'توفير البيانات والضغط الفائق' : 'Aggressive Data Saver & Compression'}
+                </p>
+                <p className="font-bold text-xs sm:text-sm text-[var(--pub-text-primary)] uppercase truncate">
+                  {user.data_saver ? (dir === 'rtl' ? 'مفعل (مستوى 9)' : 'Enabled (Level 9)') : (dir === 'rtl' ? 'معطل (قياسي)' : 'Disabled (Standard)')}
+                </p>
+                <p className="text-[10px] text-[var(--pub-text-muted)] font-medium mt-0.5 hidden sm:block">
+                  {dir === 'rtl' 
+                    ? 'ضغط البيانات والشبكة بأقصى كثافة لتسريع الاستجابة على الاتصالات المحدودة' 
+                    : 'Level 9 maximum compression for slow or metered mobile connections'}
+                </p>
+              </div>
+           </div>
+           <div className="flex gap-1 p-1 bg-[var(--pub-surface-subtle)] rounded-[var(--pub-radius-control)] border border-[var(--pub-border-default)] shrink-0">
+              <button 
+                type="button"
+                onClick={() => {
+                  document.cookie = "data_saver=true; path=/; max-age=31536000; SameSite=Lax";
+                  localStorage.setItem('data_saver_enabled', 'true');
+                  onUpdate({ data_saver: true });
+                  notify(dir === 'rtl' ? 'تم تفعيل وضع توفير البيانات والضغط الفائق' : 'Data Saver & Aggressive Compression enabled');
+                }}
+                className={`px-3 py-1 rounded-[var(--pub-radius-micro)] text-[10px] font-bold uppercase tracking-wider transition-all duration-150 cursor-pointer ${user.data_saver ? 'bg-cyan-500/20 border border-cyan-500/30 text-cyan-400' : 'text-[var(--pub-text-muted)] hover:text-[var(--pub-text-primary)]'}`}
+              >
+                {dir === 'rtl' ? 'تفعيل' : 'Enable'}
+              </button>
+              <button 
+                type="button"
+                onClick={() => {
+                  document.cookie = "data_saver=false; path=/; max-age=31536000; SameSite=Lax";
+                  localStorage.setItem('data_saver_enabled', 'false');
+                  onUpdate({ data_saver: false });
+                  notify(dir === 'rtl' ? 'تم إيقاف وضع توفير البيانات' : 'Data Saver disabled');
+                }}
+                className={`px-3 py-1 rounded-[var(--pub-radius-micro)] text-[10px] font-bold uppercase tracking-wider transition-all duration-150 cursor-pointer ${
+                  !user.data_saver 
                     ? 'bg-rose-500/20 border border-rose-500/30 text-rose-400' 
                     : 'text-[var(--pub-text-muted)] hover:text-[var(--pub-text-primary)]'
                 }`}

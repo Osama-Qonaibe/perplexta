@@ -326,6 +326,38 @@ export const MemoryCenterView = ({
     }
   };
 
+  const handleRunMigration = async () => {
+    setIsRunning(true);
+    setIsOperationPending(true);
+    try {
+      const res = await fetch("/api/admin/memories/migrate", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      const data = await res.json();
+      if (res.ok && data.success) {
+        showToast(
+          language === "ar"
+            ? `تم ترحيل الذاكرة الموحدة بنجاح! (حفظ ${data.result?.newFactsSaved || 0} حقيقة وتطبيع ${data.result?.categoriesNormalized || 0} سجل)`
+            : `Local memory migration completed! (${data.result?.newFactsSaved || 0} facts saved, ${data.result?.categoriesNormalized || 0} normalized)`,
+          true
+        );
+        fetchStats();
+      } else {
+        showToast(data.error || "Failed to execute migration", false);
+      }
+    } catch (err: any) {
+      showToast(err.message || "Network error", false);
+    } finally {
+      setIsRunning(false);
+      setIsOperationPending(false);
+    }
+  };
+
   const filteredReports = reports.filter(
     (item) =>
       item.userName.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -779,7 +811,7 @@ export const MemoryCenterView = ({
             </p>
           </div>
 
-          <div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <button
               onClick={handleRunConsolidation}
               disabled={isRunning}
@@ -789,8 +821,8 @@ export const MemoryCenterView = ({
                 <>
                   <div className="w-4 h-4 rounded-full border-2 border-white/35 border-t-white animate-spin"></div>
                   {language === "ar"
-                    ? "جاري التكثيف والتوليف..."
-                    : "DISTILLING MEMORIES..."}
+                    ? "جاري المعالجة..."
+                    : "PROCESSING..."}
                 </>
               ) : (
                 <>
@@ -803,6 +835,17 @@ export const MemoryCenterView = ({
                     : "EXECUTE MANIFEST CYCLE"}
                 </>
               )}
+            </button>
+
+            <button
+              onClick={handleRunMigration}
+              disabled={isRunning}
+              className="w-full flex items-center justify-center gap-2 px-6 py-2.5 bg-gray-800 hover:bg-gray-700 disabled:opacity-50 text-white rounded-[4px] font-medium text-sm transition-theme shadow-sm cursor-pointer border border-gray-700"
+            >
+              <Database size={16} className="text-gray-300" />
+              {language === "ar"
+                ? "رحّل بيانات الذاكرة القديمة للمحرك المحلي"
+                : "MIGRATE CONTEXT TO LOCAL ENGINE"}
             </button>
           </div>
         </div>

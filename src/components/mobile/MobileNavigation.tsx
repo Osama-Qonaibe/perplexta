@@ -288,13 +288,13 @@ export const MobileNavigation: React.FC = () => {
                       key={`drawer-nav-${item.path}`}
                       to={item.path}
                       onClick={() => setIsDrawerOpen(false)}
-                      className={`flex items-center gap-3 px-3 py-2.5 rounded-[var(--radius)] text-xs font-bold transition-all ${
+                      className={`flex items-center gap-3 px-3 py-2.5 rounded-[var(--radius-sm)] text-xs font-bold transition-all duration-150 border group ${
                         isActive
-                          ? 'bg-[var(--bg-accent-muted)] text-[var(--fg-accent)] border border-[var(--border-accent)]/30'
-                          : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--surface-subtle)]'
+                          ? 'bg-[var(--surface-card)] text-[var(--text-primary)] border-[var(--border-default)] border-s-2 border-s-cyan-500 dark:border-s-cyan-400 font-bold shadow-2xs'
+                          : 'border-transparent text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--surface-subtle)]'
                       }`}
                     >
-                      <span className={isActive ? 'text-accent' : 'text-[var(--text-muted)]'}>
+                      <span className={`transition-colors duration-150 ${isActive ? 'text-cyan-500 dark:text-cyan-400' : 'text-[var(--text-muted)] group-hover:text-[var(--text-primary)]'}`}>
                         {item.icon}
                       </span>
                       <span>{item.label}</span>

@@ -56,18 +56,20 @@ export const MemoryCenter: React.FC<MemoryCenterProps> = ({
 
   const categories = [
     { id: 'all', label: t('all') || (dir === 'rtl' ? 'الكل' : 'All') },
-    { id: 'personal', label: t('personal') || (dir === 'rtl' ? 'شخصي' : 'Personal') },
-    { id: 'technical', label: t('technical') || (dir === 'rtl' ? 'تقني' : 'Technical') },
-    { id: 'preference', label: t('preference') || (dir === 'rtl' ? 'تفضيلات' : 'Preferences') },
-    { id: 'project', label: t('project') || (dir === 'rtl' ? 'مشاريع' : 'Projects') },
-    { id: 'identity', label: t('identity') || (dir === 'rtl' ? 'هوية' : 'Identity') },
-    { id: 'professional', label: t('professional') || (dir === 'rtl' ? 'مهني' : 'Professional') },
-    { id: 'general', label: t('general') || (dir === 'rtl' ? 'عام' : 'General') },
+    { id: 'identity', label: t('identity') || (dir === 'rtl' ? 'الهوية والشخصية' : 'Identity & Personal') },
+    { id: 'technical', label: t('technical') || (dir === 'rtl' ? 'بيئة وتقنيات العمل' : 'Tech Stack') },
+    { id: 'preference', label: t('preference') || (dir === 'rtl' ? 'التفضيلات والقواعد' : 'Preferences & Rules') },
+    { id: 'project', label: t('project') || (dir === 'rtl' ? 'المشاريع الحالية' : 'Active Projects') },
+    { id: 'professional', label: t('professional') || (dir === 'rtl' ? 'المهنة والدور' : 'Role & Profession') },
+    { id: 'general', label: t('general') || (dir === 'rtl' ? 'حقائق عامة' : 'General Facts') },
   ];
 
   const filteredMemories = filterCategory === 'all' 
     ? memories 
-    : memories.filter(m => m.category === filterCategory);
+    : memories.filter(m => {
+        if (filterCategory === 'identity' && (m.category === 'personal' || m.category === 'identity')) return true;
+        return m.category === filterCategory;
+      });
 
   const MEMORY_LIMIT = 50;
   const memoryCount = memories.length;

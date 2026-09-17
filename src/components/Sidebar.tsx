@@ -27,7 +27,8 @@ import {
   FileCode, 
   FileType, 
   Pencil, 
-  History 
+  History,
+  Share2
 } from 'lucide-react';
 import { useAppContext } from '../context/AppContext';
 import { isPathBlocked } from '../utils/sectionVisibility';
@@ -475,7 +476,7 @@ export const Sidebar: React.FC<{ activeLanguage?: string }> = ({ activeLanguage 
             <div className="h-[calc(50px+env(safe-area-inset-top,0px))] lg:h-[calc(56px+env(safe-area-inset-top,0px))] flex-shrink-0 border-b border-[var(--pub-border-default)] w-full transition-all duration-150" />
 
             <div className="flex-shrink-0 pt-3.5">
-              <nav className="space-y-0.5">
+              <nav className="space-y-1">
                 {navItems.map((item, index) => (
                   <NavLink
                     key={`nav-${item.path}-${index}`}
@@ -488,41 +489,28 @@ export const Sidebar: React.FC<{ activeLanguage?: string }> = ({ activeLanguage 
                       const active = isActive;
                       return (
                         <div 
-                          className={`${(item as any).className || 'flex'} items-center transition-all duration-150 w-full h-[34px] overflow-hidden flex-shrink-0 group relative rounded-[var(--pub-radius-control)] border ${
+                          className={`${(item as any).className || 'flex'} items-center transition-all duration-150 w-full h-[36px] overflow-hidden flex-shrink-0 group relative rounded-[var(--radius-sm)] border cursor-pointer ${
                             active 
-                              ? isSidebarOpen
-                                ? 'bg-cyan-500/15 border-cyan-500/30 text-cyan-400 font-bold' 
-                                : 'border-transparent text-cyan-400'
-                              : isSidebarOpen 
-                                ? 'border-transparent text-[var(--pub-text-muted)] hover:text-cyan-400 hover:bg-cyan-500/10 hover:border-cyan-500/20'
-                                : 'border-transparent text-[var(--pub-text-muted)]'
+                              ? 'bg-[var(--surface-card)] text-[var(--text-primary)] border-[var(--border-default)] border-s-2 border-s-cyan-500 dark:border-s-cyan-400 font-bold shadow-2xs'
+                              : 'border-transparent text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--surface-subtle)]'
                           }`}
-                          style={{ paddingInlineStart: '11px', paddingInlineEnd: '8px' }}
+                          style={{ paddingInlineStart: '10px', paddingInlineEnd: '8px' }}
                         >
-                          <div className="w-7 h-7 flex-shrink-0 flex items-center justify-center relative">
-                            <div className={`absolute inset-0 m-auto w-7 h-7 rounded-[var(--pub-radius-micro)] border transition-all duration-150 ${
-                              active 
-                                ? isSidebarOpen
-                                  ? 'border-transparent bg-transparent'
-                                  : 'bg-cyan-500/20 border-cyan-500/30' 
-                                : isSidebarOpen 
-                                  ? 'border-transparent bg-transparent' 
-                                  : 'border-transparent group-hover:bg-cyan-500/15 group-hover:border-cyan-500/25'
-                            }`} />
-                            <div className={`relative z-10 flex items-center justify-center transition-all duration-150 ${
-                              active 
-                                ? 'text-cyan-400' 
-                                : 'text-[var(--pub-text-muted)] group-hover:text-cyan-400'
-                            }`}>
-                              {React.cloneElement(item.icon as React.ReactElement, { size: 15 } as any)}
-                            </div>
+                          <div className={`w-7 h-7 flex-shrink-0 flex items-center justify-center transition-colors duration-150 ${
+                            active 
+                              ? 'text-cyan-500 dark:text-cyan-400' 
+                              : 'text-[var(--text-muted)] group-hover:text-[var(--text-primary)]'
+                          }`}>
+                            {React.cloneElement(item.icon as React.ReactElement, { size: 16 } as any)}
                           </div>
                           <AnimatePresence initial={false}>
                             {isSidebarOpen && (
                               <motion.span
                                 {...sidebarTextMotion}
-                                className={`font-bold text-[12px] whitespace-nowrap overflow-hidden transition-all duration-150 ${
-                                  active ? 'text-cyan-400 font-bold' : 'text-[var(--pub-text-muted)] group-hover:text-cyan-400'
+                                className={`font-bold text-xs tracking-tight whitespace-nowrap overflow-hidden transition-colors duration-150 leading-normal ${
+                                  active 
+                                    ? 'text-[var(--text-primary)]' 
+                                    : 'text-[var(--text-secondary)] group-hover:text-[var(--text-primary)]'
                                 } ${dir === 'rtl' ? 'mr-1.5' : 'ml-1.5'}`}
                                 style={{ display: 'inline-block' }}
                               >
@@ -540,26 +528,17 @@ export const Sidebar: React.FC<{ activeLanguage?: string }> = ({ activeLanguage 
                   <div className="mt-1.5 pt-1.5 pb-1.5 border-t border-[var(--pub-border-default)] transition-theme">
                     <button 
                       onClick={handleNewChat}
-                      className={`flex items-center transition-all duration-150 w-full h-[34px] overflow-hidden flex-shrink-0 group cursor-pointer border rounded-[var(--pub-radius-control)] ${
-                        isSidebarOpen 
-                          ? 'border-transparent hover:bg-cyan-500/10 hover:border-cyan-500/20 hover:text-cyan-400' 
-                          : 'border-transparent text-[var(--pub-text-muted)]'
-                      }`}
-                      style={{ paddingInlineStart: '11px', paddingInlineEnd: '8px' }}
+                      className="flex items-center transition-all duration-150 w-full h-[36px] overflow-hidden flex-shrink-0 group cursor-pointer border border-transparent rounded-[var(--radius-sm)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--surface-subtle)]"
+                      style={{ paddingInlineStart: '10px', paddingInlineEnd: '8px' }}
                     >
-                      <div className={`w-7 h-7 flex-shrink-0 flex items-center justify-center relative ${isSidebarOpen ? 'my-auto' : '-translate-y-[0.5px]'}`}>
-                        <div className={`absolute inset-0 m-auto w-7 h-7 rounded-[var(--pub-radius-micro)] border transition-all duration-150 ${
-                          isSidebarOpen 
-                            ? 'border-transparent bg-transparent' 
-                            : 'border-transparent group-hover:bg-cyan-500/15 group-hover:border-cyan-500/25'
-                        }`} />
-                        <Plus size={15} className="relative z-10 transition-all duration-150 text-[var(--pub-text-muted)] group-hover:text-cyan-400" />
+                      <div className={`w-7 h-7 flex-shrink-0 flex items-center justify-center transition-colors duration-150 text-[var(--text-muted)] group-hover:text-[var(--text-primary)] ${isSidebarOpen ? 'my-auto' : '-translate-y-[0.5px]'}`}>
+                        <Plus size={16} />
                       </div>
                       <AnimatePresence initial={false}>
                         {isSidebarOpen && (
                           <motion.span
                             {...sidebarTextMotion}
-                            className={`font-bold text-[12px] text-[var(--pub-text-muted)] group-hover:text-cyan-400 whitespace-nowrap overflow-hidden transition-all duration-150 ${dir === 'rtl' ? 'mr-1.5' : 'ml-1.5'}`}
+                            className={`font-bold text-xs text-[var(--text-secondary)] group-hover:text-[var(--text-primary)] whitespace-nowrap overflow-hidden transition-colors duration-150 leading-normal ${dir === 'rtl' ? 'mr-1.5' : 'ml-1.5'}`}
                             style={{ display: 'inline-block' }}
                           >
                             {t('newChat')}
@@ -625,55 +604,37 @@ export const Sidebar: React.FC<{ activeLanguage?: string }> = ({ activeLanguage 
                                     repeat: Infinity,
                                     ease: "easeInOut"
                                   }}
-                                  className={`flex items-center w-full h-[34px] ${isMenuOpen ? 'overflow-visible z-30' : 'overflow-hidden'} flex-shrink-0 transition-all duration-150 group relative border rounded-[var(--pub-radius-control)] ${
+                                  className={`flex items-center w-full h-[36px] ${isMenuOpen ? 'overflow-visible z-30' : 'overflow-hidden'} flex-shrink-0 transition-all duration-150 group relative border rounded-[var(--radius-sm)] cursor-pointer ${
                                     isActive 
-                                      ? isSidebarOpen
-                                        ? 'text-cyan-400 bg-cyan-500/15 border-cyan-500/30 font-bold' 
-                                        : 'text-cyan-400 border-transparent'
-                                      : isSidebarOpen 
-                                        ? 'text-[var(--pub-text-muted)] hover:text-cyan-400 hover:bg-cyan-500/10 hover:border-cyan-500/20 border-transparent' 
-                                        : 'text-[var(--pub-text-muted)] border-transparent'
+                                      ? 'bg-[var(--surface-card)] text-[var(--text-primary)] border-[var(--border-default)] border-s-2 border-s-cyan-500 dark:border-s-cyan-400 font-bold shadow-2xs' 
+                                      : 'border-transparent text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--surface-subtle)]'
                                   }`}
-                                  style={{ paddingInlineStart: '11px', paddingInlineEnd: '8px' }}
+                                  style={{ paddingInlineStart: '10px', paddingInlineEnd: '6px' }}
                                 >
                                   <div
                                     onClick={() => {
                                       navigate(`/chat/${chat.id}`);
                                       if (window.innerWidth < 768) setIsSidebarOpen(false);
                                     }}
-                                    className="flex items-center h-full flex-1 min-w-0 cursor-pointer"
+                                    className="flex items-center h-full flex-1 min-w-0"
                                   >
-                                    <div className="w-7 h-full flex-shrink-0 flex items-center justify-center relative">
-                                      <div className={`absolute inset-0 m-auto w-7 h-7 rounded-[var(--pub-radius-micro)] border transition-all duration-150 ${
-                                        isActive 
-                                          ? isSidebarOpen
-                                            ? 'border-transparent bg-transparent'
-                                            : 'bg-cyan-500/20 border-cyan-500/30' 
-                                          : isSidebarOpen 
-                                            ? 'border-transparent bg-transparent' 
-                                            : 'border-transparent group-hover:bg-cyan-500/15 group-hover:border-cyan-500/25'
-                                      }`} />
-                                      <MessageSquare 
-                                        size={14} 
-                                        className={`relative z-10 transition-all duration-150 ${
-                                          isActive 
-                                            ? 'text-cyan-400' 
-                                            : streamingChatId === chat.id 
-                                              ? 'text-cyan-400 animate-pulse' 
-                                              : 'text-[var(--pub-text-muted)] group-hover:text-cyan-400'
-                                        }`} 
-                                      />
+                                    <div className={`w-7 h-full flex-shrink-0 flex items-center justify-center transition-colors duration-150 ${
+                                      isActive 
+                                        ? 'text-cyan-500 dark:text-cyan-400' 
+                                        : streamingChatId === chat.id 
+                                          ? 'text-cyan-500 dark:text-cyan-400' 
+                                          : 'text-[var(--text-muted)] group-hover:text-[var(--text-primary)]'
+                                    }`}>
+                                      <MessageSquare size={15} />
                                     </div>
                                     <AnimatePresence initial={false}>
                                       {isSidebarOpen && (
                                         <motion.span
                                           {...sidebarTextMotion}
-                                          className={`font-semibold text-[11.5px] truncate whitespace-nowrap overflow-hidden text-start transition-all duration-150 ${dir === 'rtl' ? 'mr-1' : 'ml-1'} ${
+                                          className={`font-bold text-xs truncate whitespace-nowrap overflow-hidden text-start transition-colors duration-150 leading-normal ${dir === 'rtl' ? 'mr-1.5' : 'ml-1.5'} ${
                                             isActive 
-                                              ? 'text-cyan-400 font-extrabold' 
-                                              : streamingChatId === chat.id 
-                                                ? 'text-cyan-400 font-extrabold' 
-                                                : 'text-[var(--pub-text-muted)] group-hover:text-[var(--pub-text-primary)]'
+                                              ? 'text-[var(--text-primary)]' 
+                                              : 'text-[var(--text-secondary)] group-hover:text-[var(--text-primary)]'
                                           }`}
                                           style={{ display: 'inline-block' }}
                                         >
@@ -687,7 +648,7 @@ export const Sidebar: React.FC<{ activeLanguage?: string }> = ({ activeLanguage 
                                     {isSidebarOpen && (
                                       <motion.div 
                                         {...sidebarTextMotion}
-                                        className={`flex items-center gap-1 ${optionsMenuTarget?.chatId === chat.id ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'} transition-all duration-150 ${dir === 'rtl' ? 'mr-auto pl-1.5' : 'ml-auto pr-1.5'}`}
+                                        className={`flex items-center gap-1 ${optionsMenuTarget?.chatId === chat.id ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'} transition-opacity duration-150 ${dir === 'rtl' ? 'mr-auto pl-1' : 'ml-auto pr-1'}`}
                                       >
                                         <button 
                                           type="button"
@@ -700,14 +661,14 @@ export const Sidebar: React.FC<{ activeLanguage?: string }> = ({ activeLanguage 
                                               setOptionsMenuTarget({ chatId: chat.id, rect });
                                             }
                                           }}
-                                          className={`w-6 h-6 flex items-center justify-center rounded-[var(--pub-radius-micro)] border transition-all duration-150 ${
+                                          className={`w-6 h-6 flex items-center justify-center rounded-[var(--radius-xs)] border transition-all duration-150 cursor-pointer ${
                                             optionsMenuTarget?.chatId === chat.id 
-                                              ? 'bg-cyan-500/20 text-cyan-400 border-cyan-500/30' 
-                                              : 'text-[var(--pub-text-muted)] hover:text-cyan-400 hover:bg-cyan-500/15 border-transparent'
+                                              ? 'border-[var(--border-default)] bg-[var(--surface-card)] text-[var(--text-primary)] shadow-2xs' 
+                                              : 'border-transparent text-[var(--text-muted)] hover:text-[var(--text-primary)] hover:bg-[var(--surface-card)]'
                                           }`}
                                           title={language === 'ar' ? 'خيارات' : 'Options'}
                                         >
-                                          <MoreHorizontal size={12} />
+                                          <MoreHorizontal size={13} />
                                         </button>
                                       </motion.div>
                                     )}
@@ -841,36 +802,31 @@ export const Sidebar: React.FC<{ activeLanguage?: string }> = ({ activeLanguage 
                     const rect = e.currentTarget.getBoundingClientRect();
                     setProfileMenuTarget(profileMenuTarget ? null : { rect });
                   }}
-                  className={`flex items-center group cursor-pointer w-full h-[36px] overflow-hidden flex-shrink-0 rounded-[var(--pub-radius-control)] border transition-all duration-150 ${
-                    isSidebarOpen 
-                      ? 'border-transparent text-[var(--pub-text-muted)] hover:text-cyan-400 hover:bg-cyan-500/10 hover:border-cyan-500/20' 
-                      : 'border-transparent text-[var(--pub-text-muted)]'
+                  className={`flex items-center group cursor-pointer w-full h-[38px] overflow-hidden flex-shrink-0 rounded-[var(--radius-sm)] border transition-all duration-150 ${
+                    profileMenuTarget
+                      ? 'bg-[var(--surface-card)] text-[var(--text-primary)] border-[var(--border-default)] shadow-2xs' 
+                      : 'border-transparent text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--surface-subtle)]'
                   }`}
-                  style={{ paddingInlineStart: '11px', paddingInlineEnd: '8px' }}
+                  style={{ paddingInlineStart: '10px', paddingInlineEnd: '8px' }}
                 >
-                  <div className="flex items-center h-full overflow-hidden w-full relative text-[var(--pub-text-primary)]">
+                  <div className="flex items-center h-full overflow-hidden w-full relative text-[var(--text-primary)]">
                     <div className="w-7 h-[36px] flex-shrink-0 flex items-center justify-center relative">
-                      <div className={`absolute inset-0 m-auto w-7 h-7 rounded-[var(--pub-radius-micro)] border transition-all duration-150 ${
-                        isSidebarOpen 
-                          ? 'border-transparent bg-transparent' 
-                          : 'border-transparent group-hover:bg-cyan-500/15 group-hover:border-cyan-500/25'
-                      }`} />
                       <div 
-                        className="w-7 h-7 rounded-[var(--pub-radius-micro)] bg-[var(--pub-surface-container)] flex items-center justify-center flex-shrink-0 overflow-hidden border transition-all duration-150 relative z-10 group-hover:border-cyan-400 shadow-xs"
+                        className="w-7 h-7 rounded-[var(--radius-xs)] bg-[var(--surface-subtle)] flex items-center justify-center flex-shrink-0 overflow-hidden border transition-all duration-150 relative z-10 group-hover:border-[var(--border-accent)] shadow-2xs"
                         style={{ 
-                          borderColor: user.subscription?.plan_color || 'var(--pub-border-default)'
+                          borderColor: user.subscription?.plan_color || 'var(--border-default)'
                         }}
                       >
                         {user.avatar ? (
                           <img src={resolveImageUrl(user.avatar, 'avatar')} alt={user.name} className="w-full h-full object-cover" referrerPolicy="no-referrer" />
                         ) : (
-                          <User size={15} className="text-[var(--pub-text-muted)] group-hover:text-cyan-400 transition-all duration-150" />
+                          <User size={15} className="text-[var(--text-muted)] group-hover:text-[var(--text-primary)] transition-colors duration-150" />
                         )}
                       </div>
-                      <div className={`absolute -bottom-1 left-0 right-0 flex justify-center transition-all duration-150 ${!isSidebarOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}>
+                      <div className={`absolute -bottom-1 left-0 right-0 flex justify-center transition-opacity duration-150 ${!isSidebarOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}>
                         <span 
                           className="text-[8px] font-black uppercase tracking-tighter leading-none whitespace-nowrap"
-                          style={{ color: user.subscription?.plan_color || 'var(--pub-text-primary)' }}
+                          style={{ color: user.subscription?.plan_color || 'var(--text-primary)' }}
                         >
                           {user.subscription?.plan_name_en || ''}
                         </span>
@@ -883,8 +839,8 @@ export const Sidebar: React.FC<{ activeLanguage?: string }> = ({ activeLanguage 
                             {...sidebarTextMotion}
                             className={`flex flex-col overflow-hidden ${dir === 'rtl' ? 'text-right' : 'text-left'}`}
                           >
-                            <span className="font-bold text-[11.5px] truncate whitespace-nowrap leading-tight text-[var(--pub-text-primary)] group-hover:text-cyan-400 transition-all duration-150">{user.name}</span>
-                            <span className="text-[8.5px] text-[var(--pub-text-muted)] truncate whitespace-nowrap uppercase tracking-widest font-black leading-tight mt-0.5">
+                            <span className="font-bold text-xs truncate whitespace-nowrap leading-tight text-[var(--text-primary)] transition-colors duration-150">{user.name}</span>
+                            <span className="text-[9px] text-[var(--text-muted)] truncate whitespace-nowrap uppercase tracking-wider font-bold leading-tight mt-0.5">
                               {t(`role_${(user.role || 'user').toLowerCase()}`) || (user.subscription?.plan_id 
                                 ? (plans.find((p: any) => p.id.toString() === user.subscription?.plan_id.toString())?.name || t('activePlan'))
                                 : t('noPlan'))}
@@ -897,12 +853,8 @@ export const Sidebar: React.FC<{ activeLanguage?: string }> = ({ activeLanguage 
                 </div>
               ) : (
                 <div 
-                  className={`flex items-center group cursor-pointer w-full h-[36px] overflow-hidden flex-shrink-0 transition-all duration-150 rounded-[var(--pub-radius-control)] border ${
-                    isSidebarOpen 
-                      ? 'border-transparent text-[var(--pub-text-muted)] hover:text-cyan-400 hover:bg-cyan-500/10 hover:border-cyan-500/20' 
-                      : 'border-transparent text-[var(--pub-text-muted)]'
-                  }`}
-                  style={{ paddingInlineStart: '11px', paddingInlineEnd: '8px' }}
+                  className="flex items-center group cursor-pointer w-full h-[38px] overflow-hidden flex-shrink-0 transition-all duration-150 rounded-[var(--radius-sm)] border border-transparent text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--surface-subtle)]"
+                  style={{ paddingInlineStart: '10px', paddingInlineEnd: '8px' }}
                   onClick={() => {
                     setIsAuthModalOpen(true);
                     if (isMobile) {
@@ -911,13 +863,8 @@ export const Sidebar: React.FC<{ activeLanguage?: string }> = ({ activeLanguage 
                   }}
                 >
                   <div className="w-7 h-[36px] flex-shrink-0 flex items-center justify-center relative">
-                    <div className={`absolute inset-0 m-auto w-7 h-7 rounded-[var(--pub-radius-micro)] border transition-all duration-150 ${
-                      isSidebarOpen 
-                        ? 'border-transparent bg-transparent' 
-                        : 'border-transparent group-hover:bg-cyan-500/15 group-hover:border-cyan-500/25'
-                    }`} />
-                    <div className="w-7 h-7 rounded-[var(--pub-radius-micro)] bg-[var(--pub-surface-container)] flex items-center justify-center flex-shrink-0 relative z-10 transition-all duration-150 border border-[var(--pub-border-default)] group-hover:border-cyan-400">
-                      <User size={15} className="text-[var(--pub-text-muted)] group-hover:text-cyan-400 transition-all duration-150" />
+                    <div className="w-7 h-7 rounded-[var(--radius-xs)] bg-[var(--surface-subtle)] flex items-center justify-center flex-shrink-0 relative z-10 transition-colors duration-150 border border-[var(--border-default)] group-hover:border-[var(--border-accent)]">
+                      <User size={15} className="text-[var(--text-muted)] group-hover:text-[var(--text-primary)] transition-colors duration-150" />
                     </div>
                   </div>
                   <div className={`flex flex-col min-w-0 ${dir === 'rtl' ? 'pr-1.5' : 'pl-1.5'} justify-center`}>
@@ -927,8 +874,8 @@ export const Sidebar: React.FC<{ activeLanguage?: string }> = ({ activeLanguage 
                           {...sidebarTextMotion}
                           className={`flex flex-col overflow-hidden ${dir === 'rtl' ? 'text-right' : 'text-left'}`}
                         >
-                          <span className="text-[9px] text-[var(--pub-text-muted)] truncate whitespace-nowrap font-bold uppercase tracking-wider mb-0.5">{t('createAccount')}</span>
-                          <span className="font-bold text-xs truncate whitespace-nowrap text-[var(--pub-text-secondary)] group-hover:text-cyan-400 transition-all duration-150">{t('login')}</span>
+                          <span className="text-[9px] text-[var(--text-muted)] truncate whitespace-nowrap font-bold uppercase tracking-wider mb-0.5">{t('createAccount')}</span>
+                          <span className="font-bold text-xs truncate whitespace-nowrap text-[var(--text-primary)] transition-colors duration-150">{t('login')}</span>
                         </motion.div>
                       )}
                     </AnimatePresence>
@@ -1110,7 +1057,7 @@ export const Sidebar: React.FC<{ activeLanguage?: string }> = ({ activeLanguage 
         width="auto"
       >
         {optionsMenuTarget && (() => {
-          const rawActions = [
+          const allMenuItems = [
             {
               id: 'rename',
               label: language === 'ar' ? 'إعادة تسمية' : 'Rename',
@@ -1120,6 +1067,26 @@ export const Sidebar: React.FC<{ activeLanguage?: string }> = ({ activeLanguage 
                 if (targetChat) {
                   setEditingChatId(targetChat.id);
                   setNewTitle(targetChat.title);
+                }
+                setOptionsMenuTarget(null);
+              }
+            },
+            {
+              id: 'share',
+              label: language === 'ar' ? 'مشاركة المحادثة' : 'Share Chat',
+              icon: Share2,
+              action: () => {
+                const targetId = optionsMenuTarget.chatId;
+                const targetChat = recentChats.find((c: any) => c.id?.toString() === targetId?.toString());
+                const shareUrl = `${window.location.origin}/chat/${targetId}`;
+                if (navigator.share) {
+                  navigator.share({
+                    title: targetChat?.title || 'Perplexta Chat',
+                    url: shareUrl,
+                  }).catch(() => {});
+                } else {
+                  navigator.clipboard.writeText(shareUrl);
+                  toast.success(language === 'ar' ? 'تم نسخ رابط المحادثة' : 'Chat link copied');
                 }
                 setOptionsMenuTarget(null);
               }
@@ -1141,16 +1108,7 @@ export const Sidebar: React.FC<{ activeLanguage?: string }> = ({ activeLanguage 
                 toast.success(language === 'ar' ? 'تمت إضافة علامة مرجعية' : 'Bookmark added');
                 setOptionsMenuTarget(null);
               }
-            }
-          ];
-
-          const sortedActions = [...rawActions].sort((a, b) => {
-            const lenA = a.label.trim().length;
-            const lenB = b.label.trim().length;
-            return lenA !== lenB ? lenA - lenB : a.label.localeCompare(b.label);
-          });
-
-          const rawExports = [
+            },
             {
               id: 'pdf',
               label: language === 'ar' ? 'تصدير كـ PDF' : 'Export as PDF',
@@ -1183,19 +1141,31 @@ export const Sidebar: React.FC<{ activeLanguage?: string }> = ({ activeLanguage 
                 navigate(`/chat/${targetId}`);
                 setTimeout(() => window.dispatchEvent(new CustomEvent('export-chat', { detail: 'md' })), 200);
               }
+            },
+            {
+              id: 'delete',
+              label: language === 'ar' ? 'حذف المحادثة' : 'Delete Chat',
+              icon: Trash2,
+              isDanger: true,
+              action: () => {
+                setDeletingChatConfirmId(optionsMenuTarget.chatId);
+                setOptionsMenuTarget(null);
+              }
             }
           ];
 
-          const sortedExports = [...rawExports].sort((a, b) => {
+          // Hierarchical Sort (Shortest name at top -> Longest name at bottom)
+          const sortedMenuItems = [...allMenuItems].sort((a, b) => {
             const lenA = a.label.trim().length;
             const lenB = b.label.trim().length;
             return lenA !== lenB ? lenA - lenB : a.label.localeCompare(b.label);
           });
 
           return (
-            <div className="flex flex-col gap-0.5 p-1 font-sans w-max min-w-[190px]" dir={dir}>
-              {sortedActions.map((item) => {
+            <div className="flex flex-col gap-0.5 p-1.5 font-sans w-max min-w-[190px]" dir={dir}>
+              {sortedMenuItems.map((item) => {
                 const Icon = item.icon;
+                const isDanger = item.isDanger;
                 return (
                   <button
                     key={item.id}
@@ -1204,55 +1174,32 @@ export const Sidebar: React.FC<{ activeLanguage?: string }> = ({ activeLanguage 
                       e.stopPropagation();
                       item.action();
                     }}
-                    className="w-full h-[34px] min-h-[34px] flex items-center gap-2 px-2.5 rounded-[var(--pub-radius-control)] border border-transparent hover:bg-cyan-500/10 hover:border-cyan-500/20 hover:text-cyan-400 group transition-all duration-150 cursor-pointer select-none text-start"
+                    className={`group w-full h-[36px] min-h-[36px] flex items-center gap-2.5 px-3 py-2 rounded-[8px] border border-transparent transition-all duration-150 cursor-pointer select-none text-start ${
+                      isDanger
+                        ? 'bg-transparent hover:bg-rose-500/10 text-rose-500'
+                        : 'bg-transparent hover:bg-[var(--surface-subtle)] text-[var(--text-secondary)] hover:text-[var(--text-primary)]'
+                    }`}
                   >
-                    <Icon size={14} className="text-[var(--pub-text-muted)] group-hover:text-cyan-400 transition-colors shrink-0" />
-                    <span className="truncate min-w-0 flex-1 text-xs font-medium text-[var(--pub-text-primary)] group-hover:text-cyan-400 transition-colors">
+                    <Icon
+                      size={14}
+                      className={`shrink-0 transition-colors duration-150 ${
+                        isDanger
+                          ? 'text-rose-500 group-hover:text-rose-400'
+                          : 'text-[var(--text-muted)] group-hover:text-cyan-400'
+                      }`}
+                    />
+                    <span
+                      className={`truncate min-w-0 flex-1 text-xs transition-colors duration-150 ${
+                        isDanger
+                          ? 'font-bold text-rose-500 group-hover:text-rose-400'
+                          : 'font-medium text-[var(--text-primary)] group-hover:text-[var(--text-primary)]'
+                      }`}
+                    >
                       {item.label}
                     </span>
                   </button>
                 );
               })}
-
-              <div className="h-px bg-[var(--pub-border-default)] my-0.5 mx-1" />
-
-              {sortedExports.map((item) => {
-                const Icon = item.icon;
-                return (
-                  <button
-                    key={item.id}
-                    type="button"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      item.action();
-                    }}
-                    className="w-full h-[34px] min-h-[34px] flex items-center gap-2 px-2.5 rounded-[var(--pub-radius-control)] border border-transparent hover:bg-cyan-500/10 hover:border-cyan-500/20 hover:text-cyan-400 group transition-all duration-150 cursor-pointer select-none text-start"
-                  >
-                    <Icon size={14} className="text-[var(--pub-text-muted)] group-hover:text-cyan-400 transition-colors shrink-0" />
-                    <span className="truncate min-w-0 flex-1 text-xs font-medium text-[var(--pub-text-primary)] group-hover:text-cyan-400 transition-colors">
-                      {item.label}
-                    </span>
-                  </button>
-                );
-              })}
-
-              <div className="h-px bg-[var(--pub-border-default)] my-0.5 mx-1" />
-
-              {/* Delete Chat */}
-              <button
-                type="button"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  setDeletingChatConfirmId(optionsMenuTarget.chatId);
-                  setOptionsMenuTarget(null);
-                }}
-                className="w-full h-[34px] min-h-[34px] flex items-center gap-2 px-2.5 rounded-[var(--pub-radius-control)] border border-transparent hover:bg-rose-500/10 hover:border-rose-500/20 text-rose-500 hover:text-rose-400 group transition-all duration-150 cursor-pointer select-none text-start"
-              >
-                <Trash2 size={14} className="text-rose-500 group-hover:text-rose-400 transition-colors shrink-0" />
-                <span className="truncate min-w-0 flex-1 text-xs font-bold text-rose-500 group-hover:text-rose-400 transition-colors">
-                  {language === 'ar' ? 'حذف المحادثة' : 'Delete Chat'}
-                </span>
-              </button>
             </div>
           );
         })()}
@@ -1265,7 +1212,7 @@ export const Sidebar: React.FC<{ activeLanguage?: string }> = ({ activeLanguage 
         triggerRect={profileMenuTarget?.rect || null}
         direction={dir}
         placement="sidebar-profile"
-        width="auto"
+        width={isSidebarOpen && profileMenuTarget?.rect?.width ? profileMenuTarget.rect.width : 'auto'}
       >
         {user && (() => {
           const rawProfileLinks = [
@@ -1303,29 +1250,29 @@ export const Sidebar: React.FC<{ activeLanguage?: string }> = ({ activeLanguage 
           });
 
           return (
-            <div className="flex flex-col p-1 gap-0.5 font-sans w-max min-w-[210px]" dir={dir}>
+            <div className="flex flex-col p-1.5 gap-0.5 font-sans w-full max-w-full" dir={dir}>
               {/* User profile header summary */}
-              <div className="flex items-center gap-2 px-2.5 py-2 rounded-shape-sm bg-[var(--pub-surface-panel)] border border-[var(--pub-border-default)] mb-1">
+              <div className="flex items-center gap-2.5 px-3 py-2 rounded-[8px] bg-[var(--surface-subtle)] border border-[var(--border-default)] mb-1 overflow-hidden shadow-2xs">
                 <div 
-                  className="w-7 h-7 rounded-[var(--pub-radius-micro)] bg-[var(--pub-surface-container)] flex items-center justify-center flex-shrink-0 overflow-hidden border shadow-xs"
-                  style={{ borderColor: user.subscription?.plan_color || 'var(--pub-border-default)' }}
+                  className="w-7 h-7 rounded-[6px] bg-[var(--surface-card)] flex items-center justify-center flex-shrink-0 overflow-hidden border shadow-2xs"
+                  style={{ borderColor: user.subscription?.plan_color || 'var(--border-default)' }}
                 >
                   {user.avatar ? (
                     <img src={resolveImageUrl(user.avatar, 'avatar')} alt={user.name} className="w-full h-full object-cover" referrerPolicy="no-referrer" />
                   ) : (
-                    <User size={14} className="text-[var(--pub-text-muted)]" />
+                    <User size={14} className="text-[var(--text-muted)]" />
                   )}
                 </div>
-                <div className="flex flex-col min-w-0 flex-1 text-start">
-                  <span className="font-bold text-xs truncate leading-tight text-[var(--pub-text-primary)]">{user.name}</span>
-                  <span className="text-[9px] text-[var(--pub-text-muted)] truncate leading-tight mt-0.5 font-medium">
+                <div className="flex flex-col min-w-0 flex-1 text-start overflow-hidden">
+                  <span className="font-bold text-xs truncate leading-tight text-[var(--text-primary)]">{user.name}</span>
+                  <span className="text-[9.5px] text-[var(--text-muted)] truncate leading-tight mt-0.5 font-medium">
                     {user.email || t(`role_${(user.role || 'user').toLowerCase()}`)}
                   </span>
                 </div>
                 {user.subscription?.plan_name_en && (
                   <span 
-                    className="text-[8px] font-black uppercase px-1.5 py-0.5 rounded-[var(--pub-radius-micro)] border border-current leading-none shrink-0"
-                    style={{ color: user.subscription?.plan_color || 'var(--pub-text-primary)' }}
+                    className="text-[8px] font-black uppercase px-1.5 py-0.5 rounded-[4px] border border-current leading-none shrink-0"
+                    style={{ color: user.subscription?.plan_color || 'var(--text-primary)' }}
                   >
                     {user.subscription?.plan_name_en}
                   </span>
@@ -1336,34 +1283,41 @@ export const Sidebar: React.FC<{ activeLanguage?: string }> = ({ activeLanguage 
               {sortedProfileLinks.map((item) => {
                 const Icon = item.icon;
                 return (
-                  <ActionItem
+                  <button
                     key={item.id}
-                    label={item.label}
-                    icon={<Icon size={14} />}
-                    compact
+                    type="button"
                     onClick={() => {
                       navigate(item.path);
                       setProfileMenuTarget(null);
                       if (isMobile) setIsSidebarOpen(false);
                     }}
-                  />
+                    className="group w-full h-[36px] min-h-[36px] flex items-center gap-2.5 px-3 py-2 rounded-[8px] border border-transparent bg-transparent hover:bg-[var(--surface-subtle)] transition-colors duration-150 cursor-pointer select-none text-start text-xs font-medium text-[var(--text-secondary)] hover:text-[var(--text-primary)]"
+                  >
+                    <Icon size={14} className="text-[var(--text-muted)] group-hover:text-cyan-400 shrink-0 transition-colors duration-150" />
+                    <span className="truncate min-w-0 flex-1 text-xs font-medium text-[var(--text-primary)] group-hover:text-[var(--text-primary)] transition-colors duration-150">
+                      {item.label}
+                    </span>
+                  </button>
                 );
               })}
 
-              <div className="h-px bg-slate-800/60 my-0.5 mx-1" />
+              <div className="h-px bg-[var(--border-default)] my-1 mx-1" />
 
               {/* Logout */}
-              <ActionItem
-                label={t('logout') || (dir === 'rtl' ? 'تسجيل الخروج' : 'Logout')}
-                icon={<LogOut size={14} />}
-                variant="danger"
-                compact
+              <button
+                type="button"
                 onClick={() => {
                   logout();
                   setProfileMenuTarget(null);
                   if (isMobile) setIsSidebarOpen(false);
                 }}
-              />
+                className="group w-full h-[36px] min-h-[36px] flex items-center gap-2.5 px-3 py-2 rounded-[8px] border border-transparent bg-transparent hover:bg-rose-500/10 text-rose-500 transition-colors duration-150 cursor-pointer select-none text-start"
+              >
+                <LogOut size={14} className="text-rose-500 group-hover:text-rose-400 shrink-0 transition-colors duration-150" />
+                <span className="truncate min-w-0 flex-1 text-xs font-bold text-rose-500 group-hover:text-rose-400 transition-colors duration-150">
+                  {t('logout') || (dir === 'rtl' ? 'تسجيل الخروج' : 'Logout')}
+                </span>
+              </button>
             </div>
           );
         })()}

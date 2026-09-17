@@ -13,6 +13,7 @@ import { ThemeSync } from '../utils/ThemeSync';
 import { applyLanguageFont, FontLoadingConfig, FontLanguageConfig } from '../utils/fontLoader';
 import { resolveImageUrl } from '../utils/imageResolver';
 import { trackLoginEvent, trackSignUpEvent } from '../utils/analytics';
+import { detectStandaloneWebview, StandaloneWebviewDetection } from '../hooks/usePwaInstall';
 
 type Language = 'ar' | 'en';
 
@@ -30,6 +31,7 @@ export interface User {
   memory?: string;
   email_notifications?: boolean;
   media_muted?: boolean;
+  data_saver?: boolean;
   subscription?: {
     plan_id: string;
     status: string;
@@ -115,6 +117,10 @@ interface AppContextType {
   setMilestoneData: (data: any) => void;
   isMobile: boolean;
   isIOS: boolean;
+  isStandaloneWebview: boolean;
+  isWebview: boolean;
+  isPwaStandalone: boolean;
+  isStandardBrowser: boolean;
   rememberMe: boolean;
   isOperationPending: boolean;
   setIsOperationPending: (val: boolean) => void;
@@ -187,8 +193,6 @@ const translations = {
     perplexta_music: 'الموسيقى والأغاني',
     perplexta_music_desc: 'التأليف الصوتي المتقدم والتركيب الموسيقي الهيكلي.',
     storage_mb: 'مساحة التخزين (MB)',
-    sovereign_memory: 'الذاكرة المعرفية',
-    sovereign_memory_desc: 'التكامل المعرفي والاحتفاظ بالسياق والمعارف على المدى الطويل لتقديم تجربة تحليل دقيقة.',
     x402_api: 'بوابة الـ API (x402)',
     x402_api_desc: 'تحسين توجيه النماذج الذكية والتحليلات الديناميكية المحمية ببروتوكول x402 للوكلاء البرمجيين.',
     newBadge: 'جديد',
@@ -592,6 +596,7 @@ const translations = {
     stableOperationalProtocol: 'بروتوكول تشغيل مستقر',
     financialRadarSubtitle: 'بروتوكول مراقبة الاقتصاد المباشر وتدقيق السجلات',
     searchTxPlaceholder: 'بحث في الحركات...',
+    searchActivityPlaceholder: 'بحث في سجل العمليات والأنشطة...',
     walletAlertsEmpty: 'لا توجد تنبيهات حرجة للمحفظة.',
     ledgerExpectation: 'توقعات السجل',
     noDiscrepancies: 'لم يتم الكشف عن أي تناقضات مالية.',
@@ -811,17 +816,17 @@ const translations = {
     alert_ledger_discrepancy: 'تنبيه مالي: خطأ في السجل',
     alert_unauthorized_access: 'دخول غير مصرح به',
     alert_failed_login: 'فشل تسجيل دخول متكرر',
-    toastKeySaveSuccess: 'تم حفظ المفتاح بنجاح!',
-    toastKeySaveError: 'خطأ في حفظ المفتاح: {error}',
-    toastKeyDeleteSuccess: 'تم حذف المفتاح بنجاح',
-    toastKeyDeleteError: 'فشل في حذف المفتاح',
+    toastKeySaveSuccess: 'تم الحفظ',
+    toastKeySaveError: 'فشل الحفظ: {error}',
+    toastKeyDeleteSuccess: 'تم الحذف',
+    toastKeyDeleteError: 'فشل الحذف',
     keyDeleteConfirm: 'هل أنت متأكد من حذف مفتاح {provider}؟ سيؤدي هذا إلى إيقاف الأدوات المرتبطة به.',
-    toastDbTestSuccess: 'تم الاتصال بقاعدة البيانات بنجاح!',
-    toastDbTestFailed: 'فشل الاتصال بقاعدة البيانات: {error}',
-    toastDbSaveSuccess: 'تم حفظ إعدادات القاعدة بنجاح',
-    toastPlanSaveSuccess: 'تم حفظ الخطة بنجاح',
-    toastEconomySaveSuccess: 'تم حفظ إعدادات الاقتصاد بنجاح',
-    toastStripeSaveSuccess: 'تم حفظ إعدادات Stripe بنجاح',
+    toastDbTestSuccess: 'تم الاتصال بنجاح',
+    toastDbTestFailed: 'فشل الاتصال: {error}',
+    toastDbSaveSuccess: 'تم الحفظ',
+    toastPlanSaveSuccess: 'تم الحفظ',
+    toastEconomySaveSuccess: 'تم الحفظ',
+    toastStripeSaveSuccess: 'تم الحفظ',
     toastAllFieldsRequired: 'جميع حقول الترجمة مطلوبة (الأسماء والأوصاف)',
     toastPricingRequired: 'حقول التسعير مطلوبة',
     toastFeatureRequired: 'مطلوب ميزة واحدة على الأقل',
@@ -901,8 +906,6 @@ const translations = {
     perplexta_music: 'Music & Songs',
     perplexta_music_desc: 'Advanced acoustic composition and structural music synthesis.',
     storage_mb: 'Storage Space (MB)',
-    sovereign_memory: 'Knowledge Memory',
-    sovereign_memory_desc: 'Long-term knowledge retention and contextual mapping for accurate analysis.',
     x402_api: 'Agent Gateway (x402 API)',
     x402_api_desc: 'Dynamic high-fidelity artificial intelligence analytics gateway for programmatic developer clients protected via x402 protocol.',
     newBadge: 'NEW',
@@ -1276,6 +1279,7 @@ const translations = {
     stableOperationalProtocol: 'Stable Operational Protocol',
     financialRadarSubtitle: 'Live Economic Surveillance & Ledger Audit Protocol',
     searchTxPlaceholder: 'Search transactions...',
+    searchActivityPlaceholder: 'Search activity stream & logs...',
     walletAlertsEmpty: 'No critical wallet alerts.',
     ledgerExpectation: 'Ledger Expectation',
     noDiscrepancies: 'No financial discrepancies detected.',
@@ -1510,17 +1514,17 @@ const translations = {
     alert_ledger_discrepancy: 'Finance Alert: Ledger Mismatch',
     alert_unauthorized_access: 'Unauthorized Access Attempt',
     alert_failed_login: 'Multiple Failed Logins',
-    toastKeySaveSuccess: 'Key saved successfully!',
-    toastKeySaveError: 'Error saving key: {error}',
-    toastKeyDeleteSuccess: 'Key deleted successfully',
-    toastKeyDeleteError: 'Failed to delete key',
+    toastKeySaveSuccess: 'Saved',
+    toastKeySaveError: 'Save failed: {error}',
+    toastKeyDeleteSuccess: 'Deleted',
+    toastKeyDeleteError: 'Delete failed',
     keyDeleteConfirm: 'Are you sure you want to delete the {provider} key? This will stop the associated tools.',
-    toastDbTestSuccess: 'Database connection successful!',
-    toastDbTestFailed: 'Database connection failed: {error}',
-    toastDbSaveSuccess: 'Database configuration saved',
-    toastPlanSaveSuccess: 'Plan saved successfully',
-    toastEconomySaveSuccess: 'Economy settings saved successfully',
-    toastStripeSaveSuccess: 'Stripe configuration saved successfully',
+    toastDbTestSuccess: 'Connected',
+    toastDbTestFailed: 'Connection failed: {error}',
+    toastDbSaveSuccess: 'Saved',
+    toastPlanSaveSuccess: 'Saved',
+    toastEconomySaveSuccess: 'Saved',
+    toastStripeSaveSuccess: 'Saved',
     toastAllFieldsRequired: 'All translation fields (Names & Descriptions) are required',
     toastPricingRequired: 'Pricing fields are required',
     toastFeatureRequired: 'At least one feature is required',
@@ -1773,6 +1777,24 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     return /iPad|iPhone|iPod/.test(navigator.userAgent) || 
            (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
   });
+  const [standaloneWebviewState, setStandaloneWebviewState] = useState<StandaloneWebviewDetection>(detectStandaloneWebview());
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const handleDetectionUpdate = () => {
+      setStandaloneWebviewState(detectStandaloneWebview());
+    };
+
+    handleDetectionUpdate();
+    window.addEventListener('resize', handleDetectionUpdate);
+    const mql = window.matchMedia('(display-mode: standalone)');
+    mql.addEventListener?.('change', handleDetectionUpdate);
+
+    return () => {
+      window.removeEventListener('resize', handleDetectionUpdate);
+      mql.removeEventListener?.('change', handleDetectionUpdate);
+    };
+  }, []);
   const [isOperationPending, setIsOperationPending] = useState(false);
 
   const [economySettings, setEconomySettings] = useState<any>(() => {
@@ -2126,6 +2148,26 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     const customFetch = async (...args: any[]) => {
       let [resource, config] = args;
 
+      const isDataSaver = userRef.current?.data_saver || localStorage.getItem('data_saver_enabled') === 'true';
+      if (isDataSaver) {
+        if (resource instanceof Request) {
+          resource.headers.set('Save-Data', 'on');
+          resource.headers.set('X-Data-Saver', 'true');
+        } else {
+          if (!config) config = {};
+          if (!config.headers) config.headers = {};
+          if (config.headers instanceof Headers) {
+            config.headers.set('Save-Data', 'on');
+            config.headers.set('X-Data-Saver', 'true');
+          } else if (Array.isArray(config.headers)) {
+            config.headers.push(['Save-Data', 'on'], ['X-Data-Saver', 'true']);
+          } else {
+            config.headers['Save-Data'] = 'on';
+            config.headers['X-Data-Saver'] = 'true';
+          }
+        }
+      }
+
       const urlStr = typeof resource === 'string' 
         ? resource 
         : (resource instanceof Request ? resource.url : '');
@@ -2234,6 +2276,14 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
            return fetchWithRetry(url, options, retries - 1, backoff * 1.5);
         }
         throw new Error(`HTTP error! status: ${res.status}`);
+      }
+      const contentType = res.headers.get('content-type') || '';
+      if (contentType.includes('text/html')) {
+        if (retries > 0) {
+          await new Promise(r => setTimeout(r, backoff));
+          return fetchWithRetry(url, options, retries - 1, backoff * 1.5);
+        }
+        throw new Error(`Received HTML response instead of JSON from ${url}`);
       }
       return await res.json();
     } catch (err) {
@@ -3195,7 +3245,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
       const fetchSettings = async () => {
         try {
-          const settingsData = await fetchWithRetry('/api/system/settings', options, 1, 300);
+          const settingsData = await fetchWithRetry('/api/system/settings', options, 2, 400);
+          if (!settingsData || typeof settingsData !== 'object') return;
           let parsedFontConfig: FontLoadingConfig | null = null;
           let parsedAr: FontLanguageConfig | null = null;
           let parsedEn: FontLanguageConfig | null = null;
@@ -3370,6 +3421,10 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       setMilestoneData,
       isMobile,
       isIOS,
+      isStandaloneWebview: standaloneWebviewState.isStandaloneWebview,
+      isWebview: standaloneWebviewState.isWebview,
+      isPwaStandalone: standaloneWebviewState.isStandalone,
+      isStandardBrowser: standaloneWebviewState.isStandardBrowser,
       rememberMe,
       setRememberMe,
       isOperationPending,

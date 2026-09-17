@@ -143,17 +143,17 @@ export const ChatResponseRenderer: React.FC<ChatResponseRendererProps> = ({
       );
     },
     thead: ({ children }: any) => (
-      <thead className="bg-[var(--surface-subtle)] dark:bg-[var(--surface-panel)] border-b border-[var(--border-default)] dark:border-slate-800 text-[var(--text-primary)] dark:text-slate-200 font-bold select-none transition-colors duration-200">
+      <thead className="bg-[var(--surface-subtle)] border-b border-[var(--border-default)] text-[var(--text-primary)] font-bold select-none transition-colors">
         {children}
       </thead>
     ),
     tbody: ({ children }: any) => (
-      <tbody className="divide-y divide-[var(--border-default)]/60 dark:divide-slate-800/60 bg-[var(--surface-card)] dark:bg-[var(--surface-canvas)]/50 font-normal transition-colors duration-200">
+      <tbody className="divide-y divide-[var(--border-default)]/50 bg-[var(--surface-card)] font-normal transition-colors">
         {children}
       </tbody>
     ),
     tr: ({ children }: any) => (
-      <tr className="hover:bg-[var(--surface-subtle)]/80 dark:hover:bg-[var(--surface-subtle)]/60 odd:bg-transparent dark:odd:bg-[var(--surface-canvas)]/20 even:bg-[var(--surface-subtle)]/40 dark:even:bg-[var(--surface-panel)]/40 transition-opacity duration-200 ease-out">
+      <tr className="hover:bg-[var(--surface-subtle)]/50 odd:bg-transparent even:bg-[var(--surface-subtle)]/25 transition-colors">
         {children}
       </tr>
     ),
@@ -161,7 +161,7 @@ export const ChatResponseRenderer: React.FC<ChatResponseRendererProps> = ({
       const isCentered = style?.textAlign === 'center';
       return (
         <th
-          className={`py-2.5 px-3.5 font-bold text-[var(--text-primary)] dark:text-slate-200 border-e border-[var(--border-default)] dark:border-slate-800/60 last:border-e-0 min-w-[110px] sm:min-w-[130px] whitespace-normal break-words tabular-nums text-xs sm:text-sm leading-relaxed ${
+          className={`py-2.5 sm:py-3 px-3.5 sm:px-4 font-bold text-[var(--text-primary)] border-e border-[var(--border-default)]/60 last:border-e-0 min-w-[100px] sm:min-w-[120px] whitespace-normal break-words tabular-nums text-xs sm:text-[13px] leading-relaxed select-none ${
             isCentered ? 'text-center' : detectedDir === 'rtl' ? 'text-right' : 'text-left'
           }`}
           style={{
@@ -177,7 +177,7 @@ export const ChatResponseRenderer: React.FC<ChatResponseRendererProps> = ({
       const isCentered = style?.textAlign === 'center';
       return (
         <td
-          className={`py-2.5 px-3.5 text-[var(--text-secondary)] dark:text-slate-300 border-e border-[var(--border-default)]/60 dark:border-slate-800/40 last:border-e-0 align-top leading-relaxed min-w-[110px] sm:min-w-[130px] whitespace-normal break-words tabular-nums text-xs sm:text-sm transition-all duration-150 ease-out ${
+          className={`py-2.5 sm:py-3 px-3.5 sm:px-4 text-[var(--text-secondary)] border-e border-[var(--border-default)]/40 last:border-e-0 align-top leading-relaxed min-w-[100px] sm:min-w-[120px] whitespace-normal break-words tabular-nums text-xs sm:text-[13px] transition-colors ${
             isCentered ? 'text-center' : detectedDir === 'rtl' ? 'text-right' : 'text-left'
           }`}
           style={{

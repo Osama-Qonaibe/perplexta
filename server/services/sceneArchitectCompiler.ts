@@ -20,8 +20,8 @@ export async function compileSceneWithArchitect(
   const userLang = options?.userLang || 'ar';
   const systemPrompt = buildSystemPrompt('Perplexta', 'scene_architect', userLang);
 
-  let provider = 'google';
-  let model = options?.preferredModelId || 'gemini-1.5-flash';
+  let provider = '';
+  let model = options?.preferredModelId || '';
 
   try {
     const routeRes = await pool.query(
@@ -36,7 +36,35 @@ export async function compileSceneWithArchitect(
     console.warn('[SceneArchitectCompiler] Could not fetch tool_orchestrator route for scene_architect:', err);
   }
 
-  const apiKey = await getProviderKey(provider);
+  // Fallback to chat_fast or perplexta_analysis if scene_architect has no route configured
+  if (!provider || !model) {
+    try {
+      const fastRes = await pool.query(
+        "SELECT primary_provider, primary_model FROM tool_orchestrator WHERE tool_id IN ('chat_fast', 'perplexta_analysis') AND is_active = true AND primary_provider != '' AND primary_model != '' LIMIT 1"
+      );
+      if (fastRes.rows && fastRes.rows.length > 0) {
+        if (!provider) provider = fastRes.rows[0].primary_provider;
+        if (!model) model = fastRes.rows[0].primary_model;
+      }
+    } catch (e) {}
+  }
+
+  const isVideo = /video|fideo|فيديو|تحريك|سينمائي|animate|clip/i.test(rawPrompt);
+
+  // If no model is configured in the Orchestrator or no API key, safely return deterministic output with Zero Model Query
+  const apiKey = provider ? await getProviderKey(provider) : null;
+  if (!provider || !model || !apiKey) {
+    return {
+      media_type: isVideo ? 'video' : 'image',
+      aspect_ratio: isVideo ? '16:9' : '1:1',
+      prompt: rawPrompt,
+      negative_prompt: 'blurry, low resolution, deformed anatomy, extra limbs, bad eyes, text, watermark, shaky camera, low frame rate, artifacts',
+      camera_motion: isVideo ? 'smooth_tracking' : 'static',
+      lighting_setup: 'volumetric rim lighting',
+      rendering_style: 'cinematic_film',
+      seed: -1
+    };
+  }
 
   try {
     const fullPrompt = `${systemPrompt}\n\n[INPUT PROMPT TO ARCHITECT]:\n${rawPrompt}`;

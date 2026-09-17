@@ -17,7 +17,7 @@ import { OrchestratorRegistry } from './orchestratorRegistry.js';
 import { withTimeout, safeDecrementOnFailure, safeParseResponse, AI_CALL_TIMEOUT_MS, TTS_TIMEOUT_MS, STT_TIMEOUT_MS } from './tasks/utils.js';
 import { sanitizeHTMLAndXSS, validatePromptLength, MAX_CUMULATIVE_HISTORY_CHARS, MAX_DOC_EXTRACT_SIZE } from '../utils/security.js';
 import { userLoader, getCachedOrchestratorConfig, getCachedSystemSettings, getCachedApiKeysVault, invalidateApiKeysVaultCache } from '../db/queries.js';
-import { extractDirectUserMemories, updateChatContextSummary, consolidateAllUserMemories } from './memory.js';
+import { extractDirectUserMemories, updateChatContextSummary, consolidateAllUserMemories, addMemory } from './memory.js';
 import { scanForPromptInjection, redactInternalArtifacts } from './securitySanitizer.js';
 
 export { extractDirectUserMemories, updateChatContextSummary };
@@ -500,9 +500,7 @@ Instruction: You MUST explicitly disclose this forensic audit to the user. Descr
 
   let refinedSystemPromptSegment = '';
 
-  if (toolIdStr === 'sovereign_memory') {
-    refinedSystemPromptSegment = '[MEMORY_MODE]: Inspect and manage user memories.';
-  } else if (toolIdStr === 'canvas') {
+  if (toolIdStr === 'canvas') {
     const audioSet = audio_settings || {};
     let moodLabel = audioSet.mood || 'Epic';
     let durationCount = Number(audioSet.duration || 30);
@@ -580,11 +578,46 @@ ${refinedSystemPromptSegment}`.trim();
         }
 
         const apiKey = await getProviderKey(providerId);
-        if (!apiKey) continue;
+        if (!apiKey) {
+          console.warn(`[Orchestrator] No active API key found for provider "${target.provider}". Skipping.`);
+          continue;
+        }
 
         if (dailyBudget > 0 && usedToday >= dailyBudget) {
           await logSecurityAlert(userId, 'BUDGET_EXCEEDED', 'medium', `Vault Budget Hit: Provider "${target.provider}" reached its daily budget limit (${usedToday}/${dailyBudget}). Attempting fallback.`, { provider: target.provider, dailyBudget, usedToday });
           continue;
+        }
+
+        // Zero-Query Shield: Pre-validate that target.model exists in registered provider models to guarantee zero queries for non-existent models
+        if (cachedRow && cachedRow.models) {
+          let registeredModels: any[] = [];
+          try {
+            registeredModels = typeof cachedRow.models === 'string' ? JSON.parse(cachedRow.models) : cachedRow.models;
+          } catch {
+            registeredModels = [];
+          }
+          if (Array.isArray(registeredModels) && registeredModels.length > 0) {
+            const knownSet = new Set<string>();
+            for (const item of registeredModels) {
+              const raw = typeof item === 'string' ? item : (item?.id || item?.name || '');
+              if (raw) {
+                const lower = raw.toLowerCase().trim();
+                knownSet.add(lower);
+                if (lower.startsWith('models/')) knownSet.add(lower.replace('models/', ''));
+                if (lower.includes('/')) knownSet.add(lower.split('/').pop()!);
+              }
+            }
+
+            const targetLower = target.model.toLowerCase().trim();
+            const displayLower = displayModel.toLowerCase().trim();
+            const targetNoPrefix = targetLower.replace('models/', '');
+
+            const modelExists = knownSet.has(targetLower) || knownSet.has(displayLower) || knownSet.has(targetNoPrefix);
+            if (!modelExists) {
+              console.warn(`[Orchestrator Shield] Model "${target.model}" not found in registered models for provider "${target.provider}". Skipping query to prevent 404 error.`);
+              continue;
+            }
+          }
         }
 
         let isInsideThinkingBlock = false;
@@ -643,49 +676,51 @@ ${refinedSystemPromptSegment}`.trim();
         }
 
         try {
-          // Extract direct user facts from user prompt deterministically (Zero AI / Full Sovereign Local Engine)
+          // 1. Extract direct user facts from user prompt via Autonomous Local Engine
           const directUserFacts = extractDirectUserMemories(cleanUserPrompt);
 
-          if (directUserFacts.length > 0) {
-            const countRes = await pool.query('SELECT count(*) FROM chat_memories WHERE user_id = $1', [userId]);
-            const currentCount = parseInt(countRes.rows[0].count);
+          // 2. Extract any tags generated in model output (<extracted_memory>)
+          const tagMatches: { fact: string; category: string }[] = [];
+          let tagMatch;
+          const memTagRegex = new RegExp(MEMORY_TAG_REGEX.source, 'gi');
+          while ((tagMatch = memTagRegex.exec(generatedText)) !== null) {
+            const category = (tagMatch[1] || 'general').trim().toLowerCase();
+            const factText = tagMatch[2]?.trim();
+            if (factText && factText.length >= 3) {
+              tagMatches.push({ fact: factText, category });
+            }
+          }
 
-            let newInsertedCount = 0;
-            for (const item of directUserFacts) {
-              // Deduplication check: only insert if not already recorded
-              const existing = await pool.query(
-                'SELECT id FROM chat_memories WHERE user_id = $1 AND LOWER(fact) = LOWER($2) LIMIT 1',
-                [userId, item.fact]
-              );
-              if (existing.rows.length === 0) {
-                const insertRes = await pool.query(
-                  "INSERT INTO chat_memories (user_id, chat_id, fact, category, source) VALUES ($1, $2, $3, $4, 'user') RETURNING *",
-                  [userId, chatIdNum || null, item.fact, item.category]
-                );
-                newInsertedCount++;
-                if (io) {
+          const allFactsToProcess = [...directUserFacts, ...tagMatches];
+
+          if (allFactsToProcess.length > 0) {
+            for (const item of allFactsToProcess) {
+              try {
+                const savedFact = await addMemory(userId, item.fact, item.category, 'user', chatIdNum || undefined);
+                if (savedFact && io) {
                   io.to(`user_${userId}`).emit('memory_extracted', {
-                    fact: item.fact,
-                    category: item.category,
-                    id: insertRes.rows[0].id
+                    fact: savedFact.fact,
+                    category: savedFact.category,
+                    id: savedFact.id
                   });
                 }
-              }
-            }
-
-            const totalNow = currentCount + newInsertedCount;
-            if (totalNow >= memoryLimit) {
-              scheduleMemoryConsolidation(userId);
-              if (io) {
-                io.to(`user_${userId}`).emit('memory_warning', { currentCount: totalNow });
+              } catch (addErr: any) {
+                if (addErr.message?.includes('limit reached')) {
+                  scheduleMemoryConsolidation(userId);
+                  if (io) io.to(`user_${userId}`).emit('memory_warning', { userId });
+                }
               }
             }
           }
 
-          const memRegex = new RegExp(MEMORY_TAG_REGEX.source, 'gi');
-          generatedText = generatedText.replace(memRegex, '').trim();
+          generatedText = generatedText.replace(memTagRegex, '').trim();
+
+          // 3. Trigger progressive context summary update for active chat
+          if (chatIdNum > 0) {
+            scheduleChatSummaryUpdate(chatIdNum, userId);
+          }
         } catch (memProcErr) {
-          console.error('[Orchestrator] Error during deterministic memory extraction:', memProcErr);
+          console.error('[Orchestrator] Error during local memory engine extraction:', memProcErr);
         }
 
         break; // exit trials on model execution success

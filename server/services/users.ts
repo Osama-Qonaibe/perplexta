@@ -72,12 +72,6 @@ const TOOL_INFO: Record<string, { name_en: string, name_ar: string, desc_en: str
     desc_en: 'Collaborative AI design and brainstorming.',
     desc_ar: 'تصميم وعصف ذهني تعاوني بالذكاء الاصطناعي.'
   },
-  'sovereign_memory': { 
-    name_en: 'Sovereign Memory', 
-    name_ar: 'الذاكرة السيادية',
-    desc_en: 'Unified sovereign system intelligence and long-term memory synthesis.',
-    desc_ar: 'ذاكرة النظام السيادية الموحدة وتركيب المعارف طويلة الأمد.'
-  },
   'sovereign_search': { 
     name_en: 'Sovereign Search', 
     name_ar: 'البحث السيادي',
@@ -296,7 +290,7 @@ export async function getUserProfile(userId: string) {
   if (!pool) throw new Error('Database initializing');
   
   const result = await pool.query(`
-    SELECT u.id, u.name, u.email, u.role, u.avatar, u.status, u.language, u.theme, u.custom_instructions, u.kyc_status, u.created_at, u.referral_code, u.media_muted,
+    SELECT u.id, u.name, u.email, u.role, u.avatar, u.status, u.language, u.theme, u.custom_instructions, u.kyc_status, u.created_at, u.referral_code, u.media_muted, u.data_saver,
            s.plan_id, s.status as sub_status, s.current_period_end, p.name_en as plan_name_en, p.name_ar as plan_name_ar, p.color as plan_color, p.limits
     FROM users u
     LEFT JOIN subscriptions s ON u.id = s.user_id
@@ -340,6 +334,7 @@ export async function getUserProfile(userId: string) {
     created_at: row.created_at,
     referral_code: row.referral_code,
     media_muted: row.media_muted !== undefined && row.media_muted !== null ? !!row.media_muted : true,
+    data_saver: row.data_saver !== undefined && row.data_saver !== null ? !!row.data_saver : false,
     custom_limits: {},
     subscription,
     balance: wallet.balance,
@@ -351,10 +346,16 @@ export async function getUserProfile(userId: string) {
 export async function updateUserProfile(userId: string | number, data: any) {
   if (!pool) throw new Error('Database initializing');
   
-  const { name, avatar, language, theme, custom_instructions, password, email, email_notifications, media_muted } = data;
+  const { name, avatar, language, theme, custom_instructions, password, email, email_notifications, media_muted, data_saver } = data;
   const updates: string[] = [];
   const values: any[] = [];
   let idx = 1;
+
+  if (data_saver !== undefined) {
+    if (typeof data_saver !== 'boolean') throw new Error('Data saver preference must be a boolean');
+    updates.push(`data_saver = $${idx++}`);
+    values.push(data_saver);
+  }
 
   if (email_notifications !== undefined) {
     if (typeof email_notifications !== 'boolean') throw new Error('Email notifications must be a boolean');

@@ -11,34 +11,67 @@ import {
 } from 'lucide-react';
 import { toast } from '@/design-system';
 import { useAppContext } from '../../../../context/AppContext';
-import { Logo } from '../../../common/Logo';
 import { ArtifactContext } from '../../../../context/ArtifactContext';
 import { ASPECT_RATIO_CLASSES } from '../../../../constants/chat';
 
 export const SimpleImageLoadingPlaceholder = ({ dir, aspectRatio = '1:1' }: { dir: 'ltr' | 'rtl'; aspectRatio?: string }) => {
   const containerAspectClass = ASPECT_RATIO_CLASSES[aspectRatio] || ASPECT_RATIO_CLASSES['1:1'];
 
+  // Progressive blur relaxation over time (decreases gradually as image generates)
+  const [elapsed, setElapsed] = useState(0);
+
+  useEffect(() => {
+    const startTime = Date.now();
+    const interval = setInterval(() => {
+      setElapsed((Date.now() - startTime) / 1000);
+    }, 80);
+    return () => clearInterval(interval);
+  }, []);
+
+  // Blur starts at a gentle 14px and gradually clarifies down to 1.5px as work progresses
+  const currentBlur = Math.max(1.5, 14 - Math.min(12.5, elapsed * 0.85));
+  const frostedOpacity = Math.max(0.15, 0.45 - Math.min(0.3, elapsed * 0.025));
+
   return (
     <div className="w-full flex flex-col my-2 items-start">
       <div 
         className={`relative overflow-hidden rounded-shape-md border border-[var(--border-default)] bg-[var(--surface-subtle)] ${containerAspectClass} w-full flex items-center justify-center`}
       >
-        <div className="absolute inset-0 backdrop-blur-md bg-zinc-950/30 flex flex-col items-center justify-center gap-2 z-10">
-          <Logo size={28} fallbackType="cpu" className="animate-pulse" />
-          <span className="text-[11px] font-bold text-white tracking-wide select-none">
-            {dir === 'rtl' ? 'جارٍ إنشاء الصورة...' : 'Generating image...'}
-          </span>
-        </div>
+        {/* Soft, calm ambient latent luminous gradient */}
+        <motion.div
+          animate={{
+            opacity: [0.25, 0.5, 0.25],
+            scale: [1, 1.03, 1],
+          }}
+          transition={{
+            duration: 3.5,
+            repeat: Infinity,
+            ease: "easeInOut"
+          }}
+          className="absolute inset-0 bg-gradient-to-br from-accent/10 via-[var(--surface-container-high)] to-accent/5 pointer-events-none"
+        />
+
+        {/* Gentle linear sheen sweep */}
         <motion.div
           animate={{
             x: dir === 'rtl' ? ['150%', '-150%'] : ['-150%', '150%']
           }}
           transition={{
-            duration: 2.0,
+            duration: 2.5,
             repeat: Infinity,
             ease: "easeInOut"
           }}
-          className="absolute inset-0 bg-gradient-to-r from-transparent via-white/[0.04] to-transparent skew-x-12 pointer-events-none z-0"
+          className="absolute inset-0 bg-gradient-to-r from-transparent via-white/[0.06] to-transparent skew-x-12 pointer-events-none z-10"
+        />
+
+        {/* Light frosted blur screen whose blur gradually softens & decreases during work without any text or circles */}
+        <div 
+          className="absolute inset-0 pointer-events-none z-20 transition-[backdrop-filter,opacity] duration-150 ease-out"
+          style={{
+            backdropFilter: `blur(${currentBlur.toFixed(1)}px)`,
+            WebkitBackdropFilter: `blur(${currentBlur.toFixed(1)}px)`,
+            backgroundColor: `rgba(255, 255, 255, ${frostedOpacity.toFixed(2)})`
+          }}
         />
       </div>
     </div>
@@ -177,9 +210,9 @@ export const ShareableImageOutput = ({ src, dir: propDir, alt }: { src?: string;
             className="block w-full h-full object-cover select-none cursor-pointer"
             onClick={() => setIsPreviewOpen(true)}
             style={{
-              filter: isImageFocused ? 'blur(0px)' : 'blur(16px)',
-              opacity: isImageFocused ? 1 : 0.4,
-              transition: 'filter 0.5s ease-out, opacity 0.5s ease-out'
+              filter: isImageFocused ? 'blur(0px)' : 'blur(8px)',
+              opacity: isImageFocused ? 1 : 0.6,
+              transition: 'filter 0.6s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.6s cubic-bezier(0.16, 1, 0.3, 1)'
             }}
             referrerPolicy="no-referrer"
           />
@@ -222,11 +255,7 @@ export const ShareableImageOutput = ({ src, dir: propDir, alt }: { src?: string;
         )}
 
         {!isImageFocused && !imageError && (
-          <div className="absolute inset-0 flex items-center justify-center bg-zinc-900/10 backdrop-blur-sm pointer-events-none">
-            <span className="text-[10px] font-mono tracking-widest text-[var(--text-muted)] uppercase animate-pulse">
-              {dir === 'rtl' ? 'جارٍ العرض...' : 'Loading image...'}
-            </span>
-          </div>
+          <div className="absolute inset-0 bg-white/10 backdrop-blur-[6px] pointer-events-none transition-all duration-300" />
         )}
 
         {imageError && (

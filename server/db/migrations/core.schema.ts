@@ -39,7 +39,8 @@ export const CORE_SCHEMA_TABLES: { name: string; query: string }[] = [
         avatar_asset_id UUID,
         referral_code VARCHAR(10) UNIQUE,
         email_notifications BOOLEAN DEFAULT true,
-        media_muted BOOLEAN DEFAULT true
+        media_muted BOOLEAN DEFAULT true,
+        data_saver BOOLEAN DEFAULT false
       )`
   },
   {
@@ -1052,7 +1053,8 @@ export async function applyCoreColumnEnforcements(targetPool: QueryClient) {
     kyc_rejection_reason: { type: 'TEXT' },
     kyc_submitted_at: { type: 'TIMESTAMP' },
     avatar_asset_id: { type: 'UUID' },
-    media_muted: { type: 'BOOLEAN', default: 'true' }
+    media_muted: { type: 'BOOLEAN', default: 'true' },
+    data_saver: { type: 'BOOLEAN', default: 'false' }
   });
 
   await ensureColumnsBulk(targetPool, 'chats', {
@@ -1719,7 +1721,6 @@ export async function seedCoreDatabase(targetPool: QueryClient, targetLedgerPool
       ('ads_copilot', '', '', 'Perplexta Ads & Growth Copilot for Meta, Google, TikTok, and ViralBook campaigns.', 'مساعد الإعلانات والنمو التجاري لمنصة فيرال بوك والمنصات العالمية.', 25),
       ('code', '', '', 'Master-level software engineering workstation and logic constructor.', 'محطة عمل هندسة البرمجيات وبناء المنطق البرمجي المتقدم.', 20),
       ('canvas', '', '', 'Perplexta creative studio and multi-modal design canvas.', 'استوديو الإبداع المتقدم ولوحة التصميم متعددة الوسائط.', 25),
-      ('sovereign_memory', '', '', 'Unified sovereign system intelligence and long-term memory synthesis.', 'ذاكرة النظام السيادية الموحدة وتركيب المعارف طويلة الأمد.', 5),
       ('sovereign_search', '', '', 'Perplexta Research & Studies Protocol for comprehensive academic literature synthesis.', 'منظومة البحوث والدراسات الأكاديمية والمراجعة المنهجية.', 10),
       ('perplexta_music', '', '', 'Advanced acoustic composition and structural music synthesis.', 'التأليف الصوتي المتقدم والتركيب الموسيقي الهيكلي.', 50),
       ('x402_api', '', '', 'Dynamic high-fidelity artificial intelligence analytics gateway for programmatic developer clients connected via x402 payment protocol.', 'بوابة تحليلات الذكاء الاصطناعي عالية الدقة الديناميكية لعملاء الوكلاء البرمجيين المتصلين ببروتوكول دفع x402.', 15),
@@ -1727,5 +1728,5 @@ export async function seedCoreDatabase(targetPool: QueryClient, targetLedgerPool
     ON CONFLICT (tool_id) DO NOTHING
   `);
 
-  await targetPool.query("DELETE FROM tool_orchestrator WHERE tool_id IN ('notebook', 'learning', 'legal_analysis')");
+  await targetPool.query("DELETE FROM tool_orchestrator WHERE tool_id IN ('notebook', 'learning', 'legal_analysis', 'sovereign_memory')");
 }

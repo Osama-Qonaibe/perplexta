@@ -992,15 +992,7 @@ export async function callAIProvider(
       const isQuotaOrOverloaded = res.status === 429 || res.status === 503 || errorDetail.includes('RESOURCE_EXHAUSTED') || errorDetail.includes('quota') || errorDetail.includes('overloaded');
       
       if (isQuotaOrOverloaded) {
-        console.warn(`[AI Service] Rate limit / Quota exhausted / Overloaded encountered for model ${cleanModel}. Attempting fallback to gemini-2.5-flash...`);
-        if (!cleanModel.includes('2.5-flash')) {
-          const fallbackUrl = url.replace(cleanModel, 'models/gemini-2.5-flash');
-          const fallbackRes = await fetch(fallbackUrl, { method: 'POST', headers, body: JSON.stringify(body) });
-          if (fallbackRes.ok) {
-            console.log('[AI Service] Successfully recovered using gemini-2.5-flash fallback.');
-            return handleResponse(fallbackRes);
-          }
-        }
+        console.warn(`[AI Service] Rate limit / Quota exhausted / Overloaded encountered for model ${cleanModel}. Deferring to Orchestrator dynamic database fallback chain.`);
       }
 
       const is404 = res.status === 404 || errorDetail.includes('NOT_FOUND') || errorDetail.includes('is not found') || errorDetail.includes('not found');

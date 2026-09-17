@@ -117,14 +117,14 @@ export const themeConfig = {
 
   // Theme Toggle Button Styles (Modern Developer IDE Style - Single Source of Truth)
   themeToggle: {
-    buttonSm: 'flex items-center justify-center w-8 h-8 rounded-shape-sm bg-transparent border border-[var(--pub-border-default)] hover:bg-cyan-500/10 hover:border-cyan-500/20 text-[var(--pub-text-muted)] hover:text-cyan-400 transition-all duration-150 group shrink-0 cursor-pointer',
-    buttonMd: 'flex items-center justify-center w-9 h-9 rounded-shape-sm bg-transparent border border-[var(--pub-border-default)] hover:bg-cyan-500/10 hover:border-cyan-500/20 text-[var(--pub-text-muted)] hover:text-cyan-400 transition-all duration-150 group shrink-0 cursor-pointer',
-    buttonLg: 'flex items-center justify-center w-10 h-10 rounded-shape-sm bg-transparent border border-[var(--pub-border-default)] hover:bg-cyan-500/10 hover:border-cyan-500/20 text-[var(--pub-text-muted)] hover:text-cyan-400 transition-all duration-150 group shrink-0 cursor-pointer',
-    icon: 'text-[var(--pub-text-muted)] group-hover:text-cyan-400 transition-all duration-150',
-    segmentedContainer: 'flex items-center gap-1 p-1 bg-[var(--pub-surface-subtle)] rounded-shape-sm border border-[var(--pub-border-default)] transition-theme',
-    segmentedItem: 'flex items-center justify-center gap-1 px-3 py-1.5 rounded-shape-xs text-[11px] font-bold uppercase tracking-wider transition-theme cursor-pointer select-none',
-    segmentedActive: 'bg-[var(--pub-surface-container)] text-cyan-400 border border-cyan-500/30 shadow-xs font-black',
-    segmentedInactive: 'text-[var(--pub-text-secondary)] hover:text-cyan-400 hover:bg-cyan-500/10',
+    buttonSm: 'flex items-center justify-center w-8 h-8 rounded-[var(--radius-sm)] bg-transparent border border-[var(--border-default)] hover:border-cyan-500/60 dark:hover:border-cyan-400/60 hover:bg-[var(--surface-subtle)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-all duration-150 group shrink-0 cursor-pointer relative active:scale-95 before:absolute before:-inset-1.5 before:content-[\'\']',
+    buttonMd: 'flex items-center justify-center w-9 h-9 rounded-[var(--radius-sm)] bg-transparent border border-[var(--border-default)] hover:border-cyan-500/60 dark:hover:border-cyan-400/60 hover:bg-[var(--surface-subtle)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-all duration-150 group shrink-0 cursor-pointer relative active:scale-95 before:absolute before:-inset-1.5 before:content-[\'\']',
+    buttonLg: 'flex items-center justify-center w-10 h-10 rounded-[var(--radius-sm)] bg-transparent border border-[var(--border-default)] hover:border-cyan-500/60 dark:hover:border-cyan-400/60 hover:bg-[var(--surface-subtle)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-all duration-150 group shrink-0 cursor-pointer relative active:scale-95 before:absolute before:-inset-1.5 before:content-[\'\']',
+    icon: 'text-[var(--text-muted)] group-hover:text-[var(--text-primary)] transition-colors duration-150',
+    segmentedContainer: 'flex items-center gap-1 p-1 bg-[var(--surface-subtle)] rounded-[var(--radius-sm)] border border-[var(--border-default)] transition-theme',
+    segmentedItem: 'flex items-center justify-center gap-1 px-3 py-1.5 rounded-[var(--radius-xs)] text-[11px] font-bold uppercase tracking-wider transition-theme cursor-pointer select-none',
+    segmentedActive: 'bg-[var(--surface-card)] text-[var(--text-primary)] border border-[var(--border-default)] font-bold shadow-2xs',
+    segmentedInactive: 'text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--surface-subtle)]',
   }
 };
 

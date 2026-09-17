@@ -27,12 +27,10 @@ export const PwaDiagnosticTool: React.FC = () => {
     setLogs([]);
     addLog(isAr ? 'بدء الفحص التشخيصي الشامل لتطبيق PWA...' : 'Starting comprehensive PWA diagnostic check...');
 
-    // 1. Check Display Mode & Standalone
-    const isStandaloneActive = typeof window !== 'undefined' && (
-      window.matchMedia('(display-mode: standalone)').matches ||
-      (window.navigator as any).standalone === true
-    );
-    addLog(`Display Mode: ${isStandaloneActive ? 'standalone (Installed App)' : 'browser (Browser Tab)'}`);
+    // 1. Check Display Mode & Standalone Webview
+    addLog(`Display Mode: ${pwa.isStandalone ? 'standalone (Installed App)' : 'browser (Browser Tab)'}`);
+    addLog(`Environment Type: ${pwa.isStandaloneWebview ? 'Standalone Webview / App' : 'Standard Web Browser'}`);
+    addLog(`Is Webview: ${pwa.isWebview ? 'Yes' : 'No'}`);
 
     // 2. Check Platform & Prompt Support
     addLog(`Platform Taxonomy: ${pwa.mobilePlatform}`);
@@ -127,14 +125,14 @@ export const PwaDiagnosticTool: React.FC = () => {
         {/* Display Mode Card */}
         <div className="p-4 rounded-shape-md bg-[var(--surface-subtle)] border border-[var(--border-default)] space-y-1">
           <div className="flex items-center justify-between text-xs font-semibold text-[var(--text-muted)]">
-            <span>{isAr ? 'وضع العرض (Display Mode)' : 'Display Mode'}</span>
-            {pwa.isStandalone ? <CheckCircle2 className="w-4 h-4 text-[var(--fg-success)]" /> : <AlertTriangle className="w-4 h-4 text-amber-500" />}
+            <span>{isAr ? 'وضع العرض والـ Webview' : 'Display Mode & Webview'}</span>
+            {pwa.isStandaloneWebview ? <CheckCircle2 className="w-4 h-4 text-[var(--fg-success)]" /> : <AlertTriangle className="w-4 h-4 text-amber-500" />}
           </div>
           <p className="text-sm font-bold text-[var(--text-primary)]">
-            {pwa.isStandalone ? 'standalone (App Mode)' : 'browser (Tab Mode)'}
+            {pwa.isStandaloneWebview ? (pwa.isWebview ? 'Standalone Webview' : 'Standalone PWA') : 'Standard Browser'}
           </p>
           <p className="text-[10px] text-[var(--text-secondary)]">
-            {pwa.isStandalone ? (isAr ? 'يعمل كتطبيق مستقل بنجاح' : 'Running as standalone app') : (isAr ? 'يعمل داخل تبويب المتصفح' : 'Running inside browser tab')}
+            {pwa.isStandaloneWebview ? (isAr ? 'يعمل كتطبيق/Webview مستقل بنجاح' : 'Running as standalone app / webview') : (isAr ? 'متصفح عادي - عناصر المتصفح مفعّلة' : 'Standard browser - browser UI enabled')}
           </p>
         </div>
 
@@ -192,16 +190,16 @@ export const PwaDiagnosticTool: React.FC = () => {
         <Cpu className="w-5 h-5 text-accent shrink-0 mt-0.5" />
         <div className="space-y-1 text-xs">
           <h4 className="font-bold text-[var(--text-primary)]">
-            {isAr ? 'تحقق مزامنة إشعارات التثبيت والتعليمات (Sync Verification)' : 'Installation & Instruction Notification Sync Verification'}
+            {isAr ? 'تحقق مزامنة إشعارات التثبيت والتطبيق الأصلي' : 'Native App & Install Toast Notification Sync'}
           </h4>
           <p className="text-[var(--text-secondary)] leading-relaxed">
             {isAr
-              ? 'يتم اختيار نوع الإشعار تلقائياً بناءً على قدرات المتصفح والجهاز: الأجهزة والبرمجيات التي تدعم التثبيت التلقائي (مثل Android Chrome و Desktop Chrome) تعرض زر التثبيت المباشر (Installation Notification)، بينما الأجهزة التي لا تدعم التثبيت التلقائي أو تتطلب خطوات يدوية (مثل iOS Safari) تعرض دليل التعليمات خطوة بخطوة (Instruction Notification). النظام متزامن بالكامل مع حالة تثبيت التطبيق الفعلية.'
-              : 'Notifications are dynamically routed based on browser capability: devices supporting automated native installation show direct Install prompts, while restricted environments (like iOS Safari) present step-by-step instruction guides. Fully synchronized with actual installation state.'}
+              ? 'توجيه إشعار تثبيت النسخة الأصلية تلقائياً على أجهزة الأندرويد والهواتف الذكية مع التعرف الفوري الذكي على المستخدمين الذين قاموا بتثبيت التطبيق مسبقاً لحجب الإشعار ومنع أي إزعاج.'
+              : 'Direct native Android app installation toast notification with intelligent instant recognition of previously installed users to prevent duplicate prompts.'}
           </p>
           <div className="pt-2 flex items-center gap-3">
             <span className="inline-flex items-center gap-1 text-[11px] font-bold text-[var(--fg-success)]">
-              <CheckCircle2 className="w-3.5 h-3.5" /> {isAr ? 'دعم التثبيت التلقائي المباشر' : 'Direct Native Install Supported'} ({pwa.hasPrompt ? 'Yes (Prompt Ready)' : 'No (Instruction Guide Active)'})
+              <CheckCircle2 className="w-3.5 h-3.5" /> {isAr ? 'دعم التثبيت التلقائي المباشر' : 'Direct Native Install Supported'} ({pwa.hasPrompt ? 'Yes (Prompt Ready)' : 'No'})
             </span>
           </div>
         </div>

@@ -300,40 +300,40 @@ export const AdminDashboard: React.FC = () => {
   };
 
   const getIcon = () => {
-    const iconClass = "text-accent ";
+    const iconClass = "text-[var(--text-primary)]";
     switch (path) {
       case "dashboard":
-        return <Activity size={28} className={iconClass} />;
+        return <Activity size={20} className={iconClass} />;
       case "keys":
       case "gpu":
       case "orchestrator":
       case "memories":
       case "ai-infra":
-        return <Cpu size={28} className={iconClass} />;
+        return <Cpu size={20} className={iconClass} />;
       case "databases":
-        return <Database size={28} className={iconClass} />;
+        return <Database size={20} className={iconClass} />;
       case "finance":
       case "plans":
       case "referrals":
-        return <Landmark size={28} className={iconClass} />;
+        return <Landmark size={20} className={iconClass} />;
       case "users":
       case "ads":
-        return <Users size={28} className={iconClass} />;
+        return <Users size={20} className={iconClass} />;
       case "emails":
       case "broadcast":
-        return <Mail size={28} className={iconClass} />;
+        return <Mail size={20} className={iconClass} />;
       case "theme":
       case "seo":
       case "design-seo":
-        return <Palette size={28} className={iconClass} />;
+        return <Palette size={20} className={iconClass} />;
       case "audit":
       case "radar":
       case "metrics":
-        return <ShieldAlert size={28} className={iconClass} />;
+        return <ShieldAlert size={20} className={iconClass} />;
       case "settings":
-        return <Settings size={28} className={iconClass} />;
+        return <Settings size={20} className={iconClass} />;
       default:
-        return <Settings2 size={28} className={iconClass} />;
+        return <Settings2 size={20} className={iconClass} />;
     }
   };
 
@@ -424,17 +424,17 @@ export const AdminDashboard: React.FC = () => {
               )}
             </button>
           )}
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-3.5">
             <div
-              className="p-2.5 rounded-[var(--radius-sm)] bg-[var(--surface-card)] shadow-xs border border-[var(--border-default)] transition-theme text-[var(--text-primary)]"
+              className="w-10 h-10 rounded-[var(--radius-sm)] bg-[var(--surface-card)] shadow-2xs border border-[var(--border-default)] transition-theme text-[var(--text-primary)] flex items-center justify-center shrink-0"
             >
               {getIcon()}
             </div>
             <div>
-              <h1 className="text-2xl md:text-3xl font-black tracking-tight uppercase leading-none text-[var(--text-primary)] transition-theme">
+              <h1 className="text-xl md:text-2xl font-black tracking-tight text-[var(--text-primary)] transition-theme font-sans leading-tight">
                 {getTitle()}
               </h1>
-              <p className="text-[10px] text-[var(--text-muted)] font-bold uppercase tracking-widest mt-1 opacity-70">
+              <p className="text-xs text-[var(--text-muted)] font-medium mt-0.5 leading-normal">
                 {getSubTitle()}
               </p>
             </div>
@@ -445,9 +445,9 @@ export const AdminDashboard: React.FC = () => {
           {showAddButton && (
             <button
               onClick={handleAddClick}
-              className="flex items-center gap-2 bg-[var(--bg-accent-emphasis)] hover:opacity-90 text-[var(--fg-on-emphasis)] px-5 py-2.5 rounded-[var(--radius-sm)] transition-theme font-bold text-sm shadow-sm active:scale-95 cursor-pointer"
+              className="flex items-center gap-2 bg-[var(--bg-accent-emphasis)] hover:opacity-90 text-[var(--fg-on-emphasis)] px-4 py-2 min-h-[40px] rounded-[var(--radius-sm)] transition-theme font-bold text-xs shadow-2xs active:scale-95 cursor-pointer touch-target-44"
             >
-              <Plus size={18} />
+              <Plus size={16} />
               {getAddButtonText()}
             </button>
           )}
@@ -455,20 +455,16 @@ export const AdminDashboard: React.FC = () => {
           <div className="relative">
             <button
               onClick={() => setIsPulseOpen(!isPulseOpen)}
-              className="flex items-center gap-2.5 px-3 py-2 rounded-[var(--radius-xs)] border border-[var(--border-default)] bg-[var(--surface-card)] transition-theme hover:bg-[var(--surface-subtle)] cursor-pointer select-none active:scale-95"
+              className="flex items-center gap-2.5 px-3 py-2 min-h-[40px] rounded-[var(--radius-sm)] border border-[var(--border-default)] bg-[var(--surface-card)] transition-theme hover:bg-[var(--surface-subtle)] hover:border-[var(--border-accent)] cursor-pointer select-none active:scale-95 touch-target-44"
             >
               <div className="relative flex items-center justify-center">
-                <div 
-                  className="w-2 h-2 rounded-full absolute animate-ping opacity-75" 
-                  style={{ backgroundColor: pulseColor }} 
-                />
                 <div 
                   className="w-2 h-2 rounded-full relative" 
                   style={{ backgroundColor: pulseColor }} 
                 />
               </div>
-              <span className={`text-[10px] font-black uppercase tracking-tighter ${pulseGlowClass}`}>
-                {language === 'ar' ? 'نبض النظام' : 'System Pulse'}: {pulseText}
+              <span className="text-xs font-bold text-[var(--text-primary)]">
+                {language === 'ar' ? 'نبض النظام' : 'System Pulse'}: <span className="text-[var(--text-secondary)]">{pulseText}</span>
               </span>
             </button>
 

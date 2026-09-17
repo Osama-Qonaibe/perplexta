@@ -57,25 +57,25 @@ export const ActionItem = forwardRef<HTMLButtonElement, ActionItemProps>(({
 
   // Base touch-target & styling tokens matching design system specs
   const baseClasses = `
-    min-h-[36px] w-full flex items-center gap-2 px-2.5 rounded-lg text-xs font-medium
-    transition-all duration-120 ease-out select-none text-start
+    min-h-[34px] w-full flex items-center gap-2 px-2.5 rounded-[var(--pub-radius-control)] text-xs font-medium
+    transition-all duration-120 ease-out select-none text-start border border-transparent
     ${isDisabledOrLocked ? 'opacity-40 cursor-not-allowed pointer-events-none' : 'cursor-pointer'}
   `;
 
   // Color & Hover dynamics
   let stateClasses = '';
   if (isActive) {
-    stateClasses = 'bg-[color-mix(in_oklab,var(--github-blue)_12%,transparent)] text-[var(--github-blue)] font-bold border border-[color-mix(in_oklab,var(--github-blue)_30%,var(--border))]';
+    stateClasses = 'bg-[var(--surface-subtle)] text-[var(--pub-text-primary)] font-bold border-[var(--pub-border-default)]';
   } else if (isDanger) {
-    stateClasses = 'text-[var(--destructive)] hover:bg-[color-mix(in_oklab,var(--destructive)_12%,transparent)]';
+    stateClasses = 'text-rose-500 hover:bg-rose-500/10 hover:text-rose-400 font-bold';
   } else if (variant === 'accent') {
-    stateClasses = 'text-[var(--github-blue)] hover:bg-[color-mix(in_oklab,var(--github-blue)_10%,transparent)]';
+    stateClasses = 'text-cyan-500 dark:text-cyan-400 hover:bg-[var(--surface-subtle)]';
   } else if (variant === 'admin') {
-    stateClasses = 'text-[var(--github-purple)] hover:bg-[color-mix(in_oklab,var(--github-purple)_10%,transparent)]';
+    stateClasses = 'text-purple-500 hover:bg-[var(--surface-subtle)]';
   } else if (variant === 'success') {
-    stateClasses = 'text-[var(--github-green)] hover:bg-[color-mix(in_oklab,var(--github-green)_10%,transparent)]';
+    stateClasses = 'text-emerald-500 hover:bg-[var(--surface-subtle)]';
   } else {
-    stateClasses = 'text-[var(--foreground)] hover:bg-[var(--muted)] hover:text-[var(--foreground)]';
+    stateClasses = 'text-[var(--pub-text-primary)] hover:bg-[var(--surface-subtle)]';
   }
 
   return (

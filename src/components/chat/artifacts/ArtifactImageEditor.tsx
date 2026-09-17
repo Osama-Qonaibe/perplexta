@@ -5,7 +5,7 @@ import {
   LayoutTemplate, Image as ImageIcon, Shapes, Frame, Upload
 } from 'lucide-react';
 import { useAppContext } from '../../../context/AppContext';
-import { toast } from '@/design-system';
+import { toast, SelectDropdown } from '@/design-system';
 
 interface ArtifactImageEditorProps {
   artifact: {
@@ -965,20 +965,24 @@ export const ArtifactImageEditor: React.FC<ArtifactImageEditorProps> = ({
           <span className="font-bold text-indigo-400">{isAr ? 'تخصيص النص (كانفا):' : 'Canva Text Styling:'}</span>
           
           {/* Font Family Selector */}
-          <div className="flex items-center gap-1.5">
-            <span className="text-[10px] text-slate-500">{isAr ? 'الخط:' : 'Font:'}</span>
-            <select
-              value={selectedElement.fontFamily || 'Tajawal'}
-              onChange={e => {
-                setElements(prev => prev.map(el => el.id === selectedId ? { ...el, fontFamily: e.target.value } : el));
-              }}
-              className="h-7 px-2 bg-slate-900 border border-slate-800 rounded-shape-sm text-[11px] text-slate-200 focus:outline-none focus:border-indigo-500 cursor-pointer"
-            >
-              <option value="Tajawal">Tajawal (عربي)</option>
-              <option value="Playfair Display">Playfair Display (Serif)</option>
-              <option value="sans-serif">Sans-serif</option>
-              <option value="monospace">Monospace</option>
-            </select>
+          <div className="flex items-center gap-1.5 min-w-[160px]">
+            <span className="text-[10px] text-slate-500 shrink-0">{isAr ? 'الخط:' : 'Font:'}</span>
+            <div className="flex-1">
+              <SelectDropdown
+                size="sm"
+                variant="subtle"
+                value={selectedElement.fontFamily || 'Tajawal'}
+                onChange={val => {
+                  setElements(prev => prev.map(el => el.id === selectedId ? { ...el, fontFamily: val } : el));
+                }}
+                options={[
+                  { value: 'Tajawal', label: 'Tajawal (عربي)' },
+                  { value: 'Playfair Display', label: 'Playfair Display (Serif)' },
+                  { value: 'sans-serif', label: 'Sans-serif' },
+                  { value: 'monospace', label: 'Monospace' },
+                ]}
+              />
+            </div>
           </div>
 
           {/* Font Size Input */}
@@ -1070,23 +1074,27 @@ export const ArtifactImageEditor: React.FC<ArtifactImageEditorProps> = ({
           </button>
 
           {/* Background Fill Color */}
-          <div className="flex items-center gap-1.5">
-            <span className="text-[10px] text-slate-500">{isAr ? 'الخلفية:' : 'BG:'}</span>
-            <select
-              value={selectedElement.textBgColor || 'transparent'}
-              onChange={e => {
-                setElements(prev => prev.map(el => el.id === selectedId ? { ...el, textBgColor: e.target.value } : el));
-              }}
-              className="h-7 px-2 bg-slate-900 border border-slate-800 rounded-shape-sm text-[11px] text-slate-200 focus:outline-none focus:border-indigo-500 cursor-pointer"
-            >
-              <option value="transparent">{isAr ? 'شفاف' : 'Transparent'}</option>
-              <option value="rgba(0,0,0,0.65)">{isAr ? 'أسود شفاف' : 'Translucent Black'}</option>
-              <option value="rgba(255,255,255,0.85)">{isAr ? 'أبيض شفاف' : 'Translucent White'}</option>
-              <option value="#000000">{isAr ? 'أسود' : 'Black'}</option>
-              <option value="#ffffff">{isAr ? 'أبيض' : 'White'}</option>
-              <option value="#ef4444">{isAr ? 'أحمر' : 'Red'}</option>
-              <option value="#f59e0b">{isAr ? 'ذهبي' : 'Gold'}</option>
-            </select>
+          <div className="flex items-center gap-1.5 min-w-[150px]">
+            <span className="text-[10px] text-slate-500 shrink-0">{isAr ? 'الخلفية:' : 'BG:'}</span>
+            <div className="flex-1">
+              <SelectDropdown
+                size="sm"
+                variant="subtle"
+                value={selectedElement.textBgColor || 'transparent'}
+                onChange={val => {
+                  setElements(prev => prev.map(el => el.id === selectedId ? { ...el, textBgColor: val } : el));
+                }}
+                options={[
+                  { value: 'transparent', label: isAr ? 'شفاف' : 'Transparent' },
+                  { value: 'rgba(0,0,0,0.65)', label: isAr ? 'أسود شفاف' : 'Translucent Black' },
+                  { value: 'rgba(255,255,255,0.85)', label: isAr ? 'أبيض شفاف' : 'Translucent White' },
+                  { value: '#000000', label: isAr ? 'أسود' : 'Black' },
+                  { value: '#ffffff', label: isAr ? 'أبيض' : 'White' },
+                  { value: '#ef4444', label: isAr ? 'أحمر' : 'Red' },
+                  { value: '#f59e0b', label: isAr ? 'ذهبي' : 'Gold' },
+                ]}
+              />
+            </div>
           </div>
         </div>
       )}

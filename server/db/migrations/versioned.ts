@@ -2463,6 +2463,10 @@ export async function runVersionedMigrations(
         JSON.stringify({ fontFamily: 'Geist', enabled: true, url: 'https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&display=swap' })
       ]).catch(() => {});
     });
+
+    await runVersioned('v111_add_data_saver_column_to_users', 'Ensure data_saver BOOLEAN column exists on users table for aggressive content compression', async (tx) => {
+      await tx.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS data_saver BOOLEAN DEFAULT false`);
+    });
     
   console.log("[Migrations] All versioned migrations completed successfully.");
 }

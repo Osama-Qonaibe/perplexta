@@ -16,6 +16,7 @@ export interface AssistantIconProps {
   isSpinning?: boolean;
   dir?: 'ltr' | 'rtl';
   className?: string;
+  fallbackType?: 'cpu' | 'sparkles';
 }
 
 export const AssistantIcon: React.FC<AssistantIconProps> = ({
@@ -23,6 +24,7 @@ export const AssistantIcon: React.FC<AssistantIconProps> = ({
   isSpinning = false,
   dir = 'ltr',
   className = '',
+  fallbackType = 'cpu',
 }) => {
   const { siteSettings, theme, language } = useAppContext();
   const isRtl = language === 'ar';
@@ -35,27 +37,32 @@ export const AssistantIcon: React.FC<AssistantIconProps> = ({
     ? (siteSettings?.siteNameAr || siteSettings?.siteName || 'بيربليكستا') 
     : (siteSettings?.siteName || 'Perplexta');
 
-  const fallback = (
+  const fallback = fallbackType === 'cpu' ? (
+    <Cpu
+      size={size}
+      className={`text-accent shrink-0 transition-transform ${isSpinning ? 'animate-pulse' : ''}`}
+    />
+  ) : (
     <Sparkles
       size={size}
-      className={`${isSpinning ? 'animate-spin' : ''} transition-transform text-accent`}
+      className={`text-accent shrink-0 transition-transform ${isSpinning ? 'animate-spin' : ''}`}
     />
   );
 
   return (
     <span
-      className={`inline-flex items-center justify-center shrink-0 ${isSpinning ? 'animate-pulse' : ''} ${className}`}
+      className={`inline-flex items-center justify-center shrink-0 ${className}`}
       dir={dir}
     >
       {logoUrl ? (
         <div 
           className="rounded-shape-sm overflow-hidden flex items-center justify-center shrink-0"
-          style={{ width: `${size + 4}px`, height: `${size + 4}px` }}
+          style={{ width: `${size + 2}px`, height: `${size + 2}px` }}
         >
           <NotificationIconRenderer
             src={logoUrl}
             alt={displayName}
-            size={size + 4}
+            size={size + 2}
             className="w-full h-full object-contain block"
             fallbackIcon={fallback}
           />

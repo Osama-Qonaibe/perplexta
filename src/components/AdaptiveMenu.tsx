@@ -16,13 +16,13 @@ import React, { useEffect, useLayoutEffect, useRef, useState, useCallback } from
 import { createPortal } from 'react-dom';
 import { motion, AnimatePresence, type Variants } from 'motion/react';
 
-// Unified zero-sagging popover animation anchored to corner
+// Unified zero-sagging popover animation anchored strictly to corner
 const menuVariants: Variants = {
   closed: {
     opacity: 0,
-    scale: 0.94,
+    scale: 0.98,
     transition: { 
-      duration: 0.12, 
+      duration: 0.08, 
       ease: [0.16, 1, 0.3, 1] as [number, number, number, number] 
     }
   },
@@ -30,7 +30,7 @@ const menuVariants: Variants = {
     opacity: 1,
     scale: 1,
     transition: { 
-      duration: 0.16, 
+      duration: 0.10, 
       ease: [0.16, 1, 0.3, 1] as [number, number, number, number] 
     }
   }
@@ -573,8 +573,8 @@ export const AdaptiveMenu: React.FC<AdaptiveMenuProps> = ({
               transformOrigin: coords.transformOrigin,
               width: width === 'auto' ? undefined : (typeof width === 'number' ? `${width}px` : width),
             }}
-            className={`z-[99999] rounded-xl border border-[var(--pub-border-default)] bg-[var(--pub-surface-container)] text-[var(--pub-text-primary)] backdrop-blur-xl max-h-[calc(100vh-24px)] overflow-y-auto overscroll-contain custom-scrollbar ${coords.originClass} shadow-2xl ring-1 ring-black/5 dark:ring-white/10 transition-colors duration-150 p-1 flex flex-col gap-0.5 ${
-              width === 'auto' ? 'w-max min-w-[170px] max-w-[calc(100vw-2rem)]' : ''
+            className={`z-[99999] rounded-[14px] border border-[var(--border-default)] bg-[var(--surface-card)] text-[var(--text-primary)] backdrop-blur-2xl max-h-[calc(100vh-24px)] overflow-y-auto overscroll-contain custom-scrollbar ${coords.originClass} shadow-2xl ring-1 ring-black/5 dark:ring-white/10 transition-colors duration-150 p-1.5 flex flex-col gap-0.5 ${
+              width === 'auto' ? 'w-max min-w-[180px] max-w-[calc(100vw-2rem)]' : ''
             } ${className}`}
             onClick={(e) => e.stopPropagation()}
             onMouseDown={(e) => e.stopPropagation()}

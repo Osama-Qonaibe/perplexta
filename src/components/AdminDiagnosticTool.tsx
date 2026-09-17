@@ -204,16 +204,16 @@ export const AdminDiagnosticTool: React.FC = () => {
         <Cpu className="w-5 h-5 text-[var(--accent)] shrink-0 mt-0.5" />
         <div className="space-y-1 text-xs">
           <h4 className="font-bold text-[var(--fg-primary)]">
-            {isAr ? 'التحقق من تزامن إشعارات التثبيت والتعليمات (Sync & Notification Verification)' : 'Installation & Instruction Notification Synchronization'}
+            {isAr ? 'التحقق من تزامن إشعارات التثبيت والتطبيق الأصلي' : 'Native App Installation Toast Sync Verification'}
           </h4>
           <p className="text-[var(--fg-secondary)] leading-relaxed">
             {isAr
-              ? 'النظام يطابق إشعارات التثبيت والتعليمات بدقة مع قدرات المتصفح والجهاز: الأجهزة التي تدعم التثبيت التلقائي (مثل Android Chrome و Desktop Chrome) تعرض إشعار/زر التثبيت المباشر (Installation Notification)، بينما الأجهزة المقيدة أو التي لا تدعم التثبيت المباشر (مثل iOS Safari) تعرض دليل التعليمات خطوة بخطوة (Instruction Notification). كلا الإشعارين متزامنان تماماً مع حالة تثبيت التطبيق الفعلية.'
-              : 'The system precisely routes installation vs instruction notifications based on device capabilities: automated environments (Android/Desktop Chrome) trigger direct Installation notifications, while unsupported or restricted platforms (iOS Safari) present step-by-step instruction guides. Fully synchronized with actual installation status.'}
+              ? 'توجيه إشعار تثبيت النسخة الأصلية للأندرويد كإشعار مختصر واحترافي، مع التعرف الآلي على أجهزة الأندرويد والمستخدمين الذين ثبتوا النسخة سابقاً لمنع تكرار الإشعارات.'
+              : 'Direct native Android app installation toast notification presented concisely, with automated recognition of Android devices and previously installed users.'}
           </p>
           <div className="pt-2 flex items-center gap-4 flex-wrap">
             <span className="inline-flex items-center gap-1 text-[11px] font-bold text-[var(--status-success)]">
-              <CheckCircle2 className="w-3.5 h-3.5" /> {isAr ? 'دعم التثبيت التلقائي' : 'Native Install Supported'}: {pwa.hasPrompt ? 'Yes' : 'No (Instruction Mode Active)'}
+              <CheckCircle2 className="w-3.5 h-3.5" /> {isAr ? 'دعم التثبيت التلقائي' : 'Native Install Supported'}: {pwa.hasPrompt ? 'Yes' : 'No'}
             </span>
             <span className="inline-flex items-center gap-1 text-[11px] font-bold text-[var(--accent)]">
               <Smartphone className="w-3.5 h-3.5" /> {isAr ? 'التصنيف' : 'Platform'}: {pwa.mobilePlatform}

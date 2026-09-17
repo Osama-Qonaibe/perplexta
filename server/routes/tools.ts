@@ -231,6 +231,19 @@ router.post("/generate-music", authenticateToken, chatLimiter, verifyBillingFund
     
     let provider = config.primary_provider;
     let modelName = config.primary_model;
+    
+    if ((!provider || !modelName) && config.fallback_1_provider && config.fallback_1_model) {
+       provider = config.fallback_1_provider;
+       modelName = config.fallback_1_model;
+    }
+
+    if (!provider || !modelName) {
+      return res.status(400).json({
+        error: 'Tool perplexta_music has no provider or model configured in Orchestrator settings.',
+        error_ar: 'أداة الموسيقى (perplexta_music) غير مقترنة بمزود أو نموذج في إعدادات الأوركسترا.'
+      });
+    }
+
     let apiKey = await getProviderKey(provider);
     
     if (!apiKey && config.fallback_1_provider) {

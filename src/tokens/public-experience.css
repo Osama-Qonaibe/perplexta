@@ -17,7 +17,7 @@
   --pub-border-subtle: #d0d7de;
   --pub-border-default: #d0d7de;
   --pub-border-strong: #656d76;
-  --pub-border-focus: #0969da;
+  --pub-border-focus: #06b6d4;
 
   /* Typography Colors */
   --pub-text-primary: #1f2328;
@@ -26,10 +26,10 @@
   --pub-text-disabled: #8c959f;
 
   /* Brand Accents */
-  --pub-accent-primary: #0969da;
+  --pub-accent-primary: #06b6d4;
   --pub-accent-on-primary: #ffffff;
-  --pub-accent-muted: rgba(9, 105, 218, 0.12);
-  --pub-accent-glow: rgba(9, 105, 218, 0.2);
+  --pub-accent-muted: rgba(6, 182, 212, 0.12);
+  --pub-accent-glow: rgba(6, 182, 212, 0.2);
 
   /* Status Colors */
   --pub-status-emerald: #1a7f37;
@@ -64,7 +64,7 @@
   --pub-border-subtle: #3d444d;
   --pub-border-default: #3d444d;
   --pub-border-strong: #8b949e;
-  --pub-border-focus: #58a6ff;
+  --pub-border-focus: #22d3ee;
 
   /* Typography Colors (Dark Mode) */
   --pub-text-primary: #e6edf3;
@@ -73,10 +73,10 @@
   --pub-text-disabled: #6e7681;
 
   /* Brand Accents (Dark Mode) */
-  --pub-accent-primary: #58a6ff;
+  --pub-accent-primary: #22d3ee;
   --pub-accent-on-primary: #0d1117;
-  --pub-accent-muted: rgba(88, 166, 255, 0.15);
-  --pub-accent-glow: rgba(88, 166, 255, 0.25);
+  --pub-accent-muted: rgba(34, 211, 238, 0.15);
+  --pub-accent-glow: rgba(34, 211, 238, 0.25);
 }
 
 /* Scoped Utility Classes for Modern Developer IDE */
@@ -91,12 +91,12 @@
 }
 
 .ide-input-box:hover {
-  border-color: rgba(9, 105, 218, 0.4);
+  border-color: rgba(6, 182, 212, 0.6);
 }
 
 .ide-input-box:focus-within {
-  border-color: var(--pub-accent-primary, #0969da);
-  box-shadow: 0 0 0 3px rgba(9, 105, 218, 0.15), 0 4px 20px -2px rgba(31, 35, 40, 0.08);
+  border-color: rgba(6, 182, 212, 0.9);
+  box-shadow: 0 0 0 2px rgba(6, 182, 212, 0.15), 0 4px 20px -2px rgba(31, 35, 40, 0.08);
 }
 
 :is(.dark, [data-theme="dark"]) .ide-input-box {
@@ -106,12 +106,12 @@
 }
 
 :is(.dark, [data-theme="dark"]) .ide-input-box:hover {
-  border-color: rgba(88, 166, 255, 0.3);
+  border-color: rgba(34, 211, 238, 0.6);
 }
 
 :is(.dark, [data-theme="dark"]) .ide-input-box:focus-within {
-  border-color: rgba(88, 166, 255, 0.45);
-  box-shadow: 0 0 0 2px rgba(88, 166, 255, 0.15);
+  border-color: rgba(34, 211, 238, 0.85);
+  box-shadow: 0 0 0 2px rgba(34, 211, 238, 0.15);
 }
 
 .ide-card,
@@ -124,13 +124,23 @@
 
 .ide-card:hover,
 .ide-section:hover {
-  border-color: rgba(9, 105, 218, 0.3);
+  border-color: rgba(6, 182, 212, 0.4);
 }
 
 .ide-card:focus-within,
 .ide-section:focus-within {
-  border-color: rgba(9, 105, 218, 0.45);
+  border-color: rgba(6, 182, 212, 0.7);
   box-shadow: none;
+}
+
+:is(.dark, [data-theme="dark"]) .ide-card:hover,
+:is(.dark, [data-theme="dark"]) .ide-section:hover {
+  border-color: rgba(34, 211, 238, 0.4);
+}
+
+:is(.dark, [data-theme="dark"]) .ide-card:focus-within,
+:is(.dark, [data-theme="dark"]) .ide-section:focus-within {
+  border-color: rgba(34, 211, 238, 0.7);
 }
 
 .ide-chip {
@@ -153,27 +163,35 @@
 }
 
 .ide-chip:hover:not(:disabled) {
-  background-color: rgba(9, 105, 218, 0.1) !important;
-  border-color: rgba(9, 105, 218, 0.25) !important;
-  color: var(--pub-accent-primary) !important;
+  background-color: var(--pub-surface-subtle, rgba(6, 182, 212, 0.08)) !important;
+  border-color: rgba(6, 182, 212, 0.5) !important;
+  color: var(--pub-text-primary) !important;
   box-shadow: none !important;
+}
+
+:is(.dark, [data-theme="dark"]) .ide-chip:hover:not(:disabled) {
+  border-color: rgba(34, 211, 238, 0.5) !important;
 }
 
 .ide-chip:hover:not(:disabled) svg {
-  color: var(--pub-accent-primary) !important;
+  color: var(--pub-text-primary) !important;
 }
 
 .ide-chip-active {
-  background-color: rgba(9, 105, 218, 0.15) !important;
-  border-color: rgba(9, 105, 218, 0.35) !important;
-  color: var(--pub-accent-primary) !important;
+  background-color: var(--pub-surface-container) !important;
+  border-color: rgba(6, 182, 212, 0.6) !important;
+  color: var(--pub-text-primary) !important;
   box-shadow: none !important;
 }
 
+:is(.dark, [data-theme="dark"]) .ide-chip-active {
+  border-color: rgba(34, 211, 238, 0.6) !important;
+}
+
 .ide-chip-active:hover:not(:disabled) {
-  background-color: rgba(9, 105, 218, 0.2) !important;
-  border-color: rgba(9, 105, 218, 0.5) !important;
-  color: var(--pub-accent-primary) !important;
+  background-color: var(--pub-surface-subtle) !important;
+  border-color: rgba(6, 182, 212, 0.8) !important;
+  color: var(--pub-text-primary) !important;
   box-shadow: none !important;
 }
 
@@ -208,7 +226,7 @@
 .ide-textarea-scroll {
   overflow-y: auto;
   scrollbar-width: thin;
-  scrollbar-color: rgba(9, 105, 218, 0.35) transparent;
+  scrollbar-color: rgba(6, 182, 212, 0.35) transparent;
 }
 
 .ide-textarea-scroll::-webkit-scrollbar {
@@ -220,12 +238,12 @@
 }
 
 .ide-textarea-scroll::-webkit-scrollbar-thumb {
-  background: rgba(9, 105, 218, 0.35);
+  background: rgba(6, 182, 212, 0.35);
   border-radius: 4px;
 }
 
 .ide-textarea-scroll::-webkit-scrollbar-thumb:hover {
-  background: rgba(9, 105, 218, 0.6);
+  background: rgba(6, 182, 212, 0.6);
 }
 
 .ide-send-button:disabled {
@@ -365,68 +383,14 @@
 }
 
 /* ==========================================================================
-   PERPLEXTA ZERO-SHIFT HIDDEN SCROLLBAR (Zero-Width Seamless Overlay)
-   Takes 0px physical layout space, zero page vibration/shaking, smooth momentum
+   PERPLEXTA HIGH-PRECISION RESPONSIVE SCROLL ENGINE
+   Takes 0px physical layout space shift, smooth momentum scrolling
    ========================================================================== */
 .main-scroll-container,
-.custom-scrollbar,
-.ide-scroll-container,
 .dropdown-scroll-container,
-.overflow-y-auto,
-.overflow-x-auto,
-.overflow-auto,
-[data-scroll="thread"],
-aside,
-aside * {
-  /* Firefox */
-  scrollbar-width: none !important;
-  -ms-overflow-style: none !important;
+[data-scroll="thread"] {
+  -webkit-overflow-scrolling: touch;
   overscroll-behavior: contain;
-}
-
-/* Chrome, Edge, Safari WebKit */
-.main-scroll-container::-webkit-scrollbar,
-.custom-scrollbar::-webkit-scrollbar,
-.ide-scroll-container::-webkit-scrollbar,
-.overflow-y-auto::-webkit-scrollbar,
-.overflow-x-auto::-webkit-scrollbar,
-.overflow-auto::-webkit-scrollbar,
-[data-scroll="thread"]::-webkit-scrollbar,
-aside::-webkit-scrollbar,
-aside *::-webkit-scrollbar {
-  display: none !important;
-  width: 0px !important;
-  height: 0px !important;
-  background: transparent !important;
-}
-
-.main-scroll-container::-webkit-scrollbar-track,
-.custom-scrollbar::-webkit-scrollbar-track,
-.ide-scroll-container::-webkit-scrollbar-track,
-.overflow-y-auto::-webkit-scrollbar-track,
-.overflow-x-auto::-webkit-scrollbar-track,
-.overflow-auto::-webkit-scrollbar-track,
-[data-scroll="thread"]::-webkit-scrollbar-track,
-aside::-webkit-scrollbar-track,
-aside *::-webkit-scrollbar-track {
-  display: none !important;
-  background: transparent !important;
-  border: none !important;
-  margin: 0 !important;
-}
-
-.main-scroll-container::-webkit-scrollbar-thumb,
-.custom-scrollbar::-webkit-scrollbar-thumb,
-.ide-scroll-container::-webkit-scrollbar-thumb,
-.overflow-y-auto::-webkit-scrollbar-thumb,
-.overflow-x-auto::-webkit-scrollbar-thumb,
-.overflow-auto::-webkit-scrollbar-thumb,
-[data-scroll="thread"]::-webkit-scrollbar-thumb,
-aside::-webkit-scrollbar-thumb,
-aside *::-webkit-scrollbar-thumb {
-  display: none !important;
-  background: transparent !important;
-  border-radius: 9999px !important;
 }
 
 

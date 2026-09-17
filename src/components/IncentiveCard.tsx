@@ -113,11 +113,11 @@ export const IncentiveCard: React.FC = () => {
     <AnimatePresence>
       {isVisible && (
         <motion.div 
-          initial={{ opacity: 0, y: 30, scale: 0.95, x: '-50%' }}
+          initial={{ opacity: 0, y: -20, scale: 0.95, x: '-50%' }}
           animate={{ opacity: 1, y: 0, scale: 1, x: '-50%' }}
-          exit={{ opacity: 0, scale: 0.95, y: 20, x: '-50%' }}
+          exit={{ opacity: 0, scale: 0.95, y: -15, x: '-50%' }}
           transition={{ type: 'spring', stiffness: 350, damping: 28 }}
-          className={`fixed bottom-6 left-1/2 z-[200] w-[90%] max-w-[350px] rounded-2xl border border-[var(--border-default)] shadow-xl overflow-hidden bg-[var(--surface-subtle)]/95 backdrop-blur-2xl`}
+          className={`fixed top-[calc(54px+env(safe-area-inset-top,0px))] left-1/2 z-[200] w-[90%] max-w-[350px] rounded-2xl border border-[var(--border-default)] shadow-xl overflow-hidden bg-[var(--surface-subtle)]/95 backdrop-blur-2xl`}
           onClick={(e) => e.stopPropagation()} // Prevent close when clicking the card itself
         >
           {/* Progress Bar (Header) */}

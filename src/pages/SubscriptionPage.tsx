@@ -573,7 +573,6 @@ export const SubscriptionPage: React.FC = () => {
                                   code: <Code2 size={12} className="md:w-3.5 md:h-3.5" />,
                                   canvas: <LayoutGrid size={12} className="md:w-3.5 md:h-3.5" />,
                                   perplexta_music: <Music size={12} className="md:w-3.5 md:h-3.5" />,
-                                  sovereign_memory: <Server size={12} className="md:w-3.5 md:h-3.5" />,
                                   sovereign_search: <Search size={12} className="md:w-3.5 md:h-3.5" />,
                                   x402_api: <Key size={12} className="md:w-3.5 md:h-3.5" />,
                                   storage_mb: <Cloud size={12} className="md:w-3.5 md:h-3.5" />,

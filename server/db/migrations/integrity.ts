@@ -149,13 +149,14 @@ export async function verifySchemaIntegrity() {
   const expectedSchema: Record<string, Record<string, { columns: string[]; repairCols?: Record<string, string | { type: string; default?: any }> }>> = {
     core: {
       users: {
-        columns: ['id', 'name', 'email', 'password_hash', 'role', 'status', 'kyc_status', 'kyc_required', 'kyc_rejection_reason', 'kyc_submitted_at', 'referred_by', 'language', 'theme', 'memory', 'support_notes', 'custom_instructions', 'last_active_at', 'created_at', 'updated_at', 'provider', 'avatar', 'referral_code', 'email_notifications', 'avatar_asset_id', 'media_muted'],
+        columns: ['id', 'name', 'email', 'password_hash', 'role', 'status', 'kyc_status', 'kyc_required', 'kyc_rejection_reason', 'kyc_submitted_at', 'referred_by', 'language', 'theme', 'memory', 'support_notes', 'custom_instructions', 'last_active_at', 'created_at', 'updated_at', 'provider', 'avatar', 'referral_code', 'email_notifications', 'avatar_asset_id', 'media_muted', 'data_saver'],
         repairCols: {
           email_notifications: { type: 'BOOLEAN', default: 'true' },
           avatar: { type: 'TEXT' },
           referral_code: { type: 'VARCHAR(6)' },
           avatar_asset_id: { type: 'UUID' },
-          media_muted: { type: 'BOOLEAN', default: 'true' }
+          media_muted: { type: 'BOOLEAN', default: 'true' },
+          data_saver: { type: 'BOOLEAN', default: 'false' }
         }
       },
       user_sessions: {

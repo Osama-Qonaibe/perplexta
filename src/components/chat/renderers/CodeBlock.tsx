@@ -5,15 +5,47 @@ import {
 } from 'lucide-react';
 import Prism from 'prismjs';
 import 'prismjs/themes/prism-tomorrow.css';
+import 'prismjs/components/prism-clike';
+import 'prismjs/components/prism-markup';
+import 'prismjs/components/prism-css';
 import 'prismjs/components/prism-javascript';
 import 'prismjs/components/prism-typescript';
-import 'prismjs/components/prism-css';
+import 'prismjs/components/prism-jsx';
+import 'prismjs/components/prism-tsx';
 import 'prismjs/components/prism-json';
 import 'prismjs/components/prism-python';
 import 'prismjs/components/prism-bash';
-import 'prismjs/components/prism-jsx';
-import 'prismjs/components/prism-tsx';
-import 'prismjs/components/prism-markup';
+import 'prismjs/components/prism-c';
+import 'prismjs/components/prism-cpp';
+import 'prismjs/components/prism-csharp';
+import 'prismjs/components/prism-java';
+import 'prismjs/components/prism-go';
+import 'prismjs/components/prism-rust';
+import 'prismjs/components/prism-sql';
+import 'prismjs/components/prism-yaml';
+import 'prismjs/components/prism-markdown';
+import 'prismjs/components/prism-php';
+import 'prismjs/components/prism-ruby';
+import 'prismjs/components/prism-swift';
+import 'prismjs/components/prism-kotlin';
+import 'prismjs/components/prism-dart';
+import 'prismjs/components/prism-docker';
+import 'prismjs/components/prism-graphql';
+import 'prismjs/components/prism-diff';
+import 'prismjs/components/prism-scss';
+import 'prismjs/components/prism-sass';
+import 'prismjs/components/prism-r';
+import 'prismjs/components/prism-scala';
+import 'prismjs/components/prism-lua';
+import 'prismjs/components/prism-perl';
+import 'prismjs/components/prism-ini';
+import 'prismjs/components/prism-toml';
+import 'prismjs/components/prism-powershell';
+import 'prismjs/components/prism-protobuf';
+import 'prismjs/components/prism-nginx';
+import 'prismjs/components/prism-makefile';
+import 'prismjs/components/prism-wasm';
+import 'prismjs/components/prism-elixir';
 import { toast } from '@/design-system';
 import { getCSPNonce } from '../../../utils/csp';
 import { useArtifact, ArtifactTab } from '../../../context/ArtifactContext';
@@ -58,12 +90,32 @@ export const CodeBlock: React.FC<CodeBlockProps> = ({
   }, [codeContent, lang]);
 
   const fileNameDisplay = useMemo(() => {
-    if (lang === 'audio') return 'Perplexta Audio Slate';
+    const l = lang.toLowerCase().trim();
+    if (l === 'audio') return 'Perplexta Audio Slate';
     if (parsedProject?.title) return parsedProject.title;
-    if (lang === 'html') return 'index.html';
-    if (lang === 'css') return 'styles.css';
-    if (['typescript', 'ts', 'jsx', 'tsx', 'js', 'javascript'].includes(lang.toLowerCase())) return 'App.tsx';
-    return lang;
+    if (['html', 'htm'].includes(l)) return 'index.html';
+    if (['css', 'scss', 'sass', 'less'].includes(l)) return `styles.${l}`;
+    if (['typescript', 'ts', 'jsx', 'tsx', 'js', 'javascript', 'react'].includes(l)) return `App.${['ts', 'typescript', 'tsx'].includes(l) ? 'tsx' : 'jsx'}`;
+    if (['python', 'py'].includes(l)) return 'main.py';
+    if (['c'].includes(l)) return 'main.c';
+    if (['cpp', 'c++'].includes(l)) return 'main.cpp';
+    if (['csharp', 'cs', 'c#'].includes(l)) return 'Program.cs';
+    if (['java'].includes(l)) return 'Main.java';
+    if (['go', 'golang'].includes(l)) return 'main.go';
+    if (['rust', 'rs'].includes(l)) return 'main.rs';
+    if (['sql'].includes(l)) return 'query.sql';
+    if (['yaml', 'yml'].includes(l)) return 'config.yaml';
+    if (['json', 'json5'].includes(l)) return 'data.json';
+    if (['bash', 'sh', 'zsh', 'shell'].includes(l)) return 'script.sh';
+    if (['docker', 'dockerfile'].includes(l)) return 'Dockerfile';
+    if (['markdown', 'md'].includes(l)) return 'README.md';
+    if (['php'].includes(l)) return 'index.php';
+    if (['ruby', 'rb'].includes(l)) return 'main.rb';
+    if (['swift'].includes(l)) return 'main.swift';
+    if (['kotlin', 'kt'].includes(l)) return 'Main.kt';
+    if (['dart'].includes(l)) return 'main.dart';
+    if (['graphql', 'gql'].includes(l)) return 'schema.graphql';
+    return lang || 'code';
   }, [lang, parsedProject]);
 
   const isExecutable = useMemo(() => {
@@ -237,13 +289,28 @@ export const CodeBlock: React.FC<CodeBlockProps> = ({
   }, [isGenerating, wasGenerating, isExecutable, isLastMessage]);
 
   const highlightedCode = useMemo(() => {
-    const language = lang.toLowerCase();
-    let prismLang = language;
-    if (language === 'js') prismLang = 'javascript';
-    if (language === 'ts') prismLang = 'typescript';
-    if (language === 'py') prismLang = 'python';
-    if (language === 'sh') prismLang = 'bash';
-    if (language === 'html' || language === 'xml' || language === 'svg') prismLang = 'markup';
+    const l = lang.toLowerCase().trim();
+    let prismLang = l;
+    if (['js', 'javascript', 'node', 'react'].includes(l)) prismLang = 'javascript';
+    else if (['ts', 'typescript'].includes(l)) prismLang = 'typescript';
+    else if (['py', 'python', 'py3'].includes(l)) prismLang = 'python';
+    else if (['sh', 'bash', 'zsh', 'shell', 'cmd'].includes(l)) prismLang = 'bash';
+    else if (['html', 'htm', 'xml', 'svg', 'xhtml', 'markup'].includes(l)) prismLang = 'markup';
+    else if (['yml', 'yaml'].includes(l)) prismLang = 'yaml';
+    else if (['md', 'markdown'].includes(l)) prismLang = 'markdown';
+    else if (['c++', 'cpp'].includes(l)) prismLang = 'cpp';
+    else if (['cs', 'c#', 'csharp', 'dotnet'].includes(l)) prismLang = 'csharp';
+    else if (['golang', 'go'].includes(l)) prismLang = 'go';
+    else if (['rs', 'rust'].includes(l)) prismLang = 'rust';
+    else if (['rb', 'ruby'].includes(l)) prismLang = 'ruby';
+    else if (['kt', 'kotlin'].includes(l)) prismLang = 'kotlin';
+    else if (['dockerfile', 'docker'].includes(l)) prismLang = 'docker';
+    else if (['gql', 'graphql'].includes(l)) prismLang = 'graphql';
+    else if (['ps', 'ps1', 'powershell'].includes(l)) prismLang = 'powershell';
+    else if (['proto', 'protobuf'].includes(l)) prismLang = 'protobuf';
+    else if (['make', 'makefile'].includes(l)) prismLang = 'makefile';
+    else if (['flutter', 'dart'].includes(l)) prismLang = 'dart';
+    else if (['json5'].includes(l)) prismLang = 'json';
 
     const hasGrammar = Prism.languages[prismLang];
     if (hasGrammar) {
@@ -512,7 +579,17 @@ export const CodeBlock: React.FC<CodeBlockProps> = ({
     toast.success(dir === 'rtl' ? 'تمت إعادة تعيين الكود البرمجي' : 'Code reset for execution');
   };
 
-  if (inline) return <code className={className}>{children}</code>;
+  if (inline) {
+    return (
+      <code 
+        dir="ltr" 
+        style={{ direction: 'ltr', unicodeBidi: 'isolate', textAlign: 'left' }} 
+        className={`inline-block mx-0.5 px-1.5 py-0.5 rounded-md bg-[var(--surface-subtle)] dark:bg-[var(--surface-code)] border border-[var(--border-default)] dark:border-slate-800/80 text-xs font-mono text-[var(--fg-accent)] dark:text-cyan-400 font-semibold dir-ltr text-left ${className || ''}`}
+      >
+        {children}
+      </code>
+    );
+  }
 
   return (
     <div
@@ -521,9 +598,9 @@ export const CodeBlock: React.FC<CodeBlockProps> = ({
       className="relative group mx-auto my-3 w-full rounded-shape-md shadow-2xs overflow-hidden border border-[var(--border-default)] bg-[var(--surface-card)] transition-colors perplexta-codeblock"
     >
       {/* Code Container Header */}
-      <div className="sticky top-0 z-20 h-9 flex items-center justify-between px-3 border-b border-[var(--border-default)] bg-[var(--surface-subtle)] text-[var(--text-secondary)] perplexta-codeblock-header select-none">
+      <div className="sticky top-0 z-20 h-10 flex items-center justify-between px-3.5 border-b border-[var(--border-default)] bg-[var(--surface-subtle)] text-[var(--text-secondary)] perplexta-codeblock-header select-none">
         <div className="flex items-center gap-2 min-w-0">
-          <div className="flex items-center gap-1.5 h-7 px-2.5 rounded-shape-xs bg-[var(--surface-card)] border border-[var(--border-default)] text-[var(--text-primary)] text-[11px] font-mono font-bold shrink-0 shadow-2xs">
+          <div className="flex items-center gap-1.5 h-7 px-2.5 rounded-shape-sm bg-[var(--surface-card)] border border-[var(--border-default)] text-[var(--text-primary)] text-xs font-mono font-semibold shrink-0 shadow-2xs">
             <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 shrink-0" />
             <span className="truncate max-w-[180px]">{fileNameDisplay}</span>
           </div>
@@ -535,10 +612,10 @@ export const CodeBlock: React.FC<CodeBlockProps> = ({
               type="button"
               onClick={() => handleOpenInCanvas('preview')}
               disabled={isGenerating}
-              className="h-7 px-2.5 text-[11px] font-bold bg-[var(--surface-card)] hover:bg-[var(--surface-subtle)] text-[var(--fg-accent)] hover:text-[var(--text-primary)] border border-[var(--border-default)] hover:border-[var(--border-accent)] rounded-shape-xs active:scale-95 transition-all cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-1.5 shrink-0 shadow-2xs touch-target-44 box-border relative before:absolute before:-inset-1.5 before:content-['']"
+              className="h-8 px-2.5 text-xs font-medium bg-transparent hover:bg-[var(--surface-subtle)] text-[var(--fg-accent)] hover:text-[var(--text-primary)] border border-transparent hover:border-cyan-500/60 dark:hover:border-cyan-400/60 rounded-shape-sm active:scale-95 transition-all cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-1.5 shrink-0 relative before:absolute before:-inset-1.5 before:content-['']"
               title={isAr ? 'معاينة الكود' : 'Preview'}
             >
-              <Eye size={12} className="shrink-0 text-[var(--fg-accent)]" />
+              <Eye size={14} className="shrink-0 text-[var(--fg-accent)]" />
               <span className="truncate">{isAr ? 'معاينة' : 'Preview'}</span>
             </button>
           )}
@@ -547,22 +624,22 @@ export const CodeBlock: React.FC<CodeBlockProps> = ({
             {isMediaUrl ? (
               <button 
                 onClick={() => downloadFile(children)} 
-                className="w-7 h-7 rounded-shape-xs bg-[var(--surface-card)] hover:bg-[var(--surface-subtle)] text-[var(--text-muted)] hover:text-[var(--text-primary)] border border-[var(--border-default)] transition-colors flex items-center justify-center shrink-0 touch-target-44 box-border relative before:absolute before:-inset-1.5 before:content-[''] shadow-2xs" 
+                className="w-8 h-8 rounded-shape-sm bg-transparent hover:bg-[var(--surface-subtle)] text-[var(--text-muted)] hover:text-[var(--text-primary)] border border-transparent hover:border-cyan-500/60 dark:hover:border-cyan-400/60 transition-colors flex items-center justify-center shrink-0 relative before:absolute before:-inset-1.5 before:content-['']" 
                 title="Download"
               >
-                <Download size={13} />
+                <Download size={14} />
               </button>
             ) : (
               <>
                 <button 
                   onClick={copyToClipboard} 
-                  className="relative w-7 h-7 rounded-shape-xs bg-[var(--surface-card)] hover:bg-[var(--surface-subtle)] text-[var(--text-muted)] hover:text-[var(--text-primary)] border border-[var(--border-default)] transition-colors flex items-center justify-center shrink-0 touch-target-44 box-border before:absolute before:-inset-1.5 before:content-[''] shadow-2xs" 
+                  className="relative w-8 h-8 rounded-shape-sm bg-transparent hover:bg-[var(--surface-subtle)] text-[var(--text-muted)] hover:text-[var(--text-primary)] border border-transparent hover:border-cyan-500/60 dark:hover:border-cyan-400/60 transition-colors flex items-center justify-center shrink-0 before:absolute before:-inset-1.5 before:content-['']" 
                   title={copied ? (dir === 'rtl' ? 'تم النسخ' : 'Copied!') : (dir === 'rtl' ? 'نسخ الكود' : 'Copy code')}
                 >
                   {copied ? (
-                    <Check size={13} className="text-emerald-500 transition-transform duration-150" />
+                    <Check size={14} className="text-emerald-500 transition-transform duration-150" />
                   ) : (
-                    <Copy size={13} className="transition-transform duration-150" />
+                    <Copy size={14} className="transition-transform duration-150" />
                   )}
                   {copied && (
                     <span className="absolute -top-7 left-1/2 -translate-x-1/2 bg-emerald-600 text-white text-[10px] px-1.5 py-0.5 rounded-shape-xs shadow-md whitespace-nowrap font-sans pointer-events-none z-30">
@@ -573,10 +650,10 @@ export const CodeBlock: React.FC<CodeBlockProps> = ({
                 {!isMediaUrl && (
                   <button 
                     onClick={downloadCode} 
-                    className="w-7 h-7 rounded-shape-xs bg-[var(--surface-card)] hover:bg-[var(--surface-subtle)] text-[var(--text-muted)] hover:text-[var(--text-primary)] border border-[var(--border-default)] transition-colors flex items-center justify-center shrink-0 touch-target-44 box-border relative before:absolute before:-inset-1.5 before:content-[''] shadow-2xs" 
+                    className="w-8 h-8 rounded-shape-sm bg-transparent hover:bg-[var(--surface-subtle)] text-[var(--text-muted)] hover:text-[var(--text-primary)] border border-transparent hover:border-cyan-500/60 dark:hover:border-cyan-400/60 transition-colors flex items-center justify-center shrink-0 relative before:absolute before:-inset-1.5 before:content-['']" 
                     title={dir === 'rtl' ? 'تنزيل الملف' : 'Download file'}
                   >
-                    <Download size={13} />
+                    <Download size={14} />
                   </button>
                 )}
               </>

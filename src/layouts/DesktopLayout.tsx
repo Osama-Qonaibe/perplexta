@@ -66,15 +66,6 @@ export const DesktopLayout: React.FC = () => {
         </div>
       )}
 
-      {/* Backdrop overlay when sidebar is expanded on desktop */}
-      {!isMobile && !isViralbookRoute && !isStudioRoute && isSidebarOpen && (
-        <div
-          onClick={() => setIsSidebarOpen(false)}
-          className="hidden lg:block fixed inset-0 z-[140] bg-[var(--surface-overlay)]/20 backdrop-blur-[0.5px] transition-opacity duration-200 cursor-pointer"
-          aria-hidden="true"
-        />
-      )}
-
       {/* Main Layout Content Area - Fixed stable padding to prevent any horizontal jump */}
       <div
         className={`flex-1 flex flex-col relative min-w-0 h-full main-scroll-container overflow-x-hidden ${

@@ -12,6 +12,7 @@ import { invalidateFirebaseApp } from '../firebase-admin.js';
 import { sendEmail } from '../services/email.js';
 import { createNotification, logSystemActivity } from '../services/notifications.js';
 import { consolidateAllUserMemories } from '../services/memory.js';
+import { runMemoryContextMigration } from '../scripts/migrate_memory_context.js';
 import { reconcileAllWallets } from '../services/wallet.js';
 import { getSystemSettings, updateSystemSettings, checkSystemAssetsDiagnostic, repairSystemAssetsDiagnostic, getMissingAssetReport } from '../services/system.js';
 import { syncAllContentSeoMetadata, auditContentSeoItems, syncSingleContentSeoItem, getSmartSeoSuggestion, applySmartSeoSuggestion } from '../services/seoSync.js';
@@ -3468,6 +3469,24 @@ router.post("/memories/consolidate", authenticateAdmin, async (req, res) => {
   } catch (err: any) {
     console.error('[Admin] Manual Memory Consolidation Error:', err);
     res.status(500).json({ error: err.message || 'Failed to consolidate user memories' });
+  }
+});
+
+router.post("/memories/migrate", authenticateAdmin, async (req, res) => {
+  try {
+    const migrationResult = await runMemoryContextMigration();
+    
+    await auditLog(
+      (req as any).user?.id,
+      'Triggered Memory Context Migration',
+      'system',
+      migrationResult
+    );
+    
+    res.json({ success: true, result: migrationResult });
+  } catch (err: any) {
+    console.error('[Admin] Memory Migration Error:', err);
+    res.status(500).json({ error: err.message || 'Failed to execute memory migration' });
   }
 });
 

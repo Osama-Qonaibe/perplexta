@@ -46,6 +46,7 @@ import { SOCIAL_COLORS } from '../constants/socialColors';
 import { isPathBlocked } from '../utils/sectionVisibility';
 import { ThemeToggleButton } from '../components/ThemeToggleButton';
 import { AppModal, toast, useConfirm } from '@/design-system';
+import { SearchableSelect } from '../components/SearchableSelect';
 
 const PALESTINE_CITIES = [
   'القدس الشريف',
@@ -3355,7 +3356,7 @@ export const BulletinBoardPage: React.FC = () => {
 
           {}
           <div className="flex items-center gap-1 sm:gap-2 shrink-0 flex-1 justify-center max-w-xl mx-auto min-w-0">
-            {}
+            {/* Dropdown 1: Categories */}
             {activeTab === 'board' && (
               <div ref={categoryDropdownRef} className="relative hidden md:block shrink-0">
                 <button
@@ -3364,12 +3365,12 @@ export const BulletinBoardPage: React.FC = () => {
                     setIsCategoryDropdownOpen(!isCategoryDropdownOpen);
                     setIsSortDropdownOpen(false);
                   }}
-                  className="group h-8 px-2.5 rounded-shape-sm border border-[var(--border-default)] hover:border-accent/40 bg-[var(--surface-subtle)] hover:bg-accent/10 text-[var(--text-secondary)] hover:text-accent text-xs font-bold transition-all duration-150 flex items-center gap-1.5 active:scale-95 cursor-pointer shadow-2xs"
+                  className="group h-8 px-2.5 rounded-shape-sm border border-[var(--border-default)] hover:border-cyan-500/60 dark:hover:border-cyan-400/60 bg-transparent hover:bg-[var(--surface-subtle)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] text-xs font-bold transition-all duration-150 flex items-center gap-1.5 active:scale-95 cursor-pointer shadow-2xs"
                   title={isRtl ? 'تصفية حسب الفئة' : 'Filter by Category'}
                 >
-                  <Tag size={13} className="text-[var(--text-muted)] group-hover:text-accent transition-colors duration-150" />
+                  <Tag size={13} className="text-[var(--text-muted)] group-hover:text-[var(--text-primary)] transition-colors duration-150" />
                   <span className="truncate max-w-[85px]">{currentCategoryLabel}</span>
-                  <ChevronDown size={11} className={`transition-transform duration-150 shrink-0 text-[var(--text-muted)] group-hover:text-accent ${isCategoryDropdownOpen ? 'rotate-180' : ''}`} />
+                  <ChevronDown size={11} className={`transition-transform duration-150 shrink-0 text-[var(--text-muted)] group-hover:text-[var(--text-primary)] ${isCategoryDropdownOpen ? 'rotate-180' : ''}`} />
                 </button>
 
                 <AnimatePresence>
@@ -3388,10 +3389,10 @@ export const BulletinBoardPage: React.FC = () => {
                         animate={{ opacity: 1, scale: 1 }}
                         exit={{ opacity: 0, scale: 0.96 }}
                         transition={{ duration: 0.14, ease: [0.16, 1, 0.3, 1] }}
-                        className={`absolute top-full mt-1.5 ${isRtl ? 'right-0 origin-top-right' : 'left-0 origin-top-left'} w-max min-w-[190px] p-1 rounded-xl border border-[var(--pub-border-default)] shadow-2xl flex flex-col gap-0.5 z-[100] bg-[var(--pub-surface-container)] backdrop-blur-xl max-h-64 overflow-y-auto overscroll-contain custom-scrollbar`}
+                        className={`absolute top-full mt-1.5 ${isRtl ? 'right-0 origin-top-right' : 'left-0 origin-top-left'} w-max min-w-[190px] p-1 rounded-shape-md border border-[var(--border-default)] shadow-lg flex flex-col gap-0.5 z-[100] bg-[var(--surface-card)] backdrop-blur-xl max-h-64 overflow-y-auto overscroll-contain custom-scrollbar`}
                         dir={isRtl ? 'rtl' : 'ltr'}
                       >
-                        <div className="px-2 py-1 text-[10px] font-bold text-[var(--text-muted)] uppercase tracking-wider border-b border-[var(--border-default)]/50 mb-0.5">
+                        <div className="px-2 py-1 text-[10px] font-bold text-[var(--text-muted)] uppercase tracking-wider border-b border-[var(--border-default)] mb-0.5">
                           {isRtl ? 'تصفية حسب الفئة' : 'Filter by Category'}
                         </div>
                         {sortedCategories.map((cat) => {
@@ -3407,12 +3408,12 @@ export const BulletinBoardPage: React.FC = () => {
                               }}
                               className={`w-full flex items-center justify-between px-2.5 py-1.5 rounded-shape-sm text-xs font-semibold transition-all duration-150 cursor-pointer select-none group ${
                                 isSelected
-                                  ? 'bg-cyan-500/15 text-cyan-400 font-bold'
-                                  : 'text-[var(--text-primary)] hover:bg-cyan-500/10 hover:text-cyan-400'
+                                  ? 'bg-cyan-500/10 text-cyan-600 dark:text-cyan-400 font-bold'
+                                  : 'text-[var(--text-secondary)] hover:bg-[var(--surface-subtle)] hover:text-[var(--text-primary)]'
                               }`}
                             >
-                              <span className="truncate min-w-0 group-hover:text-cyan-400 transition-colors">{label}</span>
-                              {isSelected && <Check size={12} className="text-cyan-400 shrink-0 ms-1.5" />}
+                              <span className="truncate min-w-0 transition-colors">{label}</span>
+                              {isSelected && <Check size={12} className="text-cyan-500 dark:text-cyan-400 shrink-0 ms-1.5" />}
                             </button>
                           );
                         })}
@@ -3423,7 +3424,7 @@ export const BulletinBoardPage: React.FC = () => {
               </div>
             )}
 
-            {}
+            {/* Dropdown 2: Sort */}
             {activeTab === 'board' && (
               <div ref={sortDropdownRef} className="relative hidden sm:block shrink-0">
                 <button
@@ -3432,12 +3433,12 @@ export const BulletinBoardPage: React.FC = () => {
                     setIsSortDropdownOpen(!isSortDropdownOpen);
                     setIsCategoryDropdownOpen(false);
                   }}
-                  className="group h-8 px-2.5 rounded-shape-sm border border-[var(--border-default)] hover:border-accent/40 bg-[var(--surface-subtle)] hover:bg-accent/10 text-[var(--text-secondary)] hover:text-accent text-xs font-bold transition-all duration-150 flex items-center gap-1.5 active:scale-95 cursor-pointer shadow-2xs"
+                  className="group h-8 px-2.5 rounded-shape-sm border border-[var(--border-default)] hover:border-cyan-500/60 dark:hover:border-cyan-400/60 bg-transparent hover:bg-[var(--surface-subtle)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] text-xs font-bold transition-all duration-150 flex items-center gap-1.5 active:scale-95 cursor-pointer shadow-2xs"
                   title={isRtl ? 'ترتيب المنشورات' : 'Sort Posts'}
                 >
-                  <ArrowUpDown size={13} className="text-[var(--text-muted)] group-hover:text-accent transition-colors duration-150" />
+                  <ArrowUpDown size={13} className="text-[var(--text-muted)] group-hover:text-[var(--text-primary)] transition-colors duration-150" />
                   <span className="truncate max-w-[80px]">{currentSortLabel}</span>
-                  <ChevronDown size={11} className={`transition-transform duration-150 shrink-0 text-[var(--text-muted)] group-hover:text-accent ${isSortDropdownOpen ? 'rotate-180' : ''}`} />
+                  <ChevronDown size={11} className={`transition-transform duration-150 shrink-0 text-[var(--text-muted)] group-hover:text-[var(--text-primary)] ${isSortDropdownOpen ? 'rotate-180' : ''}`} />
                 </button>
 
                 <AnimatePresence>
@@ -3456,10 +3457,10 @@ export const BulletinBoardPage: React.FC = () => {
                         animate={{ opacity: 1, scale: 1 }}
                         exit={{ opacity: 0, scale: 0.96 }}
                         transition={{ duration: 0.14, ease: [0.16, 1, 0.3, 1] }}
-                        className={`absolute top-full mt-1.5 ${isRtl ? 'right-0 origin-top-right' : 'left-0 origin-top-left'} w-max min-w-[160px] p-1 rounded-xl border border-[var(--pub-border-default)] shadow-2xl flex flex-col gap-0.5 z-[100] bg-[var(--pub-surface-container)] backdrop-blur-xl overscroll-contain`}
+                        className={`absolute top-full mt-1.5 ${isRtl ? 'right-0 origin-top-right' : 'left-0 origin-top-left'} w-max min-w-[160px] p-1 rounded-shape-md border border-[var(--border-default)] shadow-lg flex flex-col gap-0.5 z-[100] bg-[var(--surface-card)] backdrop-blur-xl overscroll-contain`}
                         dir={isRtl ? 'rtl' : 'ltr'}
                       >
-                        <div className="px-2 py-1 text-[10px] font-bold text-[var(--text-muted)] uppercase tracking-wider border-b border-[var(--border-default)]/50 mb-0.5">
+                        <div className="px-2 py-1 text-[10px] font-bold text-[var(--text-muted)] uppercase tracking-wider border-b border-[var(--border-default)] mb-0.5">
                           {isRtl ? 'ترتيب المنشورات' : 'Sort Posts'}
                         </div>
                         {sortedSortOptions.map((opt) => {
@@ -3475,12 +3476,12 @@ export const BulletinBoardPage: React.FC = () => {
                               }}
                               className={`w-full flex items-center justify-between px-2.5 py-1.5 rounded-shape-sm text-xs font-semibold transition-all duration-150 cursor-pointer select-none group ${
                                 isSelected
-                                  ? 'bg-cyan-500/15 text-cyan-400 font-bold'
-                                  : 'text-[var(--text-primary)] hover:bg-cyan-500/10 hover:text-cyan-400'
+                                  ? 'bg-cyan-500/10 text-cyan-600 dark:text-cyan-400 font-bold'
+                                  : 'text-[var(--text-secondary)] hover:bg-[var(--surface-subtle)] hover:text-[var(--text-primary)]'
                               }`}
                             >
-                              <span className="truncate min-w-0 group-hover:text-cyan-400 transition-colors">{label}</span>
-                              {isSelected && <Check size={12} className="text-cyan-400 shrink-0 ms-1.5" />}
+                              <span className="truncate min-w-0 transition-colors">{label}</span>
+                              {isSelected && <Check size={12} className="text-cyan-500 dark:text-cyan-400 shrink-0 ms-1.5" />}
                             </button>
                           );
                         })}
@@ -3491,9 +3492,9 @@ export const BulletinBoardPage: React.FC = () => {
               </div>
             )}
 
-            {}
-            <form onSubmit={handleSearchSubmit} className="relative hidden md:flex items-center md:w-60 lg:w-72 h-8 rounded-shape-sm bg-[var(--surface-subtle)] border border-[var(--border-default)] focus-within:border-accent/40 focus-within:ring-2 focus-within:ring-accent/10 transition-all duration-150 shadow-2xs group">
-              <Search size={13} className="absolute start-2.5 top-1/2 -translate-y-1/2 text-[var(--text-muted)] pointer-events-none transition-colors group-focus-within:text-accent" />
+            {/* Search Input */}
+            <form onSubmit={handleSearchSubmit} className="relative hidden md:flex items-center md:w-60 lg:w-72 h-8 rounded-shape-sm bg-[var(--surface-subtle)] border border-[var(--border-default)] focus-within:border-cyan-500/60 dark:focus-within:border-cyan-400/60 focus-within:ring-2 focus-within:ring-cyan-500/10 transition-all duration-150 shadow-2xs group">
+              <Search size={13} className="absolute start-2.5 top-1/2 -translate-y-1/2 text-[var(--text-muted)] pointer-events-none transition-colors group-focus-within:text-cyan-500 dark:group-focus-within:text-cyan-400" />
               <input
                 type="text"
                 value={searchQuery}
@@ -3513,12 +3514,12 @@ export const BulletinBoardPage: React.FC = () => {
               )}
             </form>
 
-            {}
+            {/* Location Filter Trigger */}
             {activeTab === 'board' && (
               <button
                 type="button"
                 onClick={() => setIsLocationFlyoutOpen(!isLocationFlyoutOpen)}
-                className="group/loc-btn relative hidden sm:flex w-8 h-8 rounded-shape-sm border border-[var(--border-default)] hover:border-accent/40 bg-[var(--surface-subtle)] hover:bg-accent/10 text-[var(--text-secondary)] hover:text-accent transition-all duration-150 items-center justify-center shrink-0 active:scale-95 cursor-pointer shadow-2xs"
+                className="group/loc-btn relative hidden sm:flex w-8 h-8 rounded-shape-sm border border-[var(--border-default)] hover:border-cyan-500/60 dark:hover:border-cyan-400/60 bg-transparent hover:bg-[var(--surface-subtle)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-all duration-150 items-center justify-center shrink-0 active:scale-95 cursor-pointer shadow-2xs"
                 title={
                   selectedCity === 'all'
                     ? (isRtl ? 'تحديد نطاق تغطية الموقع (كافة المحافظات)' : 'Location radius filter (All Regions)')
@@ -3527,15 +3528,15 @@ export const BulletinBoardPage: React.FC = () => {
               >
                 <MapPin
                   size={14}
-                  className="transition-transform duration-150 group-hover/loc-btn:scale-110 text-[var(--text-muted)] group-hover/loc-btn:text-accent"
+                  className="transition-transform duration-150 group-hover/loc-btn:scale-110 text-[var(--text-muted)] group-hover/loc-btn:text-[var(--text-primary)]"
                 />
               </button>
             )}
           </div>
 
-          {}
+          {/* Right Controls */}
           <div className="flex items-center gap-1.5 sm:gap-2 shrink-0 order-3">
-            {}
+            {/* Inquiries / Chat Inbox Trigger */}
             {user && (
               <button
                 type="button"
@@ -3544,10 +3545,10 @@ export const BulletinBoardPage: React.FC = () => {
                   if (selectedPageDetail) setSelectedPageDetail(null);
                   setActiveTab('inquiries');
                 }}
-                className="group hidden sm:flex w-8 h-8 rounded-shape-sm border border-[var(--border-default)] hover:border-accent/40 bg-[var(--surface-subtle)] hover:bg-accent/10 text-[var(--text-secondary)] hover:text-accent items-center justify-center transition-all duration-150 active:scale-95 cursor-pointer shadow-2xs relative"
+                className="group hidden sm:flex w-8 h-8 rounded-shape-sm border border-[var(--border-default)] hover:border-cyan-500/60 dark:hover:border-cyan-400/60 bg-transparent hover:bg-[var(--surface-subtle)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] items-center justify-center transition-all duration-150 active:scale-95 cursor-pointer shadow-2xs relative"
                 title={isRtl ? 'الرسائل والاستفسارات' : 'Inquiries & Messages'}
               >
-                <MessageSquare size={14} className="text-[var(--text-muted)] group-hover:text-accent transition-colors duration-150" />
+                <MessageSquare size={14} className="text-[var(--text-muted)] group-hover:text-[var(--text-primary)] transition-colors duration-150" />
                 {inquiriesList.length > 0 && (
                   <span className="absolute -top-1 -end-1 w-4 h-4 rounded-shape-full bg-red-500 text-white text-[9px] font-extrabold flex items-center justify-center ring-2 ring-[var(--surface-page)]">
                     {inquiriesList.length}
@@ -3556,25 +3557,25 @@ export const BulletinBoardPage: React.FC = () => {
               </button>
             )}
 
-            {}
+            {/* Language Toggle */}
             <button
               type="button"
               onClick={() => {
                 triggerHaptic('light');
                 setLanguage(language === 'ar' ? 'en' : 'ar');
               }}
-              className="group w-8 h-8 rounded-shape-sm border border-[var(--border-default)] hover:border-accent/40 bg-[var(--surface-subtle)] hover:bg-accent/10 text-[var(--text-secondary)] hover:text-accent flex items-center justify-center transition-all duration-150 active:scale-95 cursor-pointer shadow-2xs"
+              className="group w-8 h-8 rounded-shape-sm border border-[var(--border-default)] hover:border-cyan-500/60 dark:hover:border-cyan-400/60 bg-transparent hover:bg-[var(--surface-subtle)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] flex items-center justify-center transition-all duration-150 active:scale-95 cursor-pointer shadow-2xs"
               title={language === 'ar' ? 'English' : 'العربية'}
             >
-              <Languages size={14} className="text-[var(--text-muted)] group-hover:text-accent transition-colors duration-150" />
+              <Languages size={14} className="text-[var(--text-muted)] group-hover:text-[var(--text-primary)] transition-colors duration-150" />
             </button>
 
-            {}
-            <ThemeToggleButton variant="icon-button" size="sm" className="!w-8 !h-8 !rounded-shape-sm !border-[var(--border-default)] hover:!border-accent/40 !bg-[var(--surface-subtle)] hover:!bg-accent/10 !text-[var(--text-muted)] hover:!text-accent shadow-2xs transition-all duration-150" />
+            {/* Theme Toggle */}
+            <ThemeToggleButton variant="icon-button" size="sm" className="!w-8 !h-8 !rounded-shape-sm !border-[var(--border-default)] hover:!border-cyan-500/60 dark:hover:!border-cyan-400/60 !bg-transparent hover:!bg-[var(--surface-subtle)] !text-[var(--text-muted)] hover:!text-[var(--text-primary)] shadow-2xs transition-all duration-150" />
 
             <div className="w-px h-5 bg-[var(--border-default)] shrink-0 hidden xs:block" />
 
-            {}
+            {/* Back to Chat / Feed */}
             <button
               type="button"
               onClick={() => {
@@ -3585,15 +3586,15 @@ export const BulletinBoardPage: React.FC = () => {
                 }
                 navigate('/chat');
               }}
-              className="group h-8 px-2.5 sm:px-3 rounded-shape-sm border border-[var(--border-default)] hover:border-accent/40 bg-[var(--surface-subtle)] hover:bg-accent/10 text-[var(--text-secondary)] hover:text-accent font-bold text-xs flex items-center gap-1.5 transition-all duration-150 active:scale-95 shadow-2xs cursor-pointer shrink-0"
+              className="group h-8 px-2.5 sm:px-3 rounded-shape-sm border border-[var(--border-default)] hover:border-cyan-500/60 dark:hover:border-cyan-400/60 bg-transparent hover:bg-[var(--surface-subtle)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] font-bold text-xs flex items-center gap-1.5 transition-all duration-150 active:scale-95 shadow-2xs cursor-pointer shrink-0"
               title={selectedPageDetail ? (isRtl ? 'رجوع إلى الخلاصة' : 'Back to Feed') : (isRtl ? 'العودة إلى الصفحة الرئيسية' : 'Back to Home')}
             >
               {isRtl ? (
-                <ArrowLeft size={13} className="text-[var(--text-muted)] group-hover:text-accent transition-transform duration-150 group-hover:-translate-x-0.5" />
+                <ArrowLeft size={13} className="text-[var(--text-muted)] group-hover:text-[var(--text-primary)] transition-transform duration-150 group-hover:-translate-x-0.5" />
               ) : (
-                <ArrowRight size={13} className="text-[var(--text-muted)] group-hover:text-accent transition-transform duration-150 group-hover:translate-x-0.5" />
+                <ArrowRight size={13} className="text-[var(--text-muted)] group-hover:text-[var(--text-primary)] transition-transform duration-150 group-hover:translate-x-0.5" />
               )}
-              <span className="hidden xs:inline font-sans text-xs font-bold text-[var(--text-secondary)] group-hover:text-accent">
+              <span className="hidden xs:inline font-sans text-xs font-bold text-[var(--text-secondary)] group-hover:text-[var(--text-primary)]">
                 {selectedPageDetail ? (isRtl ? 'رجوع' : 'Back') : (isRtl ? 'الرئيسية' : 'Home')}
               </span>
             </button>
@@ -5246,18 +5247,26 @@ export const BulletinBoardPage: React.FC = () => {
                           )}
                         </div>
 
-                        {}
+                        {/* Page selector */}
                         <div className="flex items-center gap-1 sm:gap-1.5 mt-1 sm:mt-1.5 flex-wrap">
-                          {}
+                          {/* Page Selector Pill */}
                           {myPagesList.length > 0 && (
-                            <select
-                              value={adFormData.page_id}
-                              onChange={(e) => setAdFormData({...adFormData, page_id: e.target.value})}
-                              className="text-[10px] sm:text-[11px] bg-[var(--surface-subtle)] px-1.5 py-0.5 sm:px-2 rounded-md border-none focus:ring-0 font-bold text-[var(--text-secondary)] cursor-pointer hover:bg-[var(--surface-inset)] transition-colors"
-                            >
-                              <option value="">{isRtl ? 'حسابي الشخصي' : 'Personal Profile'}</option>
-                              {myPagesList.map((p, pIdx) => <option key={`bulletin-opt-mypage-${p.id}-${pIdx}`} value={p.id}>{p.name}</option>)}
-                            </select>
+                            <SearchableSelect
+                              value={String(adFormData.page_id || '')}
+                              onChange={(val) => setAdFormData({ ...adFormData, page_id: val })}
+                              options={[
+                                { value: '', label: isRtl ? 'حسابي الشخصي' : 'Personal Profile' },
+                                ...myPagesList.map((p) => ({
+                                  value: String(p.id),
+                                  label: p.name,
+                                  icon: <Building2 size={12} className="text-accent" />
+                                }))
+                              ]}
+                              searchable={myPagesList.length > 5}
+                              size="sm"
+                              dir={isRtl ? 'rtl' : 'ltr'}
+                              className="w-auto min-w-[140px]"
+                            />
                           )}
 
                           {}
@@ -5886,56 +5895,58 @@ export const BulletinBoardPage: React.FC = () => {
                       </label>
 
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                        {}
+                        {/* Quick Country */}
                         <div>
                           <label className="block text-[10px] font-bold text-[var(--text-muted)] mb-0.5">
                             {isRtl ? 'الدولة:' : 'Country:'}
                           </label>
-                          <select
+                          <SearchableSelect
                             value={selectedComposerCountry}
-                            onChange={(e) => {
-                              const country = e.target.value;
+                            onChange={(country) => {
                               setSelectedComposerCountry(country);
                               const cities = COUNTRIES_CITIES_DATA[country] || [];
                               const firstCity = cities[0] || country;
                               setAdFormData(prev => ({ ...prev, location_city: `${country} - ${firstCity}` }));
                             }}
-                            className="w-full px-2.5 py-1.5 rounded-xl bg-[var(--surface-card)] border border-[var(--border-default)] text-xs font-bold text-[var(--text-primary)] focus:outline-none focus:border-accent transition-theme cursor-pointer shadow-2xs"
-                          >
-                            {Object.keys(COUNTRIES_CITIES_DATA).map((c, cIdx) => (
-                              <option key={`bulletin-cntry-${c}-${cIdx}`} value={c}>
-                                📍 {c}
-                              </option>
-                            ))}
-                          </select>
+                            options={Object.keys(COUNTRIES_CITIES_DATA).map((c) => ({
+                              value: c,
+                              label: c,
+                              icon: <MapPin size={12} className="text-accent" />
+                            }))}
+                            placeholder={isRtl ? 'اختر الدولة...' : 'Select Country...'}
+                            dir={isRtl ? 'rtl' : 'ltr'}
+                            size="sm"
+                            className="w-full"
+                          />
                         </div>
 
-                        {}
+                        {/* Quick City */}
                         <div>
                           <label className="block text-[10px] font-bold text-[var(--text-muted)] mb-0.5">
                             {isRtl ? 'المدينة:' : 'City:'}
                           </label>
-                          <select
+                          <SearchableSelect
                             value={
                               adFormData.location_city?.includes(' - ')
                                 ? adFormData.location_city.split(' - ')[1]
                                 : adFormData.location_city
                             }
-                            onChange={(e) => {
-                              const cityName = e.target.value;
+                            onChange={(cityName) => {
                               setAdFormData(prev => ({
                                 ...prev,
                                 location_city: `${selectedComposerCountry} - ${cityName}`
                               }));
                             }}
-                            className="w-full px-2.5 py-1.5 rounded-xl bg-[var(--surface-inset)] border border-[var(--border-default)] text-xs font-bold text-[var(--text-primary)] focus:outline-none focus:border-accent transition-theme cursor-pointer shadow-2xs"
-                          >
-                            {(COUNTRIES_CITIES_DATA[selectedComposerCountry] || []).map((cityName, ctIdx) => (
-                              <option key={`bulletin-city-opt-${cityName}-${ctIdx}`} value={cityName}>
-                                🌆 {cityName}
-                              </option>
-                            ))}
-                          </select>
+                            options={(COUNTRIES_CITIES_DATA[selectedComposerCountry] || []).map((cityName) => ({
+                              value: cityName,
+                              label: cityName,
+                              icon: <Building2 size={12} className="text-accent" />
+                            }))}
+                            placeholder={isRtl ? 'اختر المدينة...' : 'Select City...'}
+                            dir={isRtl ? 'rtl' : 'ltr'}
+                            size="sm"
+                            className="w-full"
+                          />
                         </div>
                       </div>
                     </div>
@@ -6476,15 +6487,18 @@ export const BulletinBoardPage: React.FC = () => {
 
                   <div>
                     <label className="block text-xs font-bold mb-1 text-[var(--text-secondary)]">{isRtl ? 'المدينة / المحافظة:' : 'City:'}</label>
-                    <select
+                    <SearchableSelect
                       value={pageFormData.city}
-                      onChange={(e) => setPageFormData({ ...pageFormData, city: e.target.value })}
-                      className="w-full px-3 py-2 text-xs rounded-xl bg-[var(--surface-subtle)] border border-[var(--border-default)] text-[var(--text-primary)]"
-                    >
-                      {PALESTINE_CITIES.map((c, cIdx) => (
-                        <option key={`bulletin-pal-city-${c}-${cIdx}`} value={c}>{c}</option>
-                      ))}
-                    </select>
+                      onChange={(val) => setPageFormData({ ...pageFormData, city: val })}
+                      options={PALESTINE_CITIES.map((c) => ({
+                        value: c,
+                        label: c,
+                        icon: <MapPin size={13} className="text-accent" />
+                      }))}
+                      placeholder={isRtl ? 'اختر المدينة / المحافظة' : 'Select City...'}
+                      dir={isRtl ? 'rtl' : 'ltr'}
+                      className="w-full"
+                    />
                   </div>
                 </div>
 
@@ -6797,44 +6811,46 @@ export const BulletinBoardPage: React.FC = () => {
                 )}
               </div>
 
-              {}
+              {/* Country Selection */}
               <div className="space-y-1">
                 <label className="text-[11px] font-extrabold text-[var(--text-secondary)] flex items-center gap-1">
                   <Globe size={13} className="text-accent" />
                   <span>{isRtl ? 'اختر الدولة:' : 'Select Country:'}</span>
                 </label>
-                <select
+                <SearchableSelect
                   value={selectedCountry}
-                  onChange={(e) => {
-                    const c = e.target.value;
+                  onChange={(c) => {
                     setSelectedCountry(c);
                     secureStorage.set('perplexta_user_country', c);
                     handleSelectCity('all');
                   }}
-                  className="w-full px-3 py-2 text-xs font-bold rounded-xl bg-[var(--surface-subtle)] border border-[var(--border-default)] text-[var(--text-primary)] focus:outline-none focus:border-accent transition-theme cursor-pointer shadow-2xs"
-                >
-                  <option value="all">🌐 {isRtl ? 'كافة الدول (تغطية عالمية)' : 'All Countries (Global)'}</option>
-                  <option value="فلسطين">🇵🇸 فلسطين</option>
-                  <option value="الأردن">🇯🇴 الأردن</option>
-                  <option value="المملكة العربية السعودية">🇸🇦 المملكة العربية السعودية</option>
-                  <option value="الإمارات العربية المتحدة">🇦🇪 الإمارات العربية المتحدة</option>
-                  <option value="مصر">🇪🇬 مصر</option>
-                  <option value="قطر">🇶🇦 قطر</option>
-                  <option value="الكويت">🇰🇼 الكويت</option>
-                  <option value="سلطنة عمان">🇴🇲 سلطنة عمان</option>
-                  <option value="البحرين">🇧🇭 البحرين</option>
-                  <option value="العراق">🇮🇶 العراق</option>
-                  <option value="لبنان">🇱🇧 لبنان</option>
-                  <option value="سوريا">🇸🇾 سوريا</option>
-                  <option value="اليمن">🇾🇪 اليمن</option>
-                  <option value="المغرب">🇲🇦 المغرب</option>
-                  <option value="الجزائر">🇩🇿 الجزائر</option>
-                  <option value="تونس">🇹🇳 تونس</option>
-                  <option value="السودان">🇸🇩 السودان</option>
-                  <option value="تركيا">🇹🇷 تركيا</option>
-                  <option value="المملكة المتحدة">🇬🇧 المملكة المتحدة</option>
-                  <option value="الولايات المتحدة">🇺🇸 الولايات المتحدة</option>
-                </select>
+                  options={[
+                    { value: 'all', label: isRtl ? '🌐 كافة الدول (تغطية عالمية)' : '🌐 All Countries (Global)' },
+                    { value: 'فلسطين', label: '🇵🇸 فلسطين' },
+                    { value: 'الأردن', label: '🇯🇴 الأردن' },
+                    { value: 'المملكة العربية السعودية', label: '🇸🇦 المملكة العربية السعودية' },
+                    { value: 'الإمارات العربية المتحدة', label: '🇦🇪 الإمارات العربية المتحدة' },
+                    { value: 'مصر', label: '🇪🇬 مصر' },
+                    { value: 'قطر', label: '🇶🇦 قطر' },
+                    { value: 'الكويت', label: '🇰🇼 الكويت' },
+                    { value: 'سلطنة عمان', label: '🇴🇲 سلطنة عمان' },
+                    { value: 'البحرين', label: '🇧🇭 البحرين' },
+                    { value: 'العراق', label: '🇮🇶 العراق' },
+                    { value: 'لبنان', label: '🇱🇧 لبنان' },
+                    { value: 'سوريا', label: '🇸🇾 سوريا' },
+                    { value: 'اليمن', label: '🇾🇪 اليمن' },
+                    { value: 'المغرب', label: '🇲🇦 المغرب' },
+                    { value: 'الجزائر', label: '🇩🇿 الجزائر' },
+                    { value: 'تونس', label: '🇹🇳 تونس' },
+                    { value: 'السودان', label: '🇸🇩 السودان' },
+                    { value: 'تركيا', label: '🇹🇷 تركيا' },
+                    { value: 'المملكة المتحدة', label: '🇬🇧 المملكة المتحدة' },
+                    { value: 'الولايات المتحدة', label: '🇺🇸 الولايات المتحدة' },
+                  ]}
+                  placeholder={isRtl ? 'اختر الدولة...' : 'Select Country...'}
+                  dir={isRtl ? 'rtl' : 'ltr'}
+                  className="w-full"
+                />
               </div>
 
               {}
@@ -7086,7 +7102,7 @@ export const BulletinBoardPage: React.FC = () => {
         className="lg:hidden fixed bottom-0 inset-x-0 z-[150] w-full bg-[var(--surface-page)]/95 backdrop-blur-md border-t border-[var(--border-default)] transition-theme shadow-xs pb-[env(safe-area-inset-bottom,0px)]"
       >
         <div className="w-full max-w-sm mx-auto h-[48px] px-5 flex items-center justify-between">
-          {}
+          {/* Feed */}
           <button
             type="button"
             onClick={() => {
@@ -7096,14 +7112,18 @@ export const BulletinBoardPage: React.FC = () => {
               setIsMobileSearchOpen(false);
               window.scrollTo({ top: 0, behavior: 'smooth' });
             }}
-            className="group w-8 h-8 rounded-shape-sm border border-[var(--border-default)] hover:border-accent/40 bg-[var(--surface-subtle)] hover:bg-accent/10 text-[var(--text-secondary)] hover:text-accent flex items-center justify-center transition-all duration-150 active:scale-95 cursor-pointer shadow-2xs relative touch-manipulation select-none shrink-0"
+            className={`group w-8 h-8 rounded-shape-sm border transition-all duration-150 active:scale-95 cursor-pointer shadow-2xs relative touch-manipulation select-none shrink-0 flex items-center justify-center ${
+              activeTab === 'board' && !selectedPageDetail && !isMobileSearchOpen
+                ? 'bg-[var(--surface-card)] text-[var(--text-primary)] border-[var(--border-default)] font-bold shadow-2xs'
+                : 'bg-transparent border-[var(--border-default)] hover:border-cyan-500/60 dark:hover:border-cyan-400/60 hover:bg-[var(--surface-subtle)] text-[var(--text-secondary)] hover:text-[var(--text-primary)]'
+            }`}
             title={isRtl ? 'الرئيسية' : 'Feed'}
             aria-label={isRtl ? 'الرئيسية' : 'Feed'}
           >
-            <Megaphone size={14} className="text-[var(--text-muted)] group-hover:text-accent transition-colors duration-150" />
+            <Megaphone size={14} className={activeTab === 'board' && !selectedPageDetail && !isMobileSearchOpen ? 'text-cyan-500 dark:text-cyan-400' : 'text-[var(--text-muted)] group-hover:text-[var(--text-primary)] transition-colors duration-150'} />
           </button>
 
-          {}
+          {/* Search */}
           <button
             type="button"
             onClick={() => {
@@ -7113,14 +7133,18 @@ export const BulletinBoardPage: React.FC = () => {
                 window.scrollTo({ top: 0, behavior: 'smooth' });
               }
             }}
-            className="group w-8 h-8 rounded-shape-sm border border-[var(--border-default)] hover:border-accent/40 bg-[var(--surface-subtle)] hover:bg-accent/10 text-[var(--text-secondary)] hover:text-accent flex items-center justify-center transition-all duration-150 active:scale-95 cursor-pointer shadow-2xs relative touch-manipulation select-none shrink-0"
+            className={`group w-8 h-8 rounded-shape-sm border transition-all duration-150 active:scale-95 cursor-pointer shadow-2xs relative touch-manipulation select-none shrink-0 flex items-center justify-center ${
+              isMobileSearchOpen
+                ? 'bg-[var(--surface-card)] text-[var(--text-primary)] border-[var(--border-default)] font-bold shadow-2xs'
+                : 'bg-transparent border-[var(--border-default)] hover:border-cyan-500/60 dark:hover:border-cyan-400/60 hover:bg-[var(--surface-subtle)] text-[var(--text-secondary)] hover:text-[var(--text-primary)]'
+            }`}
             title={isRtl ? 'البحث' : 'Search'}
             aria-label={isRtl ? 'البحث' : 'Search'}
           >
-            <Search size={14} className="text-[var(--text-muted)] group-hover:text-accent transition-colors duration-150" />
+            <Search size={14} className={isMobileSearchOpen ? 'text-cyan-500 dark:text-cyan-400' : 'text-[var(--text-muted)] group-hover:text-[var(--text-primary)] transition-colors duration-150'} />
           </button>
 
-          {}
+          {/* Create Reel */}
           <button
             type="button"
             onClick={() => {
@@ -7131,14 +7155,14 @@ export const BulletinBoardPage: React.FC = () => {
               }
               openReelUploadModal();
             }}
-            className="group w-8 h-8 rounded-shape-sm border border-[var(--border-default)] hover:border-accent/40 bg-[var(--surface-subtle)] hover:bg-accent/10 text-[var(--text-secondary)] hover:text-accent flex items-center justify-center transition-all duration-150 active:scale-95 cursor-pointer shadow-2xs touch-manipulation select-none shrink-0"
+            className="group w-8 h-8 rounded-shape-sm border border-[var(--border-default)] hover:border-cyan-500/60 dark:hover:border-cyan-400/60 bg-transparent hover:bg-[var(--surface-subtle)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] flex items-center justify-center transition-all duration-150 active:scale-95 cursor-pointer shadow-2xs touch-manipulation select-none shrink-0"
             title={isRtl ? 'إنشاء ريلز جديد' : 'Create Reel'}
             aria-label={isRtl ? 'إنشاء ريلز جديد' : 'Create Reel'}
           >
-            <Clapperboard size={14} className="text-[var(--text-muted)] group-hover:text-accent transition-colors duration-150" />
+            <Clapperboard size={14} className="text-[var(--text-muted)] group-hover:text-[var(--text-primary)] transition-colors duration-150" />
           </button>
 
-          {}
+          {/* Inquiries */}
           <button
             type="button"
             onClick={() => {
@@ -7151,11 +7175,15 @@ export const BulletinBoardPage: React.FC = () => {
               setActiveTab('inquiries');
               setIsMobileSearchOpen(false);
             }}
-            className="group w-8 h-8 rounded-shape-sm border border-[var(--border-default)] hover:border-accent/40 bg-[var(--surface-subtle)] hover:bg-accent/10 text-[var(--text-secondary)] hover:text-accent flex items-center justify-center transition-all duration-150 active:scale-95 cursor-pointer shadow-2xs relative touch-manipulation select-none shrink-0"
+            className={`group w-8 h-8 rounded-shape-sm border transition-all duration-150 active:scale-95 cursor-pointer shadow-2xs relative touch-manipulation select-none shrink-0 flex items-center justify-center ${
+              activeTab === 'inquiries' && !selectedPageDetail
+                ? 'bg-[var(--surface-card)] text-[var(--text-primary)] border-[var(--border-default)] font-bold shadow-2xs'
+                : 'bg-transparent border-[var(--border-default)] hover:border-cyan-500/60 dark:hover:border-cyan-400/60 hover:bg-[var(--surface-subtle)] text-[var(--text-secondary)] hover:text-[var(--text-primary)]'
+            }`}
             title={isRtl ? 'سجل المحادثات' : 'Chats / Inquiries'}
             aria-label={isRtl ? 'سجل المحادثات' : 'Chats / Inquiries'}
           >
-            <MessageSquareText size={14} className="text-[var(--text-muted)] group-hover:text-accent transition-colors duration-150" />
+            <MessageSquareText size={14} className={activeTab === 'inquiries' && !selectedPageDetail ? 'text-cyan-500 dark:text-cyan-400' : 'text-[var(--text-muted)] group-hover:text-[var(--text-primary)] transition-colors duration-150'} />
             {inquiriesList.length > 0 && (
               <span className="absolute -top-1 -end-1 w-3.5 h-3.5 rounded-shape-full bg-red-500 text-white text-[8px] font-black flex items-center justify-center ring-1 ring-[var(--surface-page)]">
                 {inquiriesList.length > 9 ? '9+' : inquiriesList.length}
@@ -7163,18 +7191,18 @@ export const BulletinBoardPage: React.FC = () => {
             )}
           </button>
 
-          {}
+          {/* Menu */}
           <button
             type="button"
             onClick={() => {
               triggerHaptic('medium');
               setIsMobileSidebarOpen(true);
             }}
-            className="group w-8 h-8 rounded-shape-sm border border-[var(--border-default)] hover:border-accent/40 bg-[var(--surface-subtle)] hover:bg-accent/10 text-[var(--text-secondary)] hover:text-accent flex items-center justify-center transition-all duration-150 active:scale-95 cursor-pointer shadow-2xs touch-manipulation select-none shrink-0"
+            className="group w-8 h-8 rounded-shape-sm border border-[var(--border-default)] hover:border-cyan-500/60 dark:hover:border-cyan-400/60 bg-transparent hover:bg-[var(--surface-subtle)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] flex items-center justify-center transition-all duration-150 active:scale-95 cursor-pointer shadow-2xs touch-manipulation select-none shrink-0"
             title={isRtl ? 'القائمة' : 'Menu'}
             aria-label={isRtl ? 'القائمة' : 'Menu'}
           >
-            <Menu size={14} className="text-[var(--text-muted)] group-hover:text-accent transition-colors duration-150" />
+            <Menu size={14} className="text-[var(--text-muted)] group-hover:text-[var(--text-primary)] transition-colors duration-150" />
           </button>
         </div>
       </nav>
@@ -7635,16 +7663,19 @@ export const BulletinBoardPage: React.FC = () => {
                     </div>
 
                     <div>
-                      <label className="block text-xs font-bold mb-1">{isRtl ? 'المدينة:' : 'City:'}</label>
-                      <select
+                      <label className="block text-xs font-bold mb-1 text-[var(--text-secondary)]">{isRtl ? 'المدينة:' : 'City:'}</label>
+                      <SearchableSelect
                         value={editPageFormData.city}
-                        onChange={(e) => setEditPageFormData({ ...editPageFormData, city: e.target.value })}
-                        className="w-full px-3 py-2 text-xs rounded-xl bg-[var(--surface-inset)] border border-[var(--border-default)]"
-                      >
-                        {PALESTINE_CITIES.map((c, idx) => (
-                          <option key={`edit-pal-city-${c}-${idx}`} value={c}>{c}</option>
-                        ))}
-                      </select>
+                        onChange={(val) => setEditPageFormData({ ...editPageFormData, city: val })}
+                        options={PALESTINE_CITIES.map((c) => ({
+                          value: c,
+                          label: c,
+                          icon: <MapPin size={13} className="text-accent" />
+                        }))}
+                        placeholder={isRtl ? 'اختر المدينة' : 'Select City...'}
+                        dir={isRtl ? 'rtl' : 'ltr'}
+                        className="w-full"
+                      />
                     </div>
                   </div>
 
@@ -7786,14 +7817,17 @@ export const BulletinBoardPage: React.FC = () => {
                           </div>
                           <div>
                             <label className="block text-[10px] font-bold mb-0.5 text-[var(--text-muted)]">{isRtl ? 'الصلاحية:' : 'Permission Role:'}</label>
-                            <select
+                            <SearchableSelect
                               value={newManagerRole}
-                              onChange={(e) => setNewManagerRole(e.target.value as 'full' | 'limited')}
-                              className="px-3 py-2 text-xs rounded-xl bg-[var(--surface-inset)] border border-[var(--border-default)]"
-                            >
-                              <option value="limited">{isRtl ? 'مدير محدود المهام' : 'Limited Admin'}</option>
-                              <option value="full">{isRtl ? 'مدير كامل الصلاحيات' : 'Full Admin'}</option>
-                            </select>
+                              onChange={(val) => setNewManagerRole(val as 'full' | 'limited')}
+                              options={[
+                                { value: 'limited', label: isRtl ? 'مدير محدود المهام' : 'Limited Admin' },
+                                { value: 'full', label: isRtl ? 'مدير كامل الصلاحيات' : 'Full Admin' }
+                              ]}
+                              searchable={false}
+                              dir={isRtl ? 'rtl' : 'ltr'}
+                              className="w-full min-w-[140px]"
+                            />
                           </div>
                           <button
                             type="button"
