@@ -15,7 +15,7 @@ import { generateAuthMd } from './utils/auth-md.js';
 import { paymentMiddlewareFromConfig } from '@x402/express';
 import wellKnownRouter from './routes/well-known.js';
 
-import { pool, ledgerPool, externalPool, securityPool, getDatabasePool, getExternalPool, getPoolMetrics, cleanupAbandonedConnections } from './db/index.js';
+import { pool, ledgerPool, externalPool, securityPool, mediaPool, getDatabasePool, getExternalPool, getMediaPool, getPoolMetrics, cleanupAbandonedConnections, isDatabaseConnected } from './db/index.js';
 import QueryStream from 'pg-query-stream';
 import { UserFile, DepositRequest, ToolOrchestrator } from './db/types.js';
 import { getCachedRouteSeo, getCachedAllActiveRouteSeo, getCachedRouteSeoMetadata, getCachedSeoMetadata, upsertSeoMetadata, getAllSeoMetadata, getCachedOgPreview } from './db/queries.js';
@@ -251,15 +251,15 @@ app.use((req, res, next) => {
     return next();
   }
 
-  // Pre-flight check: If core pool is null, the system is in Degraded Mode or still initializing.
-  if (pool === null) {
+  // Pre-flight check: If core pool is not active, the system is in Degraded Mode or still initializing.
+  if (!isDatabaseConnected()) {
     // Allow public read endpoints that have memory-cached fallbacks to serve content smoothly
     const isPublicDegradedAllowed = /^\/api\/(settings|plans|ads|seo|routes-seo|og-preview|health|system|categories)/.test(req.path);
     if (isPublicDegradedAllowed) {
       return next();
     }
 
-    if (req.path === '/api/auth/me') {
+    if (req.path === '/api/auth/me' || req.path === '/api/auth/user') {
       return res.json({ user: null, degraded: true });
     }
 
@@ -279,7 +279,7 @@ app.use((req, res, next) => {
     return totalCount >= maxPool && waitingCount > 15;
   };
 
-  if (isBackpressureSaturated(pool) || isBackpressureSaturated(ledgerPool) || isBackpressureSaturated(externalPool) || isBackpressureSaturated(securityPool)) {
+  if (isBackpressureSaturated(pool) || isBackpressureSaturated(ledgerPool) || isBackpressureSaturated(externalPool) || isBackpressureSaturated(securityPool) || isBackpressureSaturated(mediaPool)) {
     res.setHeader('Retry-After', '2');
     return res.status(503).json({
       error: 'Service Overloaded',
@@ -1472,6 +1472,26 @@ app.post('/api/activity/log', async (req, res) => {
   } catch (err: any) {
     console.warn('[ActivityLog] Activity log skipped due to DB limit/offline:', err?.message || err);
     res.json({ success: true, degraded: true });
+  }
+});
+
+app.get('/api/theme-customizations', async (req, res) => {
+  try {
+    if (!pool) return res.json({ success: true, customizations: { light: {}, dark: {} }, updated_at: null });
+    const result = await pool.query('SELECT theme_mode, tokens, updated_at FROM admin_theme_customizations');
+    const customizations: Record<string, any> = { light: {}, dark: {} };
+    let latestUpdate: string | null = null;
+    for (const row of result.rows) {
+      customizations[row.theme_mode] = row.tokens || {};
+      if (row.updated_at) {
+        if (!latestUpdate || new Date(row.updated_at) > new Date(latestUpdate)) {
+          latestUpdate = new Date(row.updated_at).toISOString();
+        }
+      }
+    }
+    res.json({ success: true, customizations, updated_at: latestUpdate });
+  } catch (err: any) {
+    res.json({ success: true, customizations: { light: {}, dark: {} }, updated_at: null });
   }
 });
 

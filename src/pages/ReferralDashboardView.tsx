@@ -6,6 +6,7 @@ import {
 import { 
   ResponsiveContainer, AreaChart, Area, XAxis, YAxis, Tooltip, CartesianGrid 
 } from "recharts";
+import { SelectDropdown } from "@/design-system";
 
 interface SummaryData {
   totalSent: number;
@@ -778,15 +779,19 @@ export const ReferralDashboardView = ({
                 {isRtl ? "أحدث الدعوات المرسلة" : "RECENT ACTIVITY FEED"}
               </h2>
             </div>
-            <select
-              value={inviteStatusFilter}
-              onChange={(e) => setInviteStatusFilter(e.target.value as "all" | "accepted" | "pending")}
-              className="text-[10px] uppercase font-bold px-2 py-1.5 rounded-[4px] border border-[var(--border-default)] bg-[var(--surface-subtle)] text-[var(--text-primary)] focus:border-accent focus:outline-none cursor-pointer transition-theme"
-            >
-              <option value="all">{isRtl ? "الكل" : "ALL STATUSES"}</option>
-              <option value="accepted">{isRtl ? "مقبول فقط" : "ACCEPTED ONLY"}</option>
-              <option value="pending">{isRtl ? "معلق فقط" : "PENDING ONLY"}</option>
-            </select>
+            <div className="w-40">
+              <SelectDropdown
+                size="sm"
+                value={inviteStatusFilter}
+                onChange={(val) => setInviteStatusFilter(val as "all" | "accepted" | "pending")}
+                dir={isRtl ? 'rtl' : 'ltr'}
+                options={[
+                  { value: 'all', label: isRtl ? "الكل" : "ALL STATUSES" },
+                  { value: 'accepted', label: isRtl ? "مقبول فقط" : "ACCEPTED ONLY" },
+                  { value: 'pending', label: isRtl ? "معلق فقط" : "PENDING ONLY" }
+                ]}
+              />
+            </div>
           </div>
 
           {/* Bulk Selection and Batch Action row */}

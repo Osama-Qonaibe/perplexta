@@ -50,8 +50,14 @@ import { MemoryCenterView } from "../components/admin/MemoryCenterView";
 import { SystemSettingsView } from "../components/admin/SystemSettingsView";
 import { ThemeStudioView } from "../components/admin/ThemeStudioView";
 
-// --- Compliance Audit Logs View ---
+import { AiInfrastructureHubView } from "../components/admin/hubs/AiInfrastructureHubView";
+import { FinanceMonetizationHubView } from "../components/admin/hubs/FinanceMonetizationHubView";
+import { UsersCommunityHubView } from "../components/admin/hubs/UsersCommunityHubView";
+import { CommunicationsHubView } from "../components/admin/hubs/CommunicationsHubView";
+import { DesignSeoHubView } from "../components/admin/hubs/DesignSeoHubView";
+
 import { ComplianceAuditLogsView } from "../components/admin/ComplianceAuditLogsView";
+
 export const AdminDashboard: React.FC = () => {
   const {
     t,
@@ -72,12 +78,10 @@ export const AdminDashboard: React.FC = () => {
   const isSupport = user?.role === "support";
   const path = location.pathname.split("/").pop() || "dashboard";
 
-  // Strict route protection
   useEffect(() => {
     if (user && user.role !== "admin" && user.role !== "support") {
       navigate("/chat");
     }
-    // Block support from sensitive financial/system paths
     const sensitivePaths = [
       "keys",
       "gpu",
@@ -190,43 +194,53 @@ export const AdminDashboard: React.FC = () => {
   const getTitle = () => {
     switch (path) {
       case "dashboard":
-        return t("commandCenter");
-      case "radar":
-        return language === "ar" ? "رادار الأمان" : "Security Radar";
+        return language === "ar" ? "مركز القيادة والنبض" : "COMMAND CENTER";
       case "keys":
-        return t("aiInfrastructure");
       case "gpu":
-        return language === "ar" ? "مزودي خوادم الـ GPU" : "GPU Infrastructure & Vault";
-      case "databases":
-        return t("dbOrchestration");
       case "orchestrator":
-        return t("toolOrchestrator");
-      case "finance":
-        return t("financeVault");
-      case "plans":
-        return t("plansSubscriptions");
-      case "users":
-        return t("userManagement");
       case "memories":
-        return language === "ar" ? "مركز الذاكرة" : "Memory Center";
-      case "emails":
-        return t("smartEmailHub");
-      case "broadcast":
-        return t("smartBroadcast");
-      case "settings":
-        return t("systemSettings");
-      case "audit":
-        return language === "ar" ? "التدقيق والامتثال" : "Compliance Audit Trail";
+      case "ai-infra":
+        return language === "ar"
+          ? "البنية التحتية والذكاء الاصطناعي"
+          : "AI & COMPUTE INFRASTRUCTURE";
+      case "databases":
+        return language === "ar"
+          ? "أوركسترا قواعد البيانات والتخزين"
+          : "DATABASES & STORAGE ORCHESTRATION";
+      case "finance":
+      case "plans":
       case "referrals":
-        return t("referralDashboard");
-      case "seo":
-        return language === "ar" ? "تدقيق الميتاداتا والسيو" : "SEO Audit & AI Population";
+        return language === "ar"
+          ? "الخزينة والمالية والاشتراكات"
+          : "FINANCE & MONETIZATION HUB";
+      case "users":
+      case "ads":
+        return language === "ar"
+          ? "المستخدمين والمجتمع والإعلانات"
+          : "USERS & COMMUNITY HUB";
+      case "emails":
+      case "broadcast":
+        return language === "ar"
+          ? "مركز المراسلات والبث الذكي"
+          : "COMMUNICATIONS & BROADCAST HUB";
       case "theme":
-        return language === "ar" ? "استوديو المظهر والثيمات" : "Theme Studio & Tokens";
+      case "seo":
+      case "design-seo":
+        return language === "ar"
+          ? "المظهر والمحركات والـ SEO"
+          : "DESIGN & SEO STUDIO";
+      case "audit":
+      case "radar":
       case "metrics":
-        return language === "ar" ? "مقاييس الأداء ورندر المكونات" : "Render & Latency Metrics";
+        return language === "ar"
+          ? "الأمان والتدقيق والامتثال"
+          : "SECURITY & COMPLIANCE";
+      case "settings":
+        return language === "ar"
+          ? "إعدادات النظام العامة"
+          : "SYSTEM SETTINGS";
       default:
-        return t("commandCenter");
+        return language === "ar" ? "لوحة التحكم الإدارية" : "ADMIN DASHBOARD";
     }
   };
 
@@ -234,127 +248,95 @@ export const AdminDashboard: React.FC = () => {
     switch (path) {
       case "dashboard":
         return language === "ar"
-          ? "مراقبة وتقارير النظام الشاملة"
-          : "SYSTEM-WIDE MONITORING & INTELLIGENCE";
-      case "radar":
-        return language === "ar"
-          ? "رادار مراقبة الهجمات المباشر"
-          : "LIVE SECURITY RADAR & THREAT INTELLIGENCE";
+          ? "مراقبة وتشخيص النظام والعمليات الحية في الوقت الفعلي"
+          : "REAL-TIME DIAGNOSTICS & SYSTEM PERFORMANCE MONITORING";
       case "keys":
-        return language === "ar"
-          ? "إدارة مفاتيح الوصول والبنية التحتية"
-          : "ACCESS KEYS & INFRASTRUCTURE VAULT";
       case "gpu":
+      case "orchestrator":
+      case "memories":
+      case "ai-infra":
         return language === "ar"
-          ? "إدارة خوادم الحوسبة الرسومية ومعالجة الوسائط المنفصلة"
-          : "ISOLATED GPU COMPUTE & MEDIA PROCESSING CLUSTERS";
+          ? "خزائن المفاتيح، خوادم الـ GPU، توجيه الموديلات والذاكرة المعرفية"
+          : "LLM KEYS, GPU CLUSTERS, MODEL ROUTING & COGNITIVE MEMORY";
       case "databases":
         return language === "ar"
-          ? "تنسيق قواعد البيانات والنسخ الاحتياطي"
-          : "DATABASE SCHEMAS & SYNC ORCHESTRATION";
-      case "orchestrator":
-        return language === "ar"
-          ? "إدارة النماذج والمسارات الذكية"
-          : "INTELLIGENT MODELS & ROUTING";
+          ? "عقد الاتصال المعزولة، الترحيل الآلي، والنسخ الاحتياطي والإنعاش"
+          : "SEGREGATED CLUSTERS, MIGRATIONS & DISASTER RECOVERY";
       case "finance":
-        return language === "ar"
-          ? "إدارة المعاملات والمحافظ والمكافآت"
-          : "LEDGER, WALLETS & REWARDS CONTROL";
       case "plans":
-        return language === "ar"
-          ? "إدارة الباقات والاشتراكات والأسعار"
-          : "SUBSCRIPTION PLANS & PRICING";
-      case "users":
-        return language === "ar"
-          ? "إدارة الهوية والتحقق والصلاحيات"
-          : "IDENTITY, KYC & PERMISSIONS CONTROL";
-      case "memories":
-        return language === "ar"
-          ? "إدارة وتكثيف ذاكرة المستخدمين واستقصاء الذكاء"
-          : "MANUAL MEMORY DISTILLATION & AUDIT CENTRAL";
-      case "emails":
-        return language === "ar"
-          ? "إدارة القوالب والاتصالات الذكية"
-          : "SYSTEM COMMUNICATIONS & TEMPLATES";
-      case "broadcast":
-        return language === "ar"
-          ? "إرسال الحملات والإشعارات الجماعية"
-          : "MASS CAMPAIGN & BROADCAST ENGINE";
-      case "settings":
-        return language === "ar"
-          ? "إعدادات النظام والبروتوكول الأساسي"
-          : "CORE SYSTEM PROTOCOL CONFIG";
-      case "audit":
-        return language === "ar"
-          ? "مراقبة العمليات الحساسة وإعدادات الامتثال الأمني"
-          : "SECURE CRITICAL METADATA AUDITING & SECURITY COMPLIANCE";
       case "referrals":
         return language === "ar"
-          ? "مراقبة وإحصاءات برنامج الإحالات والتحويلات"
-          : "REFERRAL PROGRAM STATISTICS & CONVERSION INTELLIGENCE";
-      case "seo":
+          ? "السجل التراكمي المقفل، الباقات والحدود الدقيقة، وشجرة الإحالات"
+          : "APPEND-ONLY LEDGER, SUBSCRIPTION PLANS & AFFILIATE RADAR";
+      case "users":
+      case "ads":
         return language === "ar"
-          ? "مراقبة وتوليد الميتاداتا وفحص جاهزية محركات البحث"
-          : "METADATA AUDITING, AI GENERATION & REAL-TIME PROGRESS MONITORING";
+          ? "إدارة الحسابات والرتب، منشورات بيربليكستا بورد، والحملات الممولة"
+          : "USER ROLES, WALLETS, BULLETIN ADS & PROMOTIONS";
+      case "emails":
+      case "broadcast":
+        return language === "ar"
+          ? "قوالب البريد الذكي ثنائية اللغة وحملات البث والإشعارات الموجهة"
+          : "BILINGUAL EMAIL TEMPLATES & TARGETED BROADCAST NOTIFICATIONS";
       case "theme":
+      case "seo":
+      case "design-seo":
         return language === "ar"
-          ? "تحكم دقيق وشامل في كل لون وكل سطر في الثيمات"
-          : "SOVEREIGN CONTROL OVER EVERY COLOR TOKEN AND THEME SURFACE";
+          ? "استوديو الثيمات وتوكنز الألوان، وبطاقات الميتاداتا وSchema JSON-LD"
+          : "THEME TOKENS, SURFACE STYLING, METADATA & SCHEMA JSON-LD";
+      case "audit":
+      case "radar":
       case "metrics":
         return language === "ar"
-          ? "مراقبة زمن الانتقال وتتبع أداء المكونات برمجياً"
-          : "COMPONENT RENDER TELEMETRY & LATENCY MONITORING";
+          ? "سجلات التدقيق الإداري، رادار الهجمات، ومقاييس الأداء والرندر"
+          : "COMPLIANCE AUDIT TRAIL, SECURITY RADAR & RENDER METRICS";
+      case "settings":
+        return language === "ar"
+          ? "وضع الصيانة، سياسات التسجيل والتحكم العام بالمنصة"
+          : "MAINTENANCE MODE, REGISTRATION POLICIES & SYSTEM PARAMETERS";
       default:
-        return "MANAGEMENT COMMAND CENTER";
+        return "ENTERPRISE COMMAND & CONTROL";
     }
   };
 
   const getIcon = () => {
-    const iconClass =
-      "text-accent ";
+    const iconClass = "text-accent ";
     switch (path) {
       case "dashboard":
         return <Activity size={28} className={iconClass} />;
-      case "radar":
-        return <Shield size={28} className={iconClass} />;
-      case "metrics":
-        return <Activity size={28} className={iconClass} />;
       case "keys":
-        return <Key size={28} className={iconClass} />;
       case "gpu":
-        return <Server size={28} className={iconClass} />;
+      case "orchestrator":
+      case "memories":
+      case "ai-infra":
+        return <Cpu size={28} className={iconClass} />;
       case "databases":
         return <Database size={28} className={iconClass} />;
-      case "orchestrator":
-        return <Cpu size={28} className={iconClass} />;
       case "finance":
-        return <Landmark size={28} className={iconClass} />;
       case "plans":
-        return <CreditCard size={28} className={iconClass} />;
+      case "referrals":
+        return <Landmark size={28} className={iconClass} />;
       case "users":
+      case "ads":
         return <Users size={28} className={iconClass} />;
-      case "memories":
-        return <Brain size={28} className={iconClass} />;
       case "emails":
-        return <Mail size={28} className={iconClass} />;
       case "broadcast":
-        return <Send size={28} className={iconClass} />;
+        return <Mail size={28} className={iconClass} />;
+      case "theme":
+      case "seo":
+      case "design-seo":
+        return <Palette size={28} className={iconClass} />;
+      case "audit":
+      case "radar":
+      case "metrics":
+        return <ShieldAlert size={28} className={iconClass} />;
       case "settings":
         return <Settings size={28} className={iconClass} />;
-      case "audit":
-        return <ShieldAlert size={28} className={iconClass} />;
-      case "referrals":
-        return <UserPlus size={28} className={iconClass} />;
-      case "seo":
-        return <Globe size={28} className={iconClass} />;
-      case "theme":
-        return <Palette size={28} className={iconClass} />;
       default:
         return <Settings2 size={28} className={iconClass} />;
     }
   };
 
-  // Determine if the "Add" button should be shown
   const showAddButton = ["plans", "broadcast"].includes(path);
 
   const getAddButtonText = () => {
@@ -425,9 +407,8 @@ export const AdminDashboard: React.FC = () => {
       variants={perplextaPageTransition}
       className="flex flex-col w-full"
     >
-      {/* Sticky Admin Header - Elite Command Layer */}
       <div
-        className="sticky top-[72px] z-20 -mx-6 md:-mx-8 px-6 md:px-8 py-3 mb-4 transition-theme bg-[var(--surface-page)]/95 backdrop-blur-md border-b border-[var(--border-default)] flex items-center justify-between"
+        className="sticky top-0 z-20 -mx-6 md:-mx-8 px-6 md:px-8 py-3 mb-4 transition-theme bg-[var(--surface-page)]/95 backdrop-blur-md border-b border-[var(--border-default)] flex items-center justify-between"
       >
         <div className="flex items-center gap-4">
           {path !== "dashboard" && (
@@ -640,12 +621,13 @@ export const AdminDashboard: React.FC = () => {
         </div>
       </div>
 
-      {/* Main Content Area */}
       <div
         className={`relative transition-theme ${
-          ["dashboard", "radar", "databases", "orchestrator", "keys", "gpu", "finance", "plans", "users", "emails", "broadcast", "settings", "audit", "referrals", "ads", "metrics", "seo", "theme"].includes(
-            path,
-          )
+          [
+            "dashboard", "radar", "databases", "orchestrator", "keys", "gpu",
+            "finance", "plans", "users", "emails", "broadcast", "settings",
+            "audit", "referrals", "ads", "metrics", "seo", "theme", "ai-infra", "design-seo"
+          ].includes(path)
             ? ""
             : `p-6 md:p-8 rounded-[var(--radius-md)] border border-[var(--border-default)] bg-[var(--surface-card)] shadow-xl`
         }`}
@@ -653,25 +635,26 @@ export const AdminDashboard: React.FC = () => {
         <ErrorBoundary name="Admin Command Panels">
           {path === "dashboard" ? (
             <CommandCenterView theme={theme} t={t} showToast={showToast} />
-          ) : path === "radar" ? (
-            <ComplianceAuditLogsView theme={theme} t={t} dir={dir} initialTab="radar" />
-          ) : path === "metrics" ? (
-            <ComplianceAuditLogsView theme={theme} t={t} dir={dir} initialTab="metrics" />
-          ) : path === "keys" ? (
-            <ApiKeysVaultView
+          ) : ["keys", "gpu", "orchestrator", "memories", "ai-infra"].includes(path) ? (
+            <AiInfrastructureHubView
               theme={theme}
               t={t}
               dir={dir}
+              language={language}
               providerModels={providerModels}
               setProviderModels={setProviderModels}
               showToast={showToast}
-            />
-          ) : path === "gpu" ? (
-            <GpuInfrastructureView
-              theme={theme}
-              t={t}
-              dir={dir}
-              showToast={showToast}
+              onRefreshModels={fetchProviderModels}
+              initialTab={
+                path === "gpu"
+                  ? "gpu"
+                  : path === "orchestrator"
+                  ? "orchestrator"
+                  : path === "memories"
+                  ? "memories"
+                  : "keys"
+              }
+              onTabChange={(tab) => navigate(`/admin/${tab}`, { replace: true })}
             />
           ) : path === "databases" ? (
             <DatabaseOrchestrationView
@@ -680,44 +663,62 @@ export const AdminDashboard: React.FC = () => {
               dir={dir}
               language={language}
             />
-          ) : path === "orchestrator" ? (
-            <OrchestratorView
-              theme={theme}
-              t={t}
-              dir={dir}
-              providerModels={providerModels}
-              showToast={showToast}
-              onRefreshModels={fetchProviderModels}
-            />
-          ) : path === "finance" ? (
-            <FinanceVaultView theme={theme} t={t} dir={dir} showToast={showToast} />
-          ) : path === "plans" ? (
-            <PlansSubscriptionsView theme={theme} t={t} dir={dir} />
-          ) : path === "users" ? (
-            <UserManagementView theme={theme} t={t} dir={dir} showToast={showToast} />
-          ) : path === "memories" ? (
-            <MemoryCenterView theme={theme} t={t} dir={dir} language={language} />
-          ) : path === "emails" ? (
-            <SmartEmailHubView theme={theme} t={t} dir={dir} showToast={showToast} />
-          ) : path === "broadcast" ? (
-            <MassBroadcastView
+          ) : ["finance", "plans", "referrals"].includes(path) ? (
+            <FinanceMonetizationHubView
               theme={theme}
               t={t}
               dir={dir}
               language={language}
+              showToast={showToast}
+              initialTab={
+                path === "plans"
+                  ? "plans"
+                  : path === "referrals"
+                  ? "referrals"
+                  : "finance"
+              }
+              onTabChange={(tab) => navigate(`/admin/${tab}`, { replace: true })}
+            />
+          ) : ["users", "ads"].includes(path) ? (
+            <UsersCommunityHubView
+              theme={theme}
+              t={t}
+              dir={dir}
+              language={language}
+              showToast={showToast}
+              initialTab={path === "ads" ? "ads" : "users"}
+              onTabChange={(tab) => navigate(`/admin/${tab}`, { replace: true })}
+            />
+          ) : ["emails", "broadcast"].includes(path) ? (
+            <CommunicationsHubView
+              theme={theme}
+              t={t}
+              dir={dir}
+              language={language}
+              showToast={showToast}
+              initialTab={path === "broadcast" ? "broadcast" : "emails"}
+              onTabChange={(tab) => navigate(`/admin/${tab}`, { replace: true })}
+            />
+          ) : ["theme", "seo", "design-seo"].includes(path) ? (
+            <DesignSeoHubView
+              theme={theme}
+              t={t}
+              dir={dir}
+              language={language}
+              token={token}
+              showToast={showToast}
+              initialTab={path === "seo" ? "seo" : "theme"}
+              onTabChange={(tab) => navigate(`/admin/${tab}`, { replace: true })}
+            />
+          ) : ["audit", "radar", "metrics"].includes(path) ? (
+            <ComplianceAuditLogsView
+              theme={theme}
+              t={t}
+              dir={dir}
+              initialTab={path === "radar" ? "radar" : path === "metrics" ? "metrics" : "logs"}
             />
           ) : path === "settings" ? (
             <SystemSettingsView theme={theme} t={t} dir={dir} />
-          ) : path === "audit" ? (
-            <ComplianceAuditLogsView theme={theme} t={t} dir={dir} />
-          ) : path === "referrals" ? (
-            <ReferralDashboardView theme={theme} t={t} dir={dir} />
-          ) : path === "ads" ? (
-            <AdsManagementView theme={theme} t={t} dir={dir} language={language} />
-          ) : path === "seo" ? (
-            <SeoCenterView theme={theme} t={t} dir={dir} language={language} showToast={showToast} />
-          ) : path === "theme" ? (
-            <ThemeStudioView t={t} showToast={showToast} token={token} language={language} />
           ) : (
             <div className="flex flex-col items-center justify-center h-64 text-[var(--text-muted)]">
               <div className="mb-6 opacity-50">{getIcon()}</div>

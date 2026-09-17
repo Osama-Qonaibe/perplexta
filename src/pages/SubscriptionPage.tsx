@@ -726,7 +726,7 @@ export const SubscriptionPage: React.FC = () => {
                     }}
                   >
                     {resultModal === 'success' ? (
-                      <CheckCircle2 size={32} className="md:w-9 md:h-9" style={{ filter: `drop-shadow(0 0 10px ${selectedPlanForModal?.color || '#06b6d4'}50)` }} />
+                      <CheckCircle2 size={32} className="md:w-9 md:h-9" style={{ filter: `drop-shadow(0 0 10px ${selectedPlanForModal?.color || '#0969da'}50)` }} />
                     ) : (
                       <AlertCircle size={32} className="md:w-9 md:h-9 text-amber-500" />
                     )}
@@ -800,7 +800,7 @@ export const SubscriptionPage: React.FC = () => {
                     className="flex-1 py-2.5 min-h-[44px] rounded-shape-sm text-white font-bold text-xs md:text-sm transition-all duration-150 shadow-sm flex items-center justify-center gap-2 cursor-pointer active:scale-95 touch-target-44"
                     style={{ 
                       backgroundColor: selectedPlanForModal?.color || 'var(--sys-color-primary)', 
-                      boxShadow: `0 4px 14px -2px ${(selectedPlanForModal?.color || '#06b6d4')}40` 
+                      boxShadow: `0 4px 14px -2px ${(selectedPlanForModal?.color || '#0969da')}40` 
                     }}
                   >
                     <Share2 size={16} />

@@ -12,7 +12,7 @@ import {
   Bar 
 } from 'recharts';
 import { Activity, Clock, Cpu, RefreshCw, Server, Users, Zap } from 'lucide-react';
-import { toast } from '@/design-system';
+import { toast, SelectDropdown } from '@/design-system';
 
 interface RenderMetricItem {
   id: string;
@@ -179,32 +179,34 @@ export const AdminRenderMetricsView: React.FC = () => {
 
       {/* Filters Toolbar */}
       <div className={`p-4 rounded-xl border flex flex-wrap items-center gap-4 ${isDark ? 'bg-zinc-900/40 border-gray-800' : 'bg-gray-50 border-gray-200'}`}>
-        <div className="flex items-center gap-2">
-          <span className="text-xs font-semibold text-gray-500 uppercase">المكون (Component):</span>
-          <select 
-            value={selectedComponent}
-            onChange={(e) => setSelectedComponent(e.target.value)}
-            className={`px-3 py-1.5 rounded-lg text-sm border ${isDark ? 'bg-zinc-950 border-gray-800 text-gray-200' : 'bg-white border-gray-300 text-gray-800'}`}
-          >
-            <option value="all">جميع المكونات (All Components)</option>
-            {componentsList.map(c => (
-              <option key={c} value={c}>{c}</option>
-            ))}
-          </select>
+        <div className="flex items-center gap-2 min-w-[240px]">
+          <span className="text-xs font-semibold text-gray-500 uppercase shrink-0">المكون (Component):</span>
+          <div className="flex-1 min-w-[180px]">
+            <SelectDropdown
+              size="sm"
+              value={selectedComponent}
+              onChange={(val) => setSelectedComponent(val)}
+              options={[
+                { value: 'all', label: 'جميع المكونات (All Components)' },
+                ...componentsList.map(c => ({ value: c, label: c }))
+              ]}
+            />
+          </div>
         </div>
 
-        <div className="flex items-center gap-2">
-          <span className="text-xs font-semibold text-gray-500 uppercase">معرف الجلسة (Session):</span>
-          <select 
-            value={selectedSession}
-            onChange={(e) => setSelectedSession(e.target.value)}
-            className={`px-3 py-1.5 rounded-lg text-sm border ${isDark ? 'bg-zinc-950 border-gray-800 text-gray-200' : 'bg-white border-gray-300 text-gray-800'}`}
-          >
-            <option value="all">جميع الجلسات (All Sessions)</option>
-            {sessionsList.map(s => (
-              <option key={s} value={s}>{s}</option>
-            ))}
-          </select>
+        <div className="flex items-center gap-2 min-w-[240px]">
+          <span className="text-xs font-semibold text-gray-500 uppercase shrink-0">معرف الجلسة (Session):</span>
+          <div className="flex-1 min-w-[180px]">
+            <SelectDropdown
+              size="sm"
+              value={selectedSession}
+              onChange={(val) => setSelectedSession(val)}
+              options={[
+                { value: 'all', label: 'جميع الجلسات (All Sessions)' },
+                ...sessionsList.map(s => ({ value: s, label: s }))
+              ]}
+            />
+          </div>
         </div>
       </div>
 

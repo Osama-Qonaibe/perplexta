@@ -6,7 +6,7 @@ import {
   Play, Layers, Wifi, Database, Activity, CheckCircle2
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
-import { toast, useConfirm } from '@/design-system';
+import { toast, useConfirm, SelectDropdown } from '@/design-system';
 
 interface Agent {
   id: number;
@@ -414,18 +414,16 @@ authenticateAgent();`;
               </div>
 
               <div className="space-y-1">
-                <label className="text-xs font-bold text-[var(--pub-text-muted)] block">
-                  {isAr ? 'نوع الهوية البرمجية' : 'Identity Persona Type'}
-                </label>
-                <select 
-                  className="w-full text-sm px-3.5 py-2.5 bg-[var(--pub-surface-subtle)] text-[var(--pub-text-primary)] border border-[var(--pub-border-default)] focus:border-cyan-500/60 focus:ring-1 focus:ring-cyan-500/30 rounded-[var(--pub-radius-control)] transition-theme outline-none"
+                <SelectDropdown
+                  label={isAr ? 'نوع الهوية البرمجية' : 'Identity Persona Type'}
                   value={identityType}
-                  onChange={e => setIdentityType(e.target.value)}
-                >
-                  <option value="agent">{isAr ? 'وكيل ذكاء اصطناعي (AI Agent)' : 'AI Agent Developer'}</option>
-                  <option value="bot">{isAr ? 'روبوت محادثة خارجي (Chatbot)' : 'Autonomous External Bot'}</option>
-                  <option value="crawler">{isAr ? 'جامع ومحلل بيانات (Data Analytics Bridge)' : 'Data Crawler / Bridge'}</option>
-                </select>
+                  onChange={(val) => setIdentityType(val)}
+                  options={[
+                    { value: 'agent', label: isAr ? 'وكيل ذكاء اصطناعي (AI Agent)' : 'AI Agent Developer' },
+                    { value: 'bot', label: isAr ? 'روبوت محادثة خارجي (Chatbot)' : 'Autonomous External Bot' },
+                    { value: 'crawler', label: isAr ? 'جامع ومحلل بيانات (Data Analytics Bridge)' : 'Data Crawler / Bridge' }
+                  ]}
+                />
               </div>
 
               <div className="space-y-1">
@@ -779,16 +777,16 @@ authenticateAgent();`;
 
                       <div className="space-y-2">
                         <div className="space-y-1">
-                          <label className="text-[10px] text-[var(--pub-text-muted)] font-bold block">{isAr ? 'الأداة المحددة:' : 'Select Tool:'}</label>
-                          <select
+                          <SelectDropdown
+                            size="sm"
+                            label={isAr ? 'الأداة المحددة:' : 'Select Tool:'}
                             value={mcpSelectedTool}
-                            onChange={(e) => setMcpSelectedTool(e.target.value)}
-                            className="w-full text-xs bg-[var(--pub-surface-panel)] border border-[var(--pub-border-default)] rounded-[var(--pub-radius-control)] p-2 text-[var(--pub-text-primary)] font-mono focus:border-cyan-500/60 focus:outline-none transition-colors"
-                          >
-                            {mcpTools.map(t => (
-                              <option key={t.name} value={t.name}>{t.name} - {t.description}</option>
-                            ))}
-                          </select>
+                            onChange={(val) => setMcpSelectedTool(val)}
+                            options={mcpTools.map(t => ({
+                              value: t.name,
+                              label: `${t.name} - ${t.description}`
+                            }))}
+                          />
                         </div>
 
                         <div className="space-y-1">

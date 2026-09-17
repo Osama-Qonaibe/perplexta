@@ -26,6 +26,7 @@ import {
   getDatabaseRegistry, 
   saveDatabaseConfig, 
   testDatabaseConnection, 
+  checkAllDatabasesHealth,
   exportDatabase, 
   importDatabase, 
   initAllTools, 
@@ -435,6 +436,16 @@ router.post("/databases/test", authenticateAdmin, async (req, res) => {
     res.json(result);
   } catch (error: any) {
     res.status(500).json({ error: error.message || 'Internal Server Error' });
+  }
+});
+
+router.get("/databases/health-status", authenticateAdmin, async (req, res) => {
+  try {
+    const health = await checkAllDatabasesHealth();
+    res.json(health);
+  } catch (error: any) {
+    console.error('[Admin] Database health status check failed:', error);
+    res.status(500).json({ error: error.message || 'Failed to check database health status' });
   }
 });
 
@@ -4441,12 +4452,18 @@ router.put("/economy/settings", authenticateAdmin, async (req, res) => {
  */
 router.get("/theme-customizations", authenticateAdmin, async (req, res) => {
   try {
-    const result = await pool.query('SELECT theme_mode, tokens FROM admin_theme_customizations');
+    const result = await pool.query('SELECT theme_mode, tokens, updated_at FROM admin_theme_customizations');
     const customizations: Record<string, any> = { light: {}, dark: {} };
+    let latestUpdate: string | null = null;
     for (const row of result.rows) {
       customizations[row.theme_mode] = row.tokens || {};
+      if (row.updated_at) {
+        if (!latestUpdate || new Date(row.updated_at) > new Date(latestUpdate)) {
+          latestUpdate = new Date(row.updated_at).toISOString();
+        }
+      }
     }
-    res.json({ success: true, customizations });
+    res.json({ success: true, customizations, updated_at: latestUpdate });
   } catch (err: any) {
     console.error('[Theme] Get error:', err);
     res.status(500).json({ error: 'Failed to fetch theme customizations' });
@@ -4464,14 +4481,16 @@ router.post("/theme-customizations", authenticateAdmin, async (req, res) => {
       return res.status(400).json({ error: 'Invalid theme_mode. Must be light or dark.' });
     }
     const tokenJson = typeof tokens === 'string' ? tokens : JSON.stringify(tokens || {});
-    await pool.query(
+    const result = await pool.query(
       `INSERT INTO admin_theme_customizations (theme_mode, tokens, updated_at)
        VALUES ($1, $2::jsonb, CURRENT_TIMESTAMP)
        ON CONFLICT (theme_mode)
-       DO UPDATE SET tokens = EXCLUDED.tokens, updated_at = CURRENT_TIMESTAMP`,
+       DO UPDATE SET tokens = EXCLUDED.tokens, updated_at = CURRENT_TIMESTAMP
+       RETURNING updated_at`,
       [theme_mode, tokenJson]
     );
-    res.json({ success: true, message: 'Theme customizations saved successfully' });
+    const updated_at = result.rows[0]?.updated_at ? new Date(result.rows[0].updated_at).toISOString() : new Date().toISOString();
+    res.json({ success: true, message: 'Theme customizations saved successfully', updated_at });
   } catch (err: any) {
     console.error('[Theme] Save error:', err);
     res.status(500).json({ error: err.message || 'Failed to save theme customizations' });

@@ -36,7 +36,7 @@ const originalConnect = Pool.prototype.connect as any;
   });
 };
 
-import { decrypt } from "../utils/crypto.js";
+import { decrypt, encrypt } from "../utils/crypto.js";
 
 const fallbackPool = {
   query: async (text: any, params?: any) => {
@@ -186,6 +186,16 @@ function validateDatabaseUrl(url: any, name: string) {
   }
 }
 
+export function isLocalhost(urlStr?: string): boolean {
+  if (!urlStr) return false;
+  try {
+    const u = new URL(urlStr);
+    return u.hostname === 'localhost' || u.hostname === '127.0.0.1';
+  } catch {
+    return false;
+  }
+}
+
 /** Normalize database URL to ensure sslmode=verify-full and strip unsupported params */
 export function normalizeDatabaseUrl(url: string): string {
   if (!url) return url;
@@ -258,14 +268,22 @@ export function resetPoolsToDegradedMode() {
   if (rawLedgerPool && rawLedgerPool !== rawPool) { try { rawLedgerPool.end().catch(() => {}); } catch {} }
   if (rawExternalPool && rawExternalPool !== rawPool) { try { rawExternalPool.end().catch(() => {}); } catch {} }
   if (rawSecurityPool && rawSecurityPool !== rawPool) { try { rawSecurityPool.end().catch(() => {}); } catch {} }
+  if (rawMediaPool && rawMediaPool !== rawPool) { try { rawMediaPool.end().catch(() => {}); } catch {} }
   rawPool = null;
   rawLedgerPool = null;
   rawExternalPool = null;
   rawSecurityPool = null;
+  rawMediaPool = null;
   currentCoreUrl = '';
   currentLedgerUrl = '';
   currentExternalUrl = '';
   currentSecurityUrl = '';
+  currentMediaUrl = '';
+  currentCoreMax = 0;
+  currentLedgerMax = 0;
+  currentExternalMax = 0;
+  currentSecurityMax = 0;
+  currentMediaMax = 0;
 }
 
 export function createInternalPool(connectionString: string, max = 1, connectionTimeoutMillis = 15000) {
@@ -283,6 +301,11 @@ export function createInternalPool(connectionString: string, max = 1, connection
 export function getLedgerPool() { return ledgerPool || pool; }
 export function getExternalPool() { return externalPool || pool; }
 export function getSecurityPool() { return securityPool || pool; }
+export function getMediaPool() { return mediaPool || pool; }
+
+export function isDatabaseConnected(): boolean {
+  return rawPool !== null;
+}
 
 
 export async function initializePerplextaPools(
@@ -297,10 +320,56 @@ export async function initializePerplextaPools(
   securityMaxOverride?: number,
   mediaMaxOverride?: number,
 ): Promise<void> {
-  const finalLedgerUrl   = ledgerUrl   || coreUrl;
-  const finalExternalUrl = externalUrl || coreUrl;
-  const finalSecurityUrl = securityUrl || coreUrl;
-  const finalMediaUrl    = mediaUrl    || process.env.MEDIA_DATABASE_URL || coreUrl;
+  // Helper to discover if a valid remote cloud database exists in any env or param
+  const findRemoteDatabase = (...candidates: (string | undefined)[]): string | null => {
+    for (const c of candidates) {
+      if (c && typeof c === 'string' && /^postgres(ql)?:\/\//.test(c)) {
+        try {
+          const u = new URL(c);
+          if (u.hostname && u.hostname !== 'localhost' && u.hostname !== '127.0.0.1') {
+            return c;
+          }
+        } catch {}
+      }
+    }
+    return null;
+  };
+
+  const detectedRemote = findRemoteDatabase(
+    coreUrl,
+    securityUrl,
+    ledgerUrl,
+    externalUrl,
+    mediaUrl,
+    process.env.DATABASE_URL,
+    process.env.SECURITY_DATABASE_URL,
+    process.env.LEDGER_DATABASE_URL,
+    process.env.EXTERNAL_DATABASE_URL,
+    process.env.MEDIA_DATABASE_URL
+  );
+
+  let effectiveCoreUrl = coreUrl;
+  if ((!effectiveCoreUrl || isLocalhost(effectiveCoreUrl)) && detectedRemote) {
+    console.log(`[DB] Notice: Core DB URL is localhost/missing; adopting detected active remote cloud database: ${redactUrl(detectedRemote)}`);
+    effectiveCoreUrl = detectedRemote;
+  }
+
+  let finalLedgerUrl = ledgerUrl || effectiveCoreUrl;
+  if (isLocalhost(finalLedgerUrl) && !isLocalhost(effectiveCoreUrl)) {
+    finalLedgerUrl = effectiveCoreUrl;
+  }
+  let finalExternalUrl = externalUrl || effectiveCoreUrl;
+  if (isLocalhost(finalExternalUrl) && !isLocalhost(effectiveCoreUrl)) {
+    finalExternalUrl = effectiveCoreUrl;
+  }
+  let finalSecurityUrl = securityUrl || effectiveCoreUrl;
+  if (isLocalhost(finalSecurityUrl) && !isLocalhost(effectiveCoreUrl)) {
+    finalSecurityUrl = effectiveCoreUrl;
+  }
+  let finalMediaUrl = mediaUrl || process.env.MEDIA_DATABASE_URL || effectiveCoreUrl;
+  if (isLocalhost(finalMediaUrl) && !isLocalhost(effectiveCoreUrl)) {
+    finalMediaUrl = effectiveCoreUrl;
+  }
 
   const envSizes = getPoolSizesFromEnv();
   const finalCoreMax     = coreMaxOverride     || envSizes.coreMax;
@@ -311,7 +380,7 @@ export async function initializePerplextaPools(
 
   if (
     rawPool &&
-    currentCoreUrl     === coreUrl           &&
+    currentCoreUrl     === effectiveCoreUrl  &&
     currentLedgerUrl   === finalLedgerUrl    &&
     currentExternalUrl === finalExternalUrl  &&
     currentSecurityUrl === finalSecurityUrl  &&
@@ -328,7 +397,7 @@ export async function initializePerplextaPools(
 
   if (
     poolInitPromise &&
-    lastInitUrls.core        === coreUrl           &&
+    lastInitUrls.core        === effectiveCoreUrl  &&
     lastInitUrls.ledger      === finalLedgerUrl    &&
     lastInitUrls.external    === finalExternalUrl  &&
     lastInitUrls.security    === finalSecurityUrl  &&
@@ -344,30 +413,30 @@ export async function initializePerplextaPools(
   }
 
   lastInitUrls = {
-    core: coreUrl, ledger: finalLedgerUrl, external: finalExternalUrl, security: finalSecurityUrl, media: finalMediaUrl,
+    core: effectiveCoreUrl, ledger: finalLedgerUrl, external: finalExternalUrl, security: finalSecurityUrl, media: finalMediaUrl,
     coreMax: finalCoreMax, ledgerMax: finalLedgerMax, externalMax: finalExternalMax, securityMax: finalSecurityMax, mediaMax: finalMediaMax,
   };
 
   poolInitPromise = (async () => {
     console.log('[DB] Initializing Perplexta Pools...');
-    if (coreUrl) console.log(`[DB] Core Target: ${redactUrl(coreUrl)}`);
+    if (effectiveCoreUrl) console.log(`[DB] Core Target: ${redactUrl(effectiveCoreUrl)}`);
     console.log(`[DB] Pool Sizes — Core: ${finalCoreMax}, Ledger: ${finalLedgerMax}, External: ${finalExternalMax}, Security: ${finalSecurityMax}, Media: ${finalMediaMax}`);
 
-    if (!coreUrl) {
+    if (!effectiveCoreUrl) {
       console.warn('[DB] ⚠️ DATABASE_URL missing. Operating in Degraded Mode.');
       rawPool = rawLedgerPool = rawExternalPool = rawSecurityPool = rawMediaPool = null;
       return;
     }
 
     try {
-      validateDatabaseUrl(coreUrl,           'DATABASE_URL');
+      validateDatabaseUrl(effectiveCoreUrl, 'DATABASE_URL');
       validateDatabaseUrl(finalLedgerUrl,   'LEDGER_DATABASE_URL');
       validateDatabaseUrl(finalExternalUrl, 'EXTERNAL_DATABASE_URL');
       validateDatabaseUrl(finalSecurityUrl, 'SECURITY_DATABASE_URL');
       validateDatabaseUrl(finalMediaUrl,    'MEDIA_DATABASE_URL');
     } catch (err: any) {
       console.error(`[DB] Validation failed: ${err.message}`);
-      if (process.env.NODE_ENV === 'production' && coreUrl) throw err;
+      if (process.env.NODE_ENV === 'production' && effectiveCoreUrl) throw err;
       rawPool = rawLedgerPool = rawExternalPool = rawSecurityPool = rawMediaPool = null;
       return;
     }
@@ -379,7 +448,7 @@ export async function initializePerplextaPools(
     const prevMedia = rawMediaPool;
 
     try {
-      const normCoreUrl     = normalizeDatabaseUrl(coreUrl);
+      const normCoreUrl     = normalizeDatabaseUrl(effectiveCoreUrl);
       const normLedgerUrl   = normalizeDatabaseUrl(finalLedgerUrl);
       const normExternalUrl = normalizeDatabaseUrl(finalExternalUrl);
       const normSecurityUrl = normalizeDatabaseUrl(finalSecurityUrl);
@@ -412,27 +481,6 @@ export async function initializePerplextaPools(
       if (newSecurityPool !== newPool) newSecurityPool.on('error', (e: any) => console.error('[DB] Idle security client error:', e?.message || e));
       if (newMediaPool    !== newPool) newMediaPool.on('error',    (e: any) => console.error('[DB] Idle media client error:', e?.message || e));
 
-      // Swap globals immediately so any new query runs on valid, open pools
-      rawPool = newPool;
-      rawLedgerPool = newLedgerPool;
-      rawExternalPool = newExternalPool;
-      rawSecurityPool = newSecurityPool;
-      rawMediaPool = newMediaPool;
-
-      currentCoreUrl = coreUrl; currentLedgerUrl = finalLedgerUrl;
-      currentExternalUrl = finalExternalUrl; currentSecurityUrl = finalSecurityUrl;
-      currentMediaUrl = finalMediaUrl;
-      currentCoreMax = finalCoreMax; currentLedgerMax = finalLedgerMax;
-      currentExternalMax = finalExternalMax; currentSecurityMax = finalSecurityMax;
-      currentMediaMax = finalMediaMax;
-
-      // Close previous distinct pools safely in background
-      if (prevPool && prevPool !== newPool) prevPool.end().catch((e: any) => console.error('[DB] Error closing previous core pool:', e.message));
-      if (prevLedger && prevLedger !== prevPool && prevLedger !== newLedgerPool && prevLedger !== newPool) prevLedger.end().catch((e: any) => console.error('[DB] Error closing previous ledger pool:', e.message));
-      if (prevExternal && prevExternal !== prevPool && prevExternal !== newExternalPool && prevExternal !== newPool) prevExternal.end().catch((e: any) => console.error('[DB] Error closing previous external pool:', e.message));
-      if (prevSecurity && prevSecurity !== prevPool && prevSecurity !== newSecurityPool && prevSecurity !== newPool) prevSecurity.end().catch((e: any) => console.error('[DB] Error closing previous security pool:', e.message));
-      if (prevMedia && prevMedia !== prevPool && prevMedia !== newMediaPool && prevMedia !== newPool) prevMedia.end().catch((e: any) => console.error('[DB] Error closing previous media pool:', e.message));
-
       console.log('[DB] Pools created. Verifying connectivity...');
 
       const verify = async (p: any, name: string, retries: number = 3): Promise<boolean> => {
@@ -446,7 +494,7 @@ export async function initializePerplextaPools(
                 settled = true;
                 resolve(false);
               }
-            }, 15000);
+            }, 8000);
             p.query('SELECT 1')
               .then(() => {
                 if (!settled) {
@@ -460,7 +508,7 @@ export async function initializePerplextaPools(
                   settled = true;
                   clearTimeout(timer);
                   const msg = e?.message || String(e);
-                  if (msg.includes('password authentication failed') || msg.includes('does not exist')) {
+                  if (msg.includes('password authentication failed') || msg.includes('does not exist') || msg.includes('ECONNREFUSED')) {
                     fatalErr = msg;
                   }
                   resolve(false);
@@ -471,7 +519,7 @@ export async function initializePerplextaPools(
           if (success) return true;
 
           if (fatalErr) {
-            console.warn(`[DB] ${name} authentication failed: ${fatalErr}. Falling back immediately.`);
+            console.warn(`[DB] ${name} connectivity check failed: ${fatalErr}.`);
             return false;
           }
 
@@ -485,11 +533,29 @@ export async function initializePerplextaPools(
         return false;
       };
 
-      const coreOk = await verify(rawPool, 'Core DB', 3);
+      const coreOk = await verify(newPool, 'Core DB', 3);
       if (coreOk) {
         console.log('[DB] Core DB connection verified.');
+        // Safe swap
+        rawPool = newPool;
+        rawLedgerPool = newLedgerPool;
+        rawExternalPool = newExternalPool;
+        rawSecurityPool = newSecurityPool;
+        rawMediaPool = newMediaPool;
+
+        currentCoreUrl = effectiveCoreUrl; currentLedgerUrl = finalLedgerUrl;
+        currentExternalUrl = finalExternalUrl; currentSecurityUrl = finalSecurityUrl;
+        currentMediaUrl = finalMediaUrl;
+        currentCoreMax = finalCoreMax; currentLedgerMax = finalLedgerMax;
+        currentExternalMax = finalExternalMax; currentSecurityMax = finalSecurityMax;
+        currentMediaMax = finalMediaMax;
       } else {
         console.error('[DB] ❌ Core DB unreachable or data quota exceeded. Operating in Degraded Mode.');
+        newPool.end().catch(() => {});
+        if (newLedgerPool !== newPool) newLedgerPool.end().catch(() => {});
+        if (newExternalPool !== newPool) newExternalPool.end().catch(() => {});
+        if (newSecurityPool !== newPool) newSecurityPool.end().catch(() => {});
+        if (newMediaPool !== newPool) newMediaPool.end().catch(() => {});
         resetPoolsToDegradedMode();
         throw new Error('Core DB is unreachable or data transfer quota exceeded.');
       }
@@ -593,8 +659,8 @@ export async function initializePerplextaPools(
       console.log('[DB] Pool initialization complete.');
     } catch (err: any) {
       console.error('[DB] Critical error during pool creation:', err.message);
+      resetPoolsToDegradedMode();
       if (process.env.NODE_ENV === 'production') throw err;
-      rawPool = rawLedgerPool = rawExternalPool = rawSecurityPool = null;
     }
   })();
 
@@ -613,6 +679,56 @@ export async function synchronizePerplextaPoolsFromRegistry() {
   try {
     await pool.query("UPDATE db_connections_registry SET is_active = false, host = NULL WHERE host = 'base'");
 
+    const findCloudRemote = (...candidates: (string | undefined)[]) => {
+      for (const c of candidates) {
+        if (c && typeof c === 'string' && /^postgres(ql)?:\/\//.test(c)) {
+          try {
+            const u = new URL(c);
+            if (u.hostname && u.hostname !== 'localhost' && u.hostname !== '127.0.0.1') return c;
+          } catch {}
+        }
+      }
+      return null;
+    };
+    const detectedCloudDb = findCloudRemote(
+      process.env.DATABASE_URL,
+      process.env.SECURITY_DATABASE_URL,
+      process.env.LEDGER_DATABASE_URL,
+      process.env.EXTERNAL_DATABASE_URL,
+      process.env.MEDIA_DATABASE_URL
+    );
+    const rawDefaultCore  = process.env.DATABASE_URL || '';
+    const defaultCore     = (isLocalhost(rawDefaultCore) || !rawDefaultCore) && detectedCloudDb ? detectedCloudDb : rawDefaultCore;
+    const defaultLedger   = (process.env.LEDGER_DATABASE_URL && !isLocalhost(process.env.LEDGER_DATABASE_URL)) ? process.env.LEDGER_DATABASE_URL : defaultCore;
+    const defaultExternal = (process.env.EXTERNAL_DATABASE_URL && !isLocalhost(process.env.EXTERNAL_DATABASE_URL)) ? process.env.EXTERNAL_DATABASE_URL : defaultCore;
+    const defaultSecurity = (process.env.SECURITY_DATABASE_URL && !isLocalhost(process.env.SECURITY_DATABASE_URL)) ? process.env.SECURITY_DATABASE_URL : defaultCore;
+    const defaultMedia    = (process.env.MEDIA_DATABASE_URL && !isLocalhost(process.env.MEDIA_DATABASE_URL)) ? process.env.MEDIA_DATABASE_URL : defaultCore;
+
+    // Self-healing: If Core is cloud/remote, ensure registry rows do not store stale/unreachable localhost URLs
+    if (defaultCore && !isLocalhost(defaultCore)) {
+      const encryptedCore = encrypt(defaultCore);
+      const regRows = await pool.query(
+        "SELECT id, connection_string, host FROM db_connections_registry WHERE id IN ('ledger', 'external', 'security', 'media')"
+      );
+      for (const row of regRows.rows) {
+        let isStaleLocal = false;
+        if (row.host === 'localhost' || row.host === '127.0.0.1') {
+          isStaleLocal = true;
+        } else if (row.connection_string) {
+          try {
+            const decrypted = decrypt(row.connection_string);
+            if (decrypted && isLocalhost(decrypted)) isStaleLocal = true;
+          } catch {}
+        }
+        if (isStaleLocal) {
+          await pool.query(
+            "UPDATE db_connections_registry SET connection_string = $1, host = NULL, status = 'healthy' WHERE id = $2",
+            [encryptedCore, row.id]
+          ).catch(() => {});
+        }
+      }
+    }
+
     const result = await pool.query(
       "SELECT * FROM db_connections_registry WHERE is_active = true AND id IN ('core','ledger','external','security','media')"
     );
@@ -620,11 +736,6 @@ export async function synchronizePerplextaPoolsFromRegistry() {
     if (result.rows.length === 0) {
       console.log('[DB] No active registry overrides found.');
       const env = getPoolSizesFromEnv();
-      const defaultCore     = process.env.DATABASE_URL || '';
-      const defaultLedger   = process.env.LEDGER_DATABASE_URL   || defaultCore;
-      const defaultExternal = process.env.EXTERNAL_DATABASE_URL || defaultCore;
-      const defaultSecurity = process.env.SECURITY_DATABASE_URL || defaultCore;
-      const defaultMedia    = process.env.MEDIA_DATABASE_URL    || defaultCore;
 
       if (
         currentCoreUrl     !== defaultCore     ||
@@ -680,11 +791,6 @@ export async function synchronizePerplextaPoolsFromRegistry() {
       return fallback;
     };
 
-    const defaultCore     = process.env.DATABASE_URL || '';
-    const defaultLedger   = process.env.LEDGER_DATABASE_URL   || defaultCore;
-    const defaultExternal = process.env.EXTERNAL_DATABASE_URL || defaultCore;
-    const defaultSecurity = process.env.SECURITY_DATABASE_URL || defaultCore;
-    const defaultMedia    = process.env.MEDIA_DATABASE_URL    || defaultCore;
     const envSizes        = getPoolSizesFromEnv();
 
     const coreUrl     = getUrlFromReg(coreReg,     defaultCore);
@@ -728,6 +834,20 @@ export async function synchronizePerplextaPoolsFromRegistry() {
       const normUrl = normalizeDatabaseUrl(url);
       const normCore = normalizeDatabaseUrl(coreUrl);
       if (normUrl === normCore) return coreUrl;
+
+      // If core is remote and url is localhost/127.0.0.1, skip test and immediately use defaultUrl/coreUrl
+      if (!isLocalhost(normCore) && isLocalhost(normUrl)) {
+        if (pool) {
+          try {
+            const encryptedCore = encrypt(coreUrl);
+            await pool.query(
+              "UPDATE db_connections_registry SET connection_string = $1, host = NULL, status = 'healthy' WHERE id = $2",
+              [encryptedCore, id]
+            );
+          } catch {}
+        }
+        return coreUrl;
+      }
 
       let p: any = null;
       try {
@@ -862,76 +982,136 @@ export async function forceReconnectPool(poolName: 'core' | 'ledger' | 'external
   if (poolName === 'core') {
     const url = currentCoreUrl || process.env.DATABASE_URL;
     if (!url) throw new Error('Core DB URL not found');
-    if (rawPool) {
-      await rawPool.end().catch((e: any) => console.error('[DB] Error ending core pool:', e.message));
-    }
-    rawPool = patchPoolQuery(new Pool({
+    const oldPool = rawPool;
+    const testPool = patchPoolQuery(new Pool({
       connectionString: url,
       ...getBasePoolConfig(currentCoreMax || envSizes.coreMax, 10000, url),
     }));
-    rawPool.on('error', (e: any) => console.error('[DB] Idle core client error:', e?.message || e));
-    await rawPool.query('SELECT 1');
-    console.log('[DB] Core pool reconnected successfully.');
+    testPool.on('error', (e: any) => console.error('[DB] Idle core client error:', e?.message || e));
+    try {
+      await testPool.query('SELECT 1');
+      rawPool = testPool;
+      if (oldPool && oldPool !== testPool) {
+        await oldPool.end().catch((e: any) => console.error('[DB] Error ending old core pool:', e.message));
+      }
+      console.log('[DB] Core pool reconnected successfully.');
+    } catch (err) {
+      try { await testPool.end(); } catch {}
+      resetPoolsToDegradedMode();
+      throw err;
+    }
   } else if (poolName === 'ledger') {
     const url = currentLedgerUrl || process.env.LEDGER_DATABASE_URL || currentCoreUrl || process.env.DATABASE_URL;
     if (!url) throw new Error('Ledger DB URL not found');
-    if (rawLedgerPool && rawLedgerPool !== rawPool) {
-      await rawLedgerPool.end().catch((e: any) => console.error('[DB] Error ending ledger pool:', e.message));
+    const oldPool = rawLedgerPool;
+    if (url === (currentCoreUrl || process.env.DATABASE_URL)) {
+      rawLedgerPool = rawPool;
+      if (oldPool && oldPool !== rawPool) {
+        await oldPool.end().catch(() => {});
+      }
+      return;
     }
-    rawLedgerPool = url === (currentCoreUrl || process.env.DATABASE_URL) ? rawPool : patchPoolQuery(new Pool({
+    const testPool = patchPoolQuery(new Pool({
       connectionString: url,
       ...getBasePoolConfig(currentLedgerMax || envSizes.ledgerMax, 5000, url),
     }));
-    if (rawLedgerPool !== rawPool) {
-      rawLedgerPool.on('error', (e: any) => console.error('[DB] Idle ledger client error:', e?.message || e));
+    testPool.on('error', (e: any) => console.error('[DB] Idle ledger client error:', e?.message || e));
+    try {
+      await testPool.query('SELECT 1');
+      rawLedgerPool = testPool;
+      if (oldPool && oldPool !== rawPool && oldPool !== testPool) {
+        await oldPool.end().catch((e: any) => console.error('[DB] Error ending old ledger pool:', e.message));
+      }
+      console.log('[DB] Ledger pool reconnected successfully.');
+    } catch (err) {
+      try { await testPool.end(); } catch {}
+      rawLedgerPool = rawPool;
+      throw err;
     }
-    await rawLedgerPool.query('SELECT 1');
-    console.log('[DB] Ledger pool reconnected successfully.');
   } else if (poolName === 'external') {
     const url = currentExternalUrl || process.env.EXTERNAL_DATABASE_URL || currentCoreUrl || process.env.DATABASE_URL;
     if (!url) throw new Error('External DB URL not found');
-    if (rawExternalPool && rawExternalPool !== rawPool) {
-      await rawExternalPool.end().catch((e: any) => console.error('[DB] Error ending external pool:', e.message));
+    const oldPool = rawExternalPool;
+    if (url === (currentCoreUrl || process.env.DATABASE_URL)) {
+      rawExternalPool = rawPool;
+      if (oldPool && oldPool !== rawPool) {
+        await oldPool.end().catch(() => {});
+      }
+      return;
     }
-    rawExternalPool = url === (currentCoreUrl || process.env.DATABASE_URL) ? rawPool : patchPoolQuery(new Pool({
+    const testPool = patchPoolQuery(new Pool({
       connectionString: url,
       ...getBasePoolConfig(currentExternalMax || envSizes.externalMax, 5000, url),
     }));
-    if (rawExternalPool !== rawPool) {
-      rawExternalPool.on('error', (e: any) => console.error('[DB] Idle external client error:', e?.message || e));
+    testPool.on('error', (e: any) => console.error('[DB] Idle external client error:', e?.message || e));
+    try {
+      await testPool.query('SELECT 1');
+      rawExternalPool = testPool;
+      if (oldPool && oldPool !== rawPool && oldPool !== testPool) {
+        await oldPool.end().catch((e: any) => console.error('[DB] Error ending old external pool:', e.message));
+      }
+      console.log('[DB] External pool reconnected successfully.');
+    } catch (err) {
+      try { await testPool.end(); } catch {}
+      rawExternalPool = rawPool;
+      throw err;
     }
-    await rawExternalPool.query('SELECT 1');
-    console.log('[DB] External pool reconnected successfully.');
   } else if (poolName === 'security') {
     const url = currentSecurityUrl || process.env.SECURITY_DATABASE_URL || currentCoreUrl || process.env.DATABASE_URL;
     if (!url) throw new Error('Security DB URL not found');
-    if (rawSecurityPool && rawSecurityPool !== rawPool) {
-      await rawSecurityPool.end().catch((e: any) => console.error('[DB] Error ending security pool:', e.message));
+    const oldPool = rawSecurityPool;
+    if (url === (currentCoreUrl || process.env.DATABASE_URL)) {
+      rawSecurityPool = rawPool;
+      if (oldPool && oldPool !== rawPool) {
+        await oldPool.end().catch(() => {});
+      }
+      return;
     }
-    rawSecurityPool = url === (currentCoreUrl || process.env.DATABASE_URL) ? rawPool : patchPoolQuery(new Pool({
+    const testPool = patchPoolQuery(new Pool({
       connectionString: url,
       ...getBasePoolConfig(currentSecurityMax || envSizes.securityMax, 5000, url),
     }));
-    if (rawSecurityPool !== rawPool) {
-      rawSecurityPool.on('error', (e: any) => console.error('[DB] Idle security client error:', e?.message || e));
+    testPool.on('error', (e: any) => console.error('[DB] Idle security client error:', e?.message || e));
+    try {
+      await testPool.query('SELECT 1');
+      rawSecurityPool = testPool;
+      if (oldPool && oldPool !== rawPool && oldPool !== testPool) {
+        await oldPool.end().catch((e: any) => console.error('[DB] Error ending old security pool:', e.message));
+      }
+      console.log('[DB] Security pool reconnected successfully.');
+    } catch (err) {
+      try { await testPool.end(); } catch {}
+      rawSecurityPool = rawPool;
+      throw err;
     }
-    await rawSecurityPool.query('SELECT 1');
-    console.log('[DB] Security pool reconnected successfully.');
   } else if (poolName === 'media') {
     const url = currentMediaUrl || process.env.MEDIA_DATABASE_URL || currentCoreUrl || process.env.DATABASE_URL;
     if (!url) throw new Error('Media DB URL not found');
-    if (rawMediaPool && rawMediaPool !== rawPool) {
-      await rawMediaPool.end().catch((e: any) => console.error('[DB] Error ending media pool:', e.message));
+    const oldPool = rawMediaPool;
+    if (url === (currentCoreUrl || process.env.DATABASE_URL)) {
+      rawMediaPool = rawPool;
+      if (oldPool && oldPool !== rawPool) {
+        await oldPool.end().catch(() => {});
+      }
+      return;
     }
-    rawMediaPool = url === (currentCoreUrl || process.env.DATABASE_URL) ? rawPool : patchPoolQuery(new Pool({
+    const testPool = patchPoolQuery(new Pool({
       connectionString: url,
       ...getBasePoolConfig(currentMediaMax || envSizes.mediaMax, 5000, url),
     }));
-    if (rawMediaPool !== rawPool) {
-      rawMediaPool.on('error', (e: any) => console.error('[DB] Idle media client error:', e?.message || e));
+    testPool.on('error', (e: any) => console.error('[DB] Idle media client error:', e?.message || e));
+    try {
+      await testPool.query('SELECT 1');
+      rawMediaPool = testPool;
+      if (oldPool && oldPool !== rawPool && oldPool !== testPool) {
+        await oldPool.end().catch((e: any) => console.error('[DB] Error ending old media pool:', e.message));
+      }
+      console.log('[DB] Media pool reconnected successfully.');
+    } catch (err) {
+      try { await testPool.end(); } catch {}
+      rawMediaPool = rawPool;
+      throw err;
     }
-    await rawMediaPool.query('SELECT 1');
-    console.log('[DB] Media pool reconnected successfully.');
   }
 }
 
@@ -976,6 +1156,8 @@ export async function cleanupAbandonedConnections(poolInstance: any, poolName: s
 export function startPoolSaturationGuardian(intervalMs = 60000) {
   if (poolSaturationGuardianInterval) return;
   poolSaturationGuardianInterval = setInterval(async () => {
+    if (!rawPool) return;
+
     const poolsToCheck: Array<{ name: 'core' | 'ledger' | 'external' | 'security' | 'media'; poolInstance: any }> = [
       { name: 'core', poolInstance: pool },
       { name: 'ledger', poolInstance: ledgerPool },
@@ -1011,6 +1193,8 @@ export function startPoolSaturationGuardian(intervalMs = 60000) {
 export function startConnectionHealthCheck(intervalMs = 60000) {
   if (healthCheckInterval) return;
   healthCheckInterval = setInterval(async () => {
+    if (!rawPool) return;
+
     const poolsToCheck: Array<{ name: 'core' | 'ledger' | 'external' | 'security' | 'media'; poolInstance: any }> = [
       { name: 'core', poolInstance: pool },
       { name: 'ledger', poolInstance: ledgerPool },

@@ -32,6 +32,7 @@ import {
 import { ActionConfirmationModal } from "../ActionConfirmationModal";
 import { HighlightText } from "../HighlightText";
 import { CommandCenterViewProps } from "./adminTypes";
+import { SelectDropdown } from "../../design-system";
 
 export const CommandCenterView: React.FC<CommandCenterViewProps> = ({
   theme,
@@ -855,53 +856,43 @@ export const CommandCenterView: React.FC<CommandCenterViewProps> = ({
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   {/* Status Selector */}
                   <div className="relative">
-                    <label className="text-[10px] font-black text-[var(--text-muted)] uppercase tracking-wider block mb-1.5">
-                      {language === "ar" ? "تصفية حسب الحالة" : "Filter by Status"}
-                    </label>
-                    <div className="relative">
-                      <select
-                        value={logStatusFilter}
-                        onChange={(e) => setLogStatusFilter(e.target.value)}
-                        className={`w-full ${dir === "rtl" ? "pr-3 pl-10" : "pl-3 pr-10"} py-2 rounded-md border appearance-none focus:outline-none focus:ring-1 focus:ring-[var(--border-accent)] text-xs font-bold bg-[var(--surface-card)] border-[var(--border-default)] text-[var(--text-primary)] pointer-events-auto transition-theme`}
-                      >
-                        {statusOptions.map(opt => (
-                          <option key={opt.id} value={opt.id}>
-                            {dir === "rtl" ? opt.labelAr : opt.labelEn}
-                          </option>
-                        ))}
-                      </select>
-                      <ChevronDown
-                        size={14}
-                        className={`absolute ${dir === "rtl" ? "left-3" : "right-3"} top-1/2 -translate-y-1/2 pointer-events-none text-[var(--text-muted)]`}
-                      />
-                    </div>
+                    <SelectDropdown
+                      label={language === "ar" ? "تصفية حسب الحالة" : "Filter by Status"}
+                      value={logStatusFilter}
+                      onChange={(val) => setLogStatusFilter(val)}
+                      dir={dir}
+                      options={statusOptions.map(opt => ({
+                        value: opt.id,
+                        label: dir === "rtl" ? opt.labelAr : opt.labelEn,
+                        labelEn: opt.labelEn,
+                        labelAr: opt.labelAr
+                      }))}
+                    />
                   </div>
 
                   {/* Tool Selector */}
                   <div className="relative">
-                    <label className="text-[10px] font-black text-[var(--text-muted)] uppercase tracking-wider block mb-1.5">
-                      {language === "ar" ? "تصفية حسب الأداة" : "Filter by Tool"}
-                    </label>
-                    <div className="relative">
-                      <select
-                        value={logToolFilter}
-                        onChange={(e) => setLogToolFilter(e.target.value)}
-                        className={`w-full ${dir === "rtl" ? "pr-3 pl-10" : "pl-3 pr-10"} py-2 rounded-md border appearance-none focus:outline-none focus:ring-1 focus:ring-[var(--border-accent)] text-xs font-bold bg-[var(--surface-card)] border-[var(--border-default)] text-[var(--text-primary)] pointer-events-auto transition-theme`}
-                      >
-                        <option value="all">
-                          {dir === "rtl" ? "جميع الأدوات والخدمات" : "All Tools & Services"}
-                        </option>
-                        {availableToolFilters.map(tool => (
-                          <option key={tool.id} value={tool.id}>
-                            {dir === "rtl" ? tool.labelAr : tool.labelEn}
-                          </option>
-                        ))}
-                      </select>
-                      <ChevronDown
-                        size={14}
-                        className={`absolute ${dir === "rtl" ? "left-3" : "right-3"} top-1/2 -translate-y-1/2 pointer-events-none text-[var(--text-muted)]`}
-                      />
-                    </div>
+                    <SelectDropdown
+                      label={language === "ar" ? "تصفية حسب الأداة" : "Filter by Tool"}
+                      value={logToolFilter}
+                      onChange={(val) => setLogToolFilter(val)}
+                      dir={dir}
+                      searchable={availableToolFilters.length > 6}
+                      options={[
+                        {
+                          value: 'all',
+                          label: dir === "rtl" ? "جميع الأدوات والخدمات" : "All Tools & Services",
+                          labelEn: "All Tools & Services",
+                          labelAr: "جميع الأدوات والخدمات"
+                        },
+                        ...availableToolFilters.map(tool => ({
+                          value: tool.id,
+                          label: dir === "rtl" ? tool.labelAr : tool.labelEn,
+                          labelEn: tool.labelEn,
+                          labelAr: tool.labelAr
+                        }))
+                      ]}
+                    />
                   </div>
                 </div>
 

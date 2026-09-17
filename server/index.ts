@@ -21,7 +21,7 @@ process.on('unhandledRejection', (reason: any) => {
 
 import app, { ensureApiPerfLogsTable } from './app.js';
 import { initSocket } from './config/socket.js';
-import { initializePerplextaPools, synchronizePerplextaPoolsFromRegistry, startConnectionHealthCheck, startPoolSaturationGuardian } from './db/index.js';
+import { initializePerplextaPools, synchronizePerplextaPoolsFromRegistry, startConnectionHealthCheck, startPoolSaturationGuardian, isDatabaseConnected } from './db/index.js';
 import { createServer as createViteServer } from 'vite';
 import { runDatabaseMigrations, setIo, verifySchemaIntegrity } from './db/migrations.js';
 import { ensureDatabaseTables } from './services/database-initializer.js';
@@ -50,8 +50,12 @@ async function initDatabase(): Promise<boolean> {
         process.env.DATABASE_URL        || '',
         process.env.LEDGER_DATABASE_URL  || '',
         process.env.EXTERNAL_DATABASE_URL || '',
-        process.env.SECURITY_DATABASE_URL || ''
+        process.env.SECURITY_DATABASE_URL || '',
+        process.env.MEDIA_DATABASE_URL   || ''
       );
+      if (!isDatabaseConnected()) {
+        throw new Error('Database operating in Degraded Mode (unreachable or missing credentials).');
+      }
       await runDatabaseMigrations();
       await ensureDatabaseTables();
       await synchronizePerplextaPoolsFromRegistry();

@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 
 import { useAppContext } from '../context/AppContext';
 import { getMediaUrl } from '../utils/mediaUtils';
-import { useConfirm, toast } from '@/design-system';
+import { useConfirm, toast, SelectDropdown } from '@/design-system';
 import {
   Megaphone,
   Plus,
@@ -3194,36 +3194,36 @@ export const AdsManagementView: React.FC<{
                 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                   <div>
-                    <label className="block text-[11px] font-bold text-gray-400 mb-1">
-                      {isRtl ? 'تنسيق الإعلان (Format)' : 'Ad Format'}
-                    </label>
-                    <select
+                    <SelectDropdown
+                      size="sm"
+                      label={isRtl ? 'تنسيق الإعلان (Format)' : 'Ad Format'}
                       value={formData.format}
-                      onChange={(e) => setFormData({ ...formData, format: e.target.value as any })}
-                      className="w-full px-3 py-1.5 text-xs rounded bg-[var(--surface-page)] border border-[var(--border-default)] text-[var(--text-primary)] focus:border-accent focus:outline-none font-bold"
-                    >
-                      <option value="sidebar">{isRtl ? 'إعلان جانبي (Sidebar)' : 'Sidebar Ad'}</option>
-                      <option value="feed">{isRtl ? 'منشور (Feed Post)' : 'Feed Post'}</option>
-                      <option value="story">{isRtl ? 'قصة (Story)' : 'Story Ad'}</option>
-                      <option value="reel">{isRtl ? 'ريلز (Reel)' : 'Reel Video'}</option>
-                      <option value="video">{isRtl ? 'فيديو (In-stream Video)' : 'In-stream Video'}</option>
-                    </select>
+                      onChange={(val) => setFormData({ ...formData, format: val as any })}
+                      dir={isRtl ? 'rtl' : 'ltr'}
+                      options={[
+                        { value: 'sidebar', label: isRtl ? 'إعلان جانبي (Sidebar)' : 'Sidebar Ad' },
+                        { value: 'feed', label: isRtl ? 'منشور (Feed Post)' : 'Feed Post' },
+                        { value: 'story', label: isRtl ? 'قصة (Story)' : 'Story Ad' },
+                        { value: 'reel', label: isRtl ? 'ريلز (Reel)' : 'Reel Video' },
+                        { value: 'video', label: isRtl ? 'فيديو (In-stream Video)' : 'In-stream Video' }
+                      ]}
+                    />
                   </div>
                   <div>
-                    <label className="block text-[11px] font-bold text-gray-400 mb-1">
-                      {isRtl ? 'موقع العرض (Position)' : 'Display Position'}
-                    </label>
-                    <select
+                    <SelectDropdown
+                      size="sm"
+                      label={isRtl ? 'موقع العرض (Position)' : 'Display Position'}
                       value={formData.position}
-                      onChange={(e) => setFormData({ ...formData, position: e.target.value })}
-                      className="w-full px-3 py-1.5 text-xs rounded bg-[var(--surface-page)] border border-[var(--border-default)] text-[var(--text-primary)] focus:border-accent focus:outline-none"
-                    >
-                      <option value="sidebar">{isRtl ? 'الشريط الجانبي' : 'Sidebar'}</option>
-                      <option value="feed">{isRtl ? 'الرئيسية (Newsfeed)' : 'Newsfeed'}</option>
-                      <option value="header_banner">{isRtl ? 'أعلى الصفحة' : 'Header Banner'}</option>
-                      <option value="footer_banner">{isRtl ? 'أسفل الصفحة' : 'Footer Banner'}</option>
-                      <option value="popup">{isRtl ? 'نافذة منبثقة' : 'Popup'}</option>
-                    </select>
+                      onChange={(val) => setFormData({ ...formData, position: val })}
+                      dir={isRtl ? 'rtl' : 'ltr'}
+                      options={[
+                        { value: 'sidebar', label: isRtl ? 'الشريط الجانبي' : 'Sidebar' },
+                        { value: 'feed', label: isRtl ? 'الرئيسية (Newsfeed)' : 'Newsfeed' },
+                        { value: 'header_banner', label: isRtl ? 'أعلى الصفحة' : 'Header Banner' },
+                        { value: 'footer_banner', label: isRtl ? 'أسفل الصفحة' : 'Footer Banner' },
+                        { value: 'popup', label: isRtl ? 'نافذة منبثقة' : 'Popup' }
+                      ]}
+                    />
                   </div>
                 </div>
 

@@ -2,7 +2,7 @@ import { safeStorageGet } from "@/utils/safeStorage";
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAppContext } from '../context/AppContext';
-import { toast } from '@/design-system';
+import { toast, SelectDropdown } from '@/design-system';
 import { 
   Wallet, 
   Gift, 
@@ -1492,22 +1492,17 @@ export const RewardsPage: React.FC = () => {
             </div>
 
             {/* Sorting Dropdown */}
-            <div className="flex items-center gap-1.5 bg-[var(--surface-page)] px-2 py-1.5 rounded-sm border border-[var(--border-default)] text-xs font-bold text-[var(--text-secondary)]">
-              <span className="text-[10px] uppercase font-black tracking-wider select-none">
-                {dir === 'rtl' ? 'ترتيب:' : 'Sort:'}
-              </span>
-              <select
+            <div className="w-36">
+              <SelectDropdown
+                size="sm"
                 value={friendsSort}
-                onChange={(e) => setFriendsSort(e.target.value as 'joined_at' | 'deposit_amount')}
-                className="bg-transparent border-none outline-none text-[var(--text-primary)] font-black text-[10px] uppercase cursor-pointer py-0.5"
-              >
-                <option value="joined_at" className="bg-[var(--surface-subtle)] text-[var(--text-primary)] font-bold">
-                  {dir === 'rtl' ? 'التاريخ' : 'Date'}
-                </option>
-                <option value="deposit_amount" className="bg-[var(--surface-subtle)] text-[var(--text-primary)] font-bold">
-                  {dir === 'rtl' ? 'مبلغ الإيداع' : 'Deposit Amount'}
-                </option>
-              </select>
+                onChange={(val) => setFriendsSort(val as 'joined_at' | 'deposit_amount')}
+                dir={dir === 'rtl' ? 'rtl' : 'ltr'}
+                options={[
+                  { value: 'joined_at', label: dir === 'rtl' ? 'التاريخ' : 'Date' },
+                  { value: 'deposit_amount', label: dir === 'rtl' ? 'مبلغ الإيداع' : 'Deposit Amount' }
+                ]}
+              />
             </div>
           </div>
         </div>

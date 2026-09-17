@@ -66,6 +66,14 @@ export async function monitorDatabases() {
         else if (reg.id === 'ledger') connectionString = process.env.LEDGER_DATABASE_URL || process.env.DATABASE_URL || '';
         else if (reg.id === 'external') connectionString = process.env.EXTERNAL_DATABASE_URL || process.env.DATABASE_URL || '';
         else if (reg.id === 'security') connectionString = process.env.SECURITY_DATABASE_URL || process.env.DATABASE_URL || '';
+        else if (reg.id === 'media') connectionString = process.env.MEDIA_DATABASE_URL || process.env.DATABASE_URL || '';
+      }
+
+      // If core is remote and this database URL points to localhost/127.0.0.1, fallback to Core DB
+      const coreEnv = process.env.DATABASE_URL || '';
+      const isCoreRemote = coreEnv && !coreEnv.includes('localhost') && !coreEnv.includes('127.0.0.1');
+      if (isCoreRemote && (connectionString.includes('localhost') || connectionString.includes('127.0.0.1'))) {
+        connectionString = coreEnv;
       }
 
       if (!connectionString.startsWith('postgres')) continue;

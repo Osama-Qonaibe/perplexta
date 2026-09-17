@@ -1,10 +1,10 @@
 /**
- * ⚡ PERPLEXTA DESIGN SYSTEM — ACTION ITEM PRIMITIVE
+ * ⚡ PERPLEXTA DESIGN SYSTEM — ACTION ITEM PRIMITIVE (v4.0.0)
  * 
  * Standardized atomic menu and list action button.
  * Enforces:
  * - 44px touch target standards (WCAG AA & Material Design 3)
- * - Sovereign Cyan hover glow & physics
+ * - Brand Green / Blue / Purple / Danger states
  * - Native RTL / LTR text and icon alignments
  * - Single-line text wrap protection
  */
@@ -13,7 +13,7 @@ import React, { forwardRef } from 'react';
 import { Lock, ChevronLeft, ChevronRight } from 'lucide-react';
 import { getDocumentDirection } from '../../components/AdaptiveMenu';
 
-export type ActionItemVariant = 'default' | 'accent' | 'danger' | 'success';
+export type ActionItemVariant = 'default' | 'accent' | 'danger' | 'success' | 'admin';
 
 export interface ActionItemProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
   label: React.ReactNode;
@@ -57,21 +57,25 @@ export const ActionItem = forwardRef<HTMLButtonElement, ActionItemProps>(({
 
   // Base touch-target & styling tokens matching design system specs
   const baseClasses = `
-    h-8 w-full flex items-center gap-2 px-2.5 rounded-lg text-xs font-medium
-    transition-all duration-150 ease-out active:scale-[0.98] select-none text-start
+    min-h-[36px] w-full flex items-center gap-2 px-2.5 rounded-lg text-xs font-medium
+    transition-all duration-120 ease-out select-none text-start
     ${isDisabledOrLocked ? 'opacity-40 cursor-not-allowed pointer-events-none' : 'cursor-pointer'}
   `;
 
   // Color & Hover dynamics
   let stateClasses = '';
   if (isActive) {
-    stateClasses = 'bg-cyan-500/15 text-cyan-400 font-bold border border-cyan-500/30';
+    stateClasses = 'bg-[color-mix(in_oklab,var(--github-blue)_12%,transparent)] text-[var(--github-blue)] font-bold border border-[color-mix(in_oklab,var(--github-blue)_30%,var(--border))]';
   } else if (isDanger) {
-    stateClasses = 'text-rose-400 hover:bg-rose-500/10 hover:text-rose-300';
+    stateClasses = 'text-[var(--destructive)] hover:bg-[color-mix(in_oklab,var(--destructive)_12%,transparent)]';
   } else if (variant === 'accent') {
-    stateClasses = 'text-cyan-400 hover:bg-cyan-500/10 hover:text-cyan-300';
+    stateClasses = 'text-[var(--github-blue)] hover:bg-[color-mix(in_oklab,var(--github-blue)_10%,transparent)]';
+  } else if (variant === 'admin') {
+    stateClasses = 'text-[var(--github-purple)] hover:bg-[color-mix(in_oklab,var(--github-purple)_10%,transparent)]';
+  } else if (variant === 'success') {
+    stateClasses = 'text-[var(--github-green)] hover:bg-[color-mix(in_oklab,var(--github-green)_10%,transparent)]';
   } else {
-    stateClasses = 'text-slate-300 hover:bg-slate-800/70 hover:text-white';
+    stateClasses = 'text-[var(--foreground)] hover:bg-[var(--muted)] hover:text-[var(--foreground)]';
   }
 
   return (
@@ -88,10 +92,14 @@ export const ActionItem = forwardRef<HTMLButtonElement, ActionItemProps>(({
       {icon && (
         <span className={`w-4 h-4 flex-shrink-0 flex items-center justify-center transition-colors duration-150 ${
           isActive 
-            ? 'text-cyan-400' 
+            ? 'text-[var(--github-blue)]' 
             : isDanger 
-              ? 'text-rose-400 group-hover:text-rose-300' 
-              : 'text-slate-400 group-hover:text-white'
+              ? 'text-[var(--destructive)] group-hover:text-[var(--destructive)]' 
+              : variant === 'admin'
+                ? 'text-[var(--github-purple)]'
+                : variant === 'success'
+                  ? 'text-[var(--github-green)]'
+                  : 'text-[var(--muted-foreground)] group-hover:text-[var(--foreground)]'
         }`}>
           {icon}
         </span>
@@ -103,7 +111,7 @@ export const ActionItem = forwardRef<HTMLButtonElement, ActionItemProps>(({
           {label}
         </span>
         {description && (
-          <span className="text-[10px] text-slate-400 group-hover:text-slate-300 truncate">
+          <span className="text-[10px] text-[var(--muted-foreground)] group-hover:text-[var(--foreground)] truncate">
             {description}
           </span>
         )}
@@ -112,7 +120,7 @@ export const ActionItem = forwardRef<HTMLButtonElement, ActionItemProps>(({
       {/* Trailing Extras pushed to far opposite side via mr-auto in RTL / ml-auto in LTR */}
       <div className={`shrink-0 flex items-center gap-1 ${isRtl ? 'mr-auto' : 'ml-auto'}`}>
         {isLocked && (
-          <span className="text-[10px] flex items-center gap-1 text-amber-400/80 bg-amber-400/10 px-1.5 py-0.5 rounded-md font-mono">
+          <span className="text-[10px] flex items-center gap-1 text-[var(--github-orange)] bg-[color-mix(in_oklab,var(--github-orange)_12%,transparent)] px-1.5 py-0.5 rounded-md font-mono">
             <Lock className="w-2.5 h-2.5" />
             <span>PRO</span>
           </span>
@@ -123,14 +131,14 @@ export const ActionItem = forwardRef<HTMLButtonElement, ActionItemProps>(({
         )}
 
         {shortcut && !isLocked && (
-          <kbd className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-slate-900 text-slate-400 border border-slate-800">
+          <kbd className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-[var(--muted)] text-[var(--muted-foreground)] border border-[var(--border)]">
             {shortcut}
           </kbd>
         )}
 
         {/* Submenu Indicator Chevron */}
         {hasSubmenu && !isLocked && (
-          <span className={`transition-transform duration-150 ${isSubmenuOpen ? (isRtl ? '-translate-x-0.5 text-cyan-400' : 'translate-x-0.5 text-cyan-400') : 'text-slate-400 group-hover:text-cyan-400'}`}>
+          <span className={`transition-transform duration-150 ${isSubmenuOpen ? (isRtl ? '-translate-x-0.5 text-[var(--github-blue)]' : 'translate-x-0.5 text-[var(--github-blue)]') : 'text-[var(--muted-foreground)] group-hover:text-[var(--github-blue)]'}`}>
             {isRtl ? <ChevronLeft className="w-3.5 h-3.5" /> : <ChevronRight className="w-3.5 h-3.5" />}
           </span>
         )}

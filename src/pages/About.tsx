@@ -38,7 +38,7 @@ import { motion } from "motion/react";
 import { perplextaPageTransition } from "@/design-system";
 
 export const About: React.FC = () => {
-  const { language, dir, theme } = useAppContext();
+  const { language, dir } = useAppContext();
   const navigate = useNavigate();
 
   const isAr = language === "ar";
@@ -201,7 +201,7 @@ export const About: React.FC = () => {
 
   const ecosystem = [
     {
-      name: isAr ? "بيربليكستا" : "perplexta",
+      name: isAr ? "بيربليكستا" : "Perplexta",
       desc: isAr
         ? "المنصة الأحدث المتخصصة في التصميم، وصناعة الفيديو والصور بدعم تقني متكامل"
         : "The latest platform specialized in design, video and image creation with integrated technical support",
@@ -222,25 +222,25 @@ export const About: React.FC = () => {
       url: "https://hebronmart.com",
     },
     {
-      name: "VLU Panel",
+      name: "Perplexta Panel",
       desc: isAr
         ? "لوحة التسويق الرقمي، تحسين محركات البحث (SEO)، وتعزيز الحضور والسمعة الرقمية"
         : "Digital marketing panel, SEO, and enhancing digital presence and reputation",
-      url: "https://virallinkup.com",
+      url: "https://perplexta.com",
     },
     {
-      name: "VLU Net",
+      name: "Perplexta Net",
       desc: isAr
         ? "مكتبة المنتجات الرقمية المرخصة (GPL) الجاهزة لإعادة البيع والتخصيص"
         : "Library of licensed digital products (GPL) ready for resale and customization",
-      url: "https://virallinkup.net",
+      url: "https://perplexta.net",
     },
     {
-      name: "VLU Host",
+      name: "Perplexta Host",
       desc: isAr
         ? "خدمات الاستضافة السحابية وإدارة الخوادم الخاصة لضمان أعلى معايير الأمان والاعتمادية"
         : "Cloud hosting services and private server management to ensure high availability and security",
-      url: "https://virallinkup.org",
+      url: "https://perplexta.org",
     },
   ];
 
@@ -327,7 +327,6 @@ export const About: React.FC = () => {
       variants={perplextaPageTransition}
       className="max-w-5xl mx-auto px-4 sm:px-8 pt-4 sm:pt-6 pb-24 lg:pb-16 overflow-y-auto h-full custom-scrollbar"
     >
-      {/* Sticky Header */}
       <div className="sticky -top-0.5 z-20 -mx-4 sm:-mx-8 px-4 sm:px-8 py-3 mb-6 bg-[var(--surface-page)]/90 backdrop-blur-md border-b border-[var(--border-default)] flex items-center justify-between">
         <div className="flex items-center gap-3">
           <button
@@ -358,7 +357,6 @@ export const About: React.FC = () => {
       </div>
 
       <div className="space-y-24">
-        {/* Hero Section */}
         <section className="text-center space-y-4 pt-4">
           <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-[var(--radius-xs)] bg-[var(--surface-subtle)] border border-[var(--border-subtle)] text-[var(--text-primary)] text-xs font-bold uppercase tracking-widest">
             <Info size={14} className="text-accent" />
@@ -374,7 +372,6 @@ export const About: React.FC = () => {
           </p>
         </section>
 
-        {/* Vision & Mission Section */}
         <section className="grid grid-cols-1 md:grid-cols-2 gap-10 items-start">
           <div className="space-y-8">
             <div className="p-6 md:p-8 rounded-[var(--radius)] border border-[var(--border-default)] bg-[var(--surface-card)] backdrop-blur-sm shadow-sm transition-theme hover:border-accent/20 group">
@@ -441,7 +438,6 @@ export const About: React.FC = () => {
           </div>
         </section>
 
-        {/* Features Grid */}
         <section className="space-y-10">
           <div className="text-center space-y-2">
             <h2 className="text-2xl md:text-3xl font-black text-[var(--text-primary)] uppercase">
@@ -473,7 +469,6 @@ export const About: React.FC = () => {
           </div>
         </section>
 
-        {/* Why PERPLEXTA */}
         <section className="p-8 md:p-10 rounded-[var(--radius)] border border-accent/20 bg-accent/[0.03] shadow-[0_4px_24px_rgba(156,163,175,0.03)] space-y-6 relative overflow-hidden group">
           <div className="absolute top-0 right-0 w-32 h-32 bg-accent/5 rounded-[var(--radius-xs)] blur-3xl group-hover:bg-accent/10 transition-theme" />
           <h2 className="text-2xl font-black text-accent">
@@ -486,7 +481,6 @@ export const About: React.FC = () => {
           </p>
         </section>
 
-        {/* Technical Standards */}
         <section className="grid grid-cols-1 md:grid-cols-2 gap-8 items-center border border-[var(--border-default)] rounded-[var(--radius)] p-6 md:p-8 bg-[var(--surface-card)]">
           <div className="space-y-4 text-center md:text-right animate-pulse">
             <CheckCircle2 className="w-12 h-12 text-accent mx-auto md:mx-0 md:mr-0 inline-block md:block" />
@@ -511,7 +505,6 @@ export const About: React.FC = () => {
           </div>
         </section>
 
-        {/* Corporate Identity & Transparency */}
         <section className="p-6 md:p-8 rounded-[var(--radius)] border border-[var(--border-default)] bg-[var(--surface-card)] space-y-8">
           <div className="flex items-center gap-3 text-[var(--text-primary)]">
             <Shield className="w-5 h-5 text-accent" />
@@ -531,7 +524,7 @@ export const About: React.FC = () => {
             <div className="p-6 rounded-[var(--radius-md)] bg-[var(--surface-subtle)] border border-[var(--border-default)] flex items-center justify-between shadow-sm">
               <div>
                 <h3 className="text-xl md:text-2xl font-black text-[var(--text-primary)] mb-1">
-                  {isAr ? "فيرال لينك اب المحدودة" : "VIRALLINKUP LTD"}
+                  {isAr ? "بيربليكستا المحدودة" : "PERPLEXTA LTD"}
                 </h3>
                 <p className="text-xs md:text-sm font-semibold text-[var(--text-secondary)]">
                   {isAr
@@ -623,7 +616,6 @@ export const About: React.FC = () => {
           </div>
         </section>
 
-        {/* Ecosystem */}
         <section className="space-y-10">
           <div className="text-center space-y-2">
             <h2 className="text-2xl md:text-3xl font-black text-[var(--text-primary)] uppercase">
@@ -631,8 +623,8 @@ export const About: React.FC = () => {
             </h2>
             <p className="text-sm text-[var(--text-secondary)] max-w-2xl mx-auto font-medium">
               {isAr
-                ? "VIRALLINKUP LTD تفتخر بإدارة شبكة متكاملة من المنصات الرقمية"
-                : "VIRALLINKUP LTD is proud to manage an integrated network of digital platforms"}
+                ? "PERPLEXTA LTD تفتخر بإدارة شبكة متكاملة من المنصات الرقمية"
+                : "PERPLEXTA LTD is proud to manage an integrated network of digital platforms"}
             </p>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -664,7 +656,6 @@ export const About: React.FC = () => {
           </div>
         </section>
 
-        {/* Features & Tools */}
         <section className="space-y-10">
           <div className="text-center space-y-2">
             <h2 className="text-2xl md:text-3xl font-black text-[var(--text-primary)] uppercase flex items-center justify-center gap-2">
@@ -688,7 +679,6 @@ export const About: React.FC = () => {
                 className="p-6 rounded-[var(--radius)] border border-[var(--border-default)] bg-[var(--surface-card)] hover:bg-[var(--surface-subtle)] hover:border-accent/20 transition-theme group flex flex-col justify-between gap-4 cursor-pointer relative overflow-hidden shadow-sm hover:shadow-md h-fit"
               >
                 <div className="space-y-4">
-                  {/* Tool Header */}
                   <div className="flex items-center gap-3">
                     <div className="w-10 h-10 rounded-[var(--radius-xs)] bg-accent/10 border border-accent/20 flex items-center justify-center text-accent group-hover:bg-accent/20 group-hover:scale-105 transition-theme">
                       {tool.icon}
@@ -698,7 +688,6 @@ export const About: React.FC = () => {
                     </h3>
                   </div>
 
-                  {/* Image Preview Placeholder */}
                   <div className="relative w-full aspect-[16/10] rounded-[var(--radius-sm)] overflow-hidden border border-[var(--border-subtle)] shadow-sm bg-[var(--surface-inset)] group-hover:border-accent/30 transition-colors duration-300">
                     <img
                       src={tool.imageUrl}
@@ -709,7 +698,6 @@ export const About: React.FC = () => {
                     <div className="absolute inset-0 bg-gradient-to-t from-[var(--surface-page)]/80 to-transparent pointer-events-none" />
                   </div>
 
-                  {/* Tool Capabilities */}
                   <p className="text-xs md:text-sm text-[var(--text-secondary)] font-semibold leading-relaxed">
                     {tool.desc}
                   </p>
@@ -719,7 +707,6 @@ export const About: React.FC = () => {
           </div>
         </section>
 
-        {/* Economy & Rewards */}
         <section className="space-y-10">
           <div className="text-center space-y-2">
             <h2 className="text-2xl md:text-3xl font-black text-[var(--text-primary)] uppercase flex items-center justify-center gap-2">
@@ -740,7 +727,6 @@ export const About: React.FC = () => {
                 className="p-6 rounded-[var(--radius)] border border-[var(--border-default)] bg-[var(--surface-card)] hover:bg-[var(--surface-subtle)] hover:border-accent/20 transition-theme group flex flex-col justify-between gap-4 cursor-pointer relative overflow-hidden shadow-sm hover:shadow-md h-fit"
               >
                 <div className="space-y-4">
-                  {/* Item Header */}
                   <div className="flex items-center gap-3">
                     <div className="w-10 h-10 rounded-[var(--radius-xs)] bg-accent/10 border border-accent/20 flex items-center justify-center text-accent group-hover:bg-accent/20 group-hover:scale-105 transition-theme">
                       {item.icon}
@@ -750,7 +736,6 @@ export const About: React.FC = () => {
                     </h3>
                   </div>
 
-                  {/* Image Preview Placeholder */}
                   <div className="relative w-full aspect-[16/10] rounded-[var(--radius-sm)] overflow-hidden border border-[var(--border-subtle)] shadow-sm bg-[var(--surface-inset)] group-hover:border-accent/30 transition-colors duration-300">
                     <img 
                       src={item.imageUrl} 
@@ -761,7 +746,6 @@ export const About: React.FC = () => {
                     <div className="absolute inset-0 bg-gradient-to-t from-[var(--surface-page)]/80 to-transparent pointer-events-none" />
                   </div>
 
-                  {/* Economy capabilities */}
                   <p className="text-xs md:text-sm text-[var(--text-secondary)] font-semibold leading-relaxed">
                     {item.desc}
                   </p>
@@ -771,7 +755,6 @@ export const About: React.FC = () => {
           </div>
         </section>
 
-        {/* News & Releases */}
         <section className="space-y-10">
           <div className="text-center space-y-2">
             <h2 className="text-2xl md:text-3xl font-black text-[var(--text-primary)] uppercase flex items-center justify-center gap-2">
@@ -799,7 +782,6 @@ export const About: React.FC = () => {
                   onClick={() => toggleCard(i)}
                 >
                   <div className="space-y-3">
-                    {/* Header: Date + Chevron indicator */}
                     <div className="flex items-center justify-between">
                       <span className="text-[10px] font-mono font-black tracking-widest text-accent bg-accent/5 px-2.5 py-1 rounded-[var(--radius-xs)] border border-accent/15">
                         {item.date}
@@ -813,12 +795,10 @@ export const About: React.FC = () => {
                       </motion.div>
                     </div>
 
-                    {/* News Title */}
                     <h3 className="text-base font-black text-[var(--text-primary)] group-hover:text-accent transition-colors duration-300 leading-snug">
                       {item.title}
                     </h3>
 
-                    {/* Image Preview */}
                     {item.imageUrl && (
                       <div className="relative w-full aspect-[16/9] rounded-[var(--radius-sm)] overflow-hidden border border-[var(--border-subtle)] shadow-sm bg-[var(--surface-inset)] group-hover:border-accent/30 transition-colors duration-300">
                         <img
@@ -831,12 +811,10 @@ export const About: React.FC = () => {
                       </div>
                     )}
 
-                    {/* Excerpt */}
                     <p className="text-xs md:text-sm text-[var(--text-secondary)] font-semibold leading-relaxed">
                       {item.excerpt}
                     </p>
 
-                    {/* Collapsible content with smooth height and opacity transitions */}
                     <motion.div
                       initial={false}
                       animate={{
@@ -863,7 +841,6 @@ export const About: React.FC = () => {
                     </motion.div>
                   </div>
 
-                  {/* Read More Button */}
                   <div className="pt-2 flex items-center justify-start text-[10px] font-black uppercase tracking-wider text-accent transition-theme select-none">
                     <span>
                       {isExpanded
@@ -881,13 +858,12 @@ export const About: React.FC = () => {
           </div>
         </section>
 
-        {/* Footer Section */}
         <footer className="pt-10 border-t border-[var(--border-subtle)] space-y-10">
           <div className="text-center">
             <p className="text-lg md:text-xl font-black text-[var(--text-primary)] tracking-widest uppercase font-mono">
               {isAr
-                ? "فيرال لينك اب - نبتكر لنحمي بياناتك"
-                : "VIRALLINKUP - INNOVATING TO PROTECT YOUR DATA"}
+                ? "بيربليكستا - نبتكر لنحمي بياناتك"
+                : "PERPLEXTA - INNOVATING TO PROTECT YOUR DATA"}
             </p>
           </div>
 
@@ -900,8 +876,8 @@ export const About: React.FC = () => {
             </div>
             <p className="text-xs md:text-sm leading-relaxed text-[var(--text-secondary)] font-semibold font-sans">
               {isAr
-                ? "جميع الحقوق البرمجية، العلامة التجارية، ومنطق الربط الذكي الخاص بـ بيربليكستا وكافة مشاريعنا هي حقوق محفوظة لشركة فيرال لينك اب المحدودة. أي محاولة لإعادة الإنتاج أو الاستخدام غير المصرح به تعرض الفاعل للمساءلة القانونية الدولية"
-                : "All software rights, trademarks, and the smart connection logic of PERPLEXTA and all our projects are reserved rights of VIRALLINKUP LTD. Any attempt at reproduction or unauthorized use exposes the actor to international legal accountability"}
+                ? "جميع الحقوق البرمجية، العلامة التجارية، ومنطق الربط الذكي الخاص بـ بيربليكستا وكافة مشاريعنا هي حقوق محفوظة لشركة بيربليكستا المحدودة. أي محاولة لإعادة الإنتاج أو الاستخدام غير المصرح به تعرض الفاعل للمساءلة القانونية الدولية"
+                : "All software rights, trademarks, and the smart connection logic of PERPLEXTA and all our projects are reserved rights of PERPLEXTA LTD. Any attempt at reproduction or unauthorized use exposes the actor to international legal accountability"}
             </p>
           </div>
         </footer>

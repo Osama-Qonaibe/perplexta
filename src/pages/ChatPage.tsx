@@ -863,7 +863,7 @@ const ChatPage: React.FC = () => {
                   </div>
 
                   {/* Footer App Info */}
-                  <div className="text-center pt-2.5 sm:pt-4 pb-[calc(8px+env(safe-area-inset-bottom,0px))] sm:pb-3 border-none select-none text-[9.5px] sm:text-[11px] font-medium text-[var(--pub-text-muted)] px-1 sm:px-2 bg-[var(--pub-surface-canvas)] leading-relaxed">
+                  <div className="text-center pt-2.5 sm:pt-4 pb-[calc(8px+env(safe-area-inset-bottom,0px))] sm:pb-3 border-none select-none text-[9.5px] sm:text-[11px] font-medium text-[var(--text-muted)] px-1 sm:px-2 bg-transparent leading-relaxed">
                     <span className="sm:hidden">{t('appName')} {dir === 'rtl' ? 'قد يخطئ أحياناً. تحقق من النتائج المهمة.' : 'may be inaccurate. Verify facts.'}</span>
                     <span className="hidden sm:inline">{t('appName')} {dir === 'rtl' ? 'قد يقدم معلومات غير دقيقة أحياناً. يُرجى التحقق من النتائج المهمة.' : 'may display inaccurate info. Verify important facts.'}</span>
                   </div>

@@ -52,6 +52,7 @@ export const DatabaseOrchestrationView = ({
   language: string;
 }) => {
   const { token, socket } = useAppContext();
+  const [activeDbTab, setActiveDbTab] = useState<'all' | 'connections' | 'migrations' | 'backups'>('all');
   const [databases, setDatabases] = useState<any[]>([]);
   const [isMigrating, setIsMigrating] = useState<{
     id: string;
@@ -583,7 +584,61 @@ export const DatabaseOrchestrationView = ({
   };
 
   return (
-    <div className="space-y-4 max-w-6xl mx-auto relative transition-theme">
+    <div className="space-y-6 max-w-6xl mx-auto relative transition-theme">
+      {/* Sub-Tabs Navigation Bar */}
+      <div className="w-full flex items-center justify-between border-b border-[var(--border-default)] pb-3">
+        <div className="flex items-center gap-1.5 p-1 rounded-[var(--radius-md)] bg-[var(--surface-subtle)] border border-[var(--border-default)] overflow-x-auto max-w-full custom-scrollbar">
+          <button
+            type="button"
+            onClick={() => setActiveDbTab('all')}
+            className={`flex items-center gap-2 px-3.5 py-2 min-h-[38px] rounded-[var(--radius-sm)] text-xs font-bold transition-all whitespace-nowrap cursor-pointer touch-target-44 ${
+              activeDbTab === 'all'
+                ? "bg-[var(--surface-card)] text-[var(--fg-accent)] shadow-xs border border-[var(--border-accent)]/30 font-black"
+                : "text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--surface-card)]/50 border border-transparent"
+            }`}
+          >
+            <Database size={16} />
+            <span>{dir === 'rtl' ? 'عرض شامل لكل العمليات' : 'Full Suite'}</span>
+          </button>
+          <button
+            type="button"
+            onClick={() => setActiveDbTab('connections')}
+            className={`flex items-center gap-2 px-3.5 py-2 min-h-[38px] rounded-[var(--radius-sm)] text-xs font-bold transition-all whitespace-nowrap cursor-pointer touch-target-44 ${
+              activeDbTab === 'connections'
+                ? "bg-[var(--surface-card)] text-[var(--fg-accent)] shadow-xs border border-[var(--border-accent)]/30 font-black"
+                : "text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--surface-card)]/50 border border-transparent"
+            }`}
+          >
+            <Server size={16} />
+            <span>{dir === 'rtl' ? 'عقد الاتصال وحالة الخوادم' : 'Connections & Nodes'}</span>
+          </button>
+          <button
+            type="button"
+            onClick={() => setActiveDbTab('migrations')}
+            className={`flex items-center gap-2 px-3.5 py-2 min-h-[38px] rounded-[var(--radius-sm)] text-xs font-bold transition-all whitespace-nowrap cursor-pointer touch-target-44 ${
+              activeDbTab === 'migrations'
+                ? "bg-[var(--surface-card)] text-[var(--fg-accent)] shadow-xs border border-[var(--border-accent)]/30 font-black"
+                : "text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--surface-card)]/50 border border-transparent"
+            }`}
+          >
+            <RefreshCw size={16} />
+            <span>{dir === 'rtl' ? 'مُنشئ المخططات والترحيل (1-Click)' : 'Migrations & Schema Builder'}</span>
+          </button>
+          <button
+            type="button"
+            onClick={() => setActiveDbTab('backups')}
+            className={`flex items-center gap-2 px-3.5 py-2 min-h-[38px] rounded-[var(--radius-sm)] text-xs font-bold transition-all whitespace-nowrap cursor-pointer touch-target-44 ${
+              activeDbTab === 'backups'
+                ? "bg-[var(--surface-card)] text-[var(--fg-accent)] shadow-xs border border-[var(--border-accent)]/30 font-black"
+                : "text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--surface-card)]/50 border border-transparent"
+            }`}
+          >
+            <HistoryIcon size={16} />
+            <span>{dir === 'rtl' ? 'النسخ الاحتياطي والإنعاش' : 'Disaster Recovery & Backups'}</span>
+          </button>
+        </div>
+      </div>
+
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
         {databases.map((db, dIdx) => {
           const Icon = db.icon;

@@ -5,6 +5,11 @@ import { createNotification } from '../services/notifications.js';
 import { createChat, addChatMessage } from '../services/chat.js';
 import { io } from '../config/socket.js';
 import { formatDatabaseError } from '../utils/dbErrors.js';
+import { upload, handleMulterError } from '../middleware/upload.js';
+import { uploadValidator } from '../middleware/uploadValidator.js';
+import { optimizeUploadedImage } from '../services/mediaOptimizationService.js';
+import { processUploadedVideo } from '../services/videoProcessor.js';
+import path from 'path';
 
 const router = express.Router();
 
@@ -139,6 +144,68 @@ router.get('/mentions/suggest', authenticateToken, async (req: any, res) => {
   } catch (error: any) {
     console.error('[Mentions Suggest] Fetch failed:', error);
     return res.status(500).json({ error: error.message });
+  }
+});
+
+/**
+ * POST /api/bulletin/upload
+ * Dedicated Bulletin Board media upload endpoint
+ */
+router.post('/upload', authenticateToken, (upload.single('file') as any), handleMulterError, uploadValidator, async (req: any, res: any) => {
+  try {
+    if (!req.file) {
+      return res.status(400).json({ error: 'No file uploaded' });
+    }
+
+    const { originalname, filename, path: filePath, mimetype, size } = req.file;
+    let finalFilename = filename;
+    let processedFileSize = size;
+    let thumbnailUrl = '';
+    let duration = 0;
+    let resolution = '';
+
+    const videoExtensions = ['mp4', 'mov', 'avi', 'webm', 'mkv', 'wmv', 'flv', '3gp'];
+    const isVideo = mimetype.startsWith('video/') || videoExtensions.some(ext => originalname.toLowerCase().endsWith('.' + ext));
+
+    if (mimetype.startsWith('image/')) {
+      try {
+        const optResult = await optimizeUploadedImage(filePath, originalname);
+        finalFilename = optResult.filename;
+        processedFileSize = optResult.size;
+        resolution = `${optResult.width}x${optResult.height}`;
+      } catch (imgErr: any) {
+        console.error('[Bulletin Upload] Sharp optimization error:', imgErr.message);
+      }
+    } else if (isVideo) {
+      try {
+        const maxDuration = req.query.maxDuration ? parseInt(req.query.maxDuration as string, 10) : undefined;
+        const result = await processUploadedVideo(filePath, path.dirname(filePath), 'pvid', maxDuration);
+        if (result.success && result.processedVideoUrl) {
+          finalFilename = result.processedVideoUrl.replace('/uploads/', '');
+          if (result.fileSize) processedFileSize = result.fileSize;
+          thumbnailUrl = result.thumbnailUrl || '';
+          duration = result.duration || 0;
+          resolution = result.resolution || `${result.width || 1280}x${result.height || 720}`;
+        }
+      } catch (videoErr: any) {
+        console.error('[Bulletin Upload] Video processing error:', videoErr.message);
+      }
+    }
+
+    const fileUrl = `/uploads/${finalFilename}`;
+
+    return res.status(201).json({
+      success: true,
+      url: fileUrl,
+      fileUrl,
+      thumbnailUrl,
+      duration,
+      resolution,
+      fileSize: processedFileSize
+    });
+  } catch (error: any) {
+    console.error('[Bulletin Upload] Error:', error);
+    return res.status(500).json({ error: error.message || 'Media upload failed' });
   }
 });
 

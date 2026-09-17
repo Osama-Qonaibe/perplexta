@@ -2325,6 +2325,144 @@ export async function runVersionedMigrations(
         ALTER TABLE media_assets ALTER COLUMN user_id DROP NOT NULL
       `);
     });
+
+    await runVersioned('v109_sanitize_registry_db_connections', 'Sanitize localhost connection strings in db_connections_registry when core DB is remote', async (tx) => {
+      const coreUrl = process.env.DATABASE_URL;
+      if (coreUrl && !coreUrl.includes('localhost') && !coreUrl.includes('127.0.0.1')) {
+        const encryptedCore = encrypt(coreUrl);
+        const rows = await tx.query(`SELECT id, connection_string, host FROM db_connections_registry WHERE id IN ('ledger', 'external', 'security', 'media')`);
+        for (const row of rows.rows) {
+          let shouldUpdate = false;
+          if (row.host === 'localhost' || row.host === '127.0.0.1') {
+            shouldUpdate = true;
+          } else if (row.connection_string) {
+            try {
+              const dec = decrypt(row.connection_string);
+              if (dec && (dec.includes('localhost') || dec.includes('127.0.0.1'))) {
+                shouldUpdate = true;
+              }
+            } catch {}
+          }
+          if (shouldUpdate) {
+            await tx.query(
+              `UPDATE db_connections_registry SET connection_string = $1, host = NULL, status = 'healthy' WHERE id = $2`,
+              [encryptedCore, row.id]
+            );
+          }
+        }
+      }
+    });
+
+    await runVersioned('v110_apply_sovereign_identity_v4_tokens', 'Apply Perplexa Sovereign Identity v4.0 design tokens to database tables and system settings', async (tx) => {
+      const canonicalLightTokens = JSON.stringify({
+        '--surface-page': '#ffffff',
+        '--surface-canvas': '#ffffff',
+        '--surface-card': '#ffffff',
+        '--surface-raised': '#ffffff',
+        '--surface-subtle': '#f6f8fa',
+        '--surface-inset': '#f6f8fa',
+        '--fg-primary': '#1f2328',
+        '--fg-secondary': '#656d76',
+        '--fg-muted': '#656d76',
+        '--accent': '#0969da',
+        '--accent-hover': '#0550ae',
+        '--fg-accent': '#0969da',
+        '--bg-accent-emphasis': '#1a7f37',
+        '--bg-accent-muted': 'rgba(9, 105, 218, 0.12)',
+        '--border-accent-emphasis': '#0969da',
+        '--focus-outline': '#0969da',
+        '--border-default': '#d0d7de',
+        '--border-outer-input': '#d0d7de',
+        '--border-inner-input': '#d0d7de',
+        '--border-subtle': '#d0d7de',
+        '--border-strong': '#656d76',
+        '--border-accent': '#0969da',
+        '--bg-btn-primary': '#1a7f37',
+        '--fg-btn-primary': '#ffffff',
+        '--bg-btn-secondary': '#f6f8fa',
+        '--border-btn-secondary': '#d0d7de',
+        '--control-active-bg': '#f6f8fa',
+        '--control-active-fg': '#0969da',
+        '--bg-input': '#ffffff',
+        '--border-focus': '#0969da',
+        '--chat-bubble-user': '#f6f8fa',
+        '--chat-bubble-assistant': 'transparent',
+        '--chat-bubble-user-text': '#1f2328',
+        '--chat-bubble-assistant-text': '#1f2328'
+      });
+
+      const canonicalDarkTokens = JSON.stringify({
+        '--surface-page': '#0d1117',
+        '--surface-canvas': '#0d1117',
+        '--surface-card': '#161b22',
+        '--surface-raised': '#161b22',
+        '--surface-subtle': '#161b22',
+        '--surface-inset': '#010409',
+        '--fg-primary': '#e6edf3',
+        '--fg-secondary': '#8b949e',
+        '--fg-muted': '#8b949e',
+        '--accent': '#58a6ff',
+        '--accent-hover': '#79c0ff',
+        '--fg-accent': '#58a6ff',
+        '--bg-accent-emphasis': '#238636',
+        '--bg-accent-muted': 'rgba(88, 166, 255, 0.15)',
+        '--border-accent-emphasis': '#58a6ff',
+        '--focus-outline': '#58a6ff',
+        '--border-default': '#3d444d',
+        '--border-outer-input': '#3d444d',
+        '--border-inner-input': '#3d444d',
+        '--border-subtle': '#3d444d',
+        '--border-strong': '#8b949e',
+        '--border-accent': '#58a6ff',
+        '--bg-btn-primary': '#238636',
+        '--fg-btn-primary': '#ffffff',
+        '--bg-btn-secondary': '#161b22',
+        '--border-btn-secondary': '#3d444d',
+        '--control-active-bg': '#161b22',
+        '--control-active-fg': '#58a6ff',
+        '--bg-input': '#21262d',
+        '--border-focus': '#58a6ff',
+        '--chat-bubble-user': '#161b22',
+        '--chat-bubble-assistant': 'transparent',
+        '--chat-bubble-user-text': '#e6edf3',
+        '--chat-bubble-assistant-text': '#e6edf3'
+      });
+
+      await tx.query(`
+        INSERT INTO admin_theme_customizations (theme_mode, tokens, updated_at)
+        VALUES ('light', $1::jsonb, CURRENT_TIMESTAMP)
+        ON CONFLICT (theme_mode) DO UPDATE
+        SET tokens = $1::jsonb, updated_at = CURRENT_TIMESTAMP
+      `, [canonicalLightTokens]);
+
+      await tx.query(`
+        INSERT INTO admin_theme_customizations (theme_mode, tokens, updated_at)
+        VALUES ('dark', $1::jsonb, CURRENT_TIMESTAMP)
+        ON CONFLICT (theme_mode) DO UPDATE
+        SET tokens = $1::jsonb, updated_at = CURRENT_TIMESTAMP
+      `, [canonicalDarkTokens]);
+
+      const fontConfigJson = JSON.stringify({
+        ar: { fontFamily: 'Cairo', enabled: true, url: 'https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700&display=swap' },
+        en: { fontFamily: 'Geist', enabled: true, url: 'https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&display=swap' },
+        dynamicLoading: true
+      });
+
+      await tx.query(`
+        UPDATE system_settings
+        SET 
+          font_loading_config = $1::jsonb,
+          font_config_ar = $2::jsonb,
+          font_config_en = $3::jsonb,
+          site_name_en = CASE WHEN site_name_en = 'Perplexta' THEN 'Perplexa' ELSE site_name_en END,
+          site_name_ar = CASE WHEN site_name_ar = 'بيربلكستا' THEN 'بيربليكسا' ELSE site_name_ar END
+        WHERE id = (SELECT id FROM system_settings ORDER BY id ASC LIMIT 1)
+      `, [
+        fontConfigJson,
+        JSON.stringify({ fontFamily: 'Cairo', enabled: true, url: 'https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700&display=swap' }),
+        JSON.stringify({ fontFamily: 'Geist', enabled: true, url: 'https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&display=swap' })
+      ]).catch(() => {});
+    });
     
   console.log("[Migrations] All versioned migrations completed successfully.");
 }

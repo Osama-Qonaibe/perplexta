@@ -15,14 +15,14 @@ export interface FontLoadingConfig {
 
 export const DEFAULT_FONT_CONFIG: FontLoadingConfig = {
   ar: {
-    fontFamily: 'Tajawal',
+    fontFamily: 'Cairo',
     enabled: true,
-    url: 'https://fonts.googleapis.com/css2?family=Tajawal:wght@300;400;500;700&display=swap'
+    url: 'https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700&display=swap'
   },
   en: {
-    fontFamily: 'Space Grotesk',
+    fontFamily: 'Geist',
     enabled: true,
-    url: 'https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&display=swap'
+    url: 'https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&display=swap'
   },
   dynamicLoading: true
 };

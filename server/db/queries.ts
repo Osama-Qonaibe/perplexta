@@ -241,15 +241,15 @@ export async function getCachedSystemSettings(): Promise<any> {
     paypal_mode: 'sandbox',
     image_prompt_pref_threshold: 0.7,
     blocked_paths: '',
-    seo_site_name_en: 'Perplexta',
-    seo_site_name_ar: 'بيربلكستا',
+    seo_site_name_en: 'Perplexa',
+    seo_site_name_ar: 'بيربليكسا',
     font_loading_config: JSON.stringify({
-      ar: { fontFamily: 'Tajawal', enabled: true, url: 'https://fonts.googleapis.com/css2?family=Tajawal:wght@300;400;500;700&display=swap' },
-      en: { fontFamily: 'Space Grotesk', enabled: true, url: 'https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&display=swap' },
+      ar: { fontFamily: 'Cairo', enabled: true, url: 'https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700&display=swap' },
+      en: { fontFamily: 'Geist', enabled: true, url: 'https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&display=swap' },
       dynamicLoading: true
     }),
-    font_config_ar: JSON.stringify({ fontFamily: 'Tajawal', enabled: true, url: 'https://fonts.googleapis.com/css2?family=Tajawal:wght@300;400;500;700&display=swap' }),
-    font_config_en: JSON.stringify({ fontFamily: 'Space Grotesk', enabled: true, url: 'https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&display=swap' })
+    font_config_ar: JSON.stringify({ fontFamily: 'Cairo', enabled: true, url: 'https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700&display=swap' }),
+    font_config_en: JSON.stringify({ fontFamily: 'Geist', enabled: true, url: 'https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&display=swap' })
   };
 
   if (!pool) {

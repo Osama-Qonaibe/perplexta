@@ -2,6 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { motion, AnimatePresence } from 'motion/react';
 import { toast } from '@/design-system';
+import { secureStorage } from "@/lib/storage";
 import {
   X,
   Upload,
@@ -103,6 +104,7 @@ export const StoryUploadModal: React.FC<StoryUploadModalProps> = ({
   // General State
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [mediaPreviewUrl, setMediaPreviewUrl] = useState<string>('');
+  const [isStoryDragging, setIsStoryDragging] = useState<boolean>(false);
   const [isVideo, setIsVideo] = useState<boolean>(false);
   const [videoDuration, setVideoDuration] = useState<number>(0);
   const [isUploading, setIsUploading] = useState<boolean>(false);
@@ -435,7 +437,8 @@ export const StoryUploadModal: React.FC<StoryUploadModalProps> = ({
   };
 
   const handlePublish = async () => {
-    if (!token) {
+    const authToken = token || secureStorage.getSync('app_token') || '';
+    if (!authToken) {
       toast.error(isRtl ? 'يرجى تسجيل الدخول أولاً' : 'Please log in first');
       return;
     }
@@ -455,7 +458,7 @@ export const StoryUploadModal: React.FC<StoryUploadModalProps> = ({
         const uploadRes = await fetch(`/api/files/upload?maxDuration=30&startOffset=${startTimeOffset}`, {
           method: 'POST',
           headers: {
-            Authorization: `Bearer ${token}`
+            Authorization: `Bearer ${authToken}`
           },
           body: formData
         });
@@ -473,7 +476,7 @@ export const StoryUploadModal: React.FC<StoryUploadModalProps> = ({
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
-            Authorization: `Bearer ${token}`
+            Authorization: `Bearer ${authToken}`
           },
           body: JSON.stringify({
             title: isRtl ? 'قصة مرئية' : 'Video Story',
@@ -515,7 +518,7 @@ export const StoryUploadModal: React.FC<StoryUploadModalProps> = ({
           const uploadRes = await fetch('/api/files/upload', {
             method: 'POST',
             headers: {
-              Authorization: `Bearer ${token}`
+              Authorization: `Bearer ${authToken}`
             },
             body: formData
           });
@@ -540,7 +543,7 @@ export const StoryUploadModal: React.FC<StoryUploadModalProps> = ({
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
-              Authorization: `Bearer ${token}`
+              Authorization: `Bearer ${authToken}`
             },
             body: JSON.stringify({
               title: isRtl ? `قصة مصورة #${i + 1}` : `Photo Story #${i + 1}`,
@@ -684,13 +687,14 @@ export const StoryUploadModal: React.FC<StoryUploadModalProps> = ({
 
       setUploadProgressText(isRtl ? 'جاري رفع القصة النصية...' : 'Uploading story image...');
 
+      const authToken = token || secureStorage.getSync('app_token') || '';
       const file = new File([blob], `text_story_${Date.now()}.jpg`, { type: 'image/jpeg' });
       const formData = new FormData();
       formData.append('file', file);
 
       const uploadRes = await fetch('/api/files/upload', {
         method: 'POST',
-        headers: { Authorization: `Bearer ${token}` },
+        headers: { Authorization: `Bearer ${authToken}` },
         body: formData
       });
 
@@ -706,7 +710,7 @@ export const StoryUploadModal: React.FC<StoryUploadModalProps> = ({
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`
+          Authorization: `Bearer ${authToken}`
         },
         body: JSON.stringify({
           title: textContent.slice(0, 40),
@@ -988,7 +992,19 @@ export const StoryUploadModal: React.FC<StoryUploadModalProps> = ({
               /* Drag & Drop Upload Portal */
               <div
                 onClick={() => fileInputRef.current?.click()}
-                className="border-2 border-dashed border-[var(--border-default)] hover:border-[var(--border-accent)] rounded-[var(--radius-md)] p-6 sm:p-10 flex flex-col items-center justify-center gap-3 cursor-pointer transition-colors bg-[var(--surface-subtle)] group text-center"
+                onDragOver={(e) => { e.preventDefault(); setIsStoryDragging(true); }}
+                onDragLeave={() => setIsStoryDragging(false)}
+                onDrop={(e) => {
+                  e.preventDefault();
+                  setIsStoryDragging(false);
+                  const files = e.dataTransfer.files ? Array.from(e.dataTransfer.files) : [];
+                  if (files.length > 0) handleFilesSelected(files);
+                }}
+                className={`border-2 border-dashed rounded-[var(--radius-md)] p-6 sm:p-10 flex flex-col items-center justify-center gap-3 cursor-pointer transition-all bg-[var(--surface-subtle)] group text-center select-none ${
+                  isStoryDragging
+                    ? 'border-accent bg-accent/10 scale-[1.01]'
+                    : 'border-[var(--border-default)] hover:border-[var(--border-accent)]'
+                }`}
               >
                 <input
                   ref={fileInputRef}

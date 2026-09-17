@@ -67,7 +67,6 @@ export const StudioPage: React.FC = () => {
 
   return (
     <div className="min-h-screen-safe bg-[#080c14] text-slate-100 font-sans pb-28 md:pb-20">
-      {/* Native App Bar Header */}
       <header className="sticky top-0 z-40 backdrop-blur-xl bg-[#080c14]/90 border-b border-slate-800/90 pt-[env(safe-area-inset-top,0px)]">
         <div className="max-w-5xl mx-auto px-4 h-14 flex items-center justify-between">
           <div className="flex items-center gap-3">
@@ -95,7 +94,6 @@ export const StudioPage: React.FC = () => {
       </header>
 
       <main className="max-w-5xl mx-auto px-4 py-8 space-y-8">
-        {/* Feature Navigation Cards Grid */}
         <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
           {studioFeatures.map((feat) => (
             <div 
@@ -133,7 +131,6 @@ export const StudioPage: React.FC = () => {
           ))}
         </section>
 
-        {/* Sovereign IP & Security Anchor */}
         <section className="pt-2 space-y-4 text-center">
           <div className="p-5 rounded-shape-sm border border-slate-800/90 bg-[#090d16] max-w-xl mx-auto space-y-2 shadow-xs">
             <div className="flex items-center justify-center gap-2 text-slate-100">
@@ -151,7 +148,6 @@ export const StudioPage: React.FC = () => {
         </section>
       </main>
 
-      {/* Fixed Bottom Footer Bar */}
       <footer className="fixed bottom-0 left-0 right-0 z-50 bg-[#080c14] border-t border-slate-800/90 select-none py-3.5 px-4 md:px-6 shadow-md">
         <div className="max-w-5xl w-full mx-auto flex flex-col sm:flex-row items-center justify-between gap-3 text-[10px] sm:text-[11px] text-slate-300">
           <nav className="flex flex-wrap items-center justify-center gap-3 sm:gap-4 font-bold text-accent">
@@ -181,8 +177,8 @@ export const StudioPage: React.FC = () => {
           </nav>
           <p className="font-sans tracking-wide leading-relaxed text-slate-400 whitespace-nowrap text-[9px] sm:text-[11px]">
             {language === 'ar' 
-              ? 'جميع الحقوق محفوظة © 2026 ViralLinkUp'
-              : '© 2026 ViralLinkUp. All rights reserved.'
+              ? 'جميع الحقوق محفوظة © 2026 بيربليكستا'
+              : '© 2026 Perplexta. All rights reserved.'
             }
           </p>
         </div>

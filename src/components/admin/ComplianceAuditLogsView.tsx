@@ -55,6 +55,7 @@ import { ActionConfirmationModal } from "../ActionConfirmationModal";
 import { ComplianceAuditLogsViewProps } from "./adminTypes";
 import { AdminRateLimitMetricsView } from "../../pages/AdminRateLimitMetricsView";
 import { AdminRenderMetricsView } from "../AdminRenderMetricsView";
+import { DatabaseHealthAuditView } from "./DatabaseHealthAuditView";
 
 export const ComplianceAuditLogsView = ({
   theme,
@@ -63,7 +64,7 @@ export const ComplianceAuditLogsView = ({
   initialTab = "logs",
 }: ComplianceAuditLogsViewProps) => {
   const { token, language } = useAppContext();
-  const [activeTab, setActiveTab] = useState<'logs' | 'radar' | 'metrics'>(initialTab);
+  const [activeTab, setActiveTab] = useState<'logs' | 'radar' | 'metrics' | 'databases'>(initialTab);
   const [logs, setLogs] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
   const [total, setTotal] = useState(0);
@@ -295,11 +296,26 @@ export const ComplianceAuditLogsView = ({
               <Activity size={15} className={activeTab === 'metrics' ? 'text-[var(--accent)]' : ''} />
               <span>{isRtl ? "مقاييس الأداء والرندر" : "Render & Latency Metrics"}</span>
             </button>
+
+            <button
+              type="button"
+              onClick={() => setActiveTab('databases')}
+              className={`flex items-center gap-2 px-3.5 py-2 rounded-[var(--radius-sm)] text-xs font-bold transition-all whitespace-nowrap cursor-pointer ${
+                activeTab === 'databases'
+                  ? 'bg-[var(--surface-card)] text-[var(--text-primary)] shadow-sm border border-[var(--border-default)]'
+                  : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)] border border-transparent'
+              }`}
+            >
+              <Database size={15} className={activeTab === 'databases' ? 'text-[var(--accent)]' : ''} />
+              <span>{isRtl ? "سلامة وتأخير قواعد البيانات" : "Database Health & Latency"}</span>
+            </button>
           </div>
         </div>
       </div>
 
-      {activeTab === 'radar' ? (
+      {activeTab === 'databases' ? (
+        <DatabaseHealthAuditView theme={theme} t={t} dir={dir} />
+      ) : activeTab === 'radar' ? (
         <AdminRateLimitMetricsView theme={theme} t={t} />
       ) : activeTab === 'metrics' ? (
         <AdminRenderMetricsView />

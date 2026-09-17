@@ -4,7 +4,7 @@ import { BrainCircuit, Plus, Trash2, Edit2, Save, X, Loader2, Info, User, AlertT
 import { motion } from 'motion/react';
 import { useAppContext } from '../context/AppContext';
 import { ActionConfirmationModal } from './ActionConfirmationModal';
-import { toast } from '@/design-system';
+import { toast, SelectDropdown } from '@/design-system';
 
 interface Memory {
   id: number;
@@ -250,18 +250,17 @@ export const MemoryCenter: React.FC<MemoryCenterProps> = ({
         <div className="p-4 sm:p-5 rounded-[var(--pub-radius-container)] border border-[var(--pub-border-default)] bg-[var(--pub-surface-container)] space-y-3">
           <div className="flex gap-3">
             <div className="flex-1">
-              <label className="block text-[10px] font-bold text-[var(--pub-text-muted)] uppercase mb-1">
-                {t('category') || (dir === 'rtl' ? 'التصنيف' : 'Category')}
-              </label>
-              <select
+              <SelectDropdown
+                size="sm"
+                label={t('category') || (dir === 'rtl' ? 'التصنيف' : 'Category')}
                 value={newCategory}
-                onChange={(e) => setNewCategory(e.target.value)}
-                className="w-full p-2 rounded-[var(--pub-radius-control)] border border-[var(--pub-border-default)] bg-[var(--pub-surface-subtle)] text-[var(--pub-text-primary)] text-xs focus:outline-none focus:border-cyan-500/50"
-              >
-                {categories.filter(c => c.id !== 'all').map((cat, cIdx) => (
-                  <option key={`mem-new-cat-${cat.id}-${cIdx}`} value={cat.id}>{cat.label}</option>
-                ))}
-              </select>
+                onChange={(val) => setNewCategory(val)}
+                dir={dir}
+                options={categories.filter(c => c.id !== 'all').map(cat => ({
+                  value: cat.id,
+                  label: cat.label
+                }))}
+              />
             </div>
           </div>
           <textarea
@@ -319,15 +318,16 @@ export const MemoryCenter: React.FC<MemoryCenterProps> = ({
                 <div className="space-y-3">
                   <div className="flex gap-3">
                     <div className="flex-1">
-                      <select
+                      <SelectDropdown
+                        size="sm"
                         value={editCategory}
-                        onChange={(e) => setEditCategory(e.target.value)}
-                        className="w-full p-2 rounded-[var(--pub-radius-control)] border border-[var(--pub-border-default)] bg-[var(--pub-surface-subtle)] text-[var(--pub-text-primary)] text-xs focus:outline-none focus:border-cyan-500/50"
-                      >
-                        {categories.filter(c => c.id !== 'all').map((cat, cIdx) => (
-                          <option key={`mem-edit-cat-${cat.id}-${cIdx}`} value={cat.id}>{cat.label}</option>
-                        ))}
-                      </select>
+                        onChange={(val) => setEditCategory(val)}
+                        dir={dir}
+                        options={categories.filter(c => c.id !== 'all').map(cat => ({
+                          value: cat.id,
+                          label: cat.label
+                        }))}
+                      />
                     </div>
                   </div>
                   <textarea

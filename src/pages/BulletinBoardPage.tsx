@@ -184,8 +184,7 @@ export const BulletinBoardPage: React.FC = () => {
         if (path.includes('/my-ads') || path.includes('/my_ads')) return 'my_ads';
         if (path.includes('/analytics')) return 'analytics';
         if (path.includes('/saved')) return 'saved';
-        
-        // If explicitly visiting main bulletin/viralbook path without subpath or query param, force board
+
         if (path === '/viralbook' || path === '/bulletin' || path === '/viralbook/' || path === '/bulletin/') {
           if (urlTab && urlTab !== 'board') {
             const validTabs = ['board', 'reels', 'pages', 'inquiries', 'my_ads', 'analytics', 'saved'];
@@ -194,7 +193,6 @@ export const BulletinBoardPage: React.FC = () => {
           return 'board';
         }
 
-        // Check legacy query param
         const validTabs = ['board', 'reels', 'pages', 'inquiries', 'my_ads', 'analytics', 'saved'];
         if (urlTab && validTabs.includes(urlTab)) {
           return urlTab as any;
@@ -206,14 +204,12 @@ export const BulletinBoardPage: React.FC = () => {
         }
       }
     } catch (e) {
-      // Ignore storage errors
     }
     return 'board';
   };
 
   const [activeTab, setActiveTab] = useState<'board' | 'reels' | 'pages' | 'inquiries' | 'my_ads' | 'analytics' | 'saved'>(resolveActiveTabFromLocation);
 
-  // Synchronize Active Tab with URL location changes (e.g. Header button vs Footer Chat button)
   useEffect(() => {
     const searchParams = new URLSearchParams(location.search);
     const urlTab = searchParams.get('tab');
@@ -229,9 +225,23 @@ export const BulletinBoardPage: React.FC = () => {
         setActiveTab('board');
       }
     }
+
+    const adIdParam = searchParams.get('ad_id');
+    if (adIdParam) {
+      const targetAdId = parseInt(adIdParam, 10);
+      if (!isNaN(targetAdId)) {
+        setTimeout(() => {
+          const el = document.getElementById(`bulletin-ad-${targetAdId}`);
+          if (el) {
+            el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            el.classList.add('ring-2', 'ring-accent');
+            setTimeout(() => el.classList.remove('ring-2', 'ring-accent'), 2500);
+          }
+        }, 600);
+      }
+    }
   }, [location.pathname, location.search]);
 
-  // Synchronize Active Tab to SessionStorage/LocalStorage & clean URL paths
   useEffect(() => {
     try {
       sessionStorage.setItem('perplexta_bulletin_active_tab', activeTab);
@@ -250,7 +260,7 @@ export const BulletinBoardPage: React.FC = () => {
         const targetPath = tabToPathMap[activeTab] || '/viralbook';
         const currentPath = window.location.pathname;
 
-        const isExactOrSubMatch = currentPath === targetPath || 
+        const isExactOrSubMatch = currentPath === targetPath ||
           (activeTab === 'board' && (currentPath === '/viralbook' || currentPath === '/bulletin' || /^\/(?:viralbook|bulletin)\/\d+$/.test(currentPath))) ||
           (activeTab === 'reels' && (currentPath.startsWith('/viralbook/reels') || currentPath.startsWith('/reels')));
 
@@ -258,7 +268,6 @@ export const BulletinBoardPage: React.FC = () => {
           window.history.replaceState(null, '', targetPath);
         }
 
-        // Clean up legacy query strings (?tab=..., ?post=...)
         if (window.location.search) {
           const url = new URL(window.location.href);
           if (url.searchParams.has('tab')) {
@@ -270,11 +279,9 @@ export const BulletinBoardPage: React.FC = () => {
         }
       }
     } catch (e) {
-      // Ignore
     }
   }, [activeTab]);
 
-  // Persist and restore scroll position on window refresh/navigation (targeting .main-scroll-container)
   useEffect(() => {
     let active = true;
     let timer: NodeJS.Timeout;
@@ -297,7 +304,6 @@ export const BulletinBoardPage: React.FC = () => {
       } catch (e) {}
     };
 
-    // Attempt restoration with retries as elements load
     timer = setTimeout(restoreScroll, 50);
     timer2 = setTimeout(restoreScroll, 150);
 
@@ -306,7 +312,6 @@ export const BulletinBoardPage: React.FC = () => {
       try {
         const target = e.target as HTMLElement;
         if (target && (target.classList?.contains('main-scroll-container') || target === document.documentElement)) {
-          // Only save if scroll locking is NOT active to avoid capturing 0 or transition states
           if (!document.body.classList.contains('layout-locked') && !document.body.classList.contains('workspace-focus-mode')) {
             const scrollTop = target.scrollTop || window.scrollY;
             sessionStorage.setItem(`perplexta_scroll_${activeTab}`, String(scrollTop));
@@ -315,7 +320,6 @@ export const BulletinBoardPage: React.FC = () => {
       } catch (e) {}
     };
 
-    // Attach listener to document to capture bubbling scroll events from the scroll container
     document.addEventListener('scroll', handleScroll, { capture: true, passive: true });
 
     return () => {
@@ -394,7 +398,6 @@ export const BulletinBoardPage: React.FC = () => {
 
   const [contextMenu, setContextMenu] = useState<{ x: number; y: number; isOpen: boolean }>({ x: 0, y: 0, isOpen: false });
 
-  // Unified reactive collection of all available video ads for seamless Reels viewing (strictly excluding stories)
   const combinedReelsAds = useMemo(() => {
     const map = new Map<number, BulletinAd>();
     [...ads, ...myAds, ...savedAds].forEach(a => {
@@ -417,7 +420,6 @@ export const BulletinBoardPage: React.FC = () => {
     return Array.from(map.values());
   }, [ads, myAds, savedAds, activeReelModalId]);
 
-  // Handle global trigger to open full-screen Reels viewer for any video
   useEffect(() => {
     const handleOpenReelFullscreen = (e: any) => {
       const { adId, url } = e.detail || {};
@@ -560,7 +562,7 @@ export const BulletinBoardPage: React.FC = () => {
           const res = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}&accept-language=ar`);
           const data = await res.json();
           const detectedCity = data.address?.city || data.address?.town || data.address?.state || data.address?.county || 'القدس الشريف';
-          
+
           handleSelectCity(detectedCity);
           toast.success(isRtl ? `🎯 تم تحديد موقعك الحالي بنجاح: ${detectedCity}` : `🎯 Location detected: ${detectedCity}`);
         } catch (e) {
@@ -581,11 +583,10 @@ export const BulletinBoardPage: React.FC = () => {
   const [pagesList, setPagesList] = useState<BulletinPage[]>([]);
   const [myPagesList, setMyPagesList] = useState<BulletinPage[]>([]);
   const [pagesLoading, setPagesLoading] = useState<boolean>(false);
-  
+
   const [selectedPageDetail, setSelectedPageDetail] = useState<{ page: BulletinPage; ads: BulletinAd[] } | null>(null);
   const [pageDetailTab, setPageDetailTab] = useState<'ads' | 'about' | 'media'>('ads');
 
-  // Profile Settings & Page Edit states
   const [isProfileEditModalOpen, setIsProfileEditModalOpen] = useState<boolean>(false);
   const [isEditPageModalOpen, setIsEditPageModalOpen] = useState<boolean>(false);
   const [editingPageData, setEditingPageData] = useState<BulletinPage | null>(null);
@@ -600,8 +601,7 @@ export const BulletinBoardPage: React.FC = () => {
     language: 'ar',
     theme: 'light'
   });
-  
-  // KYC form fields
+
   const [kycFullName, setKycFullName] = useState<string>('');
   const [kycIDNumber, setKycIDNumber] = useState<string>('');
   const [kycSelfieUrl, setKycSelfieUrl] = useState<string>('');
@@ -717,7 +717,6 @@ export const BulletinBoardPage: React.FC = () => {
   const [streamTitleInput, setStreamTitleInput] = useState<string>('');
   const [isMuted, setIsMuted] = useState<boolean>(() => getGlobalMuteState());
 
-  // Synchronize mute state across all media and live streams
   useEffect(() => {
     const handleMuteChange = (e: Event) => {
       const customEvent = e as CustomEvent<{ muted: boolean }>;
@@ -794,16 +793,16 @@ export const BulletinBoardPage: React.FC = () => {
       });
       const data = await res.json();
       if (data.success) {
-        toast.success(isRtl 
-          ? `تم إرسال ${gift.name_ar} بنجاح!` 
+        toast.success(isRtl
+          ? `تم إرسال ${gift.name_ar} بنجاح!`
           : `Sent ${gift.name_en} successfully!`
         );
         setIsGiftModalOpen(false);
         fetchWallet();
-        setLiveComments(prev => [...prev, { 
-          id: Date.now().toString(), 
-          user: user?.name || (isRtl ? 'مستخدم' : 'User'), 
-          text: isRtl ? `أرسل هدية: ${gift.name_ar} ${gift.icon}` : `Sent a gift: ${gift.name_en} ${gift.icon}` 
+        setLiveComments(prev => [...prev, {
+          id: Date.now().toString(),
+          user: user?.name || (isRtl ? 'مستخدم' : 'User'),
+          text: isRtl ? `أرسل هدية: ${gift.name_ar} ${gift.icon}` : `Sent a gift: ${gift.name_en} ${gift.icon}`
         }]);
       } else {
         toast.error(isRtl ? (data.error_ar || data.error) : data.error);
@@ -835,7 +834,7 @@ export const BulletinBoardPage: React.FC = () => {
           throw e;
         }
       }
-      
+
       streamRef.current = stream;
       if (videoRef.current) {
         videoRef.current.srcObject = stream;
@@ -861,10 +860,10 @@ export const BulletinBoardPage: React.FC = () => {
       setLiveViewers(Math.floor(Math.random() * 1200) + 1500);
       setLiveLikes(Math.floor(Math.random() * 800));
       setLiveComments([]);
-      
+
       interval = setInterval(() => {
         setLiveViewers(prev => {
-          const drift = Math.floor(Math.random() * 51) - 25; // -25 to +25
+          const drift = Math.floor(Math.random() * 51) - 25;
           const next = prev + drift;
           if (next < 1500) return 1500 + Math.floor(Math.random() * 200);
           if (next > 10000) return 10000 - Math.floor(Math.random() * 200);
@@ -883,6 +882,7 @@ export const BulletinBoardPage: React.FC = () => {
 
   const [isMobileSearchOpen, setIsMobileSearchOpen] = useState<boolean>(false);
   const [isAdModalOpen, setIsAdModalOpen] = useState<boolean>(false);
+  const [isComposerDragging, setIsComposerDragging] = useState<boolean>(false);
   const [isStoryModalOpen, setIsStoryModalOpen] = useState<boolean>(false);
   const [storyUploadMode, setStoryUploadMode] = useState<'media' | 'text'>('media');
   const [isEditMode, setIsEditMode] = useState<boolean>(false);
@@ -964,7 +964,7 @@ export const BulletinBoardPage: React.FC = () => {
   const handleSelectSuggestion = (selectedVal: string) => {
     const text = adFormData.description;
     const words = text.split(/([\s\n]+)/);
-    
+
     let replaced = false;
     for (let i = words.length - 1; i >= 0; i--) {
       if (words[i].trim().startsWith('#') && suggestionType === 'hashtag') {
@@ -974,7 +974,7 @@ export const BulletinBoardPage: React.FC = () => {
       }
       if (words[i].trim().startsWith('@') && suggestionType === 'mention') {
         words[i] = selectedVal.startsWith('@') ? selectedVal : `@${selectedVal}`;
-        
+
         const cleanName = selectedVal.replace(/^@/, '');
         if (!adFormData.tagged_users.includes(cleanName)) {
           setAdFormData(prev => ({
@@ -982,12 +982,12 @@ export const BulletinBoardPage: React.FC = () => {
             tagged_users: [...prev.tagged_users, cleanName]
           }));
         }
-        
+
         replaced = true;
         break;
       }
     }
-    
+
     const newText = words.join('') + ' ';
     setAdFormData(prev => ({ ...prev, description: newText }));
     setSuggestionType('none');
@@ -1174,7 +1174,7 @@ export const BulletinBoardPage: React.FC = () => {
       authorName,
       ad: ad || undefined
     });
-    
+
     if (ad && ad.id) {
       updateUrlWithPost(ad.id);
     }
@@ -1190,20 +1190,19 @@ export const BulletinBoardPage: React.FC = () => {
   };
   const [isAddToPostModalOpen, setIsAddToPostModalOpen] = useState<boolean>(false);
 
-  // Lock scroll when reels or media lightbox are open
   useModalScrollLock(activeReelModalId !== null, 'reels-viewer');
 
   const [boostingAd, setBoostingAd] = useState<BulletinAd | null>(null);
   const [isBoostModalOpen, setIsBoostModalOpen] = useState<boolean>(false);
 
-  const isAnyModalOpen = isAdModalOpen || 
-    isStoryViewerOpen || 
-    isLiveStreamOpen || 
-    isStoryModalOpen || 
-    isAudienceModalOpen || 
-    isPageModalOpen || 
-    isAddToPostModalOpen || 
-    isBoostModalOpen || 
+  const isAnyModalOpen = isAdModalOpen ||
+    isStoryViewerOpen ||
+    isLiveStreamOpen ||
+    isStoryModalOpen ||
+    isAudienceModalOpen ||
+    isPageModalOpen ||
+    isAddToPostModalOpen ||
+    isBoostModalOpen ||
     isGiftModalOpen ||
     inquireAd !== null ||
     isMediaManagerOpen ||
@@ -1243,8 +1242,7 @@ export const BulletinBoardPage: React.FC = () => {
 
   useEffect(() => {
     let targetPostId: number | null = null;
-    
-    // 1. Check path params (e.g. /viralbook/42 or /viralbook/board/42)
+
     if (routeIdParam && !isNaN(Number(routeIdParam))) {
       targetPostId = Number(routeIdParam);
     } else if (subPath && !isNaN(Number(subPath))) {
@@ -1258,7 +1256,6 @@ export const BulletinBoardPage: React.FC = () => {
       }
     }
 
-    // 2. Check query params fallback (?post=123 or ?id=123)
     if (!targetPostId && typeof window !== 'undefined') {
       const urlParams = new URLSearchParams(window.location.search);
       const postStr = urlParams.get('post') || urlParams.get('id');
@@ -1266,7 +1263,7 @@ export const BulletinBoardPage: React.FC = () => {
         targetPostId = Number(postStr);
       }
     }
-    
+
     if (targetPostId && targetPostId > 0) {
       const postId = targetPostId;
       const fetchDirectPost = async () => {
@@ -1280,7 +1277,6 @@ export const BulletinBoardPage: React.FC = () => {
             const mediaUrl = getMediaUrl(ad.video_url || ad.image_url);
             handleOpenLightbox(mediaUrl, ad.media_gallery, 0, ad.title, ad.author_name, ad);
 
-            // Fetch comments for this direct post to preserve session state on refresh
             try {
               const cRes = await fetch(`/api/bulletin/ads/${postId}/comments`, {
                 headers: token ? { Authorization: `Bearer ${token}` } : {}
@@ -1301,11 +1297,10 @@ export const BulletinBoardPage: React.FC = () => {
     }
   }, [token, routeIdParam, subPath, subId]);
 
-  // DIRECT REEL DEEP-LINKING (e.g. /viralbook/reels/123 or /reels/123 or ?tab=reels&reel=1)
   useEffect(() => {
     let targetReelId: number | null = null;
-    const isReelRoute = location.pathname.startsWith('/reels') || 
-      location.pathname.includes('/reels') || 
+    const isReelRoute = location.pathname.startsWith('/reels') ||
+      location.pathname.includes('/reels') ||
       subPath === 'reels';
 
     if (isReelRoute) {
@@ -1328,7 +1323,7 @@ export const BulletinBoardPage: React.FC = () => {
         targetReelId = Number(reelIdStr);
       }
     }
-    
+
     if (targetReelId && targetReelId > 0) {
       const reelId = targetReelId;
       const fetchDirectReel = async () => {
@@ -1338,7 +1333,6 @@ export const BulletinBoardPage: React.FC = () => {
           });
           const data = await res.json();
           if (data.success && data.ad && data.ad.video_url) {
-            // Inject reel into ads so it exists for the ReelsFeed
             setAds(prev => {
               const exists = prev.some(a => a.id === data.ad.id);
               if (exists) return prev;
@@ -1411,7 +1405,6 @@ export const BulletinBoardPage: React.FC = () => {
     }
   }, [token, location, routeIdParam, ads]);
 
-  // DIRECT PAGE DEEP-LINKING (e.g. /viralbook/pages/42)
   useEffect(() => {
     if (routeIdParam === 'pages' && subPath && !isNaN(Number(subPath))) {
       const pageId = Number(subPath);
@@ -1427,24 +1420,20 @@ export const BulletinBoardPage: React.FC = () => {
   const handleNavigateToPost = async (adId: number) => {
     if (!adId) return;
 
-    // 1. Close overlays & stop playing media
     stopAllMedia();
     setActiveReelModalId(null);
     setLightboxState(prev => ({ ...prev, isOpen: false }));
     updateUrlWithPost(null);
 
-    // 2. Switch to main board feed
     if (activeTab !== 'board') {
       setActiveTab('board');
     }
 
-    // 3. Clear restrictive filters so the target post is guaranteed to show
     setSelectedCategory('all');
     setSearchQuery('');
     setSelectedAudienceFilter('all');
     setSelectedCity('all');
 
-    // 4. Fetch the ad if it is not in the current list
     let targetAd = ads.find(a => a.id === adId);
     if (!targetAd) {
       try {
@@ -1461,10 +1450,8 @@ export const BulletinBoardPage: React.FC = () => {
       }
     }
 
-    // 5. Expand post comments/content
     setExpandedAdId(adId);
 
-    // 6. Smoothly scroll into viewport and flash an attention pulse ring
     const executeScroll = (attempts = 0) => {
       const el = document.getElementById(`bulletin-ad-${adId}`);
       if (el) {
@@ -1494,7 +1481,6 @@ export const BulletinBoardPage: React.FC = () => {
         setStories(prev => prev.map(s => s.id === storyId ? { ...s, impressions_count: (Number(s.impressions_count) || 0) + 1 } : s));
       }
     } catch (err) {
-      // silent error
     }
   };
 
@@ -1606,7 +1592,7 @@ export const BulletinBoardPage: React.FC = () => {
       const res = await fetch(`/api/bulletin/pages?${params.toString()}`, {
         headers: token ? { Authorization: `Bearer ${token}` } : {}
       });
-      
+
       if (res.status === 503) return;
       if (!res.ok) throw new Error('Failed to fetch pages');
       const data = await res.json();
@@ -1710,8 +1696,7 @@ export const BulletinBoardPage: React.FC = () => {
         const containerY = container ? container.scrollTop : 0;
         const windowY = window.scrollY || document.documentElement.scrollTop || document.body.scrollTop || 0;
         const currentY = Math.max(containerY, windowY);
-        
-        // Show scroll-to-top ONLY on board tab when not in any fullscreen mode (expanded post, reel modal, lightbox, etc.) and scrolled down > 200px
+
         const isPostFullscreen = expandedAdId !== null || activeReelModalId !== null || lightboxState.isOpen || activeTab !== 'board';
         setShowScrollTop(!isPostFullscreen && currentY > 200);
 
@@ -2140,7 +2125,6 @@ export const BulletinBoardPage: React.FC = () => {
     }
   };
 
-  // Dedicated Mobile & Desktop Pull-to-Refresh Gesture Engine
   useEffect(() => {
     if (activeTab === 'reels') return;
 
@@ -2178,7 +2162,6 @@ export const BulletinBoardPage: React.FC = () => {
       );
     };
 
-    // --- Touch Handlers (Mobile / Tablet) ---
     const onTouchStart = (e: TouchEvent) => {
       if (e.touches.length !== 1 || isRefreshing || isModalActive()) return;
       if (isInteractive(e.target)) return;
@@ -2216,7 +2199,6 @@ export const BulletinBoardPage: React.FC = () => {
       const deltaY = touch.clientY - touchStartY;
       const deltaX = Math.abs(touch.clientX - (touchStartX ?? touch.clientX));
 
-      // Guard horizontal gestures (e.g. stories carousel, horizontal scroll lists)
       if (deltaX > 8 && deltaX > deltaY && pullDistanceRef.current === 0) {
         isTouchPulling = false;
         touchStartY = null;
@@ -2262,7 +2244,6 @@ export const BulletinBoardPage: React.FC = () => {
       hasTriggeredHapticRef.current = false;
     };
 
-    // --- Mouse Drag Handlers (Desktop fallback / testing) ---
     const onMouseDown = (e: MouseEvent) => {
       if (e.button !== 0 || isRefreshing || isModalActive()) return;
       if (isInteractive(e.target)) return;
@@ -2345,13 +2326,13 @@ export const BulletinBoardPage: React.FC = () => {
       window.removeEventListener('mouseup', onMouseUp);
     };
   }, [
-    activeTab, 
-    isRefreshing, 
-    isAnyModalOpen, 
-    lightboxState.isOpen, 
-    activeReelModalId, 
-    isMobileSidebarOpen, 
-    isMobileSearchOpen, 
+    activeTab,
+    isRefreshing,
+    isAnyModalOpen,
+    lightboxState.isOpen,
+    activeReelModalId,
+    isMobileSidebarOpen,
+    isMobileSearchOpen,
     contextMenu.isOpen,
     isRtl
   ]);
@@ -2391,6 +2372,20 @@ export const BulletinBoardPage: React.FC = () => {
     } catch (error) {
       toast.error(isRtl ? 'خطأ في الاتصال' : 'Connection error');
     }
+  };
+
+  const handleRecommendationAdClick = (adId: number) => {
+    if (activeTab !== 'board') {
+      setActiveTab('board');
+    }
+    setTimeout(() => {
+      const el = document.getElementById(`bulletin-ad-${adId}`);
+      if (el) {
+        el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        el.classList.add('ring-2', 'ring-accent');
+        setTimeout(() => el.classList.remove('ring-2', 'ring-accent'), 2500);
+      }
+    }, 200);
   };
 
   const handleEditAd = (ad: BulletinAd) => {
@@ -2495,7 +2490,6 @@ export const BulletinBoardPage: React.FC = () => {
     setIsSubmittingAd(true);
     try {
       const desc = adFormData.description || '';
-      // Intelligent auto-extraction of hashtags (#tag) and mentions (@user) from natural post text
       const textHashtags = (desc.match(/#[\p{L}\p{N}_]+/gu) || []).map(h => h.replace(/^#/, '').trim());
       const existingHashtags = Array.isArray(adFormData.hashtags)
         ? adFormData.hashtags.map((h: any) => String(h).replace(/^#/, '').trim()).filter(Boolean)
@@ -2567,7 +2561,6 @@ export const BulletinBoardPage: React.FC = () => {
         if (selectedPageDetail) {
           handleOpenPageDetail(selectedPageDetail.page.id);
         }
-        // Redirect to homepage feed and scroll to top
         setActiveTab('board');
         window.scrollTo({ top: 0, behavior: 'smooth' });
       } else {
@@ -2600,16 +2593,16 @@ export const BulletinBoardPage: React.FC = () => {
     if (currentGallery.length + filesArray.length > maxLimit) {
       const allowedCount = maxLimit - currentGallery.length;
       toast.warning(
-        isRtl 
-          ? `الحد الأقصى هو ${maxLimit} عنصر. سيتم رفع أول ${allowedCount} وسائط إضافية فقط.` 
+        isRtl
+          ? `الحد الأقصى هو ${maxLimit} عنصر. سيتم رفع أول ${allowedCount} وسائط إضافية فقط.`
           : `Maximum limit is ${maxLimit} items. Only the first ${allowedCount} items will be uploaded.`
       );
       filesToUpload = filesArray.slice(0, allowedCount);
     }
 
     const toastId = toast.loading(
-      isRtl 
-        ? `جاري معالجة ورفع الوسائط (${filesToUpload.length} عنصر)...` 
+      isRtl
+        ? `جاري معالجة ورفع الوسائط (${filesToUpload.length} عنصر)...`
         : `Processing and uploading media (${filesToUpload.length} items)...`
     );
 
@@ -2675,7 +2668,6 @@ export const BulletinBoardPage: React.FC = () => {
             }
           }
         } else {
-          // Image
           if (file.size > 25 * 1024 * 1024) {
             toast.error(isRtl ? `حجم الصورة ${file.name} يتجاوز 25MB` : `Image ${file.name} exceeds 25MB`);
             continue;
@@ -2752,7 +2744,7 @@ export const BulletinBoardPage: React.FC = () => {
 
     setIsAdModalOpen(true);
     const localUrl = URL.createObjectURL(file);
-    
+
     setVideoMetadataInfo({
       fileName: file.name,
       fileSize: file.size,
@@ -2838,7 +2830,7 @@ export const BulletinBoardPage: React.FC = () => {
                 ad_format: isVertical ? 'reel' : ((prev.ad_format as string) === 'banner' ? 'post' : (prev.ad_format || 'post'))
               };
             });
-            
+
             setVideoMetadataInfo(prev => ({
               ...prev,
               fileSize: data.fileSize || data.file?.file_size || file.size,
@@ -2847,7 +2839,7 @@ export const BulletinBoardPage: React.FC = () => {
               processingStage: 'done',
               uploadProgress: 100
             }));
-            
+
             toast.success(isRtl ? 'تم رفع وتشغيل مقطع الفيديو بنجاح!' : 'Video uploaded & ready!');
           } else {
              handleUploadFallback(file, localUrl);
@@ -2874,19 +2866,80 @@ export const BulletinBoardPage: React.FC = () => {
   const handleUploadFile = async (file: File): Promise<string> => {
     const formData = new FormData();
     formData.append('file', file);
-    const res = await fetch('/api/bulletin/upload', {
+    const authToken = token || secureStorage.getSync('app_token') || '';
+
+    let res = await fetch('/api/bulletin/upload', {
       method: 'POST',
       headers: {
-        ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+        ...(authToken ? { 'Authorization': `Bearer ${authToken}` } : {})
       },
       body: formData
     });
+
+    if (!res.ok) {
+      res = await fetch('/api/files/upload', {
+        method: 'POST',
+        headers: {
+          ...(authToken ? { 'Authorization': `Bearer ${authToken}` } : {})
+        },
+        body: formData
+      });
+    }
+
     if (!res.ok) {
       const err = await res.json().catch(() => ({}));
-      throw new Error(err.error || 'Upload failed');
+      throw new Error(err.message_ar || err.error || (isRtl ? 'فشل رفع الملف' : 'Upload failed'));
     }
     const data = await res.json();
-    return data.url;
+    return data.url || data.fileUrl || data.file?.url || data.file?.file_url || '';
+  };
+
+  const handleMixedMediaSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (!files || files.length === 0) return;
+
+    const authToken = token || secureStorage.getSync('app_token') || '';
+    if (!authToken) {
+      toast.error(isRtl ? 'يرجى تسجيل الدخول أولاً' : 'Please log in first');
+      return;
+    }
+
+    const fileList = Array.from(files);
+    for (const file of fileList) {
+      if (file.type.startsWith('video/')) {
+        const fakeEvent = { target: { files: [file] } } as unknown as React.ChangeEvent<HTMLInputElement>;
+        handleVideoFileUpload(fakeEvent);
+      } else if (file.type.startsWith('image/')) {
+        const uploadToast = toast.loading(isRtl ? `جاري معالجة ورفع الصورة: ${file.name}...` : `Uploading: ${file.name}...`);
+        try {
+          const url = await handleUploadFile(file);
+          toast.dismiss(uploadToast);
+          if (url) {
+            setAdFormData(prev => {
+              const gallery = [...(prev.media_gallery || [])];
+              if (!gallery.some(m => m.url === url)) {
+                gallery.push({
+                  id: `img-${Date.now()}-${Math.random().toString(36).substring(7)}`,
+                  url,
+                  type: 'image',
+                  caption: ''
+                });
+              }
+              return {
+                ...prev,
+                image_url: prev.image_url ? `${prev.image_url},${url}` : url,
+                media_gallery: gallery
+              };
+            });
+            toast.success(isRtl ? 'تم رفع الصورة بنجاح!' : 'Image uploaded!');
+          }
+        } catch (err: any) {
+          toast.dismiss(uploadToast);
+          toast.error(err?.message || (isRtl ? 'فشل رفع الصورة' : 'Failed to upload image'));
+        }
+      }
+    }
+    e.target.value = '';
   };
 
   const handleReelFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -2989,6 +3042,54 @@ export const BulletinBoardPage: React.FC = () => {
     }
   };
 
+  const handleAvatarUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    try {
+      const url = await handleUploadFile(file);
+      setProfileFormData(prev => ({ ...prev, avatar: url }));
+      toast.success(isRtl ? 'تم رفع الصورة بنجاح' : 'Avatar uploaded successfully');
+    } catch (err: any) {
+      toast.error(err.message || (isRtl ? 'فشل رفع الصورة' : 'Failed to upload image'));
+    }
+  };
+
+  const handleKycSelfieUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    try {
+      const url = await handleUploadFile(file);
+      setKycSelfieUrl(url);
+      toast.success(isRtl ? 'تم رفع مستند التوثيق بنجاح' : 'KYC document uploaded successfully');
+    } catch (err: any) {
+      toast.error(err.message || (isRtl ? 'فشل رفع المستند' : 'Failed to upload document'));
+    }
+  };
+
+  const handleEditPageAvatarUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    try {
+      const url = await handleUploadFile(file);
+      setEditPageFormData(prev => ({ ...prev, avatar_url: url }));
+      toast.success(isRtl ? 'تم رفع شعار الصفحة بنجاح' : 'Page avatar uploaded successfully');
+    } catch (err: any) {
+      toast.error(err.message || (isRtl ? 'فشل رفع الشعار' : 'Failed to upload avatar'));
+    }
+  };
+
+  const handleEditPageCoverUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    try {
+      const url = await handleUploadFile(file);
+      setEditPageFormData(prev => ({ ...prev, cover_url: url }));
+      toast.success(isRtl ? 'تم رفع غلاف الصفحة بنجاح' : 'Page cover uploaded successfully');
+    } catch (err: any) {
+      toast.error(err.message || (isRtl ? 'فشل رفع الغلاف' : 'Failed to upload cover'));
+    }
+  };
+
   const handleKycSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!token) return;
@@ -3049,7 +3150,7 @@ export const BulletinBoardPage: React.FC = () => {
         setEditingPageData(null);
         await fetchPages();
         await fetchMyPages();
-        
+
         if (selectedPageDetail && selectedPageDetail.page.id === data.page.id) {
           setSelectedPageDetail(prev => prev ? { ...prev, page: data.page } : null);
         }
@@ -3077,7 +3178,6 @@ export const BulletinBoardPage: React.FC = () => {
       });
     } catch (e) {}
 
-    // 1. If native system share sheet is supported, invoke it cleanly without conflicting toasts
     if (navigator.share) {
       try {
         await navigator.share({
@@ -3087,14 +3187,12 @@ export const BulletinBoardPage: React.FC = () => {
         });
         return;
       } catch (e: any) {
-        // Dismissed / cancelled by user - stop cleanly without showing conflicting notifications
         if (e?.name === 'AbortError') {
           return;
         }
       }
     }
 
-    // 2. Fallback only if native share is not available on this platform
     try {
       if (navigator.clipboard && navigator.clipboard.writeText) {
         await navigator.clipboard.writeText(shareUrl);
@@ -3115,7 +3213,7 @@ export const BulletinBoardPage: React.FC = () => {
   const handleWhatsAppClick = (ad: BulletinAd, e: React.MouseEvent) => {
     e.stopPropagation();
     if (!ad.whatsapp_number) return;
-    
+
     fetch(`/api/bulletin/ads/${ad.id}/click`, { method: 'POST' }).catch(() => {});
 
     let cleanPhone = ad.whatsapp_number.replace(/[^0-9]/g, '');
@@ -3135,14 +3233,10 @@ export const BulletinBoardPage: React.FC = () => {
     );
   });
 
-  // ---------------------------------------------------------
-  // STORY GROUPING LOGIC (Facebook Style - Strict 24-Hour Expiration)
-  // ---------------------------------------------------------
   const orderedStories = useMemo(() => {
     const now = Date.now();
     const TWENTY_FOUR_HOURS_MS = 24 * 60 * 60 * 1000;
 
-    // Strict 24-hour filter
     const activeStories = (stories || []).filter((story: any) => {
       if (story.expires_at) {
         return new Date(story.expires_at).getTime() > now;
@@ -3155,7 +3249,6 @@ export const BulletinBoardPage: React.FC = () => {
 
     const groups: { [key: string]: any[] } = {};
     activeStories.forEach((story: any) => {
-      // Group by page_id if it's a merchant story, otherwise by user_id
       const key = story.page_id ? `page-${story.page_id}` : `user-${story.author_id || story.user_id}`;
       if (!groups[key]) groups[key] = [];
       groups[key].push(story);
@@ -3163,9 +3256,7 @@ export const BulletinBoardPage: React.FC = () => {
 
     const result: any[] = [];
     Object.values(groups).forEach(group => {
-      // Sort stories in each group by date (latest first)
       const sorted = [...group].sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
-      // Limit to 10 stories per user/page as requested
       result.push(...sorted.slice(0, 10));
     });
     return result;
@@ -3199,17 +3290,17 @@ export const BulletinBoardPage: React.FC = () => {
 
   return (
     <div className="min-h-screen-safe bg-[var(--surface-page)] text-[var(--text-primary)] transition-theme pb-24">
-      
-      {/* Primary Sticky Header Toolbar - Exact Platform Header Blueprint */}
+
+      {}
       <header
         dir={isRtl ? 'rtl' : 'ltr'}
         className="sticky top-0 z-[160] h-[calc(52px+env(safe-area-inset-top,0px))] lg:h-[calc(56px+env(safe-area-inset-top,0px))] pt-[env(safe-area-inset-top,0px)] bg-[var(--surface-page)]/95 backdrop-blur-md border-b border-[var(--border-default)] transition-theme shadow-xs"
       >
         <div className="w-full max-w-[1536px] 2xl:max-w-[1680px] mx-auto h-full px-3 sm:px-4 lg:px-6 flex items-center justify-between gap-2 sm:gap-4">
-          
-          {/* Start Side: Official Platform Logo - Exactly in the Primary Platform Logo's Spot */}
+
+          {}
           <div className="flex items-center gap-2 sm:gap-2.5 min-w-0 shrink-0">
-            {/* Official Platform Logo - Exactly Matches Primary Platform Logo */}
+            {}
             <NavLink
               to="/"
               onClick={() => {
@@ -3236,7 +3327,7 @@ export const BulletinBoardPage: React.FC = () => {
               )}
             </NavLink>
 
-            {/* Title & Section Breadcrumb */}
+            {}
             <div className="flex items-center gap-1.5 min-w-0">
               <span className="text-sm sm:text-base font-black tracking-tight text-[var(--text-primary)] select-none">
                 {isRtl ? 'فيرال بوك' : 'ViralBook'}
@@ -3262,9 +3353,9 @@ export const BulletinBoardPage: React.FC = () => {
             </div>
           </div>
 
-          {/* Center: Search & Filter Toolbar */}
+          {}
           <div className="flex items-center gap-1 sm:gap-2 shrink-0 flex-1 justify-center max-w-xl mx-auto min-w-0">
-            {/* Category Dropdown */}
+            {}
             {activeTab === 'board' && (
               <div ref={categoryDropdownRef} className="relative hidden md:block shrink-0">
                 <button
@@ -3332,7 +3423,7 @@ export const BulletinBoardPage: React.FC = () => {
               </div>
             )}
 
-            {/* Sort Dropdown */}
+            {}
             {activeTab === 'board' && (
               <div ref={sortDropdownRef} className="relative hidden sm:block shrink-0">
                 <button
@@ -3400,7 +3491,7 @@ export const BulletinBoardPage: React.FC = () => {
               </div>
             )}
 
-            {/* Chat-Style Search Input Field (Hidden on Mobile - accessed via Footer Search Button) */}
+            {}
             <form onSubmit={handleSearchSubmit} className="relative hidden md:flex items-center md:w-60 lg:w-72 h-8 rounded-shape-sm bg-[var(--surface-subtle)] border border-[var(--border-default)] focus-within:border-accent/40 focus-within:ring-2 focus-within:ring-accent/10 transition-all duration-150 shadow-2xs group">
               <Search size={13} className="absolute start-2.5 top-1/2 -translate-y-1/2 text-[var(--text-muted)] pointer-events-none transition-colors group-focus-within:text-accent" />
               <input
@@ -3422,29 +3513,29 @@ export const BulletinBoardPage: React.FC = () => {
               )}
             </form>
 
-            {/* Location Selector Button (Hidden on Mobile as requested to avoid redundancy) */}
+            {}
             {activeTab === 'board' && (
               <button
                 type="button"
                 onClick={() => setIsLocationFlyoutOpen(!isLocationFlyoutOpen)}
                 className="group/loc-btn relative hidden sm:flex w-8 h-8 rounded-shape-sm border border-[var(--border-default)] hover:border-accent/40 bg-[var(--surface-subtle)] hover:bg-accent/10 text-[var(--text-secondary)] hover:text-accent transition-all duration-150 items-center justify-center shrink-0 active:scale-95 cursor-pointer shadow-2xs"
                 title={
-                  selectedCity === 'all' 
-                    ? (isRtl ? 'تحديد نطاق تغطية الموقع (كافة المحافظات)' : 'Location radius filter (All Regions)') 
+                  selectedCity === 'all'
+                    ? (isRtl ? 'تحديد نطاق تغطية الموقع (كافة المحافظات)' : 'Location radius filter (All Regions)')
                     : (isRtl ? `تحديد نطاق الموقع: ${selectedCity} (${selectedRadius === 'all' ? 'الكل' : `+${selectedRadius} كم`})` : `Location: ${selectedCity} (${selectedRadius === 'all' ? 'All' : `+${selectedRadius} km`})`)
                 }
               >
-                <MapPin 
-                  size={14} 
-                  className="transition-transform duration-150 group-hover/loc-btn:scale-110 text-[var(--text-muted)] group-hover/loc-btn:text-accent" 
+                <MapPin
+                  size={14}
+                  className="transition-transform duration-150 group-hover/loc-btn:scale-110 text-[var(--text-muted)] group-hover/loc-btn:text-accent"
                 />
               </button>
             )}
           </div>
 
-          {/* End Side: Platform Utilities & Back Button at Outer Edge (الجهة الخارجية) */}
+          {}
           <div className="flex items-center gap-1.5 sm:gap-2 shrink-0 order-3">
-            {/* Messages / Inquiries Button */}
+            {}
             {user && (
               <button
                 type="button"
@@ -3465,7 +3556,7 @@ export const BulletinBoardPage: React.FC = () => {
               </button>
             )}
 
-            {/* Language Toggle */}
+            {}
             <button
               type="button"
               onClick={() => {
@@ -3478,12 +3569,12 @@ export const BulletinBoardPage: React.FC = () => {
               <Languages size={14} className="text-[var(--text-muted)] group-hover:text-accent transition-colors duration-150" />
             </button>
 
-            {/* Theme Toggle */}
+            {}
             <ThemeToggleButton variant="icon-button" size="sm" className="!w-8 !h-8 !rounded-shape-sm !border-[var(--border-default)] hover:!border-accent/40 !bg-[var(--surface-subtle)] hover:!bg-accent/10 !text-[var(--text-muted)] hover:!text-accent shadow-2xs transition-all duration-150" />
 
             <div className="w-px h-5 bg-[var(--border-default)] shrink-0 hidden xs:block" />
 
-            {/* Professional Back Button to Home / Previous View - Located on the Outer Edge (الجهة الخارجية) */}
+            {}
             <button
               type="button"
               onClick={() => {
@@ -3510,7 +3601,7 @@ export const BulletinBoardPage: React.FC = () => {
 
         </div>
 
-        {/* Animated Mobile Search Bar (Triggered via Bottom Footer Search Button) */}
+        {}
         <AnimatePresence>
           {isMobileSearchOpen && (
             <motion.div
@@ -3553,18 +3644,18 @@ export const BulletinBoardPage: React.FC = () => {
         </AnimatePresence>
       </header>
 
-      {/* Dynamic Pull-to-Refresh Visual Spinner & Capsule Indicator */}
+      {}
       {(pullDistance > 0 || isRefreshing) && (
-        <div 
+        <div
           className="fixed left-1/2 -translate-x-1/2 z-40 pointer-events-none transition-transform duration-100 flex flex-col items-center justify-center"
-          style={{ 
+          style={{
             top: isRefreshing ? '76px' : `${Math.min(pullDistance + 50, 115)}px`,
             opacity: isRefreshing ? 1 : Math.min(pullDistance / 35, 1)
           }}
         >
           <div className="flex items-center gap-3 px-4 py-2.5 rounded-shape-sm bg-[var(--surface-card)]/95 backdrop-blur-md border border-[var(--border-main)] shadow-xl text-xs font-bold text-[var(--text-primary)]">
-            <RefreshCw 
-              size={16} 
+            <RefreshCw
+              size={16}
               className={`text-accent ${isRefreshing ? 'animate-spin' : ''}`}
               style={{
                 transform: isRefreshing ? undefined : `rotate(${pullDistance * 4}deg)`
@@ -3581,10 +3672,10 @@ export const BulletinBoardPage: React.FC = () => {
         </div>
       )}
 
-      {/* Main Container - Balanced Centered Grid Alignment */}
+      {}
       <div className="w-full max-w-[1536px] 2xl:max-w-[1680px] mx-auto px-3 sm:px-4 lg:px-6 pt-3 sm:pt-4 lg:pt-5 pb-28 lg:pb-8">
 
-        {/* Mobile Ads Sidebar Drawer (Facebook / Instagram Style) */}
+        {}
         <AnimatePresence>
           {isMobileSidebarOpen && (
             <div className="fixed inset-0 z-50 lg:hidden">
@@ -3618,7 +3709,7 @@ export const BulletinBoardPage: React.FC = () => {
                 </div>
 
                 <div className="flex-1 overflow-y-auto p-4 space-y-5">
-                  {/* Navigation Links (Facebook-style Mobile Menu) */}
+                  {}
                   <div className="space-y-1.5 pb-2 border-b border-[var(--border-default)]">
                     <h4 className="text-[11px] font-extrabold text-[var(--text-muted)] uppercase tracking-wider mb-2">{isRtl ? 'أقسام المنصة' : 'Platform Sections'}</h4>
                     <button
@@ -3711,7 +3802,7 @@ export const BulletinBoardPage: React.FC = () => {
                     </button>
                   </div>
 
-                  {/* Quick Action Buttons */}
+                  {}
                   <div className="grid grid-cols-2 gap-2 pt-1">
                     <button
                       onClick={() => {
@@ -3742,9 +3833,8 @@ export const BulletinBoardPage: React.FC = () => {
           )}
         </AnimatePresence>
 
-        {/* Layout Grid: Main Content + Sidebar OR Standalone Views */}
+        {}
         {activeTab === 'analytics' && !selectedPageDetail ? (
-          /* VIEW 1: DEDICATED FULL ANALYTICS VIEW */
           <div className="space-y-6">
             <div className="flex items-center justify-between p-4 rounded-xl bg-[var(--surface-card)] border border-[var(--border-default)]">
               <div className="flex items-center gap-3">
@@ -3770,9 +3860,8 @@ export const BulletinBoardPage: React.FC = () => {
             <UserAdAnalyticsView />
           </div>
         ) : activeTab === 'reels' ? (
-          /* VIEW REELS: FULL SCREEN VERTICAL SWIPEABLE REELS FEED STREAM */
           <div className="w-full h-full">
-            {/* Reels Feed Component */}
+            {}
             <ReelsFeed
               ads={combinedReelsAds.length > 0 ? combinedReelsAds : ads}
               isRtl={isRtl}
@@ -3814,9 +3903,8 @@ export const BulletinBoardPage: React.FC = () => {
             />
           </div>
         ) : activeTab === 'pages' && !selectedPageDetail ? (
-          /* VIEW 2: DEDICATED ALL PAGES DIRECTORY VERTICAL FEED STREAM */
           <div className="space-y-6 max-w-4xl mx-auto px-2 sm:px-0">
-            {/* Header Bar with Back Button */}
+            {}
             <div className="ui-card-container flex flex-col sm:flex-row items-center justify-between gap-3 text-start">
               <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 w-full sm:w-auto">
                 <button
@@ -3852,7 +3940,7 @@ export const BulletinBoardPage: React.FC = () => {
               </button>
             </div>
 
-            {/* Pages Vertical Feed */}
+            {}
             {pagesLoading ? (
               <div className="space-y-6">
                 {[1, 2, 3].map(n => (
@@ -3880,7 +3968,7 @@ export const BulletinBoardPage: React.FC = () => {
                     animate={{ opacity: 1, y: 0 }}
                     className="rounded-xl bg-[var(--surface-card)] border border-[var(--border-default)] transition-theme space-y-4"
                   >
-                    {/* Cover Banner */}
+                    {}
                     <div className="h-32 sm:h-52 w-full bg-[var(--surface-subtle)] relative cursor-pointer overflow-hidden rounded-t-xl" onClick={() => handleOpenPageDetail(page.id)}>
                       <img src={getMediaUrl(page.cover_url)} alt={page.name} className="w-full h-full object-cover" />
                       <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent"></div>
@@ -3889,7 +3977,7 @@ export const BulletinBoardPage: React.FC = () => {
                       </span>
                     </div>
 
-                    {/* Avatar & Header Info */}
+                    {}
                     <div className="px-4 sm:px-6 -mt-12 sm:-mt-16 space-y-3 relative z-10">
                       <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
                         <div className="flex items-end gap-3 cursor-pointer min-w-0" onClick={() => handleOpenPageDetail(page.id)}>
@@ -3912,7 +4000,7 @@ export const BulletinBoardPage: React.FC = () => {
                           </div>
                         </div>
 
-                        {/* Action Buttons */}
+                        {}
                         <div className="flex items-center gap-1.5 sm:gap-2 shrink-0 pt-1 sm:pt-0 overflow-x-auto pb-1 sm:pb-0">
                           <button
                             onClick={() => handleToggleFollowPage(page.id)}
@@ -3974,13 +4062,12 @@ export const BulletinBoardPage: React.FC = () => {
             )}
           </div>
         ) : (
-          /* VIEW 3: PROFESSIONAL 3-COLUMN FLEXBOX LAYOUT (Facebook Standard) */
           <div className="flex flex-col lg:flex-row gap-5 xl:gap-6 2xl:gap-7 items-start justify-center w-full">
 
-          {/* COLUMN 1: PRIMARY SIDEBAR (Aligned to Start / Under Logo) */}
+          {}
           <div className="hidden lg:flex flex-col w-full lg:w-64 xl:w-[290px] 2xl:w-[320px] shrink-0 gap-4 order-1 sticky top-[calc(60px+env(safe-area-inset-top,0px))] max-h-[calc(100vh-5.5rem)] overflow-y-auto custom-scrollbar overscroll-contain">
-            
-            {/* User Profile & Social Shortcuts Box */}
+
+            {}
             <div className="ui-card-container flex flex-col gap-3 w-full">
               {user ? (
                 <div className="flex items-center justify-between pb-2.5 mb-1 border-b border-[var(--border-default)] gap-2.5 w-full">
@@ -4040,7 +4127,7 @@ export const BulletinBoardPage: React.FC = () => {
                 </div>
               )}
 
-              {/* Navigation Quick Links */}
+              {}
               <div className="flex flex-col gap-1 w-full">
                 <button
                   onClick={() => { setSelectedPageDetail(null); setActiveTab('board'); }}
@@ -4131,19 +4218,20 @@ export const BulletinBoardPage: React.FC = () => {
               </div>
             </div>
 
-            {/* Dedicated Bulletin Ads Recommendations Card (Shown on lg, moves to Column 3 on xl) */}
+            {}
             <div className="xl:hidden">
-              <RecommendationWidget 
+              <RecommendationWidget
                 variant="bulletin"
-                filterType="bulletin" 
-                limit={3} 
+                filterType="bulletin"
+                limit={3}
                 title={isRtl ? 'إعلانات موصى بها' : 'Recommended Ads'}
                 subtitle={isRtl ? 'مقترحات مخصصة بناءً على سلوكك واهتماماتك' : 'Tailored ad suggestions'}
                 className="ui-card-container"
+                onAdClick={handleRecommendationAdClick}
               />
             </div>
 
-            {/* Commercial Profile Settings Box */}
+            {}
             {user && (
               <div className="ui-card-container flex flex-col gap-3 w-full">
                 <div className="flex items-center justify-between gap-2.5 pb-2.5 mb-1 border-b border-[var(--border-default)] w-full">
@@ -4220,7 +4308,7 @@ export const BulletinBoardPage: React.FC = () => {
               </div>
             )}
 
-            {/* Featured Recommended Pages Sidebar (Shown on lg, moves to Column 3 on xl) */}
+            {}
             <div className="xl:hidden">
               <div className="ui-card-container flex flex-col gap-3 w-full">
               <div className="flex items-center justify-between gap-2.5 pb-2.5 mb-1 border-b border-[var(--border-default)] w-full">
@@ -4305,8 +4393,8 @@ export const BulletinBoardPage: React.FC = () => {
 
           </div>
 
-          {/* COLUMN 2: MAIN FEED COLUMN (Center) */}
-          <div 
+          {}
+          <div
             className="flex-1 flex flex-col space-y-4 sm:space-y-5 lg:space-y-6 order-2 relative max-w-2xl xl:max-w-[650px] 2xl:max-w-[720px] min-w-0 w-full min-h-[500px]"
             onContextMenu={(e) => {
               e.preventDefault();
@@ -4325,7 +4413,7 @@ export const BulletinBoardPage: React.FC = () => {
               transition: pullDistance === 0 ? 'transform 0.3s cubic-bezier(0.16, 1, 0.3, 1)' : 'none'
             }}
           >
-            {/* Custom Aesthetic Right-Click Context Menu */}
+            {}
             <AnimatePresence>
               {contextMenu.isOpen && (() => {
                 const rawContextActions = [
@@ -4408,13 +4496,13 @@ export const BulletinBoardPage: React.FC = () => {
               })()}
             </AnimatePresence>
 
-            {/* Pull to Refresh Indicator */}
+            {}
             <AnimatePresence>
               {(pullDistance > 0 || isRefreshing) && (
                 <motion.div
                   initial={{ opacity: 0, y: -25, scale: 0.85 }}
-                  animate={{ 
-                    opacity: 1, 
+                  animate={{
+                    opacity: 1,
                     y: isRefreshing ? 12 : Math.min(pullDistance * 0.55, 42),
                     scale: pullDistance >= 55 || isRefreshing ? 1.05 : 0.95
                   }}
@@ -4431,33 +4519,33 @@ export const BulletinBoardPage: React.FC = () => {
                   ) : pullDistance >= 55 ? (
                     <ArrowUp size={15} className="text-accent shrink-0 transition-transform duration-200" />
                   ) : (
-                    <ArrowDown 
-                      size={15} 
-                      className="text-[var(--text-muted)] shrink-0 transition-transform duration-200" 
+                    <ArrowDown
+                      size={15}
+                      className="text-[var(--text-muted)] shrink-0 transition-transform duration-200"
                       style={{ transform: `rotate(${Math.min(pullDistance * 3, 180)}deg)` }}
                     />
                   )}
                   <span className="text-[11px] font-extrabold tracking-tight">
-                    {isRefreshing 
-                      ? (isRtl ? 'جاري تحديث الخلاصة...' : 'Refreshing feed...') 
-                      : pullDistance >= 55 
-                        ? (isRtl ? 'اترك للتحديث الآن' : 'Release to refresh') 
+                    {isRefreshing
+                      ? (isRtl ? 'جاري تحديث الخلاصة...' : 'Refreshing feed...')
+                      : pullDistance >= 55
+                        ? (isRtl ? 'اترك للتحديث الآن' : 'Release to refresh')
                         : (isRtl ? 'اسحب لأسفل لتحديث الإعلانات' : 'Pull down to refresh')}
                   </span>
                 </motion.div>
               )}
             </AnimatePresence>
 
-            {/* ========================================================== */}
-            {/* VIEW A: FULL MERCHANT PAGE VIEW (REPLACES AD BOARD IN PLACE)*/}
-            {/* ========================================================== */}
+            {}
+            {}
+            {}
             {selectedPageDetail ? (
               <motion.div
                 initial={{ opacity: 0, y: 15 }}
                 animate={{ opacity: 1, y: 0 }}
                 className="rounded-xl bg-[var(--surface-card)] border border-[var(--border-default)] overflow-hidden space-y-4"
               >
-                {/* Back Button Bar */}
+                {}
                 <div className="p-3 bg-[var(--surface-subtle)] border-b border-[var(--border-default)] flex items-center justify-between">
                   <button
                     onClick={handleBackToBoard}
@@ -4472,7 +4560,7 @@ export const BulletinBoardPage: React.FC = () => {
                   </span>
                 </div>
 
-                {/* Facebook Cover Image */}
+                {}
                 <div className="h-48 sm:h-56 w-full bg-[var(--surface-subtle)] relative">
                   <img
                     src={getMediaUrl(selectedPageDetail.page.cover_url)}
@@ -4484,7 +4572,7 @@ export const BulletinBoardPage: React.FC = () => {
                   </span>
                 </div>
 
-                {/* Page Profile Header */}
+                {}
                 <div className="px-6 -mt-10 pb-4 space-y-4">
                   <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
                     <BulletinAvatar
@@ -4494,7 +4582,7 @@ export const BulletinBoardPage: React.FC = () => {
                       isPage={true}
                     />
 
-                    {/* Action Bar */}
+                    {}
                     <div className="flex flex-wrap items-center gap-2">
                       <button
                         onClick={() => handleToggleFollowPage(selectedPageDetail.page.id)}
@@ -4575,7 +4663,7 @@ export const BulletinBoardPage: React.FC = () => {
                     </div>
                   </div>
 
-                  {/* Sub-tabs for Page Detail */}
+                  {}
                   <div className="flex items-center gap-2 border-b border-[var(--border-default)] pt-3">
                     <button
                       onClick={() => setPageDetailTab('ads')}
@@ -4609,7 +4697,7 @@ export const BulletinBoardPage: React.FC = () => {
                     </button>
                   </div>
 
-                  {/* SUB-TAB 1: PAGE ADS FEED */}
+                  {}
                   {pageDetailTab === 'ads' && (
                     <div className="pt-2 space-y-4">
                       {user && myPagesList.some(p => p.id === selectedPageDetail.page.id) && (
@@ -4656,7 +4744,7 @@ export const BulletinBoardPage: React.FC = () => {
                               </div>
                               <h4 className="text-xs font-extrabold line-clamp-1">{ad.title}</h4>
                               <p className="text-[11px] text-[var(--text-muted)] line-clamp-2 leading-relaxed">{ad.description}</p>
-                              
+
                               <div className="flex items-center justify-end pt-1 gap-1.5 ms-auto">
                                 <button
                                   onClick={() => handleMessageAdvertiser(ad)}
@@ -4690,14 +4778,14 @@ export const BulletinBoardPage: React.FC = () => {
                     </div>
                   )}
 
-                  {/* SUB-TAB 2: ABOUT */}
+                  {}
                   {pageDetailTab === 'about' && (
                     <div className="p-4 rounded-xl bg-[var(--surface-subtle)] border border-[var(--border-default)] space-y-3 text-xs">
                       <h4 className="font-extrabold text-sm border-b border-[var(--border-default)] pb-2">
                         {isRtl ? 'تفاصيل الصفحة التجارية:' : 'Business Details:'}
                       </h4>
                       <p className="text-[var(--text-secondary)] leading-relaxed">{selectedPageDetail.page.description}</p>
-                      
+
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2">
                         <div className="p-3 rounded-xl bg-[var(--surface-card)] border border-[var(--border-default)]">
                           <span className="text-[var(--text-muted)] text-[10px] block">{isRtl ? 'المحافظة / المدينة:' : 'City:'}</span>
@@ -4730,7 +4818,7 @@ export const BulletinBoardPage: React.FC = () => {
                     </div>
                   )}
 
-                  {/* SUB-TAB 3: MEDIA GALLERY */}
+                  {}
                   {pageDetailTab === 'media' && (
                     <div className="pt-2">
                       <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
@@ -4765,9 +4853,9 @@ export const BulletinBoardPage: React.FC = () => {
               </motion.div>
             ) : (
               <>
-                {/* ========================================================== */}
-                {/* TAB 1: SOCIAL AD FEED & FACEBOOK POST CREATOR TRIGGER      */}
-                {/* ========================================================== */}
+                {}
+                {}
+                {}
                 {activeTab === 'board' && (
                   <BoardFeed
                     isRtl={isRtl}
@@ -4859,9 +4947,9 @@ export const BulletinBoardPage: React.FC = () => {
 
 
 
-                {/* ========================================================== */}
-                {/* TAB: SAVED POSTS                                          */}
-                {/* ========================================================== */}
+                {}
+                {}
+                {}
                 {activeTab === 'saved' && (
                   <SavedPostsTab
                     savedAds={savedAds}
@@ -4899,9 +4987,9 @@ export const BulletinBoardPage: React.FC = () => {
                   />
                 )}
 
-                {/* ========================================================== */}
-                {/* TAB 3: CUSTOMER INQUIRIES & DIRECT MESSAGES INBOX           */}
-                {/* ========================================================== */}
+                {}
+                {}
+                {}
                 {activeTab === 'inquiries' && (
                   <InquiriesTab
                     isRtl={isRtl}
@@ -4920,19 +5008,20 @@ export const BulletinBoardPage: React.FC = () => {
               )}
             </div>
 
-            {/* COLUMN 3: SIDEBAR FOR SIDE ADS & RECOMMENDATIONS (Hidden on < xl) */}
+            {}
             <div className="hidden xl:flex flex-col w-64 xl:w-[290px] 2xl:w-[320px] shrink-0 gap-4 order-3 sticky top-[calc(60px+env(safe-area-inset-top,0px))] max-h-[calc(100vh-5.5rem)] overflow-y-auto custom-scrollbar overscroll-contain">
-              {/* Dedicated Bulletin Ads Recommendations Card */}
-              <RecommendationWidget 
+              {}
+              <RecommendationWidget
                 variant="bulletin"
-                filterType="bulletin" 
-                limit={3} 
+                filterType="bulletin"
+                limit={3}
                 title={isRtl ? 'إعلانات جانبية موصى بها' : 'Recommended Side Ads'}
                 subtitle={isRtl ? 'مقترحات مخصصة بناءً على سلوكك واهتماماتك' : 'Tailored ad suggestions'}
                 className="ui-card-container"
+                onAdClick={handleRecommendationAdClick}
               />
 
-              {/* Featured Recommended Pages */}
+              {}
               <div className="ui-card-container flex flex-col gap-3 w-full">
                 <div className="flex items-center justify-between gap-2.5 pb-2.5 mb-1 border-b border-[var(--border-default)] w-full">
                   <div className="flex items-center gap-2.5 min-w-0">
@@ -4973,7 +5062,22 @@ export const BulletinBoardPage: React.FC = () => {
                     ))}
                   </div>
                 ) : pagesList.slice(0, 5).length === 0 ? (
-                  <p className="text-xs text-[var(--text-muted)] text-center py-2">{isRtl ? 'لا توجد صفحات حالياً' : 'No pages'}</p>
+                  <div className="text-center py-3 space-y-2">
+                    <p className="text-xs text-[var(--text-muted)]">{isRtl ? 'لا توجد صفحات حالياً' : 'No pages currently'}</p>
+                    <button
+                      onClick={() => {
+                        if (!token) {
+                          toast.error(isRtl ? 'يرجى تسجيل الدخول أولاً' : 'Please log in first');
+                          return;
+                        }
+                        setIsPageModalOpen(true);
+                      }}
+                      className="inline-flex items-center gap-1.5 px-3 py-1 text-xs font-bold text-accent hover:bg-accent/10 transition-colors border border-accent/30 rounded-shape-sm cursor-pointer"
+                    >
+                      <Plus size={13} />
+                      <span>{isRtl ? 'إنشاء صفحة تجارية' : 'Create Merchant Page'}</span>
+                    </button>
+                  </div>
                 ) : (
                   <div className="flex flex-col gap-1 w-full">
                     {pagesList.slice(0, 5).map((page, idx) => (
@@ -5017,9 +5121,9 @@ export const BulletinBoardPage: React.FC = () => {
         )}
       </div>
 
-      {/* ========================================================== */}
-      {/* LIVE STREAM MODAL                                          */}
-      {/* ========================================================== */}
+      {}
+      {}
+      {}
       <LiveStreamModal
         isOpen={isLiveStreamOpen}
         onClose={() => {
@@ -5054,9 +5158,9 @@ export const BulletinBoardPage: React.FC = () => {
         handleSendGift={handleSendGift}
       />
 
-      {/* ========================================================== */}
-      {/* MODAL 1: CREATE NEW CAMPAIGN AD (META-STYLE POSTING)       */}
-      {/* ========================================================== */}
+      {}
+      {}
+      {}
       <AppModal
         open={isAdModalOpen}
         onClose={() => setIsAdModalOpen(false)}
@@ -5064,7 +5168,7 @@ export const BulletinBoardPage: React.FC = () => {
         layer="modal"
         closeOnBackdrop={false}
       >
-              {/* Header (Unified Card Style with Icon Badge & Mode Pills) */}
+              {}
               <div className="bg-[var(--surface-subtle)] border-b border-[var(--border-default)] p-3.5 sm:p-4 text-[var(--text-primary)] relative overflow-hidden shrink-0">
                 <div className="flex items-center justify-between relative z-10">
                   <div className="flex items-center gap-2.5 min-w-0">
@@ -5100,7 +5204,7 @@ export const BulletinBoardPage: React.FC = () => {
                     </div>
                   </div>
 
-                  <button 
+                  <button
                     type="button"
                     onClick={() => {
                       if (composerView === 'main') setIsAdModalOpen(false);
@@ -5117,7 +5221,7 @@ export const BulletinBoardPage: React.FC = () => {
               <div className="flex-1 overflow-y-auto p-2.5 sm:p-5 scrollbar-thin">
                 {composerView === 'main' && (
                   <form onSubmit={handleCreateCampaign} className="space-y-2.5 sm:space-y-4">
-                    {/* User Info & Audience Controls (Facebook Standard) */}
+                    {}
                     <div className="flex items-center gap-2 sm:gap-3">
                       <BulletinAvatar
                         src={adFormData.page_id ? myPagesList.find(p => p.id === Number(adFormData.page_id))?.avatar_url : user?.avatar}
@@ -5142,11 +5246,11 @@ export const BulletinBoardPage: React.FC = () => {
                           )}
                         </div>
 
-                        {/* Facebook-Style Option Pills */}
+                        {}
                         <div className="flex items-center gap-1 sm:gap-1.5 mt-1 sm:mt-1.5 flex-wrap">
-                          {/* Page / Profile Selector */}
+                          {}
                           {myPagesList.length > 0 && (
-                            <select 
+                            <select
                               value={adFormData.page_id}
                               onChange={(e) => setAdFormData({...adFormData, page_id: e.target.value})}
                               className="text-[10px] sm:text-[11px] bg-[var(--surface-subtle)] px-1.5 py-0.5 sm:px-2 rounded-md border-none focus:ring-0 font-bold text-[var(--text-secondary)] cursor-pointer hover:bg-[var(--surface-inset)] transition-colors"
@@ -5156,7 +5260,7 @@ export const BulletinBoardPage: React.FC = () => {
                             </select>
                           )}
 
-                          {/* Audience Selector Pill */}
+                          {}
                           <button
                             type="button"
                             onClick={() => setIsAudienceModalOpen(true)}
@@ -5182,7 +5286,7 @@ export const BulletinBoardPage: React.FC = () => {
                             <ChevronDown size={10} className="text-[var(--text-muted)]" />
                           </button>
 
-                          {/* AI Content Label Pill (Facebook Standard) */}
+                          {}
                           <button
                             type="button"
                             onClick={() => setAdFormData(prev => ({ ...prev, is_ai_generated: !prev.is_ai_generated }))}
@@ -5206,7 +5310,7 @@ export const BulletinBoardPage: React.FC = () => {
                             <ChevronDown size={10} className="text-[var(--text-muted)]" />
                           </button>
 
-                          {/* Format Selector Pill (Standard Post / Reels / Story) */}
+                          {}
                           <button
                             type="button"
                             onClick={() => {
@@ -5230,7 +5334,7 @@ export const BulletinBoardPage: React.FC = () => {
                       </div>
                     </div>
 
-                    {/* Natural, Free & Unrestricted Composer Body */}
+                    {}
                     <div className="py-1 sm:py-2">
                       <textarea
                         value={adFormData.description}
@@ -5244,8 +5348,8 @@ export const BulletinBoardPage: React.FC = () => {
                         rows={3}
                         autoFocus
                       />
-                      
-                      {/* Character Counter */}
+
+                      {}
                       <div className="flex items-center justify-between text-[10px] text-[var(--text-muted)] font-mono px-1 pb-1">
                         <span>
                           {isRtl ? 'الحد الأقصى 1000 حرف' : 'Max 1000 chars'}
@@ -5255,7 +5359,7 @@ export const BulletinBoardPage: React.FC = () => {
                         </span>
                       </div>
 
-                      {/* Suggestions Overlay */}
+                      {}
                       {suggestionType !== 'none' && (
                         <div className="my-2 p-2 bg-[var(--surface-card)] border border-[var(--border-default)] rounded-xl shadow-lg max-h-[160px] overflow-y-auto z-50 animate-in fade-in slide-in-from-bottom-2 duration-200">
                           <div className="flex items-center justify-between px-2 pb-1.5 border-b border-[var(--border-default)] text-[10px] text-[var(--text-muted)] font-extrabold">
@@ -5327,32 +5431,85 @@ export const BulletinBoardPage: React.FC = () => {
                       )}
                     </div>
 
-                    {/* If no media is selected yet, show a beautiful, high-fidelity drag-and-drop media upload card */}
+                    {/* Upload progress & transcoding status */}
+                    {(videoMetadataInfo.processingStage === 'uploading' || videoMetadataInfo.processingStage === 'transcoding') && (
+                      <div className="mb-3 p-3.5 rounded-xl bg-[var(--surface-subtle)] border border-[var(--border-default)] space-y-2">
+                        <div className="flex items-center justify-between text-xs font-bold text-[var(--text-primary)]">
+                          <span className="flex items-center gap-2">
+                            <Loader2 size={14} className="animate-spin text-accent" />
+                            <span>
+                              {videoMetadataInfo.processingStage === 'uploading'
+                                ? (isRtl ? 'جاري رفع مقطع الفيديو...' : 'Uploading video...')
+                                : (isRtl ? 'جاري معالجة وضغط الفيديو تلقائياً...' : 'Processing & optimizing video...')}
+                            </span>
+                          </span>
+                          <span className="font-mono text-accent">{Math.round(videoMetadataInfo.uploadProgress || 0)}%</span>
+                        </div>
+                        <div className="w-full bg-[var(--surface-card)] rounded-full h-1.5 overflow-hidden">
+                          <div
+                            className="bg-accent h-full transition-all duration-200"
+                            style={{ width: `${videoMetadataInfo.uploadProgress || 0}%` }}
+                          />
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Empty State: Content Upload Card Dropzone */}
                     {!(
                       (adFormData.media_gallery && adFormData.media_gallery.length > 0) ||
                       adFormData.image_url ||
                       adFormData.video_url ||
                       videoMetadataInfo.localVideoUrl
                     ) && (
-                      <div className="border border-dashed border-[var(--border-default)] hover:border-[var(--pub-accent-primary)] rounded-[12px] p-3.5 flex flex-col items-center justify-center bg-transparent hover:bg-[var(--pub-accent-muted)]/10 transition-all group relative cursor-pointer min-h-[85px]">
+                      <div
+                        onDragOver={(e) => { e.preventDefault(); setIsComposerDragging(true); }}
+                        onDragLeave={() => setIsComposerDragging(false)}
+                        onDrop={(e) => {
+                          e.preventDefault();
+                          setIsComposerDragging(false);
+                          if (e.dataTransfer.files?.length) {
+                            handleMixedMediaSelect({ target: { files: e.dataTransfer.files } } as any);
+                          }
+                        }}
+                        className={`relative rounded-2xl border-2 border-dashed p-4 sm:p-6 flex flex-col items-center justify-center text-center transition-all cursor-pointer group min-h-[130px] sm:min-h-[150px] select-none ${
+                          isComposerDragging
+                            ? 'border-accent bg-accent/10 scale-[1.01]'
+                            : 'border-[var(--border-default)] hover:border-accent/70 bg-[var(--surface-subtle)]/60 hover:bg-[var(--surface-subtle)]'
+                        }`}
+                      >
                         <input
                           type="file"
                           multiple
                           accept="image/*,video/*"
-                          className="absolute inset-0 opacity-0 cursor-pointer z-10"
-                          onChange={handleMixedMediaUpload}
+                          onChange={handleMixedMediaSelect}
+                          className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
                         />
-                        <div className="w-8 h-8 rounded-[8px] bg-[var(--pub-accent-muted)] text-[var(--pub-accent-primary)] flex items-center justify-center group-hover:scale-105 transition-transform duration-300">
-                          <Upload size={16} />
+
+                        <div className="w-12 h-12 rounded-full bg-[var(--surface-card)] border border-[var(--border-default)] flex items-center justify-center text-accent mb-2.5 shadow-xs group-hover:scale-110 group-hover:bg-accent group-hover:text-slate-950 transition-all duration-200">
+                          <ImageIcon size={22} />
                         </div>
-                        <p className="mt-2 text-xs font-bold text-[var(--text-secondary)] text-center">
-                          {isRtl ? 'انقر واسحب حتى 20 صور/فيديو' : 'Click & drag up to 20 photos/videos'}
+
+                        <h4 className="text-xs sm:text-sm font-extrabold text-[var(--text-primary)] group-hover:text-accent transition-colors">
+                          {isRtl ? 'إضافة صور أو مقاطع فيديو' : 'Add Photos or Videos'}
+                        </h4>
+
+                        <p className="text-[10px] sm:text-xs text-[var(--text-muted)] mt-1 font-medium max-w-xs">
+                          {isRtl ? 'اسحب وأفلت الملفات هنا أو انقر للتصفح من جهازك' : 'Drag and drop files here or click to browse'}
                         </p>
+
+                        <div className="flex items-center gap-1.5 mt-2.5">
+                          <span className="px-2 py-0.5 rounded-full text-[9px] sm:text-[10px] font-bold bg-[var(--surface-card)] border border-[var(--border-default)] text-[var(--text-secondary)]">
+                            JPG, PNG, WebP
+                          </span>
+                          <span className="px-2 py-0.5 rounded-full text-[9px] sm:text-[10px] font-bold bg-[var(--surface-card)] border border-[var(--border-default)] text-[var(--text-secondary)]">
+                            MP4, MOV (≤100MB)
+                          </span>
+                        </div>
                       </div>
                     )}
 
-                    {/* Media Attachments Preview Grid (Facebook Collage with 'Edit All' Button) */}
-                    {(
+                    {/* Media Loaded State: Preview and Gallery Manager */}
+                    {Boolean(
                       (adFormData.media_gallery && adFormData.media_gallery.length > 0) ||
                       adFormData.image_url ||
                       adFormData.video_url ||
@@ -5401,17 +5558,17 @@ export const BulletinBoardPage: React.FC = () => {
                           isRtl={isRtl}
                         />
 
-                        {/* Hidden input for adding more media to the gallery */}
+                        {/* Hidden file input for adding more media */}
                         <input
                           id="composer-mixed-media-input"
                           type="file"
                           multiple
                           accept="image/*,video/*"
+                          onChange={handleMixedMediaSelect}
                           className="hidden"
-                          onChange={handleMixedMediaUpload}
                         />
-
-                        {/* Attached Action Banner (Facebook WhatsApp CTA Card Preview) */}
+                      </div>
+                    )}
                         {adFormData.has_whatsapp_button && (
                           <div className="mt-2 p-2 sm:p-3 bg-[var(--surface-inset)] rounded-xl border border-[var(--border-default)] flex items-center justify-between gap-2 sm:gap-3">
                             <div className="flex items-center gap-2 min-w-0">
@@ -5444,10 +5601,8 @@ export const BulletinBoardPage: React.FC = () => {
                             </div>
                           </div>
                         )}
-                      </div>
-                    )}
 
-                    {/* Video Cover Frame & Thumbnail Extractor / Scrubber */}
+                    {}
                     {(adFormData.video_url || videoMetadataInfo.localVideoUrl) && (
                       <div className="mb-2 sm:mb-3">
                         <VideoFrameCapture
@@ -5464,7 +5619,7 @@ export const BulletinBoardPage: React.FC = () => {
                       </div>
                     )}
 
-                    {/* WhatsApp Number Configuration (Inline when button active) */}
+                    {}
                     {adFormData.has_whatsapp_button && (
                       <div className="px-2.5 py-1.5 sm:px-3 sm:py-2 rounded-xl bg-[var(--status-success-subtle)] border border-[var(--fg-success)]/30 flex items-center justify-between gap-2">
                         <div className="flex items-center gap-2 flex-1">
@@ -5480,77 +5635,75 @@ export const BulletinBoardPage: React.FC = () => {
                       </div>
                     )}
 
-                    {/* Facebook-Standard "Add to Your Post" Toolbar */}
+                    {}
                     <div className="px-3 py-1.5 rounded-[12px] border border-[var(--border-default)] bg-[var(--surface-card)] flex items-center justify-between shadow-xs">
                       <span className="text-[11px] font-bold text-[var(--text-primary)] shrink-0">
                         {isRtl ? 'إضافة إلى منشورك' : 'Add to your post'}
                       </span>
                       <div className="flex items-center gap-1">
-                        {/* 1. Photo / Video */}
+                        {}
                         <label className="p-1 rounded-[6px] hover:bg-[var(--status-success-subtle)] text-[var(--fg-success)] cursor-pointer transition-colors" title={isRtl ? 'صور / فيديو' : 'Photos / Video'}>
                           <ImageIcon size={16} />
-                          <input 
-                            type="file" 
+                          <input
+                            type="file"
                             multiple
-                            accept="image/*,video/*" 
-                            className="hidden" 
-                            onChange={handleMixedMediaUpload} 
+                            accept="image/*,video/*"
+                            onChange={handleMixedMediaSelect}
+                            className="hidden"
                           />
                         </label>
-
-                        {/* 2. Tag People (Blue) */}
-                        <button 
-                          type="button" 
-                          onClick={() => setComposerView('tagging')} 
-                          className="p-1 rounded-[6px] hover:bg-accent/10 text-accent transition-colors" 
+                        <button
+                          type="button"
+                          onClick={() => setComposerView('tagging')}
+                          className="p-1 rounded-[6px] hover:bg-accent/10 text-accent transition-colors"
                           title={isRtl ? 'إشارة إلى أشخاص' : 'Tag people'}
                         >
                           <Users size={16} />
                         </button>
 
-                        {/* 3. WhatsApp Action Toggle (Vibrant Green) */}
-                        <button 
-                          type="button" 
+                        {}
+                        <button
+                          type="button"
                           onClick={() => {
-                            setAdFormData(prev => ({ 
-                              ...prev, 
+                            setAdFormData(prev => ({
+                              ...prev,
                               has_whatsapp_button: !prev.has_whatsapp_button,
                               whatsapp_number: prev.whatsapp_number || (user as any)?.phone || ''
                             }));
                             if (!adFormData.has_whatsapp_button) {
                               toast.success(isRtl ? 'تم إرفاق زر المراسلة عبر واتساب' : 'WhatsApp CTA button attached');
                             }
-                          }} 
+                          }}
                           className={`p-1 rounded-[6px] transition-colors ${adFormData.has_whatsapp_button ? 'bg-[#25D366]/15 text-[#25D366]' : 'hover:bg-[#25D366]/10 text-[#25D366]'}`}
                           title={isRtl ? 'زر مراسلة واتساب' : 'WhatsApp Button'}
                         >
                           <MessageCircle size={16} />
                         </button>
 
-                        {/* 4. Location / Check-in (Rose) */}
-                        <button 
-                          type="button" 
-                          onClick={() => setComposerView('location')} 
+                        {}
+                        <button
+                          type="button"
+                          onClick={() => setComposerView('location')}
                           className={`p-1 rounded-[6px] transition-colors ${adFormData.location_city ? 'bg-rose-500/15 text-rose-500' : 'hover:bg-rose-500/10 text-rose-500'}`}
                           title={isRtl ? 'الموقع' : 'Location'}
                         >
                           <MapPin size={16} />
                         </button>
 
-                        {/* 5. Feeling / Activity (Amber) */}
-                        <button 
-                          type="button" 
-                          onClick={() => setComposerView('feelings')} 
+                        {}
+                        <button
+                          type="button"
+                          onClick={() => setComposerView('feelings')}
                           className={`p-1 rounded-[6px] transition-colors ${adFormData.feeling ? 'bg-amber-500/15 text-amber-500' : 'hover:bg-amber-500/10 text-amber-500'}`}
                           title={isRtl ? 'الشعور / النشاط' : 'Feeling / Activity'}
                         >
                           <Smile size={16} />
                         </button>
 
-                        {/* 6. More Options (...) */}
-                        <button 
-                          type="button" 
-                          onClick={() => setIsAddToPostModalOpen(true)} 
+                        {}
+                        <button
+                          type="button"
+                          onClick={() => setIsAddToPostModalOpen(true)}
                           className="p-1 rounded-[6px] hover:bg-[var(--surface-subtle)] text-[var(--text-secondary)] transition-colors"
                           title={isRtl ? 'المزيد' : 'More'}
                         >
@@ -5559,13 +5712,13 @@ export const BulletinBoardPage: React.FC = () => {
                       </div>
                     </div>
 
-                    {/* Copyright & Verification Status (Facebook standard) */}
+                    {}
                     <div className="flex items-center gap-1.5 text-[10px] sm:text-[11px] text-[var(--text-muted)] px-1">
                       <CheckCircle2 size={12} className="text-[var(--fg-success)] shrink-0 sm:size-[13px]" />
                       <span>{isRtl ? '© جارٍ التحقق من وجود محتوى محمي بحقوق النشر' : '© Checking for copyrighted content'}</span>
                     </div>
 
-                    {/* Full-width High-Contrast Post / Next Button */}
+                    {}
                     <button
                       type="submit"
                       disabled={isSubmittingAd || (!adFormData.description && !adFormData.image_url && !adFormData.video_url)}
@@ -5591,7 +5744,7 @@ export const BulletinBoardPage: React.FC = () => {
                         <span className="text-xs font-bold">{isRtl ? f.labelAr : f.labelEn}</span>
                       </button>
                     ))}
-                    <button 
+                    <button
                       onClick={() => { setAdFormData({...adFormData, feeling: ''}); setComposerView('main'); }}
                       className="col-span-2 p-2 text-xs font-bold text-red-500 hover:bg-red-500/10 rounded-xl transition-theme"
                     >
@@ -5608,7 +5761,7 @@ export const BulletinBoardPage: React.FC = () => {
                     transition={{ duration: 0.15, ease: "easeOut" }}
                     className="p-4 rounded-xl bg-[var(--surface-card)] border border-[var(--border-default)] shadow-xl space-y-4 text-start"
                   >
-                    {/* Instant Flyout Header */}
+                    {}
                     <div className="flex items-center justify-between border-b border-[var(--border-default)] pb-3">
                       <div className="flex items-center gap-2.5">
                         <div className="w-8 h-8 rounded-xl bg-accent/10 text-accent flex items-center justify-center border border-accent/20 shrink-0">
@@ -5637,7 +5790,7 @@ export const BulletinBoardPage: React.FC = () => {
                       </button>
                     </div>
 
-                    {/* Active Location Selection Preview Banner */}
+                    {}
                     <div className="p-3 rounded-xl bg-[var(--surface-inset)] border border-accent/25 flex items-center justify-between shadow-2xs">
                       <div className="flex items-center gap-2">
                         <Navigation size={14} className="text-accent shrink-0" />
@@ -5646,7 +5799,7 @@ export const BulletinBoardPage: React.FC = () => {
                             {isRtl ? 'الموقع ونطاق الرؤية المحدد:' : 'Targeted Location & Coverage:'}
                           </p>
                           <p className="text-xs font-black text-accent truncate max-w-[220px] sm:max-w-[320px]">
-                            {adFormData.location_city 
+                            {adFormData.location_city
                               ? `📍 ${adFormData.location_city} (${adFormData.location_radius === 'all' ? (isRtl ? 'بلا حدود' : 'Unlimited') : `+${adFormData.location_radius || '10'} ${isRtl ? 'كم' : 'km'}`})`
                               : (isRtl ? '🌐 غير محدد (تغطية عامة)' : '🌐 Not set (Global Feed)')}
                           </p>
@@ -5664,7 +5817,7 @@ export const BulletinBoardPage: React.FC = () => {
                       )}
                     </div>
 
-                    {/* 1. REAL-TIME AUTOCOMPLETE SEARCH */}
+                    {}
                     <div className="space-y-1.5">
                       <label className="text-[11px] font-extrabold text-[var(--text-secondary)] flex items-center justify-between">
                         <span className="flex items-center gap-1">
@@ -5680,8 +5833,8 @@ export const BulletinBoardPage: React.FC = () => {
                       </label>
 
                       <div className="relative">
-                        <input 
-                          type="text" 
+                        <input
+                          type="text"
                           value={customLocationSearch}
                           onChange={(e) => setCustomLocationSearch(e.target.value)}
                           placeholder={isRtl ? 'اكتب اسم المدينة، الحي، الدولة أو المعلم...' : 'Type city, landmark, or country...'}
@@ -5699,7 +5852,7 @@ export const BulletinBoardPage: React.FC = () => {
                         )}
                       </div>
 
-                      {/* Autocomplete Dropdown */}
+                      {}
                       {locationSuggestions.length > 0 && (
                         <div className="mt-1 max-h-44 overflow-y-auto custom-scrollbar border border-accent/30 rounded-xl bg-[var(--surface-card)] p-1.5 shadow-xl space-y-1">
                           <div className="text-[10px] font-bold text-accent px-2 py-0.5 flex items-center justify-between border-b border-[var(--border-default)]">
@@ -5725,7 +5878,7 @@ export const BulletinBoardPage: React.FC = () => {
                       )}
                     </div>
 
-                    {/* 2. DYNAMIC COUNTRY & CITY DROPDOWN */}
+                    {}
                     <div className="space-y-1.5 p-3 rounded-xl bg-[var(--surface-inset)] border border-[var(--border-default)]">
                       <label className="block text-[11px] font-extrabold text-[var(--text-primary)] flex items-center gap-1.5">
                         <Building2 size={13} className="text-accent" />
@@ -5733,7 +5886,7 @@ export const BulletinBoardPage: React.FC = () => {
                       </label>
 
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                        {/* Country Dropdown */}
+                        {}
                         <div>
                           <label className="block text-[10px] font-bold text-[var(--text-muted)] mb-0.5">
                             {isRtl ? 'الدولة:' : 'Country:'}
@@ -5757,15 +5910,15 @@ export const BulletinBoardPage: React.FC = () => {
                           </select>
                         </div>
 
-                        {/* City Dropdown */}
+                        {}
                         <div>
                           <label className="block text-[10px] font-bold text-[var(--text-muted)] mb-0.5">
                             {isRtl ? 'المدينة:' : 'City:'}
                           </label>
                           <select
                             value={
-                              adFormData.location_city?.includes(' - ') 
-                                ? adFormData.location_city.split(' - ')[1] 
+                              adFormData.location_city?.includes(' - ')
+                                ? adFormData.location_city.split(' - ')[1]
                                 : adFormData.location_city
                             }
                             onChange={(e) => {
@@ -5787,7 +5940,7 @@ export const BulletinBoardPage: React.FC = () => {
                       </div>
                     </div>
 
-                    {/* 3. REACH VISIBILITY RADIUS SLIDER (5-100 KM) */}
+                    {}
                     <div className="space-y-2 p-3 rounded-xl bg-[var(--surface-inset)] border border-accent/20">
                       <div className="flex items-center justify-between text-xs font-extrabold">
                         <span className="text-[var(--text-primary)] flex items-center gap-1.5">
@@ -5795,13 +5948,13 @@ export const BulletinBoardPage: React.FC = () => {
                           <span>{isRtl ? 'شعاع مسافة التغطية برؤية المنشور:' : 'Post Visibility Distance Radius:'}</span>
                         </span>
                         <span className="text-accent font-black text-xs bg-accent/15 px-2 py-0.5 rounded-lg border border-accent/20">
-                          {adFormData.location_radius === 'all' 
-                            ? (isRtl ? '🌐 بلا حدود' : '🌐 Unlimited') 
+                          {adFormData.location_radius === 'all'
+                            ? (isRtl ? '🌐 بلا حدود' : '🌐 Unlimited')
                             : `🎯 +${adFormData.location_radius || '10'} ${isRtl ? 'كم' : 'km'}`}
                         </span>
                       </div>
 
-                      {/* Interactive Range Input Slider */}
+                      {}
                       <div className="space-y-1 pt-1">
                         <input
                           type="range"
@@ -5820,7 +5973,7 @@ export const BulletinBoardPage: React.FC = () => {
                         </div>
                       </div>
 
-                      {/* Quick Radius Preset Chips */}
+                      {}
                       <div className="flex items-center gap-1 pt-1">
                         {['5', '10', '25', '50', '100', 'all'].map((r, rIdx) => (
                           <button
@@ -5839,7 +5992,7 @@ export const BulletinBoardPage: React.FC = () => {
                       </div>
                     </div>
 
-                    {/* 4. GPS AUTO DETECT BUTTON */}
+                    {}
                     <button
                       type="button"
                       onClick={() => {
@@ -5877,7 +6030,7 @@ export const BulletinBoardPage: React.FC = () => {
                       <span>{isRtl ? '🎯 تحديد موقعي الجغرافي تلقائياً (GPS)' : '🎯 Auto-Detect GPS Location'}</span>
                     </button>
 
-                    {/* Actions */}
+                    {}
                     <div className="flex items-center gap-2 pt-2 border-t border-[var(--border-default)]">
                       <button
                         type="button"
@@ -5903,14 +6056,14 @@ export const BulletinBoardPage: React.FC = () => {
                     <div className="p-3 rounded-shape-md bg-accent/5 border border-accent/10 text-[10px] font-bold text-accent">
                       {isRtl ? 'ميزة الإشارة تتيح لك تنبيه المستخدمين الآخرين حول منشورك.' : 'Tagging allows you to notify other users about your post.'}
                     </div>
-                    <input 
+                    <input
                       type="text"
                       value={userSearch}
                       onChange={(e) => setUserSearch(e.target.value)}
                       placeholder={isRtl ? 'اكتب أسماء المستخدمين (مفصولة بفاصلة)...' : 'Enter usernames (comma separated)...'}
                       className="w-full px-4 py-3 rounded-shape-sm bg-[var(--surface-subtle)] border border-[var(--border-default)] text-xs text-[var(--text-primary)] focus:outline-none focus:border-accent"
                     />
-                    <button 
+                    <button
                       onClick={() => {
                         const tags = userSearch.split(',').map(s => s.trim()).filter(Boolean);
                         setAdFormData({...adFormData, tagged_users: tags});
@@ -5945,14 +6098,14 @@ export const BulletinBoardPage: React.FC = () => {
               </div>
         </AppModal>
 
-      {/* Post Audience Selector Modal */}
+      {}
       <AppModal
         open={isAudienceModalOpen}
         onClose={() => setIsAudienceModalOpen(false)}
         size="md"
         layer="nested"
       >
-              {/* Modal Header */}
+              {}
               <div className="p-4 border-b border-[var(--border-default)] flex items-center justify-between">
                 <div className="flex items-center gap-2">
                   <div className="w-8 h-8 rounded-[8px] bg-accent/10 text-accent flex items-center justify-center">
@@ -5971,7 +6124,7 @@ export const BulletinBoardPage: React.FC = () => {
                 </button>
               </div>
 
-              {/* Modal Content */}
+              {}
               <div className="p-4 space-y-3">
                 <p className="text-xs text-[var(--text-muted)] font-medium leading-relaxed">
                   {isRtl
@@ -5979,7 +6132,7 @@ export const BulletinBoardPage: React.FC = () => {
                     : 'Who can see your post? This option determines who is allowed to view the post in the main feed and search.'}
                 </p>
 
-                {/* Public Option */}
+                {}
                 <button
                   type="button"
                   onClick={() => {
@@ -6015,7 +6168,7 @@ export const BulletinBoardPage: React.FC = () => {
                   )}
                 </button>
 
-                {/* Friends Option */}
+                {}
                 <button
                   type="button"
                   onClick={() => {
@@ -6048,7 +6201,7 @@ export const BulletinBoardPage: React.FC = () => {
                   )}
                 </button>
 
-                {/* Only Me Option */}
+                {}
                 <button
                   type="button"
                   onClick={() => {
@@ -6082,7 +6235,7 @@ export const BulletinBoardPage: React.FC = () => {
                 </button>
               </div>
 
-              {/* Modal Footer */}
+              {}
               <div className="p-4 bg-[var(--surface-subtle)] border-t border-[var(--border-default)] flex items-center justify-between">
                 <span className="text-[11px] text-[var(--text-muted)] font-medium">
                   {isRtl ? 'سيتم تطبيق هذا الخيار على هذا المنشور' : 'Selection will apply to this post'}
@@ -6097,7 +6250,7 @@ export const BulletinBoardPage: React.FC = () => {
               </div>
         </AppModal>
 
-      {/* Facebook-Style Add To Post Modal / Menu */}
+      {}
       <AppModal
         open={isAddToPostModalOpen}
         onClose={() => setIsAddToPostModalOpen(false)}
@@ -6106,9 +6259,9 @@ export const BulletinBoardPage: React.FC = () => {
         contentClassName="p-5 space-y-4"
       >
         <div className="flex items-center justify-between p-5 pb-3 border-b border-[var(--border-default)]">
-                <button 
-                  type="button" 
-                  onClick={() => setIsAddToPostModalOpen(false)} 
+                <button
+                  type="button"
+                  onClick={() => setIsAddToPostModalOpen(false)}
                   className="p-2 rounded-[8px] hover:bg-[var(--surface-subtle)] text-[var(--text-secondary)] transition-colors"
                 >
                   <ArrowLeft size={20} className={isRtl ? 'rotate-180' : ''} />
@@ -6120,7 +6273,7 @@ export const BulletinBoardPage: React.FC = () => {
               </div>
 
               <div className="grid grid-cols-2 gap-2 py-2">
-                {/* 1. Photo/Video */}
+                {}
                 <label className="flex items-center gap-3 p-3 rounded-xl hover:bg-[var(--surface-subtle)] cursor-pointer transition-theme group">
                   <div className="w-10 h-10 rounded-[8px] bg-accent/10 flex items-center justify-center text-accent transition-theme">
                     <ImageIcon size={22} />
@@ -6129,20 +6282,14 @@ export const BulletinBoardPage: React.FC = () => {
                     <span className="text-xs font-bold text-[var(--text-primary)]">{isRtl ? 'صورة/فيديو' : 'Photo/Video'}</span>
                     <span className="text-[9px] text-[var(--text-muted)]">{isRtl ? 'إرفاق وسائط' : 'Attach media'}</span>
                   </div>
-                  <input type="file" multiple accept="image/*,video/*" className="hidden" onChange={(e) => {
-                    const files = e.target.files;
-                    if (files && files.length > 0) {
-                      if (files[0].type.startsWith('image/')) {
-                        handleImageFileUpload(e);
-                      } else {
-                        handleVideoFileUpload(e);
-                      }
-                    }
-                    setIsAddToPostModalOpen(false);
-                  }} />
+                  <input
+                    type="file"
+                    multiple
+                    accept="image/*,video/*"
+                    onChange={handleMixedMediaSelect}
+                    className="hidden"
+                  />
                 </label>
-
-                {/* 2. Feeling/Activity */}
                 <button
                   type="button"
                   onClick={() => {
@@ -6160,7 +6307,7 @@ export const BulletinBoardPage: React.FC = () => {
                   </div>
                 </button>
 
-                {/* 3. Tag People */}
+                {}
                 <button
                   type="button"
                   onClick={() => {
@@ -6178,7 +6325,7 @@ export const BulletinBoardPage: React.FC = () => {
                   </div>
                 </button>
 
-                {/* 4. Location */}
+                {}
                 <button
                   type="button"
                   onClick={() => {
@@ -6196,7 +6343,7 @@ export const BulletinBoardPage: React.FC = () => {
                   </div>
                 </button>
 
-                {/* 5. Receive Calls / Phone */}
+                {}
                 <button
                   type="button"
                   onClick={() => {
@@ -6215,7 +6362,7 @@ export const BulletinBoardPage: React.FC = () => {
                   </div>
                 </button>
 
-                {/* 6. GIF Image */}
+                {}
                 <button
                   type="button"
                   onClick={async () => {
@@ -6245,7 +6392,7 @@ export const BulletinBoardPage: React.FC = () => {
                   </div>
                 </button>
 
-                {/* 7. Live Video */}
+                {}
                 <button
                   type="button"
                   onClick={() => {
@@ -6264,7 +6411,7 @@ export const BulletinBoardPage: React.FC = () => {
                   </div>
                 </button>
 
-                {/* 8. Life Event */}
+                {}
                 <button
                   type="button"
                   onClick={() => {
@@ -6293,9 +6440,9 @@ export const BulletinBoardPage: React.FC = () => {
               </button>
         </AppModal>
 
-      {/* ========================================================== */}
-      {/* MODAL 2: CREATE MERCHANT PAGE                              */}
-      {/* ========================================================== */}
+      {}
+      {}
+      {}
       <AppModal
         open={isPageModalOpen}
         onClose={() => setIsPageModalOpen(false)}
@@ -6413,9 +6560,9 @@ export const BulletinBoardPage: React.FC = () => {
               </form>
         </AppModal>
 
-      {/* ========================================================== */}
-      {/* MODAL 3: DIRECT CUSTOMER INQUIRY POPUP                      */}
-      {/* ========================================================== */}
+      {}
+      {}
+      {}
       <AnimatePresence>
         {inquireAd && (
           <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-md">
@@ -6497,7 +6644,7 @@ export const BulletinBoardPage: React.FC = () => {
         )}
       </AnimatePresence>
 
-      {/* BOOST POST MODAL */}
+      {}
       {boostingAd && (
         <BoostPostModal
           isOpen={isBoostModalOpen}
@@ -6513,7 +6660,7 @@ export const BulletinBoardPage: React.FC = () => {
         />
       )}
 
-      {/* STREAM SETUP MODAL */}
+      {}
       <AnimatePresence>
         {isStreamSetupOpen && (
           <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md">
@@ -6578,12 +6725,12 @@ export const BulletinBoardPage: React.FC = () => {
         )}
       </AnimatePresence>
 
-      {/* ========================================================== */}
-      {/* INSTANT LIGHTWEIGHT FLYOUT: LOCATION & RADIUS COVERAGE    */}
-      {/* ========================================================== */}
+      {}
+      {}
+      {}
       <AnimatePresence>
         {isLocationFlyoutOpen && (
-          <div 
+          <div
             className="fixed inset-0 z-50 flex items-start sm:items-center justify-center pt-16 sm:pt-0 p-3 sm:p-4 bg-black/50 backdrop-blur-[2px] transition-theme"
             onClick={() => setIsLocationFlyoutOpen(false)}
           >
@@ -6595,7 +6742,7 @@ export const BulletinBoardPage: React.FC = () => {
               onClick={(e) => e.stopPropagation()}
               className="relative w-full max-w-sm sm:max-w-md rounded-xl bg-[var(--surface-card)] border border-[var(--border-default)] shadow-2xl p-4 space-y-3.5 my-auto max-h-[88vh] overflow-y-auto custom-scrollbar backdrop-blur-md text-[var(--text-primary)] transform-gpu no-flicker"
             >
-              {/* Instant Flyout Header */}
+              {}
               <div className="flex items-center justify-between border-b border-[var(--border-default)] pb-2.5">
                 <div className="flex items-center gap-2">
                   <div className="w-8 h-8 rounded-xl bg-accent/10 flex items-center justify-center text-accent border border-accent/20">
@@ -6623,15 +6770,15 @@ export const BulletinBoardPage: React.FC = () => {
                 </button>
               </div>
 
-              {/* Active Location & Radius Badge */}
+              {}
               <div className="flex items-center justify-between px-3 py-2 rounded-xl bg-gradient-to-r from-gray-500/10 via-gray-500/10 to-gray-500/5 border border-accent/25 text-accent shadow-2xs">
                 <div className="flex items-center gap-2 text-[11px] font-bold truncate">
                   <Navigation size={13} className="text-accent shrink-0" />
                   <span className="truncate">
                     {isRtl ? 'النطاق الحالي:' : 'Current Feed:'}{' '}
                     <strong className="text-accent font-extrabold">
-                      {selectedCity === 'all' 
-                        ? (isRtl ? '🌐 جميع الدول والمحافظات' : '🌐 All Global Regions') 
+                      {selectedCity === 'all'
+                        ? (isRtl ? '🌐 جميع الدول والمحافظات' : '🌐 All Global Regions')
                         : `📍 ${selectedCountry ? `${selectedCountry} - ` : ''}${selectedCity} (${selectedRadius === 'all' ? (isRtl ? 'الكل' : 'All') : `+${selectedRadius}كم`})`}
                     </strong>
                   </span>
@@ -6650,7 +6797,7 @@ export const BulletinBoardPage: React.FC = () => {
                 )}
               </div>
 
-              {/* 1. Country Selection Dropdown */}
+              {}
               <div className="space-y-1">
                 <label className="text-[11px] font-extrabold text-[var(--text-secondary)] flex items-center gap-1">
                   <Globe size={13} className="text-accent" />
@@ -6690,7 +6837,7 @@ export const BulletinBoardPage: React.FC = () => {
                 </select>
               </div>
 
-              {/* 2. Real-Time Autocomplete API Search Field */}
+              {}
               <div className="space-y-1.5">
                 <label className="text-[11px] font-extrabold text-[var(--text-secondary)] flex items-center justify-between">
                   <span className="flex items-center gap-1">
@@ -6705,7 +6852,7 @@ export const BulletinBoardPage: React.FC = () => {
                   )}
                 </label>
 
-                {/* Real-Time Input Box */}
+                {}
                 <div className="relative">
                   <input
                     type="text"
@@ -6731,7 +6878,7 @@ export const BulletinBoardPage: React.FC = () => {
                   ) : null}
                 </div>
 
-                {/* Real-time Autocomplete API Results Dropdown */}
+                {}
                 {autocompleteResults.length > 0 && (
                   <div className="space-y-1 mt-1 max-h-48 overflow-y-auto custom-scrollbar border border-accent/30 rounded-xl bg-[var(--surface-card)] p-1.5 shadow-xl">
                     <div className="text-[10px] font-bold text-accent px-2 py-1 flex items-center justify-between border-b border-[var(--border-default)]">
@@ -6774,7 +6921,7 @@ export const BulletinBoardPage: React.FC = () => {
                   </div>
                 )}
 
-                {/* Cities Quick Selector Grid */}
+                {}
                 <div className="grid grid-cols-2 gap-1.5 max-h-36 overflow-y-auto p-1 custom-scrollbar">
                   <button
                     type="button"
@@ -6807,7 +6954,7 @@ export const BulletinBoardPage: React.FC = () => {
                 </div>
               </div>
 
-              {/* 3. GPS Auto-Detect & Interactive Radius Slider (5-100 km) */}
+              {}
               <div className="pt-2 space-y-2 border-t border-[var(--border-default)]">
                 <button
                   type="button"
@@ -6819,7 +6966,7 @@ export const BulletinBoardPage: React.FC = () => {
                   <span>{isRtl ? '🎯 تحديد موقعي الآن تلقائياً (GPS)' : '🎯 Auto-Detect My Location (GPS)'}</span>
                 </button>
 
-                {/* Reach Visibility Interactive Radius Slider (5-100km) */}
+                {}
                 <div className="space-y-2 bg-[var(--surface-inset)] p-3 rounded-2xl border border-accent/20">
                   <div className="flex items-center justify-between text-xs font-extrabold">
                     <span className="text-[var(--text-primary)] flex items-center gap-1.5">
@@ -6831,7 +6978,7 @@ export const BulletinBoardPage: React.FC = () => {
                     </span>
                   </div>
 
-                  {/* Interactive Range Input Slider */}
+                  {}
                   <div className="space-y-1 pt-1">
                     <input
                       type="range"
@@ -6854,7 +7001,7 @@ export const BulletinBoardPage: React.FC = () => {
                     </div>
                   </div>
 
-                  {/* Quick Radius Preset Chips */}
+                  {}
                   <div className="flex items-center gap-1 pt-1">
                     {['5', '10', '25', '50', '100', 'all'].map((r, rIdx) => (
                       <button
@@ -6875,7 +7022,7 @@ export const BulletinBoardPage: React.FC = () => {
                     ))}
                   </div>
 
-                  {/* Reach Visibility Live Feedback */}
+                  {}
                   <div className="text-[10px] font-bold text-accent bg-accent/10 px-2.5 py-1.5 rounded-xl border border-accent/20 flex items-center gap-1.5">
                     <Radio size={12} className="text-accent animate-pulse shrink-0" />
                     <span>
@@ -6887,7 +7034,7 @@ export const BulletinBoardPage: React.FC = () => {
                 </div>
               </div>
 
-              {/* Confirm & Apply Button */}
+              {}
               <button
                 type="button"
                 onClick={() => setIsLocationFlyoutOpen(false)}
@@ -6901,7 +7048,7 @@ export const BulletinBoardPage: React.FC = () => {
         )}
       </AnimatePresence>
 
-      {/* FLOATING BACK TO TOP BUTTON (Portaled to document.body) - Desktop Only */}
+      {}
       {createPortal(
         <AnimatePresence>
           {showScrollTop && (
@@ -6930,16 +7077,16 @@ export const BulletinBoardPage: React.FC = () => {
         document.body
       )}
 
-      {/* ========================================================== */}
-      {/* MOBILE BOTTOM NAVIGATION FOOTER BAR (High Precision & Flexbox) */}
-      {/* Exactly mirrors the Header Icon Buttons (Language Button Blueprint) */}
-      {/* ========================================================== */}
+      {}
+      {}
+      {}
+      {}
       <nav
         dir={isRtl ? 'rtl' : 'ltr'}
         className="lg:hidden fixed bottom-0 inset-x-0 z-[150] w-full bg-[var(--surface-page)]/95 backdrop-blur-md border-t border-[var(--border-default)] transition-theme shadow-xs pb-[env(safe-area-inset-bottom,0px)]"
       >
         <div className="w-full max-w-sm mx-auto h-[48px] px-5 flex items-center justify-between">
-          {/* 1: Home / Feed (الرئيسية) */}
+          {}
           <button
             type="button"
             onClick={() => {
@@ -6956,7 +7103,7 @@ export const BulletinBoardPage: React.FC = () => {
             <Megaphone size={14} className="text-[var(--text-muted)] group-hover:text-accent transition-colors duration-150" />
           </button>
 
-          {/* 2: Search (البحث) */}
+          {}
           <button
             type="button"
             onClick={() => {
@@ -6973,7 +7120,7 @@ export const BulletinBoardPage: React.FC = () => {
             <Search size={14} className="text-[var(--text-muted)] group-hover:text-accent transition-colors duration-150" />
           </button>
 
-          {/* 3: Direct Reel Creation (إنشاء ريلز) */}
+          {}
           <button
             type="button"
             onClick={() => {
@@ -6991,7 +7138,7 @@ export const BulletinBoardPage: React.FC = () => {
             <Clapperboard size={14} className="text-[var(--text-muted)] group-hover:text-accent transition-colors duration-150" />
           </button>
 
-          {/* 4: Chat History & Inquiries (المحادثات) */}
+          {}
           <button
             type="button"
             onClick={() => {
@@ -7016,7 +7163,7 @@ export const BulletinBoardPage: React.FC = () => {
             )}
           </button>
 
-          {/* 5: Menu (القائمة) */}
+          {}
           <button
             type="button"
             onClick={() => {
@@ -7034,7 +7181,7 @@ export const BulletinBoardPage: React.FC = () => {
 
 
 
-      {/* Story Upload Modal */}
+      {}
       <StoryUploadModal
         isOpen={isStoryModalOpen}
         onClose={() => setIsStoryModalOpen(false)}
@@ -7062,7 +7209,7 @@ export const BulletinBoardPage: React.FC = () => {
         onStoryDeleted={handleStoryDeleted}
       />
 
-      {/* Video Trimmer Modal */}
+      {}
       <VideoTrimmerModal
         isOpen={isTrimmerModalOpen}
         onClose={() => setIsTrimmerModalOpen(false)}
@@ -7078,7 +7225,7 @@ export const BulletinBoardPage: React.FC = () => {
         }}
       />
 
-      {/* Media Manager Modal (Edit All, Captions & Reordering) */}
+      {}
       <MediaManagerModal
         isOpen={isMediaManagerOpen}
         onClose={() => setIsMediaManagerOpen(false)}
@@ -7099,7 +7246,7 @@ export const BulletinBoardPage: React.FC = () => {
         isRtl={isRtl}
       />
 
-      {/* Media Lightbox Modal (Full-Screen Viewer for Images & Videos with Facebook-style edge tools) */}
+      {}
       <MediaLightboxModal
         isOpen={lightboxState.isOpen}
         onClose={() => {
@@ -7125,7 +7272,7 @@ export const BulletinBoardPage: React.FC = () => {
         token={token}
       />
 
-      {/* FULL-SCREEN REELS MODAL OVERLAY WHEN CLICKED FROM FEED */}
+      {}
       <AnimatePresence>
         {activeReelModalId !== null && (
           <ReelsFeed
@@ -7178,8 +7325,8 @@ export const BulletinBoardPage: React.FC = () => {
           />
         )}
       </AnimatePresence>
-      
-      {/* Story Peek Overlay (Floating Long-press Preview) */}
+
+      {}
       <AnimatePresence>
         {previewingVideoStoryId && (
           <motion.div
@@ -7206,8 +7353,8 @@ export const BulletinBoardPage: React.FC = () => {
                 />
               )}
               <div className="absolute top-4 start-4 flex items-center gap-2 bg-black/20 backdrop-blur-md p-1.5 pr-3 rounded-[4px]">
-                <BulletinAvatar 
-                  src={stories.find(s => s.id === previewingVideoStoryId)?.author_avatar} 
+                <BulletinAvatar
+                  src={stories.find(s => s.id === previewingVideoStoryId)?.author_avatar}
                   alt={stories.find(s => s.id === previewingVideoStoryId)?.author_name}
                   size="sm"
                 />
@@ -7225,9 +7372,9 @@ export const BulletinBoardPage: React.FC = () => {
         )}
       </AnimatePresence>
 
-      {/* ========================================================== */}
-      {/* MODAL 5: EDIT PROFILE & VERIFICATION                       */}
-      {/* ========================================================== */}
+      {}
+      {}
+      {}
       <AnimatePresence>
         {isProfileEditModalOpen && user && (
           <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-md overflow-y-auto">
@@ -7247,7 +7394,7 @@ export const BulletinBoardPage: React.FC = () => {
                 </button>
               </div>
 
-              {/* Sub tabs */}
+              {}
               <div className="flex items-center gap-2 border-b border-[var(--border-default)] pb-2">
                 <button
                   type="button"
@@ -7290,55 +7437,32 @@ export const BulletinBoardPage: React.FC = () => {
                           <input
                             type="file"
                             accept="image/*"
+                            onChange={handleAvatarUpload}
                             className="hidden"
-                            onChange={async (e) => {
-                              const file = e.target.files?.[0];
-                              if (file) {
-                                try {
-                                  toast.info(isRtl ? 'جاري رفع الصورة...' : 'Uploading...');
-                                  const url = await handleUploadFile(file);
-                                  setProfileFormData({ ...profileFormData, avatar: url });
-                                  toast.success(isRtl ? 'تم رفع صورتك الشخصية بنجاح!' : 'Avatar uploaded!');
-                                } catch (err: any) {
-                                  toast.error(err.message || 'Upload failed');
-                                }
-                              }
-                            }}
                           />
                         </label>
                       </div>
                     </div>
 
                     <div>
-                      <label className="block text-xs font-bold mb-1">{isRtl ? 'الاسم الكامل بالمنصة:' : 'Display Name:'}</label>
+                      <label className="block text-xs font-bold mb-1">{isRtl ? 'الاسم المعروض:' : 'Display Name:'}</label>
                       <input
                         type="text"
                         required
                         value={profileFormData.name}
-                        onChange={(e) => setProfileFormData({ ...profileFormData, name: e.target.value })}
+                        onChange={(e) => setProfileFormData(prev => ({ ...prev, name: e.target.value }))}
                         className="w-full px-3 py-2 text-xs rounded-xl bg-[var(--surface-inset)] border border-[var(--border-default)]"
-                        placeholder="Your Name"
                       />
                     </div>
 
                     <div>
-                      <label className="block text-xs font-bold mb-1">{isRtl ? 'البريد الإلكتروني (غير قابل للتعديل):' : 'Email (Read Only):'}</label>
-                      <input
-                        type="email"
-                        disabled
-                        value={profileFormData.email}
-                        className="w-full px-3 py-2 text-xs rounded-xl bg-[var(--surface-subtle)] border border-[var(--border-default)] text-[var(--text-muted)]"
-                      />
-                    </div>
-
-                    <div>
-                      <label className="block text-xs font-bold mb-1">{isRtl ? 'توجيهات مخصصة للذكاء الاصطناعي (أدخل اهتماماتك أو تفضيلاتك):' : 'Custom AI Instructions:'}</label>
+                      <label className="block text-xs font-bold mb-1">{isRtl ? 'النبذة التعريفية (Bio):' : 'Bio / Custom Status:'}</label>
                       <textarea
                         rows={3}
                         value={profileFormData.custom_instructions}
-                        onChange={(e) => setProfileFormData({ ...profileFormData, custom_instructions: e.target.value })}
+                        onChange={(e) => setProfileFormData(prev => ({ ...prev, custom_instructions: e.target.value }))}
                         className="w-full px-3 py-2 text-xs rounded-xl bg-[var(--surface-inset)] border border-[var(--border-default)]"
-                        placeholder={isRtl ? 'مثال: تفضيل النشرات الإعلانية بمجال العقارات والسيارات بغزة...' : 'E.g., Prefer real estate ads...'}
+                        placeholder={isRtl ? 'اكتب نبذة عنك...' : 'Tell us about yourself...'}
                       />
                     </div>
                   </div>
@@ -7354,15 +7478,14 @@ export const BulletinBoardPage: React.FC = () => {
                     <button
                       type="submit"
                       disabled={isSubmittingProfile}
-                      className="px-4 py-2 rounded-xl bg-accent text-[var(--text-primary)] text-xs font-bold flex items-center gap-1"
+                      className="px-4 py-2 rounded-xl bg-accent text-[var(--text-primary)] text-xs font-bold"
                     >
                       {isSubmittingProfile ? (isRtl ? 'جاري الحفظ...' : 'Saving...') : (isRtl ? 'حفظ التغييرات' : 'Save Changes')}
                     </button>
                   </div>
                 </form>
-              ) : (
+              ) : user && (
                 <div className="space-y-4">
-                  {/* Verification Status */}
                   {user.kyc_status === 'verified' && (
                     <div className="p-4 rounded-shape-md bg-accent/10 border border-accent/20 text-center space-y-2">
                       <div className="flex justify-center">
@@ -7442,29 +7565,12 @@ export const BulletinBoardPage: React.FC = () => {
                               <Upload size={14} />
                               <input
                                 type="file"
-                                accept="image/*"
+                                accept="image/*,.pdf"
+                                onChange={handleKycSelfieUpload}
                                 className="hidden"
-                                onChange={async (e) => {
-                                  const file = e.target.files?.[0];
-                                  if (file) {
-                                    try {
-                                      toast.info(isRtl ? 'جاري رفع المستند...' : 'Uploading...');
-                                      const url = await handleUploadFile(file);
-                                      setKycSelfieUrl(url);
-                                      toast.success(isRtl ? 'تم رفع صورة المستند بنجاح!' : 'Document uploaded!');
-                                    } catch (err: any) {
-                                      toast.error(err.message || 'Upload failed');
-                                    }
-                                  }
-                                }}
                               />
                             </label>
                           </div>
-                          {kycSelfieUrl && (
-                            <div className="mt-2 h-20 w-32 rounded-lg overflow-hidden border border-[var(--border-default)] bg-[var(--surface-subtle)]">
-                              <img src={kycSelfieUrl} className="w-full h-full object-cover" alt="Selfie" referrerPolicy="no-referrer" />
-                            </div>
-                          )}
                         </div>
                       </div>
 
@@ -7481,7 +7587,7 @@ export const BulletinBoardPage: React.FC = () => {
                           disabled={isSubmittingProfile}
                           className="px-4 py-2 rounded-xl bg-accent text-[var(--text-primary)] text-xs font-bold"
                         >
-                          {isSubmittingProfile ? (isRtl ? 'جاري الإرسال...' : 'Submitting...') : (isRtl ? 'تقديم طلب التوثيق' : 'Submit Verification Request')}
+                          {isSubmittingProfile ? (isRtl ? 'جاري الإرسال...' : 'Submitting...') : (isRtl ? 'إرسال طلب التوثيق' : 'Submit Verification')}
                         </button>
                       </div>
                     </form>
@@ -7493,9 +7599,6 @@ export const BulletinBoardPage: React.FC = () => {
         )}
       </AnimatePresence>
 
-      {/* ========================================================== */}
-      {/* MODAL 6: EDIT BUSINESS PAGE & MANAGERS                     */}
-      {/* ========================================================== */}
       <AnimatePresence>
         {isEditPageModalOpen && editingPageData && (
           <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-md overflow-y-auto">
@@ -7517,8 +7620,8 @@ export const BulletinBoardPage: React.FC = () => {
 
               <form onSubmit={handleSavePageEdit} className="space-y-4">
                 <div className="max-h-[60vh] overflow-y-auto space-y-4 pr-1">
-                  
-                  {/* Basic settings */}
+
+                  {}
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     <div>
                       <label className="block text-xs font-bold mb-1">{isRtl ? 'اسم الشركة / المتجر:' : 'Page Name:'}</label>
@@ -7581,7 +7684,7 @@ export const BulletinBoardPage: React.FC = () => {
                     />
                   </div>
 
-                  {/* Social media and contacts */}
+                  {}
                   <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                     <div>
                       <label className="block text-xs font-bold mb-1">{isRtl ? 'رقم الواتساب:' : 'WhatsApp:'}</label>
@@ -7616,7 +7719,7 @@ export const BulletinBoardPage: React.FC = () => {
                     </div>
                   </div>
 
-                  {/* Visual assets */}
+                  {}
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     <div>
                       <label className="block text-xs font-bold mb-1">{isRtl ? 'رابط شعار الصفحة (Avatar):' : 'Avatar URL:'}</label>
@@ -7633,20 +7736,8 @@ export const BulletinBoardPage: React.FC = () => {
                           <input
                             type="file"
                             accept="image/*"
+                            onChange={handleEditPageAvatarUpload}
                             className="hidden"
-                            onChange={async (e) => {
-                              const file = e.target.files?.[0];
-                              if (file) {
-                                try {
-                                  toast.info(isRtl ? 'جاري الرفع...' : 'Uploading...');
-                                  const url = await handleUploadFile(file);
-                                  setEditPageFormData({ ...editPageFormData, avatar_url: url });
-                                  toast.success(isRtl ? 'تم رفع الشعار!' : 'Avatar uploaded!');
-                                } catch (err: any) {
-                                  toast.error(err.message || 'Upload failed');
-                                }
-                              }
-                            }}
                           />
                         </label>
                       </div>
@@ -7657,7 +7748,6 @@ export const BulletinBoardPage: React.FC = () => {
                       <div className="flex gap-2">
                         <input
                           type="text"
-                          required
                           value={editPageFormData.cover_url}
                           onChange={(e) => setEditPageFormData({ ...editPageFormData, cover_url: e.target.value })}
                           className="flex-1 px-3 py-2 text-xs rounded-xl bg-[var(--surface-inset)] border border-[var(--border-default)]"
@@ -7667,34 +7757,20 @@ export const BulletinBoardPage: React.FC = () => {
                           <input
                             type="file"
                             accept="image/*"
+                            onChange={handleEditPageCoverUpload}
                             className="hidden"
-                            onChange={async (e) => {
-                              const file = e.target.files?.[0];
-                              if (file) {
-                                try {
-                                  toast.info(isRtl ? 'جاري الرفع...' : 'Uploading...');
-                                  const url = await handleUploadFile(file);
-                                  setEditPageFormData({ ...editPageFormData, cover_url: url });
-                                  toast.success(isRtl ? 'تم رفع الغلاف!' : 'Cover uploaded!');
-                                } catch (err: any) {
-                                  toast.error(err.message || 'Upload failed');
-                                }
-                              }
-                            }}
                           />
                         </label>
                       </div>
                     </div>
                   </div>
-
-                  {/* Page Managers management */}
                   <div className="border-t border-[var(--border-default)] pt-4 space-y-3">
                     <h4 className="text-xs font-extrabold flex items-center gap-1.5 text-accent">
                       <Users size={16} />
                       <span>{isRtl ? 'إدارة المسؤولين والأدوار' : 'Manage Page Admins/Managers'}</span>
                     </h4>
 
-                    {/* If current user is owner, they can add/delete managers */}
+                    {}
                     {user && (editingPageData.user_id === user.id || editingPageData.owner_id === user.id || user.role === 'admin') ? (
                       <div className="space-y-3">
                         <div className="flex gap-2 items-end">
@@ -7752,7 +7828,7 @@ export const BulletinBoardPage: React.FC = () => {
                       </div>
                     )}
 
-                    {/* Managers list */}
+                    {}
                     <div className="space-y-1.5">
                       <p className="text-[10px] font-bold text-[var(--text-muted)]">{isRtl ? 'قائمة المسؤولين الحاليين:' : 'Current Managers List:'}</p>
                       {editPageManagers.length === 0 ? (
@@ -7767,12 +7843,12 @@ export const BulletinBoardPage: React.FC = () => {
                               </div>
                               <div className="flex items-center gap-2 shrink-0">
                                 <span className={`text-[10px] font-bold px-2 py-0.5 rounded-md ${
-                                  mgr.role === 'full' 
-                                    ? 'bg-accent/10 text-accent border border-accent/20' 
+                                  mgr.role === 'full'
+                                    ? 'bg-accent/10 text-accent border border-accent/20'
                                     : 'bg-orange-500/10 text-orange-500 border border-orange-500/20'
                                 }`}>
-                                  {mgr.role === 'full' 
-                                    ? (isRtl ? 'مدير كامل' : 'Full Admin') 
+                                  {mgr.role === 'full'
+                                    ? (isRtl ? 'مدير كامل' : 'Full Admin')
                                     : (isRtl ? 'مدير محدود' : 'Limited Admin')}
                                 </span>
                                 {user && (editingPageData.user_id === user.id || editingPageData.owner_id === user.id || user.role === 'admin') && (

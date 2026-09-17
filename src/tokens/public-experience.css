@@ -1,40 +1,40 @@
 /* ==========================================================================
-   PERPLEXTA PUBLIC EXPERIENCE & MODERN DEVELOPER IDE DESIGN SYSTEM
+   PERPLEXA PUBLIC EXPERIENCE & MODERN DEVELOPER IDE DESIGN SYSTEM
    Single Source of Truth for Public & User-Facing Experiences
    ========================================================================== */
 
 :root {
   /* Surfaces & Depths (Light Mode) */
-  --pub-surface-canvas: #f8fafc;
+  --pub-surface-canvas: #ffffff;
   --pub-surface-panel: #ffffff;
   --pub-surface-container: #ffffff;
   --pub-surface-card: #ffffff;
-  --pub-surface-subtle: #f1f5f9;
-  --pub-surface-inset: #e2e8f0;
-  --pub-surface-overlay: rgba(15, 23, 42, 0.4);
+  --pub-surface-subtle: #f6f8fa;
+  --pub-surface-inset: #f6f8fa;
+  --pub-surface-overlay: rgba(31, 35, 40, 0.4);
 
   /* Outlines & Borders (Strict 1px, calm & soft) */
-  --pub-border-subtle: rgba(226, 232, 240, 0.6);
-  --pub-border-default: rgba(226, 232, 240, 0.9);
-  --pub-border-strong: #cbd5e1;
-  --pub-border-focus: #06b6d4;
+  --pub-border-subtle: #d0d7de;
+  --pub-border-default: #d0d7de;
+  --pub-border-strong: #656d76;
+  --pub-border-focus: #0969da;
 
   /* Typography Colors */
-  --pub-text-primary: #0f172a;
-  --pub-text-secondary: #334155;
-  --pub-text-muted: #64748b;
-  --pub-text-disabled: #94a3b8;
+  --pub-text-primary: #1f2328;
+  --pub-text-secondary: #656d76;
+  --pub-text-muted: #656d76;
+  --pub-text-disabled: #8c959f;
 
   /* Brand Accents */
-  --pub-accent-primary: #06b6d4;
+  --pub-accent-primary: #0969da;
   --pub-accent-on-primary: #ffffff;
-  --pub-accent-muted: rgba(6, 182, 212, 0.12);
-  --pub-accent-glow: rgba(6, 182, 212, 0.2);
+  --pub-accent-muted: rgba(9, 105, 218, 0.12);
+  --pub-accent-glow: rgba(9, 105, 218, 0.2);
 
   /* Status Colors */
-  --pub-status-emerald: #10b981;
-  --pub-status-amber: #f59e0b;
-  --pub-status-rose: #f43f5e;
+  --pub-status-emerald: #1a7f37;
+  --pub-status-amber: #9a6700;
+  --pub-status-rose: #cf222e;
 
   /* Geometry & Radii (M3 Hierarchy) */
   --pub-radius-container: 12px;
@@ -52,66 +52,66 @@
 [data-theme="dark"],
 :where(.dark, .dark *) {
   /* Surfaces & Depths (Dark Mode - Modern Developer IDE Noir) */
-  --pub-surface-canvas: #080c14;
-  --pub-surface-panel: #090d16;
-  --pub-surface-container: #0d131f;
-  --pub-surface-card: #0d131f;
-  --pub-surface-subtle: #131b2e;
-  --pub-surface-inset: #070a10;
-  --pub-surface-overlay: rgba(8, 12, 20, 0.85);
+  --pub-surface-canvas: #0d1117;
+  --pub-surface-panel: #0d1117;
+  --pub-surface-container: #161b22;
+  --pub-surface-card: #161b22;
+  --pub-surface-subtle: #161b22;
+  --pub-surface-inset: #010409;
+  --pub-surface-overlay: rgba(1, 4, 9, 0.85);
 
   /* Outlines & Borders (Dark Mode - calm & soft) */
-  --pub-border-subtle: rgba(30, 41, 59, 0.4);
-  --pub-border-default: rgba(30, 41, 59, 0.7);
-  --pub-border-strong: rgba(51, 65, 85, 0.8);
-  --pub-border-focus: #06b6d4;
+  --pub-border-subtle: #3d444d;
+  --pub-border-default: #3d444d;
+  --pub-border-strong: #8b949e;
+  --pub-border-focus: #58a6ff;
 
   /* Typography Colors (Dark Mode) */
-  --pub-text-primary: #f8fafc;
-  --pub-text-secondary: #cbd5e1;
-  --pub-text-muted: #94a3b8;
-  --pub-text-disabled: #475569;
+  --pub-text-primary: #e6edf3;
+  --pub-text-secondary: #8b949e;
+  --pub-text-muted: #8b949e;
+  --pub-text-disabled: #6e7681;
 
   /* Brand Accents (Dark Mode) */
-  --pub-accent-primary: #06b6d4;
-  --pub-accent-on-primary: #020617;
-  --pub-accent-muted: rgba(6, 182, 212, 0.15);
-  --pub-accent-glow: rgba(6, 182, 212, 0.25);
+  --pub-accent-primary: #58a6ff;
+  --pub-accent-on-primary: #0d1117;
+  --pub-accent-muted: rgba(88, 166, 255, 0.15);
+  --pub-accent-glow: rgba(88, 166, 255, 0.25);
 }
 
 /* Scoped Utility Classes for Modern Developer IDE */
 .ide-input-box {
   background-color: var(--pub-surface-container, #ffffff);
-  border: 1px solid var(--pub-border-default, #e2e8f0);
+  border: 1px solid var(--pub-border-default, #d0d7de);
   border-radius: var(--pub-radius-container, 12px);
-  box-shadow: 0 4px 20px -2px rgba(15, 23, 42, 0.06), 0 2px 6px -1px rgba(15, 23, 42, 0.04);
+  box-shadow: 0 4px 20px -2px rgba(31, 35, 40, 0.06), 0 2px 6px -1px rgba(31, 35, 40, 0.04);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
   transition: border-color 0.2s ease-out, box-shadow 0.2s ease-out, background-color 0.2s ease-out;
 }
 
 .ide-input-box:hover {
-  border-color: rgba(6, 182, 212, 0.4);
+  border-color: rgba(9, 105, 218, 0.4);
 }
 
 .ide-input-box:focus-within {
-  border-color: var(--pub-accent-primary, #06b6d4);
-  box-shadow: 0 0 0 3px rgba(6, 182, 212, 0.15), 0 4px 20px -2px rgba(15, 23, 42, 0.08);
+  border-color: var(--pub-accent-primary, #0969da);
+  box-shadow: 0 0 0 3px rgba(9, 105, 218, 0.15), 0 4px 20px -2px rgba(31, 35, 40, 0.08);
 }
 
 :is(.dark, [data-theme="dark"]) .ide-input-box {
-  background-color: var(--pub-surface-container, #0d131f);
-  border-color: var(--pub-border-default, rgba(30, 41, 59, 0.7));
+  background-color: var(--pub-surface-container, #161b22);
+  border-color: var(--pub-border-default, #3d444d);
   box-shadow: none;
 }
 
 :is(.dark, [data-theme="dark"]) .ide-input-box:hover {
-  border-color: rgba(6, 182, 212, 0.3);
+  border-color: rgba(88, 166, 255, 0.3);
 }
 
 :is(.dark, [data-theme="dark"]) .ide-input-box:focus-within {
-  border-color: rgba(6, 182, 212, 0.45);
-  box-shadow: 0 0 0 2px rgba(6, 182, 212, 0.15);
+  border-color: rgba(88, 166, 255, 0.45);
+  box-shadow: 0 0 0 2px rgba(88, 166, 255, 0.15);
 }
 
 .ide-card,
@@ -124,12 +124,12 @@
 
 .ide-card:hover,
 .ide-section:hover {
-  border-color: rgba(6, 182, 212, 0.3);
+  border-color: rgba(9, 105, 218, 0.3);
 }
 
 .ide-card:focus-within,
 .ide-section:focus-within {
-  border-color: rgba(6, 182, 212, 0.45);
+  border-color: rgba(9, 105, 218, 0.45);
   box-shadow: none;
 }
 
@@ -153,27 +153,27 @@
 }
 
 .ide-chip:hover:not(:disabled) {
-  background-color: rgba(6, 182, 212, 0.1) !important;
-  border-color: rgba(6, 182, 212, 0.25) !important;
-  color: #22d3ee !important;
+  background-color: rgba(9, 105, 218, 0.1) !important;
+  border-color: rgba(9, 105, 218, 0.25) !important;
+  color: var(--pub-accent-primary) !important;
   box-shadow: none !important;
 }
 
 .ide-chip:hover:not(:disabled) svg {
-  color: #22d3ee !important;
+  color: var(--pub-accent-primary) !important;
 }
 
 .ide-chip-active {
-  background-color: rgba(6, 182, 212, 0.15) !important;
-  border-color: rgba(6, 182, 212, 0.35) !important;
-  color: #22d3ee !important;
+  background-color: rgba(9, 105, 218, 0.15) !important;
+  border-color: rgba(9, 105, 218, 0.35) !important;
+  color: var(--pub-accent-primary) !important;
   box-shadow: none !important;
 }
 
 .ide-chip-active:hover:not(:disabled) {
-  background-color: rgba(6, 182, 212, 0.2) !important;
-  border-color: rgba(6, 182, 212, 0.5) !important;
-  color: #22d3ee !important;
+  background-color: rgba(9, 105, 218, 0.2) !important;
+  border-color: rgba(9, 105, 218, 0.5) !important;
+  color: var(--pub-accent-primary) !important;
   box-shadow: none !important;
 }
 
@@ -208,7 +208,7 @@
 .ide-textarea-scroll {
   overflow-y: auto;
   scrollbar-width: thin;
-  scrollbar-color: rgba(6, 182, 212, 0.35) transparent;
+  scrollbar-color: rgba(9, 105, 218, 0.35) transparent;
 }
 
 .ide-textarea-scroll::-webkit-scrollbar {
@@ -220,12 +220,12 @@
 }
 
 .ide-textarea-scroll::-webkit-scrollbar-thumb {
-  background: rgba(6, 182, 212, 0.35);
+  background: rgba(9, 105, 218, 0.35);
   border-radius: 4px;
 }
 
 .ide-textarea-scroll::-webkit-scrollbar-thumb:hover {
-  background: rgba(6, 182, 212, 0.6);
+  background: rgba(9, 105, 218, 0.6);
 }
 
 .ide-send-button:disabled {
@@ -317,8 +317,8 @@
   font-size: 0.625rem;
   font-weight: 700;
   font-family: monospace;
-  background-color: rgba(16, 185, 129, 0.12);
-  border: 1px solid rgba(16, 185, 129, 0.25);
+  background-color: rgba(26, 127, 55, 0.12);
+  border: 1px solid rgba(26, 127, 55, 0.25);
   color: var(--pub-status-emerald);
 }
 
@@ -331,8 +331,8 @@
   font-size: 0.625rem;
   font-weight: 700;
   font-family: monospace;
-  background-color: rgba(245, 158, 11, 0.12);
-  border: 1px solid rgba(245, 158, 11, 0.25);
+  background-color: rgba(154, 103, 0, 0.12);
+  border: 1px solid rgba(154, 103, 0, 0.25);
   color: var(--pub-status-amber);
 }
 
@@ -345,8 +345,8 @@
   font-size: 0.625rem;
   font-weight: 700;
   font-family: monospace;
-  background-color: rgba(244, 63, 94, 0.12);
-  border: 1px solid rgba(244, 63, 94, 0.25);
+  background-color: rgba(207, 34, 46, 0.12);
+  border: 1px solid rgba(207, 34, 46, 0.25);
   color: var(--pub-status-rose);
 }
 
@@ -435,6 +435,7 @@ aside *::-webkit-scrollbar-thumb {
   width: 4px;
 }
 .ide-textarea-scroll::-webkit-scrollbar-thumb {
-  background: var(--pub-border-strong, #334155);
+  background: var(--pub-border-strong, #656d76);
   border-radius: 9999px;
 }
+

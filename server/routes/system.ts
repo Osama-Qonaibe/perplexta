@@ -90,14 +90,14 @@ const handleGetFontConfig = async (req: express.Request, res: express.Response) 
     const fontConfig = {
       dynamicLoading: parsedConfig.dynamicLoading !== false,
       ar: {
-        fontFamily: parsedAr.fontFamily || parsedConfig.ar?.fontFamily || 'Tajawal',
+        fontFamily: parsedAr.fontFamily || parsedConfig.ar?.fontFamily || 'Cairo',
         enabled: parsedAr.enabled !== false && parsedConfig.ar?.enabled !== false,
-        url: parsedAr.url || parsedConfig.ar?.url || 'https://fonts.googleapis.com/css2?family=Tajawal:wght@300;400;500;700&display=swap'
+        url: parsedAr.url || parsedConfig.ar?.url || 'https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700&display=swap'
       },
       en: {
-        fontFamily: parsedEn.fontFamily || parsedConfig.en?.fontFamily || 'Space Grotesk',
+        fontFamily: parsedEn.fontFamily || parsedConfig.en?.fontFamily || 'Geist',
         enabled: parsedEn.enabled !== false && parsedConfig.en?.enabled !== false,
-        url: parsedEn.url || parsedConfig.en?.url || 'https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&display=swap'
+        url: parsedEn.url || parsedConfig.en?.url || 'https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&display=swap'
       }
     };
 

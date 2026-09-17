@@ -4,6 +4,7 @@ import { useAppContext } from "../../context/AppContext";
 import { motion, AnimatePresence } from "motion/react";
 import { getAuthHeaders, getTimeAgo } from "../../utils/adminUtils";
 import { AdminService } from "../../services/adminService";
+import { SelectDropdown } from "@/design-system";
 import {
   Settings2,
   FileText,
@@ -66,12 +67,12 @@ export
 const SmartEmailHubView = ({
   theme,
   t,
-  dir,
+  dir = 'rtl',
   showToast,
 }: {
   theme: string;
   t: (key: string, replacements?: any) => string;
-  dir: string;
+  dir?: 'rtl' | 'ltr';
   showToast: (message: string, type?: 'success' | 'error' | 'warning' | 'info') => void;
 }) => {
   const [activeTab, setActiveTab] = useState<"settings" | "templates" | "feedback_logs">(
@@ -539,19 +540,18 @@ const SmartEmailHubView = ({
 
               <form onSubmit={(e) => e.preventDefault()} className="space-y-5">
                 <div>
-                  <label className="block text-sm font-bold text-[var(--text-primary)] mb-1.5">
-                    {t("mailerType")}
-                  </label>
-                  <select
+                  <SelectDropdown
+                    label={t("mailerType")}
                     value={settings.mailer_type || "smtp"}
-                    onChange={(e) =>
-                      setSettings({ ...settings, mailer_type: e.target.value })
+                    onChange={(val) =>
+                      setSettings({ ...settings, mailer_type: val })
                     }
-                    className="w-full px-4 py-3 rounded-[var(--radius-sm)] border border-[var(--border-default)] bg-[var(--surface-subtle)] text-[var(--text-primary)] focus:outline-none focus:border-[var(--border-accent)] transition-theme"
-                  >
-                    <option value="smtp">{t("smtp")}</option>
-                    <option value="php">{t("phpMail")}</option>
-                  </select>
+                    dir={dir}
+                    options={[
+                      { value: "smtp", label: t("smtp") },
+                      { value: "php", label: t("phpMail") }
+                    ]}
+                  />
                 </div>
 
                 {settings.mailer_type === "smtp" && (
@@ -597,23 +597,22 @@ const SmartEmailHubView = ({
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <div>
-                        <label className="block text-sm font-bold text-[var(--text-primary)] mb-1.5">
-                          {t("encryption")}
-                        </label>
-                        <select
+                        <SelectDropdown
+                          label={t("encryption")}
                           value={settings.smtp_encryption || "tls"}
-                          onChange={(e) =>
+                          onChange={(val) =>
                             setSettings({
                                ...settings,
-                               smtp_encryption: e.target.value,
+                               smtp_encryption: val,
                             })
                           }
-                          className="w-full px-4 py-3 rounded-[var(--radius-sm)] border border-[var(--border-default)] bg-[var(--surface-subtle)] text-[var(--text-primary)] focus:outline-none focus:border-[var(--border-accent)] transition-theme"
-                        >
-                          <option value="tls">{t("tls")}</option>
-                          <option value="ssl">{t("ssl") || "SSL"}</option>
-                          <option value="none">{t("none")}</option>
-                        </select>
+                          dir={dir}
+                          options={[
+                            { value: "tls", label: t("tls") },
+                            { value: "ssl", label: t("ssl") || "SSL" },
+                            { value: "none", label: t("none") }
+                          ]}
+                        />
                       </div>
                       <div>
                         <label className="block text-sm font-bold text-[var(--text-primary)] mb-1.5">

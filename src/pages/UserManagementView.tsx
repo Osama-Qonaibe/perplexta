@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { useAppContext } from '../context/AppContext';
-import { useConfirm } from '@/design-system';
+import { useConfirm, SelectDropdown } from '@/design-system';
 import {
   Users,
   Search,
@@ -1025,65 +1025,64 @@ export const UserManagementView: React.FC<UserManagementProps> = ({
 
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs">
           {/* Status Filter */}
-          <div className="relative">
-            <select
+          <div>
+            <SelectDropdown
               value={statusFilter}
-              onChange={(e) => setStatusFilter(e.target.value)}
-              className="w-full h-10 px-3 rounded-lg border text-xs font-medium appearance-none cursor-pointer focus:outline-none focus:border-[var(--sys-color-primary)] focus:ring-1 focus:ring-[var(--sys-color-primary)] bg-[var(--sys-color-surface-container)] border-[var(--sys-color-outline)] text-[var(--sys-color-text-primary)] shadow-sm transition-all"
-            >
-              <option value="all">{isRtl ? 'جميع الحالات' : 'All Statuses'}</option>
-              <option value="active">{isRtl ? 'الحسابات النشطة' : 'Active Only'}</option>
-              <option value="suspended">{isRtl ? 'الحسابات المعطلة' : 'Suspended Only'}</option>
-            </select>
-            <ChevronDown size={14} className="absolute ltr:right-2.5 rtl:left-2.5 top-1/2 -translate-y-1/2 opacity-50 pointer-events-none" />
+              onChange={(val) => setStatusFilter(val)}
+              dir={isRtl ? 'rtl' : 'ltr'}
+              options={[
+                { value: 'all', label: isRtl ? 'جميع الحالات' : 'All Statuses' },
+                { value: 'active', label: isRtl ? 'الحسابات النشطة' : 'Active Only' },
+                { value: 'suspended', label: isRtl ? 'الحسابات المعطلة' : 'Suspended Only' }
+              ]}
+            />
           </div>
 
           {/* Plan Filter */}
-          <div className="relative">
-            <select
+          <div>
+            <SelectDropdown
               value={planFilter}
-              onChange={(e) => setPlanFilter(e.target.value)}
-              className="w-full h-10 px-3 rounded-lg border text-xs font-medium appearance-none cursor-pointer focus:outline-none focus:border-[var(--sys-color-primary)] focus:ring-1 focus:ring-[var(--sys-color-primary)] bg-[var(--sys-color-surface-container)] border-[var(--sys-color-outline)] text-[var(--sys-color-text-primary)] shadow-sm transition-all"
-            >
-              <option value="all">{isRtl ? 'جميع الباقات' : 'All Tiers'}</option>
-              {normalizedPlans.map((p, pIdx) => (
-                <option key={`user-filter-plan-${p.id}-${pIdx}`} value={p.id}>
-                  {isRtl ? p.nameAr : p.nameEn}
-                </option>
-              ))}
-            </select>
-            <ChevronDown size={14} className="absolute ltr:right-2.5 rtl:left-2.5 top-1/2 -translate-y-1/2 opacity-50 pointer-events-none" />
+              onChange={(val) => setPlanFilter(val)}
+              dir={isRtl ? 'rtl' : 'ltr'}
+              options={[
+                { value: 'all', label: isRtl ? 'جميع الباقات' : 'All Tiers' },
+                ...normalizedPlans.map(p => ({
+                  value: p.id,
+                  label: isRtl ? p.nameAr : p.nameEn
+                }))
+              ]}
+            />
           </div>
 
           {/* KYC Filter */}
-          <div className="relative">
-            <select
+          <div>
+            <SelectDropdown
               value={kycFilter}
-              onChange={(e) => setKycFilter(e.target.value)}
-              className="w-full h-10 px-3 rounded-lg border text-xs font-medium appearance-none cursor-pointer focus:outline-none focus:border-[var(--sys-color-primary)] focus:ring-1 focus:ring-[var(--sys-color-primary)] bg-[var(--sys-color-surface-container)] border-[var(--sys-color-outline)] text-[var(--sys-color-text-primary)] shadow-sm transition-all"
-            >
-              <option value="all">{isRtl ? 'جميع حالات التوثيق' : 'All KYC'}</option>
-              <option value="verified">{isRtl ? 'موثق رسمياً' : 'Verified'}</option>
-              <option value="pending">{isRtl ? 'قيد المراجعة' : 'Pending'}</option>
-              <option value="unverified">{isRtl ? 'غير موثق' : 'Unverified'}</option>
-            </select>
-            <ChevronDown size={14} className="absolute ltr:right-2.5 rtl:left-2.5 top-1/2 -translate-y-1/2 opacity-50 pointer-events-none" />
+              onChange={(val) => setKycFilter(val)}
+              dir={isRtl ? 'rtl' : 'ltr'}
+              options={[
+                { value: 'all', label: isRtl ? 'جميع حالات التوثيق' : 'All KYC' },
+                { value: 'verified', label: isRtl ? 'موثق رسمياً' : 'Verified' },
+                { value: 'pending', label: isRtl ? 'قيد المراجعة' : 'Pending' },
+                { value: 'unverified', label: isRtl ? 'غير موثق' : 'Unverified' }
+              ]}
+            />
           </div>
 
           {/* Role Filter */}
-          <div className="relative">
-            <select
+          <div>
+            <SelectDropdown
               value={roleFilter}
-              onChange={(e) => setRoleFilter(e.target.value)}
-              className="w-full h-10 px-3 rounded-lg border text-xs font-medium appearance-none cursor-pointer focus:outline-none focus:border-[var(--sys-color-primary)] focus:ring-1 focus:ring-[var(--sys-color-primary)] bg-[var(--sys-color-surface-container)] border-[var(--sys-color-outline)] text-[var(--sys-color-text-primary)] shadow-sm transition-all"
-            >
-              <option value="all">{isRtl ? 'جميع الصلاحيات' : 'All Roles'}</option>
-              <option value="user">{isRtl ? 'مستخدم عادي' : 'Standard User'}</option>
-              <option value="support">{isRtl ? 'دعم فني' : 'Support'}</option>
-              <option value="elite">{isRtl ? 'نخبة' : 'Elite'}</option>
-              <option value="admin">{isRtl ? 'مدير نظام' : 'Admin'}</option>
-            </select>
-            <ChevronDown size={14} className="absolute ltr:right-2.5 rtl:left-2.5 top-1/2 -translate-y-1/2 opacity-50 pointer-events-none" />
+              onChange={(val) => setRoleFilter(val)}
+              dir={isRtl ? 'rtl' : 'ltr'}
+              options={[
+                { value: 'all', label: isRtl ? 'جميع الصلاحيات' : 'All Roles' },
+                { value: 'user', label: isRtl ? 'مستخدم عادي' : 'Standard User' },
+                { value: 'support', label: isRtl ? 'دعم فني' : 'Support' },
+                { value: 'elite', label: isRtl ? 'نخبة' : 'Elite' },
+                { value: 'admin', label: isRtl ? 'مدير نظام' : 'Admin' }
+              ]}
+            />
           </div>
         </div>
       </div>

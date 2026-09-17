@@ -107,12 +107,12 @@ export const themeConfig = {
 
   // Visitor Page / Shell Styles (Modern Developer IDE Style - Single Source of Truth)
   visitor: {
-    shell: 'flex-1 flex flex-col justify-between w-full h-full max-w-3xl mx-auto px-4 sm:px-6 py-2 sm:py-6 relative z-10 box-border bg-[var(--pub-surface-canvas)] text-[var(--pub-text-primary)] overflow-y-auto custom-scrollbar',
-    content: 'flex-1 flex flex-col justify-center items-center w-full text-[var(--pub-text-primary)]',
-    footer: 'w-full pt-2.5 sm:pt-4 pb-[calc(8px+env(safe-area-inset-bottom,0px))] sm:pb-3 border-t border-[var(--pub-border-subtle)] select-none flex flex-col sm:flex-row items-center justify-between gap-2 sm:gap-3 text-[9.5px] sm:text-[11px] text-[var(--pub-text-secondary)] px-1 sm:px-2 bg-[var(--pub-surface-canvas)]',
-    footerNav: 'flex items-center gap-2 sm:gap-4 font-bold text-[var(--pub-accent-primary)] text-[10px] sm:text-xs',
-    footerLink: 'cursor-pointer hover:underline bg-transparent border-0 p-0 text-[var(--pub-accent-primary)] font-inherit transition-colors duration-150',
-    footerCopyright: 'font-sans tracking-wide leading-relaxed text-[var(--pub-text-muted)] text-[9px] sm:text-[11px]',
+    shell: 'flex-1 flex flex-col justify-between w-full h-full relative z-10 box-border bg-transparent text-[var(--text-primary)] overflow-y-auto custom-scrollbar',
+    content: 'flex-1 flex flex-col justify-center items-center w-full text-[var(--text-primary)]',
+    footer: 'w-full pt-2.5 sm:pt-4 pb-[calc(8px+env(safe-area-inset-bottom,0px))] sm:pb-3 border-t border-[var(--border-subtle)] select-none flex flex-col sm:flex-row items-center justify-between gap-2 sm:gap-3 text-[9.5px] sm:text-[11px] text-[var(--text-secondary)] px-4 sm:px-8 bg-transparent max-w-7xl mx-auto',
+    footerNav: 'flex items-center gap-2 sm:gap-4 font-medium text-[10px] sm:text-xs',
+    footerLink: 'cursor-pointer hover:underline bg-transparent border-0 p-0 text-[var(--text-secondary)] hover:text-[var(--text-primary)] font-inherit transition-colors duration-150',
+    footerCopyright: 'font-sans tracking-wide leading-relaxed text-[var(--text-muted)] text-[9px] sm:text-[11px]',
   },
 
   // Theme Toggle Button Styles (Modern Developer IDE Style - Single Source of Truth)
