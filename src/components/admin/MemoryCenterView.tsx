@@ -840,9 +840,9 @@ export const MemoryCenterView = ({
             <button
               onClick={handleRunMigration}
               disabled={isRunning}
-              className="w-full flex items-center justify-center gap-2 px-6 py-2.5 bg-gray-800 hover:bg-gray-700 disabled:opacity-50 text-white rounded-[4px] font-medium text-sm transition-theme shadow-sm cursor-pointer border border-gray-700"
+              className="w-full flex items-center justify-center gap-2 px-6 py-2.5 bg-[var(--surface-subtle)] hover:bg-[var(--surface-page)] disabled:opacity-50 text-[var(--text-primary)] hover:text-accent hover:border-accent/40 rounded-[4px] font-medium text-sm transition-theme shadow-sm cursor-pointer border border-[var(--border-default)]"
             >
-              <Database size={16} className="text-gray-300" />
+              <Database size={16} className="text-[var(--text-muted)] group-hover:text-accent" />
               {language === "ar"
                 ? "رحّل بيانات الذاكرة القديمة للمحرك المحلي"
                 : "MIGRATE CONTEXT TO LOCAL ENGINE"}

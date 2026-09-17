@@ -365,7 +365,7 @@ export async function executeVideoTask(ctx: TaskExecutionContext): Promise<{ res
           const validation = await validateProviderCapacity(
             vaultConfig,
             providerId,
-            route.cost_per_usage || 0
+            100
           );
 
           if (!validation.valid) {
@@ -764,9 +764,7 @@ export async function executeVideoTask(ctx: TaskExecutionContext): Promise<{ res
       });
     }
 
-    const settings = await getEconomySettings();
-    const pointsPerDollar = parseFloat(settings.points_per_dollar || '1000');
-    const estimatedCost = (route.cost_per_usage || 0) / pointsPerDollar;
+    const estimatedCost = 0.10;
     if (estimatedCost > 0 && successfulProvider) {
       await pool.query(
         'UPDATE api_keys_vault SET used_today = used_today + $1, updated_at = CURRENT_TIMESTAMP WHERE provider = $2',

@@ -957,18 +957,28 @@ app.use('/uploads', async (req: express.Request, res: express.Response, next: ex
       if (!foundFile) {
         try {
           if (pool) {
-            let dbRes = await pool.query(
+            const dbRes = await pool.query(
               'SELECT file_data FROM user_files WHERE (file_url LIKE $1 OR file_name = $2) AND file_data IS NOT NULL LIMIT 1',
               [`%${filename}%`, filename]
             );
-            if (dbRes.rows.length === 0) {
-              dbRes = await pool.query(
-                'SELECT file_data FROM media_assets WHERE (stored_path LIKE $1 OR original_filename = $2) AND file_data IS NOT NULL LIMIT 1',
-                [`%${filename}%`, filename]
-              );
-            }
             if (dbRes.rows.length > 0 && dbRes.rows[0].file_data) {
               const fileData = dbRes.rows[0].file_data;
+              const fallbackExt = path.extname(filename).toLowerCase();
+              const mimeType = mediaMimeTypes[fallbackExt] || 'application/octet-stream';
+              res.setHeader('Content-Type', mimeType);
+              res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');
+              return res.send(fileData);
+            }
+          }
+
+          const targetMediaPool = mediaPool || pool;
+          if (targetMediaPool) {
+            const mediaRes = await targetMediaPool.query(
+              'SELECT file_data FROM media_assets WHERE (stored_path LIKE $1 OR original_filename = $2) AND file_data IS NOT NULL LIMIT 1',
+              [`%${filename}%`, filename]
+            );
+            if (mediaRes.rows.length > 0 && mediaRes.rows[0].file_data) {
+              const fileData = mediaRes.rows[0].file_data;
               const fallbackExt = path.extname(filename).toLowerCase();
               const mimeType = mediaMimeTypes[fallbackExt] || 'application/octet-stream';
               res.setHeader('Content-Type', mimeType);
@@ -1577,6 +1587,17 @@ Sitemap: ${baseUrl}/sitemap.xml
 app.get('/sitemap.xml', async (req, res) => {
   res.setHeader('Content-Type', 'application/xml; charset=utf-8');
   
+  const combineUrl = (base: string, relativePath: string): string => {
+    if (!relativePath) return base;
+    if (relativePath.startsWith('http://') || relativePath.startsWith('https://') || relativePath.startsWith('data:')) {
+      return relativePath;
+    }
+    const cleanBase = base.endsWith('/') ? base.slice(0, -1) : base;
+    const cleanPath = relativePath.startsWith('/') ? relativePath : '/' + relativePath;
+    const combined = `${cleanBase}${cleanPath}`;
+    return combined.replace(/([^:]\/)\/+/g, '$1');
+  };
+
   try {
     const baseUrl = getBaseUrl(req);
     const staticRoutes = [
@@ -1593,15 +1614,49 @@ app.get('/sitemap.xml', async (req, res) => {
     res.write(`<?xml version="1.0" encoding="UTF-8"?>\n`);
     res.write(`<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:image="http://www.google.com/schemas/sitemap-image/1.1">\n`);
 
+    const processedRoutes = new Set<string>();
+
     for (const item of staticRoutes) {
+      processedRoutes.add(item.url);
       res.write(`  <url>\n`);
-      res.write(`    <loc>${baseUrl}${item.url}</loc>\n`);
+      res.write(`    <loc>${combineUrl(baseUrl, item.url)}</loc>\n`);
       res.write(`    <changefreq>${item.changefreq || 'weekly'}</changefreq>\n`);
       res.write(`    <priority>${item.priority || '0.5'}</priority>\n`);
       res.write(`  </url>\n`);
     }
 
     if (pool) {
+      try {
+        const activeRouteSeos = await getCachedAllActiveRouteSeo();
+        if (activeRouteSeos && activeRouteSeos.length > 0) {
+          for (const item of activeRouteSeos) {
+            const routePath = item.route;
+            if (!routePath) continue;
+
+            const normalizedRoute = routePath === '/' ? '/' : routePath.replace(/\/$/, '');
+            const isSensitive = 
+              normalizedRoute.startsWith('/chat') ||
+              normalizedRoute.includes('/chat/') ||
+              normalizedRoute.startsWith('/admin') ||
+              normalizedRoute.startsWith('/settings') ||
+              normalizedRoute.startsWith('/wallet') ||
+              normalizedRoute.startsWith('/reset-password');
+
+            if (isSensitive) continue;
+            if (processedRoutes.has(normalizedRoute)) continue;
+            processedRoutes.add(normalizedRoute);
+
+            res.write(`  <url>\n`);
+            res.write(`    <loc>${combineUrl(baseUrl, normalizedRoute)}</loc>\n`);
+            res.write(`    <changefreq>daily</changefreq>\n`);
+            res.write(`    <priority>0.7</priority>\n`);
+            res.write(`  </url>\n`);
+          }
+        }
+      } catch (routeErr) {
+        console.error('[Sitemap] Active routes fetch error (non-blocking):', routeErr);
+      }
+
       const streamToResponse = async (clientPool: any, queryText: string, queryParams: any[], formatRow: (row: any) => string) => {
         let client;
         try {
@@ -1634,7 +1689,7 @@ app.get('/sitemap.xml', async (req, res) => {
       try {
         const formatImageNode = (img: string | null | undefined, baseUrl: string) => {
           if (!img) return '';
-          const url = img.startsWith('http') ? img : `${baseUrl}${img.startsWith('/') ? '' : '/'}${img}`;
+          const url = combineUrl(baseUrl, img);
           return `    <image:image>\n      <image:loc>${url}</image:loc>\n    </image:image>\n`;
         };
 
@@ -1651,11 +1706,12 @@ app.get('/sitemap.xml', async (req, res) => {
 
         await streamToResponse(
           pool,
-          'SELECT id, updated_at, image_url FROM bulletin_ads WHERE status = $1 ORDER BY id DESC',
+          "SELECT id, updated_at, image_url, expires_at FROM bulletin_ads WHERE status = $1 AND (expires_at IS NULL OR expires_at > CURRENT_TIMESTAMP) ORDER BY id DESC",
           ['active'],
           (row) => {
             const metrics = getSitemapMetrics(row.updated_at);
-            return `  <url>\n    <loc>${baseUrl}/viralbook/${row.id}</loc>\n    <lastmod>${row.updated_at ? new Date(row.updated_at).toISOString() : new Date().toISOString()}</lastmod>\n    <changefreq>${metrics.changefreq}</changefreq>\n    <priority>${metrics.priority}</priority>\n${formatImageNode(row.image_url, baseUrl)}  </url>\n`;
+            const detailUrl = `/viralbook/${row.id}`;
+            return `  <url>\n    <loc>${combineUrl(baseUrl, detailUrl)}</loc>\n    <lastmod>${row.updated_at ? new Date(row.updated_at).toISOString() : new Date().toISOString()}</lastmod>\n    <changefreq>${metrics.changefreq}</changefreq>\n    <priority>${metrics.priority}</priority>\n${formatImageNode(row.image_url, baseUrl)}  </url>\n`;
           }
         );
       } catch (dbErr) {
@@ -1828,32 +1884,62 @@ async function injectSEOTags(
   let currentKeywords = defaultKeywords;
   let currentSiteName = defaultSiteName;
   
-  const DEFAULT_OG_IMAGE = '';
+  const DEFAULT_OG_IMAGE = settings.logo_url || settings.favicon_url || '/apple-touch-icon.png';
   let imageUrl = settings.seo_image_url || '';
 
-  /** Validates local image existence, handles external URLs */
+  /** Combines a base URL and relative path, strictly avoiding duplicate slash errors */
+  const combineUrl = (base: string, relativePath: string): string => {
+    if (!relativePath) return base;
+    if (relativePath.startsWith('http://') || relativePath.startsWith('https://') || relativePath.startsWith('data:')) {
+      return relativePath;
+    }
+    const cleanBase = base.endsWith('/') ? base.slice(0, -1) : base;
+    const cleanPath = relativePath.startsWith('/') ? relativePath : '/' + relativePath;
+    const combined = `${cleanBase}${cleanPath}`;
+    return combined.replace(/([^:]\/)\/+/g, '$1');
+  };
+
+  /** Validates local image existence, handles external URLs and base64 data URIs */
   const validateImageUrl = (url: string): string => {
     if (!url) return '';
 
-    if (url.startsWith('/')) {
-      if (url.startsWith('/uploads/')) {
-        const localPath = path.join(process.cwd(), url);
-        if (!fs.existsSync(localPath)) return '';
-      } else if (url.startsWith('/images/')) {
-        const publicPath = path.join(process.cwd(), 'public', url);
-        if (!fs.existsSync(publicPath)) return '';
-      }
+    // Handle base64 data URIs immediately
+    if (url.startsWith('data:image/')) {
       return url;
     }
 
+    let cleanUrl = url;
+    if (!cleanUrl.startsWith('/') && !cleanUrl.startsWith('http://') && !cleanUrl.startsWith('https://')) {
+      cleanUrl = '/' + cleanUrl;
+    }
+
+    if (cleanUrl.startsWith('/')) {
+      if (cleanUrl.startsWith('/uploads/')) {
+        const localPath = path.join(process.cwd(), cleanUrl);
+        if (!fs.existsSync(localPath)) {
+          const publicPath = path.join(process.cwd(), 'public', cleanUrl);
+          if (!fs.existsSync(publicPath)) {
+            // Return URL even if physical file check fails to maintain static/CDN hosting support
+            return cleanUrl;
+          }
+        }
+      } else if (cleanUrl.startsWith('/images/')) {
+        const publicPath = path.join(process.cwd(), 'public', cleanUrl);
+        if (!fs.existsSync(publicPath)) {
+          return cleanUrl;
+        }
+      }
+      return cleanUrl;
+    }
+
     try {
-      const parsed = new URL(url);
+      const parsed = new URL(cleanUrl);
       const invalidHostnames = ['localhost', '127.0.0.1', '0.0.0.0', '::1'];
-      if (invalidHostnames.includes(parsed.hostname)) return DEFAULT_OG_IMAGE;
-      if (parsed.protocol !== 'http:' && parsed.protocol !== 'https:') return DEFAULT_OG_IMAGE;
-      return url;
+      if (invalidHostnames.includes(parsed.hostname)) return '';
+      if (parsed.protocol !== 'http:' && parsed.protocol !== 'https:') return '';
+      return cleanUrl;
     } catch (e) {
-      return DEFAULT_OG_IMAGE;
+      return '';
     }
   };
 
@@ -1886,6 +1972,7 @@ async function injectSEOTags(
   const normalizedPath = req.path === '/' ? '/' : (req.path || '/').replace(/\/$/, '');
 
   let isRouteSeoActive = false;
+  let isRouteSeoForcedDisabled = false;
   let extraJsonLd: any = null;
 
   if (pool) {
@@ -1935,21 +2022,25 @@ async function injectSEOTags(
 
       const routeMeta = await getCachedRouteSeo(normalizedPath);
       if (routeMeta) {
-        isRouteSeoActive = true;
-        const routeTitle = preferredLang === 'ar' 
-          ? (routeMeta.title_ar || routeMeta.title_en) 
-          : (routeMeta.title_en || routeMeta.title_ar);
-        const routeDesc = preferredLang === 'ar' 
-          ? (routeMeta.description_ar || routeMeta.description_en) 
-          : (routeMeta.description_en || routeMeta.description_ar);
-        const routeKw = preferredLang === 'ar' 
-          ? (routeMeta.keywords_ar || routeMeta.keywords_en) 
-          : (routeMeta.keywords_en || routeMeta.keywords_ar);
+        if (routeMeta.is_active !== false) {
+          isRouteSeoActive = true;
+          const routeTitle = preferredLang === 'ar' 
+            ? (routeMeta.title_ar || routeMeta.title_en) 
+            : (routeMeta.title_en || routeMeta.title_ar);
+          const routeDesc = preferredLang === 'ar' 
+            ? (routeMeta.description_ar || routeMeta.description_en) 
+            : (routeMeta.description_en || routeMeta.description_ar);
+          const routeKw = preferredLang === 'ar' 
+            ? (routeMeta.keywords_ar || routeMeta.keywords_en) 
+            : (routeMeta.keywords_en || routeMeta.keywords_ar);
 
-        if (routeTitle) currentTitle = routeTitle;
-        if (routeDesc) currentDesc = routeDesc;
-        if (routeKw) currentKeywords = routeKw;
-        if (routeMeta.og_image_url) imageUrl = validateImageUrl(routeMeta.og_image_url);
+          if (routeTitle) currentTitle = routeTitle;
+          if (routeDesc) currentDesc = routeDesc;
+          if (routeKw) currentKeywords = routeKw;
+          if (routeMeta.og_image_url) imageUrl = validateImageUrl(routeMeta.og_image_url);
+        } else {
+          isRouteSeoForcedDisabled = true;
+        }
       }
     } catch (routeErr) {
     }
@@ -2067,9 +2158,7 @@ async function injectSEOTags(
     imageUrl = DEFAULT_OG_IMAGE;
   }
 
-  if (imageUrl && !imageUrl.startsWith('http') && !imageUrl.startsWith('data:')) {
-    imageUrl = `${baseUrl}${imageUrl.startsWith('/') ? imageUrl : `/${imageUrl}`}`;
-  }
+  imageUrl = combineUrl(baseUrl, imageUrl);
 
   let imageType = 'image/png';
   if (imageUrl.toLowerCase().endsWith('.jpg') || imageUrl.toLowerCase().endsWith('.jpeg')) {
@@ -2083,13 +2172,11 @@ async function injectSEOTags(
   }
 
   let faviconUrl = settings?.favicon_url || settings?.logo_url || '/apple-touch-icon.png';
-  if (faviconUrl && !faviconUrl.startsWith('http') && !faviconUrl.startsWith('data:')) {
-    faviconUrl = `${baseUrl}${faviconUrl.startsWith('/') ? faviconUrl : `/${faviconUrl}`}`;
-  }
+  faviconUrl = combineUrl(baseUrl, faviconUrl);
 
-  const currentUrl = `${baseUrl}${req.originalUrl || req.path}`;
+  const currentUrl = combineUrl(baseUrl, req.originalUrl || req.path);
   const canonicalPath = req.path === '/' ? '/' : req.path.replace(/\/$/, '');
-  const canonicalUrl = `${baseUrl}${canonicalPath}`;
+  const canonicalUrl = combineUrl(baseUrl, canonicalPath);
 
   const escTitle    = escapeHtmlAttribute(currentTitle);
   const escDesc     = escapeHtmlAttribute(currentDesc);
@@ -2101,13 +2188,24 @@ async function injectSEOTags(
   const escSiteName = escapeHtmlAttribute(currentSiteName);
 
   const PUBLIC_WHITELIST = ['/', '/subscription', '/bulletin', '/viralbook', '/rewards', '/terms', '/privacy', '/about'];
+  const isSensitivePath = 
+    normalizedPath.startsWith('/chat') ||
+    normalizedPath.includes('/chat/') ||
+    normalizedPath.startsWith('/admin') ||
+    normalizedPath.startsWith('/settings') ||
+    normalizedPath.startsWith('/wallet') ||
+    normalizedPath.startsWith('/reset-password');
+
   const isPublicRoute = 
-    isRouteSeoActive ||
-    PUBLIC_WHITELIST.includes(normalizedPath) ||
-    normalizedPath.startsWith('/share/') ||
-    normalizedPath.startsWith('/bulletin') ||
-    normalizedPath.startsWith('/viralbook') ||
-    normalizedPath.startsWith('/rewards');
+    !isSensitivePath && 
+    !isRouteSeoForcedDisabled && (
+      isRouteSeoActive ||
+      PUBLIC_WHITELIST.includes(normalizedPath) ||
+      normalizedPath.startsWith('/share/') ||
+      normalizedPath.startsWith('/bulletin') ||
+      normalizedPath.startsWith('/viralbook') ||
+      normalizedPath.startsWith('/rewards')
+    );
 
   let metaBlock = '';
 
@@ -2198,7 +2296,20 @@ async function injectSEOTags(
 
     metaBlock += `\n    <script type="application/ld+json">\n${JSON.stringify(structuredData, null, 2).replace(/<\/script/gi, '<\\/script')}\n    </script>`;
   } else {
-    metaBlock = `\n    <meta name="robots" content="noindex, nofollow" />\n    `;
+    const titleTagRegex = /<title>[\s\S]*?<\/title>/i;
+    const secureTitle = preferredLang === 'ar' ? 'بيربليكستا - مساحة عمل محصنة' : 'Perplexta - Secure Workspace';
+    const finalTitleHtml = `<title>${secureTitle}</title>`;
+    if (titleTagRegex.test(html)) {
+      html = html.replace(titleTagRegex, finalTitleHtml);
+    } else {
+      html = html.replace('</head>', `${finalTitleHtml}</head>`);
+    }
+
+    metaBlock = `
+    <meta name="description" content="${preferredLang === 'ar' ? 'صفحة آمنة ومحمية وفق بروتوكولات الأمان لمنصة بيربليكستا.' : 'Secure node with zero crawling, protected under enterprise encryption protocols.'}" />
+    <meta name="robots" content="noindex, nofollow, noarchive, nosnippet, max-image-preview:none" />
+    <meta name="googlebot" content="noindex, nofollow, noarchive, nosnippet" />
+    `;
   }
 
   return await streamTransformHtml(html, escTitle, escCanonical, escFavicon, metaBlock, settings);
@@ -2264,6 +2375,19 @@ app.use(async (req: express.Request, res: express.Response, next: express.NextFu
 
   if (isApiOrUploads || hasStaticExtension || isDevVitePath) {
     return next();
+  }
+
+  const normalizedPathForRobots = req.path === '/' ? '/' : req.path.replace(/\/$/, '');
+  const isSensitivePath = 
+    normalizedPathForRobots.startsWith('/chat') ||
+    normalizedPathForRobots.includes('/chat/') ||
+    normalizedPathForRobots.startsWith('/admin') ||
+    normalizedPathForRobots.startsWith('/settings') ||
+    normalizedPathForRobots.startsWith('/wallet') ||
+    normalizedPathForRobots.startsWith('/reset-password');
+
+  if (isSensitivePath) {
+    res.setHeader('X-Robots-Tag', 'noindex, nofollow, noarchive, nosnippet');
   }
 
   const baseUrl = getBaseUrl(req);

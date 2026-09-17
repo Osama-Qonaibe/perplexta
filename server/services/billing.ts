@@ -23,30 +23,7 @@ export function estimateTokens(text: string): number {
  * Centralized pricing function based on tool's orchestrator configuration.
  */
 export async function calculateTokenPointsCost(toolId: string, inputTokens: number, outputTokens: number): Promise<number> {
-  if (!pool) return 0;
-  try {
-    const { rows } = await pool.query(
-      'SELECT cost_per_usage, cost_per_1k_input_tokens, cost_per_1k_output_tokens FROM tool_orchestrator WHERE tool_id = $1',
-      [toolId]
-    );
-    if (!rows.length) {
-      console.warn(`[Billing] Missing orchestrator config for tool_id: ${toolId}`);
-      return 0;
-    }
-    const row = rows[0];
-    const baseCost   = parseInt(row.cost_per_usage,           10) || 0;
-    const costInput  = parseFloat(row.cost_per_1k_input_tokens)  || 0;
-    const costOutput = parseFloat(row.cost_per_1k_output_tokens) || 0;
-
-    const inputCost  = (inputTokens  / 1000) * costInput;
-    const outputCost = (outputTokens / 1000) * costOutput;
-    const total      = Math.ceil(baseCost + inputCost + outputCost);
-
-    return total;
-  } catch (err) {
-    console.error('[Billing] calculateTokenPointsCost failed:', err);
-    return 0;
-  }
+  return 0;
 }
 
 /** Converts points to USD based on the centralized points_per_dollar setting. */
@@ -249,7 +226,7 @@ export async function refundExecutionHold(userId: string | number, toolId: strin
 
 /**
  * Wraps a tool call with full billing lifecycle:
- * hold → execute (with real-time budget check) → reconcile.
+ * Bypassed in the new Subscription-Only Model. Executes the block directly.
  */
 export async function executeWithBillingMiddleware(
   userId: string | number,
@@ -262,102 +239,19 @@ export async function executeWithBillingMiddleware(
     walletCharged: any
   ) => Promise<any>
 ) {
-  const userIdNum = typeof userId === 'number' ? userId : parseInt(userId, 10);
-  let holdPointsResult: { heldPoints: number; totalPointsAvailable: number } | null = null;
-  let outerAccumulatedOutput = '';
-
-  let baseCost = 0, costInput = 0, costOutput = 0;
-  try {
-    const { rows } = await pool.query(
-      'SELECT cost_per_usage, cost_per_1k_input_tokens, cost_per_1k_output_tokens FROM tool_orchestrator WHERE tool_id = $1',
-      [toolId]
-    );
-    if (rows.length) {
-      baseCost   = parseInt(rows[0].cost_per_usage,           10) || 0;
-      costInput  = parseFloat(rows[0].cost_per_1k_input_tokens)  || 0;
-      costOutput = parseFloat(rows[0].cost_per_1k_output_tokens) || 0;
-    }
-  } catch (err) {
-    console.error('[Billing Middleware] Failed to pre-fetch tool costs:', err);
-  }
-
-  if (!quotaCheck.allowed) {
-    try {
-      holdPointsResult = await applyUpfrontHold(userIdNum, toolId, initialPrompt);
-      io?.to(`user_${userIdNum}`).emit('user_profile_updated');
-      io?.to(`user_${userIdNum}`).emit('wallet_charge_notice', {
-        toolId, charged: 'points', amount: holdPointsResult.heldPoints, isHold: true,
-      });
-    } catch (chargeErr: any) {
-      const period    = quotaCheck.period || 'daily';
-      const periodEn  = period === 'daily' ? 'Daily' : 'Monthly';
-      const periodAr  = period === 'daily' ? 'يومي'  : 'شهري';
-      await logSecurityAlert(userIdNum, 'QUOTA_LIMIT_HIT', 'low',
-        `User hit ${period} quota but wallet hold failed: ${chargeErr.message}`, { toolId, quota: quotaCheck });
-      throw new Error(JSON.stringify({
-        error:    `Premium Credits Required: You have reached your complimentary ${periodEn} limit. Please recharge your digital wallet to continue.`,
-        error_ar: `تتطلب هذه العملية رصيداً إضافياً: لقد تجاوزت الحد ال${periodAr} المسموح به. يرجى شحن محفظتك الرقمية للاستمرار.`,
-        type: 'QUOTA_EXCEEDED', limit: quotaCheck.limit || 0,
-        current: quotaCheck.currentUsage || 0, period,
-        cta: { upgrade: true, referral: true },
-      }));
-    }
-  }
-
-  const inputTokens = estimateTokens(initialPrompt);
   const updateCostProgress = (chunkText: string) => {
-    outerAccumulatedOutput += chunkText;
-    if (!holdPointsResult) return;
-    const outputTokens   = estimateTokens(outerAccumulatedOutput);
-    const estPointsCost  = Math.ceil(baseCost + (inputTokens / 1000) * costInput + (outputTokens / 1000) * costOutput);
-    const totalAvailable = holdPointsResult.heldPoints + holdPointsResult.totalPointsAvailable;
-    if (estPointsCost >= totalAvailable) {
-      io?.to(`user_${userIdNum}`).emit('billing_limit_reached', {
-        message_en: 'Streaming halted: Your digital wallet points have been fully exhausted. Please recharge your wallet or invite friends to continue.',
-        message_ar: 'تم إيقاف البث مؤقتاً: لقد نفدت نقاط محفظتك الرقمية تماماً. يرجى شحن الرصيد أو دعوة الأصدقاء للمتابعة.',
-      });
-      throw new Error('OUT_OF_POINTS_BUDGET_HALT');
-    }
+    // No points monitoring or budget halting. Pure silent pass-through.
   };
-
-  const walletCharged = holdPointsResult
-    ? { charged: 'points' as const, amount: holdPointsResult.heldPoints }
-    : false;
 
   try {
     let finalGeneratedText = '';
     const result = await executeBlock(
       updateCostProgress,
       async (text) => { finalGeneratedText = text; },
-      walletCharged
+      false // walletCharged is always false
     );
-
-    if (holdPointsResult) {
-      try {
-        await reconcileHold(userIdNum, toolId, holdPointsResult.heldPoints,
-          inputTokens, estimateTokens(finalGeneratedText));
-        io?.to(`user_${userIdNum}`).emit('user_profile_updated');
-      } catch (err) { console.error('[Billing] Success reconcile failed:', err); }
-    }
     return result;
-
   } catch (err: any) {
-    if (holdPointsResult) {
-      try {
-        await refundExecutionHold(userIdNum, toolId, holdPointsResult.heldPoints);
-        io?.to(`user_${userIdNum}`).emit('user_profile_updated');
-        io?.to(`user_${userIdNum}`).emit('wallet_charge_notice', {
-          toolId, charged: 'points', amount: holdPointsResult.heldPoints, isRefund: true,
-        });
-      } catch (recErr) { console.error('[Billing] Failure refund failed:', recErr); }
-    }
-    if (err.message?.includes('OUT_OF_POINTS_BUDGET_HALT')) {
-      throw new Error(JSON.stringify({
-        error:    'Streaming halted: Your digital wallet points have been fully exhausted. Please recharge your wallet or invite friends to continue.',
-        error_ar: 'تم إيقاف الخدمة: رصيد محفظتك الرقمية غير كافٍ. يرجى إعادة شحن محفظتك أو دعوة الأصدقاء للمتابعة.',
-        type: 'INSUFFICIENT_FUNDS', cta: { upgrade: true, referral: true },
-      }));
-    }
     throw err;
   }
 }

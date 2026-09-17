@@ -3,7 +3,7 @@ import path from 'path';
 import fs from 'fs/promises';
 import { existsSync, mkdirSync } from 'fs';
 import crypto from 'crypto';
-import { pool } from '../db/index.js';
+import { mediaPool, pool } from '../db/index.js';
 
 export interface ImageOptimizationResult {
   assetId?: string;
@@ -53,9 +53,9 @@ export async function optimizeUploadedImage(
     const sha256Hash = crypto.createHash('sha256').update(fileBuffer).digest('hex');
 
     // Deduplication check: if asset with same hash exists in media_assets
-    if (pool) {
+    if (mediaPool) {
       try {
-        const existingAsset = await pool.query(
+        const existingAsset = await mediaPool.query(
           'SELECT id, stored_path, format, width, height, size_bytes FROM media_assets WHERE sha256_hash = $1 LIMIT 1',
           [sha256Hash]
         );
@@ -135,9 +135,9 @@ export async function optimizeUploadedImage(
     let assetId: string | undefined;
 
     // Register in media_assets table
-    if (pool) {
+    if (mediaPool) {
       try {
-        const insertRes = await pool.query(`
+        const insertRes = await mediaPool.query(`
           INSERT INTO media_assets (
             stored_path, original_filename, context, format, width, height, size_bytes, sha256_hash, is_public,
             user_id, metadata
@@ -255,9 +255,9 @@ export function normalizeImageUrl(urlOrPath: string | null | undefined): string 
  * Retrieves a media asset by its UUID
  */
 export async function getMediaAssetById(id: string) {
-  if (!pool) return null;
+  if (!mediaPool) return null;
   try {
-    const res = await pool.query('SELECT * FROM media_assets WHERE id = $1', [id]);
+    const res = await mediaPool.query('SELECT * FROM media_assets WHERE id = $1', [id]);
     return res.rows[0] || null;
   } catch (err: any) {
     console.error('[Media Optimization] getMediaAssetById error:', err.message);
@@ -265,29 +265,46 @@ export async function getMediaAssetById(id: string) {
   }
 }
 
-/**
- * Finds all media_assets not referenced across user_files, bulletin_ads, advertisements, users, or system_settings
- */
 export async function findOrphanedMediaAssets() {
-  if (!pool) return [];
+  if (!mediaPool) return [];
   try {
-    const res = await pool.query(`
-      SELECT m.* FROM media_assets m
-      WHERE NOT EXISTS (
-        SELECT 1 FROM users u WHERE u.avatar LIKE '%' || m.stored_path || '%'
-      )
-      AND NOT EXISTS (
-        SELECT 1 FROM bulletin_ads ba WHERE ba.image_url LIKE '%' || m.stored_path || '%'
-      )
-      AND NOT EXISTS (
-        SELECT 1 FROM advertisements a WHERE a.image_url LIKE '%' || m.stored_path || '%'
-      )
-      AND NOT EXISTS (
-        SELECT 1 FROM system_settings s WHERE s.logo_url LIKE '%' || m.stored_path || '%' OR s.logo_light_url LIKE '%' || m.stored_path || '%' OR s.seo_image_url LIKE '%' || m.stored_path || '%' OR s.favicon_url LIKE '%' || m.stored_path || '%'
-      )
-      ORDER BY m.created_at DESC
-    `);
-    return res.rows;
+    const res = await mediaPool.query('SELECT * FROM media_assets ORDER BY created_at DESC');
+    const allAssets = res.rows;
+    if (allAssets.length === 0) return [];
+
+    const referencedPaths = new Set<string>();
+    if (pool) {
+      const [usersRes, adsRes, advertsRes, settingsRes] = await Promise.all([
+        pool.query('SELECT avatar FROM users WHERE avatar IS NOT NULL').catch(() => ({ rows: [] })),
+        pool.query('SELECT image_url, media_urls FROM bulletin_ads').catch(() => ({ rows: [] })),
+        pool.query('SELECT image_url FROM advertisements').catch(() => ({ rows: [] })),
+        pool.query('SELECT logo_url, logo_light_url, seo_image_url, favicon_url FROM system_settings').catch(() => ({ rows: [] }))
+      ]);
+
+      for (const row of usersRes.rows) {
+        if (row.avatar) referencedPaths.add(String(row.avatar));
+      }
+      for (const row of adsRes.rows) {
+        if (row.image_url) referencedPaths.add(String(row.image_url));
+        if (Array.isArray(row.media_urls)) {
+          for (const u of row.media_urls) {
+            if (u) referencedPaths.add(String(u));
+          }
+        }
+      }
+      for (const row of advertsRes.rows) {
+        if (row.image_url) referencedPaths.add(String(row.image_url));
+      }
+      for (const row of settingsRes.rows) {
+        if (row.logo_url) referencedPaths.add(String(row.logo_url));
+        if (row.logo_light_url) referencedPaths.add(String(row.logo_light_url));
+        if (row.seo_image_url) referencedPaths.add(String(row.seo_image_url));
+        if (row.favicon_url) referencedPaths.add(String(row.favicon_url));
+      }
+    }
+
+    const referencedAgg = Array.from(referencedPaths).join(' ');
+    return allAssets.filter((m: any) => !referencedAgg.includes(m.stored_path));
   } catch (err: any) {
     console.error('[Media Optimization] findOrphanedMediaAssets error:', err.message);
     return [];
@@ -298,9 +315,9 @@ export async function findOrphanedMediaAssets() {
  * Deletes a media asset by ID and unlinks its physical file
  */
 export async function deleteMediaAsset(id: string): Promise<boolean> {
-  if (!pool) return false;
+  if (!mediaPool) return false;
   try {
-    const res = await pool.query('DELETE FROM media_assets WHERE id = $1 RETURNING stored_path', [id]);
+    const res = await mediaPool.query('DELETE FROM media_assets WHERE id = $1 RETURNING stored_path', [id]);
     if (res.rows.length > 0) {
       const storedPath = res.rows[0].stored_path;
       const absPath = path.join(process.cwd(), storedPath);

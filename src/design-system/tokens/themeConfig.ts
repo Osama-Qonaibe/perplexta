@@ -54,9 +54,9 @@ export const themeConfig = {
 
   // Chat Panel Styles (Modern Developer IDE Style - Single Source of Truth)
   chat: {
-    panel: 'bg-[var(--pub-surface-canvas)]',
-    messageUser: 'bg-[var(--pub-surface-subtle)] text-[var(--pub-text-primary)] border border-[var(--pub-border-default)] rounded-shape-md',
-    messageAI: 'bg-transparent text-[var(--pub-text-primary)]',
+    panel: 'bg-[var(--surface-page)]',
+    messageUser: 'bg-[var(--surface-subtle)] text-[var(--text-primary)] border border-[var(--border-default)] rounded-shape-md',
+    messageAI: 'bg-transparent text-[var(--text-primary)]',
     inputBox: 'ide-input-box p-4 shadow-lg',
     chip: 'ide-chip',
     chipActive: 'ide-chip-active',
@@ -95,14 +95,14 @@ export const themeConfig = {
   // Auth Card & Modal Styles (Modern Developer IDE Style - Single Source of Truth)
   auth: {
     overlay: 'fixed inset-0 z-[200] overflow-y-auto flex items-center justify-center p-4 py-8 md:py-12 bg-black/75 backdrop-blur-md',
-    card: 'relative w-full max-w-[360px] md:max-w-[390px] p-6 md:p-7 rounded-shape-lg shadow-2xl border bg-[var(--pub-surface-container)] border-[var(--pub-border-default)] mx-auto flex flex-col justify-between backdrop-blur-md',
-    title: 'text-base md:text-lg font-black text-[var(--pub-text-primary)] font-sans',
-    input: 'w-full py-2.5 px-3 rounded-shape-sm border outline-none transition-theme bg-[var(--pub-surface-subtle)] border-[var(--pub-border-default)] text-[var(--pub-text-primary)] placeholder:text-[var(--pub-text-muted)] focus:border-[var(--pub-accent-primary)]/60 text-xs font-sans',
-    submitButton: 'w-full h-10 min-h-[40px] px-3 bg-[var(--pub-accent-primary)] hover:opacity-90 text-[var(--pub-surface-canvas)] font-bold rounded-shape-sm transition-theme shadow-sm flex items-center justify-center gap-2 text-xs active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed',
-    googleButton: 'w-full h-10 min-h-[40px] px-3 flex items-center justify-center gap-2 rounded-shape-sm border transition-theme bg-[var(--pub-surface-subtle)] border-[var(--pub-border-default)] hover:border-[var(--pub-accent-primary)]/40 hover:bg-[var(--pub-surface-container)] text-[var(--pub-text-primary)] shadow-sm text-xs font-bold active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed',
-    checkboxBox: 'w-3.5 h-3.5 rounded-shape-xs border border-[var(--pub-border-default)] bg-[var(--pub-surface-subtle)] peer-checked:bg-[var(--pub-accent-primary)] peer-checked:border-[var(--pub-accent-primary)] transition-theme flex items-center justify-center',
-    error: 'p-2 rounded-shape-xs bg-[var(--pub-status-rose)]/10 border border-[var(--pub-status-rose)]/25 text-[var(--pub-status-rose)] text-xs text-center font-sans overflow-hidden',
-    success: 'p-2 rounded-shape-xs bg-[var(--pub-status-emerald)]/10 border border-[var(--pub-status-emerald)]/25 text-[var(--pub-status-emerald)] text-xs text-center font-sans overflow-hidden',
+    card: 'relative w-full max-w-[360px] md:max-w-[390px] p-6 md:p-7 rounded-shape-lg shadow-2xl border bg-[var(--surface-card)] border-[var(--border-default)] mx-auto flex flex-col justify-between backdrop-blur-md',
+    title: 'text-base md:text-lg font-black text-[var(--text-primary)] font-sans',
+    input: 'w-full py-2.5 px-3 rounded-shape-sm border outline-none transition-theme bg-[var(--surface-subtle)] border-[var(--border-default)] text-[var(--text-primary)] placeholder:text-[var(--text-muted)] focus:border-[var(--border-accent)]/60 text-xs font-sans',
+    submitButton: 'w-full h-10 min-h-[40px] px-3 bg-[var(--accent)] hover:opacity-90 text-[var(--surface-page)] font-bold rounded-shape-sm transition-theme shadow-sm flex items-center justify-center gap-2 text-xs active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed',
+    googleButton: 'w-full h-10 min-h-[40px] px-3 flex items-center justify-center gap-2 rounded-shape-sm border transition-theme bg-[var(--surface-subtle)] border-[var(--border-default)] hover:border-[var(--border-accent)]/40 hover:bg-[var(--surface-card)] text-[var(--text-primary)] shadow-sm text-xs font-bold active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed',
+    checkboxBox: 'w-3.5 h-3.5 rounded-shape-xs border border-[var(--border-default)] bg-[var(--surface-subtle)] peer-checked:bg-[var(--accent)] peer-checked:border-[var(--accent)] transition-theme flex items-center justify-center',
+    error: 'p-2 rounded-shape-xs bg-[var(--fg-danger)]/10 border border-[var(--fg-danger)]/25 text-[var(--fg-danger)] text-xs text-center font-sans overflow-hidden',
+    success: 'p-2 rounded-shape-xs bg-[var(--fg-success)]/10 border border-[var(--fg-success)]/25 text-[var(--fg-success)] text-xs text-center font-sans overflow-hidden',
   },
 
   // Visitor Page / Shell Styles (Modern Developer IDE Style - Single Source of Truth)
@@ -117,9 +117,9 @@ export const themeConfig = {
 
   // Theme Toggle Button Styles (Modern Developer IDE Style - Single Source of Truth)
   themeToggle: {
-    buttonSm: 'flex items-center justify-center w-8 h-8 rounded-[var(--radius-sm)] bg-transparent border border-[var(--border-default)] hover:border-cyan-500/60 dark:hover:border-cyan-400/60 hover:bg-[var(--surface-subtle)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-all duration-150 group shrink-0 cursor-pointer relative active:scale-95 before:absolute before:-inset-1.5 before:content-[\'\']',
-    buttonMd: 'flex items-center justify-center w-9 h-9 rounded-[var(--radius-sm)] bg-transparent border border-[var(--border-default)] hover:border-cyan-500/60 dark:hover:border-cyan-400/60 hover:bg-[var(--surface-subtle)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-all duration-150 group shrink-0 cursor-pointer relative active:scale-95 before:absolute before:-inset-1.5 before:content-[\'\']',
-    buttonLg: 'flex items-center justify-center w-10 h-10 rounded-[var(--radius-sm)] bg-transparent border border-[var(--border-default)] hover:border-cyan-500/60 dark:hover:border-cyan-400/60 hover:bg-[var(--surface-subtle)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-all duration-150 group shrink-0 cursor-pointer relative active:scale-95 before:absolute before:-inset-1.5 before:content-[\'\']',
+    buttonSm: 'flex items-center justify-center w-8 h-8 rounded-[var(--radius-sm)] bg-transparent border border-[var(--border-default)] hover:border-[var(--border-accent)]/60 hover:bg-[var(--surface-subtle)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-all duration-150 group shrink-0 cursor-pointer relative active:scale-95 before:absolute before:-inset-1.5 before:content-[\'\']',
+    buttonMd: 'flex items-center justify-center w-9 h-9 rounded-[var(--radius-sm)] bg-transparent border border-[var(--border-default)] hover:border-[var(--border-accent)]/60 hover:bg-[var(--surface-subtle)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-all duration-150 group shrink-0 cursor-pointer relative active:scale-95 before:absolute before:-inset-1.5 before:content-[\'\']',
+    buttonLg: 'flex items-center justify-center w-10 h-10 rounded-[var(--radius-sm)] bg-transparent border border-[var(--border-default)] hover:border-[var(--border-accent)]/60 hover:bg-[var(--surface-subtle)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-all duration-150 group shrink-0 cursor-pointer relative active:scale-95 before:absolute before:-inset-1.5 before:content-[\'\']',
     icon: 'text-[var(--text-muted)] group-hover:text-[var(--text-primary)] transition-colors duration-150',
     segmentedContainer: 'flex items-center gap-1 p-1 bg-[var(--surface-subtle)] rounded-[var(--radius-sm)] border border-[var(--border-default)] transition-theme',
     segmentedItem: 'flex items-center justify-center gap-1 px-3 py-1.5 rounded-[var(--radius-xs)] text-[11px] font-bold uppercase tracking-wider transition-theme cursor-pointer select-none',

@@ -1,6 +1,6 @@
 {
-  "name": "Perplexa",
-  "description": "Perplexa — Professional Elite AI Platform featuring advanced multimodal intelligence, high-performance forensic analysis, and sovereign design system.",
+  "name": "Perplexta",
+  "description": "Perplexta — Professional Elite AI Platform featuring advanced multimodal intelligence, high-performance forensic analysis, and sovereign design system.",
   "requestFramePermissions": [
     "camera",
     "microphone"

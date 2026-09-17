@@ -121,7 +121,7 @@ export const SEMANTIC_CSS_VARS = {
     subtle: 'var(--surface-subtle)',
     inset: 'var(--surface-inset)',
     sidebar: 'var(--surface-sidebar, var(--surface-page))',
-    container: 'var(--pub-surface-container, var(--surface-card))',
+    container: 'var(--surface-card)',
   },
   text: {
     primary: 'var(--fg-primary, var(--text-primary))',

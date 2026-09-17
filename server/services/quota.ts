@@ -262,14 +262,14 @@ async function evaluateAndNotify(
     100: {
       tEn: '⛔ Quota Exhausted: Limit Reached',
       tAr: '⛔ استنفد الحد: وصلت إلى الحد الأقصى',
-      mEn: `You have fully consumed your ${pEn} quota for "${nameEn}" (${usage}/${limit}). Further requests will be charged from your digital wallet. Upgrade your plan to continue uninterrupted.`,
-      mAr: `لقد استنفدت حدك ${pAr} الكامل لأداة "${nameAr}" (${usage}/${limit}). سيتم خصم الطلبات الإضافية من محفظتك الرقمية. قم بترقية باقتك للاستمرار دون انقطاع.`,
+      mEn: `You have fully consumed your ${pEn} quota for "${nameEn}" (${usage}/${limit}). Please upgrade your plan tier to continue uninterrupted.`,
+      mAr: `لقد استنفدت حدك ${pAr} الكامل لأداة "${nameAr}" (${usage}/${limit}). يرجى ترقية باقة اشتراكك للاستمرار دون انقطاع.`,
     },
     [highThreshold]: {
       tEn: `⚠️ Urgent Quota Limit Notice: ${pctStr} Expended`,
       tAr: `⚠️ تنبيه هام ومستعجل: تم استهلاك ${pctStr} من الحدود`,
-      mEn: `Action Advised: You are rapidly approaching full capacity with ${pctStr} of your ${pEn} limit spent for "${nameEn}". Upgrade your tier or recharge your wallet to avoid interruptions.`,
-      mAr: `إجراء موصى به: أنت تقترب من السعة الكاملة بنسبة ${pctStr} من حدك ${pAr} لأداة "${nameAr}". قم بترقية حسابك أو أعد شحن محفظتك لتجنب الانقطاع.`,
+      mEn: `Action Advised: You are rapidly approaching full capacity with ${pctStr} of your ${pEn} limit spent for "${nameEn}". Upgrade your plan tier to avoid interruptions.`,
+      mAr: `إجراء موصى به: أنت تقترب من السعة الكاملة بنسبة ${pctStr} من حدك ${pAr} لأداة "${nameAr}". قم بترقية باقة اشتراكك لتجنب أي انقطاع في الخدمة.`,
     },
     [lowThreshold]: {
       tEn: `ℹ️ Quota Status Alert: ${pctStr} Consumed`,

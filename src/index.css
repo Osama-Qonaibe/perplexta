@@ -2,7 +2,6 @@
 @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700&family=Geist:wght@400;500;600&family=Geist+Mono:wght@400;500&family=JetBrains+Mono:wght@400;500;600&display=swap');
 @import "tailwindcss";
 @import "./tokens/components.css";
-@import "./tokens/public-experience.css";
 @variant dark (&:where(.dark, .dark *));
 
 /* ==========================================================================
@@ -23,7 +22,7 @@
 
 :root {
   /* ==========================================================================
-     BRAND CORE ROOTS (Perplexa v4.0.0 Light Baseline)
+     BRAND CORE ROOTS (Perplexta v4.0.0 Light Baseline)
      ========================================================================== */
   --radius: 0.5rem;
   --background: #ffffff;
@@ -273,7 +272,7 @@
 .dark,
 [data-theme="dark"] {
   /* ==========================================================================
-     BRAND CORE ROOTS (Perplexa v4.0.0 Dark Baseline)
+     BRAND CORE ROOTS (Perplexta v4.0.0 Dark Baseline)
      ========================================================================== */
   --background: #0d1117;
   --foreground: #e6edf3;
@@ -1473,9 +1472,27 @@ body.layout-locked {
 
 
 /* ==========================================================================
-   PERPLEXTA ZERO-SHIFT HIDDEN SCROLLBAR (Zero-Width Seamless Overlay)
-   Takes 0px physical layout space, zero page vibration/shaking, smooth momentum
+   PERPLEXTA ZERO-SHIFT GLOBAL HIDDEN SCROLLBAR SYSTEM
+   Strictly enforces 'scrollbar-width: none' & 'display: none' globally
+   Takes 0px physical layout space, zero vibration/shaking, smooth momentum
    ========================================================================== */
+*,
+*::before,
+*::after {
+  scrollbar-width: none !important;
+  -ms-overflow-style: none !important;
+}
+
+*::-webkit-scrollbar,
+*::-webkit-scrollbar-track,
+*::-webkit-scrollbar-thumb {
+  display: none !important;
+  width: 0 !important;
+  height: 0 !important;
+  background: transparent !important;
+  -webkit-appearance: none !important;
+}
+
 html,
 body {
   scroll-behavior: smooth;
@@ -1493,6 +1510,8 @@ body,
 .main-scroll-container,
 .chat-scroll-viewport,
 .custom-scrollbar,
+.custom-scrollbar-thin,
+.chat-thread-scrollbar,
 .ide-scroll-container,
 .overflow-y-auto,
 .overflow-x-auto,
@@ -1500,74 +1519,28 @@ body,
   -webkit-overflow-scrolling: touch !important; /* Smooth momentum scrolling on iOS Safari */
   overscroll-behavior-y: contain; /* Prevents outer window rubber-banding and background scrolling */
   scroll-behavior: smooth;
+  scrollbar-width: none !important;
+  -ms-overflow-style: none !important;
 }
 
-/* Custom Sleek Scrollbar for Desktop & Mobile */
-.custom-scrollbar,
-.custom-scrollbar-thin,
-.chat-scroll-viewport,
-.ide-scroll-container {
-  scrollbar-width: thin !important;
-  scrollbar-color: rgba(148, 163, 184, 0.35) transparent !important;
-}
-
-.dark .custom-scrollbar,
-.dark .custom-scrollbar-thin,
-.dark .chat-scroll-viewport,
-.dark .ide-scroll-container {
-  scrollbar-color: rgba(148, 163, 184, 0.25) transparent !important;
-}
-
-/* Chrome, Edge, Safari WebKit custom scrollbar styling */
+/* Chrome, Edge, Safari WebKit Global Hidden Scrollbars */
 .custom-scrollbar::-webkit-scrollbar,
 .custom-scrollbar-thin::-webkit-scrollbar,
 .chat-scroll-viewport::-webkit-scrollbar,
-.ide-scroll-container::-webkit-scrollbar {
-  display: block !important;
-  width: 5px !important;
-  height: 5px !important;
+.chat-thread-scrollbar::-webkit-scrollbar,
+.ide-scroll-container::-webkit-scrollbar,
+.main-scroll-container::-webkit-scrollbar,
+.overflow-y-auto::-webkit-scrollbar,
+.overflow-x-auto::-webkit-scrollbar,
+.overflow-auto::-webkit-scrollbar {
+  display: none !important;
+  width: 0 !important;
+  height: 0 !important;
   background: transparent !important;
+  -webkit-appearance: none !important;
 }
 
-.custom-scrollbar::-webkit-scrollbar-track,
-.custom-scrollbar-thin::-webkit-scrollbar-track,
-.chat-scroll-viewport::-webkit-scrollbar-track,
-.ide-scroll-container::-webkit-scrollbar-track {
-  background: transparent !important;
-  border-radius: 9999px !important;
-}
-
-.custom-scrollbar::-webkit-scrollbar-thumb,
-.custom-scrollbar-thin::-webkit-scrollbar-thumb,
-.chat-scroll-viewport::-webkit-scrollbar-thumb,
-.ide-scroll-container::-webkit-scrollbar-thumb {
-  background: rgba(148, 163, 184, 0.35) !important;
-  border-radius: 9999px !important;
-  transition: background 0.15s ease-in-out;
-}
-
-.dark .custom-scrollbar::-webkit-scrollbar-thumb,
-.dark .custom-scrollbar-thin::-webkit-scrollbar-thumb,
-.dark .chat-scroll-viewport::-webkit-scrollbar-thumb,
-.dark .ide-scroll-container::-webkit-scrollbar-thumb {
-  background: rgba(148, 163, 184, 0.25) !important;
-}
-
-.custom-scrollbar::-webkit-scrollbar-thumb:hover,
-.custom-scrollbar-thin::-webkit-scrollbar-thumb:hover,
-.chat-scroll-viewport::-webkit-scrollbar-thumb:hover,
-.ide-scroll-container::-webkit-scrollbar-thumb:hover {
-  background: rgba(148, 163, 184, 0.6) !important;
-}
-
-.dark .custom-scrollbar::-webkit-scrollbar-thumb:hover,
-.dark .custom-scrollbar-thin::-webkit-scrollbar-thumb:hover,
-.dark .chat-scroll-viewport::-webkit-scrollbar-thumb:hover,
-.dark .ide-scroll-container::-webkit-scrollbar-thumb:hover {
-  background: rgba(148, 163, 184, 0.5) !important;
-}
-
-/* Completely hidden scrollbar utility classes for tab bars and pill rows */
+/* Completely hidden scrollbar utility classes for pristine zero-shift layouts */
 .no-scrollbar,
 .scrollbar-none,
 .hide-scrollbar {
@@ -1582,6 +1555,7 @@ body,
   width: 0 !important;
   height: 0 !important;
   background: transparent !important;
+  -webkit-appearance: none !important;
 }
 
 /* ==========================================================================
@@ -2723,6 +2697,287 @@ html[data-theme="dark"] .perplexta-codeblock .token.variable {
 
 .brand-glow {
   box-shadow: 0 0 0 1px var(--border), 0 0 24px -6px var(--github-purple);
+}
+
+/* ==========================================================================
+   PERPLEXTA PUBLIC EXPERIENCE & MODERN DEVELOPER IDE DESIGN SYSTEM
+   ========================================================================== */
+.ide-input-box {
+  background-color: var(--surface-card);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-card, 12px);
+  box-shadow: 0 4px 20px -2px color-mix(in srgb, var(--text-primary) 6%, transparent), 
+              0 2px 6px -1px color-mix(in srgb, var(--text-primary) 4%, transparent);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  transition: border-color 0.2s ease-out, box-shadow 0.2s ease-out, background-color 0.2s ease-out;
+}
+
+.ide-input-box:hover {
+  border-color: color-mix(in srgb, var(--accent) 60%, transparent);
+}
+
+.ide-input-box:focus-within {
+  border-color: color-mix(in srgb, var(--accent) 90%, transparent);
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--accent) 15%, transparent), 
+              0 4px 20px -2px color-mix(in srgb, var(--text-primary) 8%, transparent);
+}
+
+.ide-card,
+.ide-section {
+  background-color: var(--surface-card);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-card, 12px);
+  transition: all 0.2s ease-out;
+}
+
+.ide-card:hover,
+.ide-section:hover {
+  border-color: color-mix(in srgb, var(--accent) 40%, transparent);
+}
+
+.ide-card:focus-within,
+.ide-section:focus-within {
+  border-color: color-mix(in srgb, var(--accent) 70%, transparent);
+  box-shadow: none;
+}
+
+.ide-chip {
+  height: 32px;
+  border-radius: var(--radius-button, 8px);
+  font-size: 0.75rem;
+  font-weight: 700;
+  border: 1px solid var(--border-default);
+  background-color: transparent;
+  color: var(--text-muted);
+  transition: all 0.15s ease-out;
+  cursor: pointer;
+  user-select: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  padding-left: 0.625rem;
+  padding-right: 0.625rem;
+  box-shadow: none;
+}
+
+.ide-chip:hover:not(:disabled) {
+  background-color: var(--surface-subtle) !important;
+  border-color: color-mix(in srgb, var(--accent) 50%, transparent) !important;
+  color: var(--text-primary) !important;
+  box-shadow: none !important;
+}
+
+.ide-chip:hover:not(:disabled) svg {
+  color: var(--text-primary) !important;
+}
+
+.ide-chip-active {
+  background-color: var(--surface-card) !important;
+  border-color: color-mix(in srgb, var(--accent) 60%, transparent) !important;
+  color: var(--text-primary) !important;
+  box-shadow: none !important;
+}
+
+.ide-chip-active:hover:not(:disabled) {
+  background-color: var(--surface-subtle) !important;
+  border-color: color-mix(in srgb, var(--accent) 80%, transparent) !important;
+  color: var(--text-primary) !important;
+  box-shadow: none !important;
+}
+
+.ide-send-button {
+  height: 32px;
+  padding-left: 0.875rem;
+  padding-right: 0.875rem;
+  border-radius: var(--radius-button, 8px);
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--comp-button-primary-fg);
+  background-color: var(--accent);
+  transition: all 0.15s ease-out;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+  box-shadow: none;
+  border: none;
+}
+
+.ide-send-button:hover:not(:disabled) {
+  opacity: 0.9;
+  box-shadow: none;
+  transform: none;
+}
+
+.ide-send-button:active:not(:disabled) {
+  transform: scale(0.95);
+}
+
+.ide-textarea-scroll {
+  overflow-y: auto;
+  scrollbar-width: none !important;
+  -ms-overflow-style: none !important;
+}
+
+.ide-textarea-scroll::-webkit-scrollbar {
+  display: none !important;
+  width: 0 !important;
+  height: 0 !important;
+}
+
+.ide-send-button:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+/* Header & Top Bar Navigation Buttons */
+.ide-header-button {
+  height: 32px;
+  padding-left: 0.625rem;
+  padding-right: 0.625rem;
+  border-radius: var(--radius-button, 8px);
+  font-size: 0.75rem;
+  font-weight: 700;
+  border: 1px solid var(--border-default);
+  background-color: transparent;
+  color: var(--text-muted);
+  transition: all 0.15s ease-out;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.375rem;
+  cursor: pointer;
+  user-select: none;
+}
+
+.ide-header-button:hover:not(:disabled) {
+  background-color: var(--surface-subtle);
+  border-color: var(--border-strong);
+  color: var(--text-primary);
+}
+
+.ide-header-button-active {
+  background-color: var(--bg-accent-muted) !important;
+  border-color: var(--accent) !important;
+  color: var(--accent) !important;
+}
+
+.ide-header-button:active:not(:disabled) {
+  transform: scale(0.95);
+}
+
+/* Floating Dropdown Menus & Modals Backgrounds */
+.ide-dropdown-menu {
+  background-color: var(--surface-card);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-button, 8px);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.5), 0 8px 10px -6px rgba(0, 0, 0, 0.5);
+  padding: 0.375rem;
+}
+
+.ide-dropdown-item {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  width: 100%;
+  padding: 0.375rem 0.625rem;
+  border-radius: var(--radius-xs, 4px);
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--text-secondary);
+  transition: all 0.12s ease-out;
+  background-color: transparent;
+  border: none;
+  cursor: pointer;
+}
+
+.ide-dropdown-item:hover {
+  background-color: var(--surface-subtle);
+  color: var(--text-primary);
+}
+
+.ide-dropdown-item-active {
+  background-color: var(--bg-accent-muted);
+  color: var(--accent);
+}
+
+/* Status Badges & Pill Indicators */
+.ide-badge-success {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.125rem 0.5rem;
+  border-radius: var(--radius-xs, 4px);
+  font-size: 0.625rem;
+  font-weight: 700;
+  font-family: monospace;
+  background-color: var(--status-success-subtle, rgba(26, 127, 55, 0.12));
+  border: 1px solid color-mix(in srgb, var(--fg-success) 25%, transparent);
+  color: var(--fg-success);
+}
+
+.ide-badge-warning {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.125rem 0.5rem;
+  border-radius: var(--radius-xs, 4px);
+  font-size: 0.625rem;
+  font-weight: 700;
+  font-family: monospace;
+  background-color: var(--status-warning-subtle, rgba(154, 103, 0, 0.12));
+  border: 1px solid color-mix(in srgb, var(--fg-warning) 25%, transparent);
+  color: var(--fg-warning);
+}
+
+.ide-badge-danger {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.125rem 0.5rem;
+  border-radius: var(--radius-xs, 4px);
+  font-size: 0.625rem;
+  font-weight: 700;
+  font-family: monospace;
+  background-color: var(--status-danger-subtle, rgba(207, 34, 46, 0.12));
+  border: 1px solid color-mix(in srgb, var(--fg-danger) 25%, transparent);
+  color: var(--fg-danger);
+}
+
+.ide-badge-info {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.125rem 0.5rem;
+  border-radius: var(--radius-xs, 4px);
+  font-size: 0.625rem;
+  font-weight: 700;
+  font-family: monospace;
+  background-color: var(--bg-accent-muted);
+  border: 1px solid var(--border-accent, var(--accent));
+  color: var(--accent);
+}
+
+/* ==========================================================================
+   PERPLEXTA HIGH-PRECISION RESPONSIVE SCROLL ENGINE
+   Takes 0px physical layout space shift, smooth momentum scrolling
+   ========================================================================== */
+.main-scroll-container,
+.dropdown-scroll-container,
+[data-scroll="thread"] {
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
+}
+
+/* Perplexta Precision Input Architecture Textarea Scrollbar */
+.ide-textarea-scroll::-webkit-scrollbar {
+  display: none !important;
+  width: 0 !important;
+  height: 0 !important;
 }
 
 

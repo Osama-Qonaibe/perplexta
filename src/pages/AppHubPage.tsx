@@ -198,7 +198,7 @@ export const AppHubPage: React.FC = () => {
           {/* New Project CTA Button */}
           <button
             onClick={() => setIsNewModalOpen(true)}
-            className="w-full py-2.5 px-4 rounded-shape-sm bg-cyan-600 dark:bg-cyan-500 hover:bg-cyan-700 dark:hover:bg-cyan-400 text-white font-bold text-xs shadow-2xs hover:opacity-95 active:scale-[0.98] transition-all flex items-center justify-center gap-2 cursor-pointer"
+            className="w-full py-2.5 px-4 rounded-shape-sm bg-[var(--comp-button-primary-bg)] hover:opacity-90 text-[var(--comp-button-primary-fg)] font-bold text-xs shadow-2xs hover:opacity-95 active:scale-[0.98] transition-all flex items-center justify-center gap-2 cursor-pointer"
           >
             <Plus size={16} />
             <span>{language === 'ar' ? 'مشروع جديد' : 'New Project'}</span>
@@ -321,7 +321,7 @@ export const AppHubPage: React.FC = () => {
                   placeholder={language === 'ar' ? 'بحث في المشاريع...' : 'Search projects...'}
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-full h-9 pl-3 pr-9 rounded-shape-sm bg-[var(--surface-card)] border border-[var(--border-default)] text-xs text-[var(--text-primary)] focus:outline-none focus:border-cyan-500 shadow-2xs"
+                  className="w-full h-9 pl-3 pr-9 rounded-shape-sm bg-[var(--surface-card)] border border-[var(--border-default)] text-xs text-[var(--text-primary)] focus:outline-none focus:border-[var(--border-accent)] shadow-2xs"
                 />
               </div>
             )}
@@ -337,7 +337,7 @@ export const AppHubPage: React.FC = () => {
                 <p className="text-[11px] font-bold text-[var(--text-muted)] uppercase">{language === 'ar' ? 'المشاريع النشطة' : 'Active Projects'}</p>
                 <h3 className="text-xl font-bold text-[var(--text-primary)] mt-1">{activeProjectsCount}</h3>
               </div>
-              <div className="w-10 h-10 rounded-shape-sm bg-cyan-500/10 text-cyan-600 dark:text-cyan-400 flex items-center justify-center">
+              <div className="w-10 h-10 rounded-shape-sm bg-[var(--bg-accent-muted)] text-[var(--fg-accent)] flex items-center justify-center">
                 <Folder size={20} />
               </div>
             </div>
@@ -371,7 +371,7 @@ export const AppHubPage: React.FC = () => {
                   <div
                     key={proj.id}
                     onClick={() => handleOpenProject(proj)}
-                    className="p-5 rounded-shape-sm bg-[var(--surface-card)] border border-[var(--border-default)] hover:border-cyan-500/60 dark:hover:border-cyan-400/60 transition-all cursor-pointer flex flex-col justify-between group shadow-2xs space-y-4"
+                    className="p-5 rounded-shape-sm bg-[var(--surface-card)] border border-[var(--border-default)] hover:border-[var(--border-accent)]/60 transition-all cursor-pointer flex flex-col justify-between group shadow-2xs space-y-4"
                   >
                     <div className="space-y-2.5">
                       <div className="flex items-center justify-between">
@@ -380,7 +380,7 @@ export const AppHubPage: React.FC = () => {
                         </span>
                         <span className="text-[10px] text-[var(--text-muted)]">{proj.updatedAt}</span>
                       </div>
-                      <h3 className="text-sm font-bold text-[var(--text-primary)] group-hover:text-cyan-600 dark:group-hover:text-cyan-400 transition-colors">
+                      <h3 className="text-sm font-bold text-[var(--text-primary)] group-hover:text-[var(--fg-accent)] transition-colors">
                         {proj.name}
                       </h3>
                       {/* RTL Fix for Arabic text and truncation */}
@@ -403,7 +403,7 @@ export const AppHubPage: React.FC = () => {
                           e.stopPropagation();
                           handleOpenProject(proj);
                         }}
-                        className="w-full py-2 px-3 rounded-shape-sm bg-cyan-500/10 hover:bg-cyan-500 text-cyan-600 dark:text-cyan-400 hover:text-white text-xs font-bold transition-colors flex items-center justify-center gap-1.5 border border-cyan-500/30 cursor-pointer shadow-2xs"
+                        className="w-full py-2 px-3 rounded-shape-sm bg-[var(--bg-accent-muted)] hover:bg-[var(--accent)] text-[var(--fg-accent)] hover:text-[var(--comp-button-primary-fg)] text-xs font-bold transition-colors flex items-center justify-center gap-1.5 border border-[var(--border-accent)]/30 cursor-pointer shadow-2xs"
                       >
                         <span>{language === 'ar' ? 'فتح في الاستوديو' : 'Open in Studio'}</span>
                         <ArrowUpRight size={14} className={dir === 'rtl' ? 'rotate-[-90deg]' : ''} />
@@ -497,7 +497,7 @@ export const AppHubPage: React.FC = () => {
                                 saveAs(blob, `${proj.name.replace(/\s+/g, '_')}_schema.sql`);
                                 toast.success(language === 'ar' ? 'تم تنزيل ملف schema.sql بنجاح' : 'schema.sql downloaded successfully');
                               }}
-                              className="px-2.5 py-1 rounded-shape-sm bg-cyan-500/10 border border-cyan-500/30 text-[11px] font-bold text-cyan-600 dark:text-cyan-400 hover:bg-cyan-500 hover:text-white cursor-pointer flex items-center gap-1 shadow-2xs"
+                              className="px-2.5 py-1 rounded-shape-sm bg-[var(--bg-accent-muted)] border border-[var(--border-accent)]/30 text-[11px] font-bold text-[var(--fg-accent)] hover:bg-[var(--accent)] hover:text-[var(--comp-button-primary-fg)] cursor-pointer flex items-center gap-1 shadow-2xs"
                             >
                               <Download size={11} /> schema.sql
                             </button>
@@ -540,9 +540,9 @@ export const AppHubPage: React.FC = () => {
                   tag: 'Blog' 
                 }
               ].map((tpl) => (
-                <div key={tpl.id} className="p-5 rounded-shape-sm bg-[var(--surface-card)] border border-[var(--border-default)] flex flex-col justify-between space-y-4 shadow-2xs hover:border-cyan-500/60 dark:hover:border-cyan-400/60 transition-all">
+                <div key={tpl.id} className="p-5 rounded-shape-sm bg-[var(--surface-card)] border border-[var(--border-default)] flex flex-col justify-between space-y-4 shadow-2xs hover:border-[var(--border-accent)]/60 transition-all">
                   <div className="space-y-2">
-                    <span className="px-2.5 py-1 rounded-shape-sm text-[10px] font-bold bg-cyan-500/10 text-cyan-600 dark:text-cyan-400 border border-cyan-500/20">{tpl.tag}</span>
+                    <span className="px-2.5 py-1 rounded-shape-sm text-[10px] font-bold bg-[var(--bg-accent-muted)] text-[var(--fg-accent)] border border-[var(--border-accent)]/20">{tpl.tag}</span>
                     <h3 className="text-sm font-bold text-[var(--text-primary)]">{tpl.title}</h3>
                     <p 
                       className="text-xs text-[var(--text-secondary)] leading-relaxed"
@@ -572,7 +572,7 @@ export const AppHubPage: React.FC = () => {
                       toast.success(language === 'ar' ? 'تم إنشاء المشروع من القالب بنجاح!' : 'Created from template successfully!');
                       handleOpenProject(newProj);
                     }}
-                    className="w-full py-2.5 rounded-shape-sm bg-cyan-600 dark:bg-cyan-500 text-white text-xs font-bold hover:opacity-90 transition-colors cursor-pointer flex items-center justify-center gap-1.5 shadow-2xs"
+                    className="w-full py-2.5 rounded-shape-sm bg-[var(--comp-button-primary-bg)] hover:opacity-90 text-[var(--comp-button-primary-fg)] text-xs font-bold hover:opacity-90 transition-colors cursor-pointer flex items-center justify-center gap-1.5 shadow-2xs"
                   >
                     <span>{language === 'ar' ? 'استخدام القالب بنقرة واحدة' : 'Use Template 1-Click'}</span>
                     <ArrowUpRight size={14} className={dir === 'rtl' ? 'rotate-[-90deg]' : ''} />
@@ -591,7 +591,7 @@ export const AppHubPage: React.FC = () => {
               <div className="space-y-3 text-xs text-[var(--text-secondary)]">
                 <div className="flex justify-between p-3 rounded-shape-sm bg-[var(--surface-subtle)] border border-[var(--border-default)]">
                   <span>{language === 'ar' ? 'الذاكرة المؤقتة (Local Storage VFS)' : 'Local Storage VFS'}</span>
-                  <span className="font-bold text-cyan-600 dark:text-cyan-400">1.4 MB / 50 MB</span>
+                  <span className="font-bold text-[var(--fg-accent)]">1.4 MB / 50 MB</span>
                 </div>
                 <div className="flex justify-between p-3 rounded-shape-sm bg-[var(--surface-subtle)] border border-[var(--border-default)]">
                   <span>{language === 'ar' ? 'حالة المزامنة السحابية (Auto-Save)' : 'Cloud Auto-Save Sync'}</span>
@@ -609,7 +609,7 @@ export const AppHubPage: React.FC = () => {
           <div className="w-full max-w-lg rounded-shape-md bg-[var(--surface-card)] border border-[var(--border-default)] shadow-2xl p-6 space-y-5">
             <div className="flex items-center justify-between">
               <h3 className="text-sm font-bold tracking-wider flex items-center gap-2 text-[var(--text-primary)]">
-                <Sparkles size={16} className="text-cyan-500" />
+                <Sparkles size={16} className="text-[var(--fg-accent)]" />
                 {language === 'ar' ? 'إنشاء مشروع جديد عبر الذكاء الاصطناعي' : 'Create New AI Project'}
               </h3>
               <button 
@@ -629,7 +629,7 @@ export const AppHubPage: React.FC = () => {
                   placeholder={language === 'ar' ? 'مثال: متجر إلكتروني للملابس' : 'e.g., E-commerce Apparel Store'}
                   value={newProjectName}
                   onChange={(e) => setNewProjectName(e.target.value)}
-                  className="w-full h-10 px-3 rounded-shape-sm bg-[var(--surface-subtle)] border border-[var(--border-default)] text-xs text-[var(--text-primary)] focus:outline-none focus:border-cyan-500 shadow-2xs"
+                  className="w-full h-10 px-3 rounded-shape-sm bg-[var(--surface-subtle)] border border-[var(--border-default)] text-xs text-[var(--text-primary)] focus:outline-none focus:border-[var(--border-accent)] shadow-2xs"
                 />
               </div>
 
@@ -640,7 +640,7 @@ export const AppHubPage: React.FC = () => {
                   placeholder={language === 'ar' ? 'صف تطبيقك المطلوب وسيقوم النظام بتوليد الهيكل وملفات الـ SQLite...' : 'Describe your app and AI will generate files and SQLite database...'}
                   value={newProjectPrompt}
                   onChange={(e) => setNewProjectPrompt(e.target.value)}
-                  className="w-full p-3 rounded-shape-sm bg-[var(--surface-subtle)] border border-[var(--border-default)] text-xs text-[var(--text-primary)] focus:outline-none focus:border-cyan-500 resize-none shadow-2xs"
+                  className="w-full p-3 rounded-shape-sm bg-[var(--surface-subtle)] border border-[var(--border-default)] text-xs text-[var(--text-primary)] focus:outline-none focus:border-[var(--border-accent)] resize-none shadow-2xs"
                 />
               </div>
 
@@ -655,7 +655,7 @@ export const AppHubPage: React.FC = () => {
                 <button
                   type="submit"
                   disabled={isCreating}
-                  className="px-5 py-2 rounded-shape-sm bg-cyan-600 dark:bg-cyan-500 text-white text-xs font-bold hover:opacity-90 transition-colors cursor-pointer flex items-center gap-2 shadow-2xs"
+                  className="px-5 py-2 rounded-shape-sm bg-[var(--comp-button-primary-bg)] hover:opacity-90 text-[var(--comp-button-primary-fg)] text-xs font-bold hover:opacity-90 transition-colors cursor-pointer flex items-center gap-2 shadow-2xs"
                 >
                   {isCreating ? <RefreshCw size={14} className="animate-spin" /> : <Sparkles size={14} />}
                   <span>{isCreating ? (language === 'ar' ? 'جاري التوليد...' : 'Generating...') : (language === 'ar' ? 'بدء الإنشاء والتطوير' : 'Start Development')}</span>

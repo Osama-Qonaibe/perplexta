@@ -107,7 +107,7 @@ export const PwaInstallBanner: React.FC = () => {
           transition={{ type: 'spring', stiffness: 380, damping: 26 }}
           className="fixed top-[calc(54px+env(safe-area-inset-top,0px))] left-3 right-3 sm:left-auto sm:right-4 z-[9999] max-w-sm w-auto select-none pointer-events-auto font-sans"
         >
-          <div className="p-3 sm:p-3.5 rounded-2xl border border-[var(--pub-border-default)] bg-[var(--pub-surface-card)] text-[var(--pub-text-primary)] shadow-2xl relative overflow-hidden flex items-center justify-between gap-3">
+          <div className="p-3 sm:p-3.5 rounded-[var(--sys-shape-lg)] border border-[var(--border-default)] bg-[var(--surface-card)] text-[var(--text-primary)] shadow-2xl relative overflow-hidden flex items-center justify-between gap-3">
             
             {/* Left: Brand Icon & Notification Message */}
             <div className="flex items-center gap-2.5 min-w-0">
@@ -115,9 +115,9 @@ export const PwaInstallBanner: React.FC = () => {
                 src={resolveImageUrl((theme === 'light' && siteSettings?.logoLightBase64) ? siteSettings?.logoLightBase64 : siteSettings?.logoBase64, 'general')}
                 alt={siteName}
                 size={34}
-                className="rounded-xl border border-[var(--pub-border-default)] bg-[var(--pub-surface-subtle)] p-1 shrink-0"
+                className="rounded-[var(--sys-shape-md)] border border-[var(--border-default)] bg-[var(--surface-subtle)] p-1 shrink-0"
                 fallbackIcon={
-                  <div className="w-8 h-8 rounded-xl bg-cyan-500/10 border border-cyan-500/20 flex items-center justify-center text-cyan-400 p-1 shrink-0">
+                  <div className="w-8 h-8 rounded-[var(--sys-shape-md)] bg-[var(--sys-color-primary-container)] border border-[var(--border-default)] flex items-center justify-center text-[var(--sys-color-primary)] p-1 shrink-0">
                     <Smartphone size={16} />
                   </div>
                 }
@@ -125,15 +125,15 @@ export const PwaInstallBanner: React.FC = () => {
               
               <div className="flex flex-col min-w-0">
                 <div className="flex items-center gap-1.5">
-                  <span className="text-xs font-bold text-[var(--pub-text-primary)] truncate">
+                  <span className="text-xs font-bold text-[var(--text-primary)] truncate">
                     {siteName}
                   </span>
-                  <span className="px-1.5 py-0.2 text-[9px] font-extrabold uppercase rounded bg-cyan-500/15 text-cyan-400 border border-cyan-500/30">
+                  <span className="px-1.5 py-0.5 text-[9px] font-extrabold uppercase rounded bg-[var(--sys-color-primary-container)] text-[var(--sys-color-primary)] border border-[var(--border-default)]">
                     {isAndroid ? (isAr ? 'نسخة أندرويد' : 'Android') : (isAr ? 'تطبيق أصلي' : 'Native')}
                   </span>
                 </div>
-                <p className="text-[10.5px] font-medium text-[var(--pub-text-muted)] truncate mt-0.5">
-                  {isAr ? 'تثبيت النسخة الأصلية على الجهاز' : 'Install official native edition'}
+                <p className="text-[10.5px] font-medium text-[var(--text-muted)] truncate mt-0.5">
+                  {isAr ? 'ثبت التطبيق للحصول على تجربة أسرع وأفضل' : 'Install app for a faster, better experience'}
                 </p>
               </div>
             </div>
@@ -144,7 +144,7 @@ export const PwaInstallBanner: React.FC = () => {
                 type="button"
                 onClick={handleAction}
                 disabled={installState === 'installing'}
-                className="px-3 py-1.5 text-[11px] font-extrabold rounded-xl bg-cyan-500 text-black hover:opacity-90 active:scale-95 transition-all min-h-[36px] flex items-center justify-center gap-1 cursor-pointer shadow-sm"
+                className="px-3 py-1.5 text-[11px] font-extrabold rounded-[var(--sys-shape-md)] bg-[var(--sys-color-primary)] text-[var(--sys-color-on-primary)] hover:opacity-90 active:scale-95 transition-all min-h-[36px] flex items-center justify-center gap-1 cursor-pointer shadow-sm"
               >
                 {installState === 'installing' ? (
                   <Loader2 size={13} className="animate-spin" />
@@ -159,7 +159,7 @@ export const PwaInstallBanner: React.FC = () => {
               <button
                 type="button"
                 onClick={handleClose}
-                className="p-1 rounded-lg text-[var(--pub-text-muted)] hover:text-[var(--pub-text-primary)] transition-colors min-w-[32px] min-h-[32px] flex items-center justify-center cursor-pointer"
+                className="p-1 rounded-[var(--sys-shape-xs)] text-[var(--text-muted)] hover:text-[var(--text-primary)] transition-colors min-w-[32px] min-h-[32px] flex items-center justify-center cursor-pointer"
                 aria-label={isAr ? 'إغلاق' : 'Close'}
               >
                 <X size={15} />

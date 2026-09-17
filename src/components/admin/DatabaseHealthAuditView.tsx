@@ -129,7 +129,7 @@ export const DatabaseHealthAuditView: React.FC<DatabaseHealthAuditViewProps> = (
       case "media":
         return <HardDrive size={22} className="text-emerald-500" />;
       default:
-        return <Server size={22} className="text-gray-400" />;
+        return <Server size={22} className="text-[var(--text-muted)]" />;
     }
   };
 
@@ -433,7 +433,7 @@ export const DatabaseHealthAuditView: React.FC<DatabaseHealthAuditViewProps> = (
                       isConnected
                         ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20"
                         : isNotConfigured
-                        ? "bg-gray-500/10 text-gray-500 border-gray-500/20"
+                        ? "bg-[var(--surface-subtle)] text-[var(--text-secondary)] border-[var(--border-default)]"
                         : "bg-red-500/10 text-red-600 dark:text-red-400 border-red-500/20"
                     }`}
                   >
@@ -530,7 +530,7 @@ export const DatabaseHealthAuditView: React.FC<DatabaseHealthAuditViewProps> = (
                     </span>
                     <span
                       className={`font-mono text-[11px] font-bold flex items-center gap-1 ${
-                        db.ssl ? "text-emerald-500" : "text-gray-400"
+                        db.ssl ? "text-emerald-500" : "text-[var(--text-muted)]"
                       }`}
                     >
                       {db.ssl ? (

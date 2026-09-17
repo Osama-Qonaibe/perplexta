@@ -2353,7 +2353,7 @@ export async function runVersionedMigrations(
       }
     });
 
-    await runVersioned('v110_apply_sovereign_identity_v4_tokens', 'Apply Perplexa Sovereign Identity v4.0 design tokens to database tables and system settings', async (tx) => {
+    await runVersioned('v110_apply_sovereign_identity_v4_tokens', 'Apply Perplexta Sovereign Identity v4.0 design tokens to database tables and system settings', async (tx) => {
       const canonicalLightTokens = JSON.stringify({
         '--surface-page': '#ffffff',
         '--surface-canvas': '#ffffff',
@@ -2454,8 +2454,8 @@ export async function runVersionedMigrations(
           font_loading_config = $1::jsonb,
           font_config_ar = $2::jsonb,
           font_config_en = $3::jsonb,
-          site_name_en = CASE WHEN site_name_en = 'Perplexta' THEN 'Perplexa' ELSE site_name_en END,
-          site_name_ar = CASE WHEN site_name_ar = 'بيربلكستا' THEN 'بيربليكسا' ELSE site_name_ar END
+          site_name_en = CASE WHEN site_name_en = 'Perplexa' THEN 'Perplexta' ELSE site_name_en END,
+          site_name_ar = CASE WHEN site_name_ar = 'بيربليكسا' THEN 'بيربلكستا' ELSE site_name_ar END
         WHERE id = (SELECT id FROM system_settings ORDER BY id ASC LIMIT 1)
       `, [
         fontConfigJson,
@@ -2466,6 +2466,30 @@ export async function runVersionedMigrations(
 
     await runVersioned('v111_add_data_saver_column_to_users', 'Ensure data_saver BOOLEAN column exists on users table for aggressive content compression', async (tx) => {
       await tx.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS data_saver BOOLEAN DEFAULT false`);
+    });
+
+    await runVersioned('v112_finalize_perplexta_identity', 'Ensure official Perplexta branding across system settings and metadata', async (tx) => {
+      await tx.query(`
+        UPDATE system_settings
+        SET 
+          site_name_en = CASE WHEN site_name_en = 'Perplexa' OR site_name_en IS NULL OR site_name_en = '' THEN 'Perplexta' ELSE site_name_en END,
+          site_name_ar = CASE WHEN site_name_ar = 'بيربليكسا' OR site_name_ar IS NULL OR site_name_ar = '' THEN 'بيربلكستا' ELSE site_name_ar END,
+          seo_site_name_en = CASE WHEN seo_site_name_en = 'Perplexa' OR seo_site_name_en IS NULL OR seo_site_name_en = '' THEN 'Perplexta' ELSE seo_site_name_en END,
+          seo_site_name_ar = CASE WHEN seo_site_name_ar = 'بيربليكسا' OR seo_site_name_ar IS NULL OR seo_site_name_ar = '' THEN 'بيربلكستا' ELSE seo_site_name_ar END
+        WHERE id = (SELECT id FROM system_settings ORDER BY id ASC LIMIT 1)
+      `).catch(() => {});
+    });
+
+    await runVersioned('v113_drop_legacy_cost_columns', 'Drop legacy point deduction and wallet cost columns and indices from tool_orchestrator table', async (tx) => {
+      await tx.query(`
+        ALTER TABLE tool_orchestrator DROP COLUMN IF EXISTS wallet_cost CASCADE;
+        ALTER TABLE tool_orchestrator DROP COLUMN IF EXISTS points_required CASCADE;
+        ALTER TABLE tool_orchestrator DROP COLUMN IF EXISTS cost_per_usage CASCADE;
+        ALTER TABLE tool_orchestrator DROP COLUMN IF EXISTS cost_per_1k_input_tokens CASCADE;
+        ALTER TABLE tool_orchestrator DROP COLUMN IF EXISTS cost_per_1k_output_tokens CASCADE;
+      `).catch((err) => {
+        console.warn('[Migration v113] Warning during legacy cost columns dropping:', err.message);
+      });
     });
     
   console.log("[Migrations] All versioned migrations completed successfully.");

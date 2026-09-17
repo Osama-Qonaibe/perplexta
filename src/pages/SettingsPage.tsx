@@ -287,7 +287,7 @@ export const SettingsPage: React.FC = () => {
         <div className="flex items-center gap-2.5">
           <button 
             onClick={() => navigate(-1)} 
-            className="h-8 px-2.5 flex items-center gap-1 rounded-shape-sm bg-transparent hover:bg-[var(--surface-subtle)] border border-[var(--border-default)] hover:border-cyan-500/60 dark:hover:border-cyan-400/60 text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-all duration-150 active:scale-95 cursor-pointer shadow-2xs"
+            className="h-8 px-2.5 flex items-center gap-1 rounded-shape-sm bg-transparent hover:bg-[var(--surface-subtle)] border border-[var(--border-default)] hover:border-[var(--border-accent)]/60 text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-all duration-150 active:scale-95 cursor-pointer shadow-2xs"
           >
             {dir === 'rtl' ? <ChevronRight size={14} /> : <ChevronLeft size={14} />}
             <span className="text-xs font-bold">{dir === 'rtl' ? 'رجوع' : 'Back'}</span>
@@ -318,7 +318,7 @@ export const SettingsPage: React.FC = () => {
            <div className="flex items-center gap-3">
               <button 
                 onClick={() => navigate('/chat')} 
-                className="w-8 h-8 flex items-center justify-center rounded-shape-sm bg-transparent hover:bg-[var(--surface-subtle)] border border-[var(--border-default)] hover:border-cyan-500/60 dark:hover:border-cyan-400/60 text-[var(--text-muted)] hover:text-[var(--text-primary)] transition-all duration-150 group cursor-pointer shadow-2xs"
+                className="w-8 h-8 flex items-center justify-center rounded-shape-sm bg-transparent hover:bg-[var(--surface-subtle)] border border-[var(--border-default)] hover:border-[var(--border-accent)]/60 text-[var(--text-muted)] hover:text-[var(--text-primary)] transition-all duration-150 group cursor-pointer shadow-2xs"
                 title={dir === 'rtl' ? 'رجوع' : 'Back'}
               >
                 {dir === 'rtl' ? <ChevronLeft size={16} className="group-hover:-translate-x-0.5 transition-transform" /> : <ChevronRight size={16} className="group-hover:translate-x-0.5 transition-transform" />}
@@ -342,7 +342,7 @@ export const SettingsPage: React.FC = () => {
                 }`}
               >
                 <span className={`shrink-0 transition-all duration-150 ${
-                  isActive ? 'text-cyan-500 dark:text-cyan-400' : 'text-[var(--text-muted)] group-hover:text-[var(--text-primary)]'
+                  isActive ? 'text-[var(--fg-accent)]' : 'text-[var(--text-muted)] group-hover:text-[var(--text-primary)]'
                 }`}>
                    {tab.icon}
                 </span>
@@ -371,7 +371,7 @@ export const SettingsPage: React.FC = () => {
         {/* Sticky Desktop Page Header */}
         <div className="hidden md:flex sticky top-0 z-30 w-full h-16 px-6 md:px-10 items-center border-b backdrop-blur-md transition-all duration-150 flex-none bg-[var(--surface-page)]/95 border-[var(--border-default)]">
           <div className="flex items-center gap-3">
-            <div className="w-8 h-8 rounded-shape-sm bg-[var(--surface-subtle)] border border-[var(--border-default)] flex items-center justify-center text-cyan-500 dark:text-cyan-400 shadow-2xs">
+            <div className="w-8 h-8 rounded-shape-sm bg-[var(--surface-subtle)] border border-[var(--border-default)] flex items-center justify-center text-[var(--fg-accent)] shadow-2xs">
                {tabs.find(t => t.id === activeTab)?.icon}
             </div>
             <div className="flex flex-col">
@@ -460,19 +460,19 @@ export const SettingsPage: React.FC = () => {
                 {active && (
                   <motion.div
                     layoutId="settings-bottom-nav-active-indicator"
-                    className="absolute top-1 w-6 h-0.5 rounded-shape-full bg-cyan-500 dark:bg-cyan-400"
+                    className="absolute top-1 w-6 h-0.5 rounded-shape-full bg-[var(--accent)]"
                     transition={{ type: 'spring', stiffness: 500, damping: 35 }}
                   />
                 )}
 
-                <div className={`relative flex items-center justify-center text-xs transition-colors duration-150 ${active ? 'text-cyan-500 dark:text-cyan-400' : 'text-[var(--text-muted)]'}`}>
+                <div className={`relative flex items-center justify-center text-xs transition-colors duration-150 ${active ? 'text-[var(--fg-accent)]' : 'text-[var(--text-muted)]'}`}>
                   {tab.icon}
                 </div>
 
                 <span
                   className={`text-[10px] tracking-tight transition-colors duration-150 leading-none ${
                     active 
-                      ? 'text-cyan-500 dark:text-cyan-400 font-bold' 
+                      ? 'text-[var(--fg-accent)] font-bold' 
                       : 'text-[var(--text-muted)] font-medium'
                   }`}
                 >

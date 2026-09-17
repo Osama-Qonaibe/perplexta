@@ -96,7 +96,6 @@ export const TABLE_POOL_REGISTRY: Record<string, DatabasePoolKey> = {
   support_tickets: 'core',
   support_ticket_replies: 'core',
   password_resets: 'core',
-  media_assets: 'core',
   model_cost_audit_logs: 'core',
   admin_approval_queue: 'core',
   ad_pricing_audit: 'core',
@@ -135,6 +134,7 @@ export const TABLE_POOL_REGISTRY: Record<string, DatabasePoolKey> = {
   registered_agents: 'security',
 
   // Media DB Tables
+  media_assets: 'media',
   canvas_sessions: 'media',
   canvas_history: 'media'
 };

@@ -60,7 +60,7 @@ export const RecommendationsPage: React.FC = () => {
           transition={{ duration: 0.18, ease: [0.16, 1, 0.3, 1] }}
           className="max-w-md w-full p-6 sm:p-8 rounded-shape-lg border border-[var(--border-default)] bg-[var(--surface-card)] text-center shadow-2xs relative overflow-hidden transition-theme"
         >
-          <div className="w-12 h-12 rounded-shape-md bg-cyan-500/10 border border-cyan-500/20 flex items-center justify-center text-cyan-600 dark:text-cyan-400 mx-auto mb-4">
+          <div className="w-12 h-12 rounded-shape-md bg-[var(--bg-accent-muted)] border border-[var(--border-accent)]/20 flex items-center justify-center text-[var(--fg-accent)] mx-auto mb-4">
             <Sparkles size={24} />
           </div>
           <h2 className="text-base sm:text-lg font-bold text-[var(--text-primary)] mb-2 tracking-wide">
@@ -92,14 +92,14 @@ export const RecommendationsPage: React.FC = () => {
             <button
               type="button"
               onClick={() => navigate(-1)}
-              className="h-8 px-2.5 flex items-center gap-1 rounded-shape-sm bg-transparent border border-[var(--border-default)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:border-cyan-500/60 dark:hover:border-cyan-400/60 hover:bg-[var(--surface-subtle)] transition-all duration-150 active:scale-95 cursor-pointer"
+              className="h-8 px-2.5 flex items-center gap-1 rounded-shape-sm bg-transparent border border-[var(--border-default)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:border-[var(--border-accent)]/60 hover:bg-[var(--surface-subtle)] transition-all duration-150 active:scale-95 cursor-pointer"
               title={dir === 'rtl' ? 'رجوع' : 'Back'}
             >
               {dir === 'rtl' ? <ChevronRight size={14} /> : <ChevronLeft size={14} />}
               <span className="text-xs font-bold">{dir === 'rtl' ? 'رجوع' : 'Back'}</span>
             </button>
 
-            <div className="w-8 h-8 rounded-shape-sm bg-cyan-500/10 border border-cyan-500/20 flex items-center justify-center text-cyan-600 dark:text-cyan-400 shrink-0">
+            <div className="w-8 h-8 rounded-shape-sm bg-[var(--bg-accent-muted)] border border-[var(--border-accent)]/20 flex items-center justify-center text-[var(--fg-accent)] shrink-0">
               <Compass size={16} className="animate-spin-slow" />
             </div>
             <div className="min-w-0">
@@ -108,7 +108,7 @@ export const RecommendationsPage: React.FC = () => {
                   <span className="sm:hidden truncate">{language === 'ar' ? 'محرك الاستكشاف' : 'Discovery Engine'}</span>
                   <span className="hidden sm:inline truncate">{language === 'ar' ? 'محرك الاكتشاف والتوصيات' : 'Discovery Engine'}</span>
                 </h1>
-                <span className="px-2 py-0.5 rounded-shape-xs bg-cyan-500/10 text-cyan-600 dark:text-cyan-400 border border-cyan-500/20 text-[10px] font-bold hidden sm:inline-flex">
+                <span className="px-2 py-0.5 rounded-shape-xs bg-[var(--bg-accent-muted)] text-[var(--fg-accent)] border border-[var(--border-accent)]/20 text-[10px] font-bold hidden sm:inline-flex">
                   v2.0 Elite Core
                 </span>
               </div>
@@ -125,9 +125,9 @@ export const RecommendationsPage: React.FC = () => {
               type="button"
               onClick={() => setIsPrefModalOpen(true)}
               title={language === 'ar' ? 'ضبط التفضيلات' : 'Customize Preferences'}
-              className="px-3 py-1.5 min-h-[36px] rounded-shape-sm text-xs font-bold transition-all duration-150 bg-transparent border border-[var(--border-default)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:border-cyan-500/60 dark:hover:border-cyan-400/60 hover:bg-[var(--surface-subtle)] flex items-center gap-1.5 cursor-pointer active:scale-95"
+              className="px-3 py-1.5 min-h-[36px] rounded-shape-sm text-xs font-bold transition-all duration-150 bg-transparent border border-[var(--border-default)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:border-[var(--border-accent)]/60 hover:bg-[var(--surface-subtle)] flex items-center gap-1.5 cursor-pointer active:scale-95"
             >
-              <Settings size={14} className="shrink-0 text-cyan-600 dark:text-cyan-400" />
+              <Settings size={14} className="shrink-0 text-[var(--fg-accent)]" />
               <span className="hidden sm:inline">{language === 'ar' ? 'ضبط التفضيلات' : 'Customize Preferences'}</span>
             </button>
           </div>
@@ -138,13 +138,13 @@ export const RecommendationsPage: React.FC = () => {
         {/* User Interaction & Vector Intelligence Banner */}
         <div className="p-3.5 sm:p-5 rounded-shape-md border border-[var(--border-default)] bg-[var(--surface-card)] flex flex-col md:flex-row items-start md:items-center justify-between gap-3 sm:gap-4 relative overflow-hidden shadow-2xs transition-theme">
           <div className="flex items-start gap-3 min-w-0">
-            <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-shape-sm bg-cyan-500/10 border border-cyan-500/20 flex items-center justify-center text-cyan-600 dark:text-cyan-400 shrink-0 mt-0.5">
+            <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-shape-sm bg-[var(--bg-accent-muted)] border border-[var(--border-accent)]/20 flex items-center justify-center text-[var(--fg-accent)] shrink-0 mt-0.5">
               <Activity size={18} />
             </div>
             <div>
               <h3 className="text-xs sm:text-sm font-bold text-[var(--text-primary)] flex items-center gap-1.5 flex-wrap">
                 {language === 'ar' ? 'متجه التوصيات المخصصة لـ ' : 'Recommendation Vector for '}
-                <span className="text-cyan-600 dark:text-cyan-400">{user?.name || (language === 'ar' ? 'المستخدم' : 'Developer')}</span>
+                <span className="text-[var(--fg-accent)]">{user?.name || (language === 'ar' ? 'المستخدم' : 'Developer')}</span>
               </h3>
               <p className="text-[11px] sm:text-xs text-[var(--text-muted)] mt-0.5 leading-snug">
                 {language === 'ar'
@@ -172,7 +172,7 @@ export const RecommendationsPage: React.FC = () => {
 
           <div className="flex items-center gap-2 sm:gap-3 shrink-0 w-full sm:w-auto justify-between sm:justify-start pt-2 sm:pt-0 border-t border-[var(--border-default)] sm:border-0">
             <div className="flex-1 sm:flex-initial text-center px-3.5 sm:px-4 py-2 rounded-shape-sm bg-[var(--surface-subtle)] border border-[var(--border-default)]">
-              <p className="text-sm sm:text-base font-bold text-cyan-600 dark:text-cyan-400">
+              <p className="text-sm sm:text-base font-bold text-[var(--fg-accent)]">
                 {userSummary?.avg_match_percentage ? `${userSummary.avg_match_percentage}%` : '88%'}
               </p>
               <p className="text-[10px] font-medium text-[var(--text-muted)]">
@@ -180,7 +180,7 @@ export const RecommendationsPage: React.FC = () => {
               </p>
             </div>
             <div className="flex-1 sm:flex-initial text-center px-3.5 sm:px-4 py-2 rounded-shape-sm bg-[var(--surface-subtle)] border border-[var(--border-default)]">
-              <p className="text-sm sm:text-base font-bold text-cyan-600 dark:text-cyan-400">
+              <p className="text-sm sm:text-base font-bold text-[var(--fg-accent)]">
                 {userSummary?.total_recommendations ? `${userSummary.total_recommendations}+` : '15+'}
               </p>
               <p className="text-[10px] font-medium text-[var(--text-muted)]">
@@ -208,7 +208,7 @@ export const RecommendationsPage: React.FC = () => {
         <section className="p-3.5 sm:p-5 rounded-shape-md border border-[var(--border-default)] bg-[var(--surface-card)] shadow-2xs transition-theme">
           <div className="flex items-center justify-between mb-3 sm:mb-4 pb-2.5 sm:pb-3 border-b border-[var(--border-default)]">
             <div className="flex items-center gap-2 sm:gap-2.5">
-              <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-shape-sm bg-cyan-500/10 border border-cyan-500/20 flex items-center justify-center text-cyan-600 dark:text-cyan-400 shrink-0">
+              <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-shape-sm bg-[var(--bg-accent-muted)] border border-[var(--border-accent)]/20 flex items-center justify-center text-[var(--fg-accent)] shrink-0">
                 <Megaphone size={16} />
               </div>
               <div>
@@ -233,7 +233,7 @@ export const RecommendationsPage: React.FC = () => {
         <section className="p-3.5 sm:p-5 rounded-shape-md border border-[var(--border-default)] bg-[var(--surface-card)] shadow-2xs transition-theme">
           <div className="flex items-center justify-between mb-3 sm:mb-4 pb-2.5 sm:pb-3 border-b border-[var(--border-default)]">
             <div className="flex items-center gap-2 sm:gap-2.5">
-              <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-shape-sm bg-cyan-500/10 border border-cyan-500/20 flex items-center justify-center text-cyan-600 dark:text-cyan-400 shrink-0">
+              <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-shape-sm bg-[var(--bg-accent-muted)] border border-[var(--border-accent)]/20 flex items-center justify-center text-[var(--fg-accent)] shrink-0">
                 <Zap size={16} />
               </div>
               <div>

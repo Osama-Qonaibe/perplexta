@@ -437,15 +437,15 @@ export async function initAllTools() {
     await client.query('BEGIN');
     for (const t of tools) {
       await client.query(`
-        INSERT INTO tool_orchestrator (tool_id, primary_provider, primary_model, is_active, cost_per_usage, task_description, task_description_ar)
-        VALUES ($1, '', '', true, $2, $3, $4)
+        INSERT INTO tool_orchestrator (tool_id, primary_provider, primary_model, is_active, task_description, task_description_ar)
+        VALUES ($1, '', '', true, $2, $3)
         ON CONFLICT (tool_id) DO UPDATE SET
           is_active = true,
           task_description = EXCLUDED.task_description,
           task_description_ar = EXCLUDED.task_description_ar,
           primary_provider = CASE WHEN tool_orchestrator.primary_provider IS NULL OR tool_orchestrator.primary_provider = '' THEN '' ELSE tool_orchestrator.primary_provider END,
           primary_model = CASE WHEN tool_orchestrator.primary_model IS NULL OR tool_orchestrator.primary_model = '' THEN '' ELSE tool_orchestrator.primary_model END
-      `, [t.id, t.cost, t.desc, t.descAr]);
+      `, [t.id, t.desc, t.descAr]);
     }
     await client.query('COMMIT');
     return { success: true, message: 'Tools initialized' };

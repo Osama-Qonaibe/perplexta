@@ -1089,7 +1089,7 @@ export const GpuInfrastructureView: React.FC<GpuInfrastructureViewProps> = ({
                       audio_gen: 'bg-amber-500/10 text-amber-500 border-amber-500/20'
                     };
                     const statusColors = {
-                      pending: 'bg-slate-500/10 text-slate-500',
+                      pending: 'bg-[var(--surface-subtle)] text-[var(--text-secondary)]',
                       processing: 'bg-amber-500/10 text-amber-500 animate-pulse',
                       completed: 'bg-[var(--status-success-subtle)] text-[var(--fg-success)]',
                       failed: 'bg-[var(--fg-danger)]/10 text-[var(--fg-danger)]',

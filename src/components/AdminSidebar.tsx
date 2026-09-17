@@ -119,19 +119,19 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({
                 }}
                 className={`group flex items-center gap-2.5 px-3 py-2.5 min-h-[44px] rounded-[var(--radius-sm)] transition-all duration-150 border cursor-pointer touch-target-44 ${
                   isItemActive
-                    ? 'bg-[var(--surface-card)] text-[var(--text-primary)] border-[var(--border-default)] border-s-2 border-s-cyan-500 dark:border-s-cyan-400 font-bold shadow-2xs'
-                    : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--surface-subtle)] border-transparent'
+                    ? 'bg-[color-mix(in_oklab,var(--accent)_12%,transparent)] text-[var(--accent)] border-[color-mix(in_oklab,var(--accent)_30%,var(--border-default))] font-bold shadow-2xs'
+                    : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--surface-subtle)] hover:border-[var(--border-default)] border-transparent'
                 }`}
               >
                 <div className={`w-6 h-6 flex-shrink-0 flex items-center justify-center transition-colors duration-200 ${
                   isItemActive 
-                    ? 'text-cyan-500 dark:text-cyan-400' 
+                    ? 'text-[var(--accent)]' 
                     : 'text-[var(--text-muted)] group-hover:text-[var(--text-primary)]'
                 }`}>
                   {React.isValidElement(item.icon) ? React.cloneElement(item.icon as React.ReactElement, { size: 17 } as any) : item.icon}
                 </div>
                 <span className={`font-bold text-xs tracking-tight transition-colors duration-200 leading-normal ${
-                  isItemActive ? 'text-[var(--text-primary)]' : 'text-[var(--text-secondary)] group-hover:text-[var(--text-primary)]'
+                  isItemActive ? 'text-[var(--accent)]' : 'text-[var(--text-secondary)] group-hover:text-[var(--text-primary)]'
                 }`}>
                   {item.label}
                 </span>
@@ -152,7 +152,7 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({
             title={language === 'ar' ? 'الخروج من لوحة التحكم والعودة للتطبيق' : 'Exit Admin to App'}
           >
             <div className="flex items-center gap-2.5">
-              <div className="w-6 h-6 flex items-center justify-center rounded-[var(--radius-xs)] text-[var(--text-muted)] group-hover:text-cyan-500 dark:group-hover:text-cyan-400 transition-colors">
+              <div className="w-6 h-6 flex items-center justify-center rounded-[var(--radius-xs)] text-[var(--text-muted)] group-hover:text-[var(--accent)] transition-colors">
                 <ArrowRight size={15} className={dir === 'rtl' ? 'rotate-180' : ''} />
               </div>
               <span className="font-bold text-xs text-[var(--text-secondary)] group-hover:text-[var(--text-primary)] transition-colors">

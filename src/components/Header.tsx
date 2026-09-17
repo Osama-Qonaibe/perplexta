@@ -278,8 +278,10 @@ export const Header: React.FC<{ activeLanguage?: string }> = ({ activeLanguage }
     }
   };
 
+  const brandName = (dir === 'rtl' ? siteSettings?.siteNameAr : siteSettings?.siteName) || siteSettings?.siteName || t('appName') || 'Perplexta';
+
   const renderLogo = (
-    <div className="flex items-center gap-2 h-full">
+    <div className={`flex items-center gap-2 h-full ${!isMobileView && isSidebarOpen ? 'px-4 w-full justify-start' : 'justify-center w-full'}`}>
       {canToggleSidebarFromLogo && !isSidebarOpen ? (
         <button
           type="button"
@@ -309,7 +311,7 @@ export const Header: React.FC<{ activeLanguage?: string }> = ({ activeLanguage }
               >
                 <NotificationIconRenderer 
                   src={resolveImageUrl((theme === 'light' && siteSettings.logoLightBase64) ? siteSettings.logoLightBase64 : siteSettings.logoBase64, 'general')} 
-                  alt={t('appName') || "Perplexta"} 
+                  alt={brandName} 
                   size={32}
                   className="w-full h-full object-contain block"
                   fallbackIcon={<Cpu size={14} className="text-accent" />}
@@ -340,49 +342,65 @@ export const Header: React.FC<{ activeLanguage?: string }> = ({ activeLanguage }
           </div>
         </button>
       ) : (
-        <NavLink 
-          to="/" 
-          onClick={handleNewChat} 
-          className="group/logo-link relative w-8 h-8 rounded-[var(--radius-sm)] overflow-hidden border border-[var(--border-default)] hover:border-cyan-500/60 dark:hover:border-cyan-400/60 bg-transparent hover:bg-[var(--surface-subtle)] transition-all duration-150 flex items-center justify-center flex-shrink-0 active:scale-95 before:absolute before:-inset-1.5 before:content-['']"
-          title={t('appName') || "Perplexta"}
-        >
-          {(siteSettings.logoBase64 || siteSettings.logoLightBase64) ? (
-            <motion.div 
-              className="w-full h-full overflow-hidden flex items-center justify-center"
-              animate={isStreaming ? {
-                scale: [1, 1.03, 1],
-                borderColor: ["var(--border-default)", "rgba(6,182,212,0.4)", "var(--border-default)"]
-              } : {}}
-              transition={isStreaming ? {
-                duration: 1.8,
-                repeat: Infinity,
-                ease: "easeInOut"
-              } : {}}
-            >
-              <NotificationIconRenderer 
-                src={resolveImageUrl((theme === 'light' && siteSettings.logoLightBase64) ? siteSettings.logoLightBase64 : siteSettings.logoBase64, 'general')} 
-                alt={t('appName') || "Perplexta"} 
-                size={32}
-                className="w-full h-full object-contain block"
-                fallbackIcon={<Cpu size={14} className="text-cyan-400" />}
-              />
-            </motion.div>
-          ) : (
-            <motion.div
-              className="flex items-center justify-center text-[var(--text-primary)]"
-              animate={isStreaming ? {
-                scale: [1, 1.05, 1]
-              } : {}}
-              transition={isStreaming ? {
-                duration: 1.8,
-                repeat: Infinity,
-                ease: "easeInOut"
-              } : {}}
-            >
-              <Cpu size={14} className="text-cyan-400" />
-            </motion.div>
-          )}
-        </NavLink>
+        <div className="flex items-center gap-2.5 w-full justify-start select-none">
+          <NavLink 
+            to="/" 
+            onClick={handleNewChat} 
+            className="group/logo-link relative w-8 h-8 rounded-[var(--radius-sm)] overflow-hidden border border-[var(--border-default)] hover:border-cyan-500/60 dark:hover:border-cyan-400/60 bg-transparent hover:bg-[var(--surface-subtle)] transition-all duration-150 flex items-center justify-center flex-shrink-0 active:scale-95 before:absolute before:-inset-1.5 before:content-['']"
+            title={brandName}
+          >
+            {(siteSettings.logoBase64 || siteSettings.logoLightBase64) ? (
+              <motion.div 
+                className="w-full h-full overflow-hidden flex items-center justify-center"
+                animate={isStreaming ? {
+                  scale: [1, 1.03, 1],
+                  borderColor: ["var(--border-default)", "rgba(6,182,212,0.4)", "var(--border-default)"]
+                } : {}}
+                transition={isStreaming ? {
+                  duration: 1.8,
+                  repeat: Infinity,
+                  ease: "easeInOut"
+                } : {}}
+              >
+                <NotificationIconRenderer 
+                  src={resolveImageUrl((theme === 'light' && siteSettings.logoLightBase64) ? siteSettings.logoLightBase64 : siteSettings.logoBase64, 'general')} 
+                  alt={brandName} 
+                  size={32}
+                  className="w-full h-full object-contain block"
+                  fallbackIcon={<Cpu size={14} className="text-cyan-400" />}
+                />
+              </motion.div>
+            ) : (
+              <motion.div
+                className="flex items-center justify-center text-[var(--text-primary)]"
+                animate={isStreaming ? {
+                  scale: [1, 1.05, 1]
+                } : {}}
+                transition={isStreaming ? {
+                  duration: 1.8,
+                  repeat: Infinity,
+                  ease: "easeInOut"
+                } : {}}
+              >
+                <Cpu size={14} className="text-cyan-400" />
+              </motion.div>
+            )}
+          </NavLink>
+          
+          <AnimatePresence initial={false}>
+            {!isMobileView && isSidebarOpen && (
+              <motion.span
+                initial={{ opacity: 0, x: dir === 'rtl' ? 8 : -8 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: dir === 'rtl' ? 8 : -8 }}
+                transition={SIDEBAR_TRANSITION}
+                className="font-black text-sm text-[var(--text-primary)] whitespace-nowrap overflow-hidden tracking-tight leading-none"
+              >
+                {brandName}
+              </motion.span>
+            )}
+          </AnimatePresence>
+        </div>
       )}
     </div>
   );
@@ -674,24 +692,37 @@ export const Header: React.FC<{ activeLanguage?: string }> = ({ activeLanguage }
       />
       
       <div className={`w-full flex justify-between items-center h-[50px] gap-1 sm:gap-3 relative ${isMobileView ? 'px-2.5' : 'ps-0 pe-4 md:pe-6'}`}>
-        {/* Logo container matching fixed 50px column on desktop */}
-        <div className="flex items-center h-full shrink-0 z-20">
+        {/* Logo container matching sidebar width on desktop */}
+        <motion.div 
+          initial={false}
+          animate={{
+            width: !isMobileView ? (isSidebarOpen ? 180 : 50) : 'auto'
+          }}
+          transition={SIDEBAR_TRANSITION}
+          className="flex items-center h-full shrink-0 z-20 overflow-hidden"
+        >
           <div 
-            className={`flex items-center justify-center h-full ${!isMobileView ? 'w-[50px]' : 'w-auto'}`}
+            className="flex items-center justify-center h-full w-full"
+            style={{
+              width: !isMobileView ? (isSidebarOpen ? '180px' : '50px') : 'auto',
+              minWidth: !isMobileView ? (isSidebarOpen ? '180px' : '50px') : 'auto',
+              transition: 'all 0.3s cubic-bezier(0.2, 0, 0, 1)'
+            }}
           >
             {renderLogo}
           </div>
-        </div>
+        </motion.div>
 
         {/* Chat Interaction Toolbar: Exactly aligned with chat container boundaries (max-w-3xl) */}
         {isChatPage && chatHeaderData && chatHeaderData.hasMessages && (!isArtifactOpen || !isFullscreen) && (
           <>
             {/* DESKTOP LAYOUT: Exactly aligned with chat container boundaries (max-w-3xl or chatWidth when artifact is open) */}
             <div 
-              className="absolute inset-y-0 pointer-events-none hidden sm:flex items-center z-10 inset-x-0"
+              className="absolute inset-y-0 pointer-events-none hidden sm:flex items-center z-10 inset-x-0 transition-all duration-300"
               style={{
-                paddingInlineStart: !isMobileView ? '50px' : '0px',
-                paddingInlineEnd: 0
+                paddingInlineStart: !isMobileView ? (isSidebarOpen ? '180px' : '50px') : '0px',
+                paddingInlineEnd: 0,
+                transitionTimingFunction: 'cubic-bezier(0.2, 0, 0, 1)'
               }}
             >
               <div

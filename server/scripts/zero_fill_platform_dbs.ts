@@ -15,6 +15,7 @@ const TARGET_DATABASES: DBTarget[] = [
   { name: 'Ledger Database', envKey: 'LEDGER_DATABASE_URL', defaultDbName: 'platform_ledger' },
   { name: 'External Database', envKey: 'EXTERNAL_DATABASE_URL', defaultDbName: 'platform_external' },
   { name: 'Security Database', envKey: 'SECURITY_DATABASE_URL', defaultDbName: 'platform_security' },
+  { name: 'Media Database', envKey: 'MEDIA_DATABASE_URL', defaultDbName: 'platform_media' },
 ];
 
 async function zeroFillDatabase(target: DBTarget) {

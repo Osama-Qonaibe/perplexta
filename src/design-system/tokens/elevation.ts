@@ -59,7 +59,7 @@ export const GLASSMORPHIC_LAYERS = {
  */
 export const GLASS_SURFACE = {
   // Popovers, Dropdowns, Floating Menus
-  popover: 'backdrop-blur-xl bg-[var(--pub-surface-container,var(--surface-card))] border border-[var(--pub-border-default,var(--border-default))] shadow-2xl ring-1 ring-black/5 dark:ring-white/10',
+  popover: 'backdrop-blur-xl bg-[var(--surface-card)] border border-[var(--border-default)] shadow-2xl ring-1 ring-black/5 dark:ring-white/10',
   // Modals & Dialogs
   modal: 'backdrop-blur-2xl bg-[var(--surface-card)] border border-[var(--border-default)] shadow-2xl ring-1 ring-black/10 dark:ring-white/15',
   // Navigation & Headers

@@ -1119,19 +1119,7 @@ router.post('/register-agent', async (req, res) => {
     const hashedSecret = await bcrypt.hash(rawSecret, 10);
 
     if (currentUserId) {
-      let keyCreationCost = 5.00;
-      try {
-        const toolRes = await pool.query("SELECT cost_per_usage FROM tool_orchestrator WHERE tool_id = 'x402_api'");
-        if (toolRes.rows.length > 0 && toolRes.rows[0].cost_per_usage) {
-          const settings = await getEconomySettings();
-          const pointsPerDollar = parseFloat(settings.points_per_dollar || '1000');
-          const fetchedRate = parseFloat(toolRes.rows[0].cost_per_usage) / pointsPerDollar;
-          if (!isNaN(fetchedRate) && fetchedRate > 0) {
-            keyCreationCost = fetchedRate;
-          }
-        }
-      } catch (err) {}
-
+      const keyCreationCost = 5.00;
       try {
         await deductFromWallet(
           currentUserId,

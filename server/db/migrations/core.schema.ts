@@ -44,26 +44,6 @@ export const CORE_SCHEMA_TABLES: { name: string; query: string }[] = [
       )`
   },
   {
-    name: 'media_assets',
-    query: `CREATE TABLE IF NOT EXISTS media_assets (
-        id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-        stored_path TEXT NOT NULL UNIQUE,
-        original_filename TEXT NOT NULL,
-        context TEXT NOT NULL DEFAULT 'general' CHECK (context IN ('avatar', 'bulletin', 'ad', 'system', 'general', 'video')),
-        format TEXT NOT NULL DEFAULT 'webp',
-        width INT NOT NULL DEFAULT 0,
-        height INT NOT NULL DEFAULT 0,
-        size_bytes INT NOT NULL DEFAULT 0,
-        sha256_hash TEXT NOT NULL UNIQUE,
-        is_public BOOLEAN DEFAULT FALSE,
-        user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-        metadata JSONB DEFAULT '{}',
-        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-        file_data BYTEA
-      )`
-  },
-  {
     name: 'password_resets',
     query: `CREATE TABLE IF NOT EXISTS password_resets (
         id SERIAL PRIMARY KEY,
@@ -142,12 +122,9 @@ export const CORE_SCHEMA_TABLES: { name: string; query: string }[] = [
         task_description TEXT,
         task_description_ar TEXT,
         is_active BOOLEAN DEFAULT true,
-        cost_per_usage INTEGER DEFAULT 10,
         updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         protocol_config JSONB DEFAULT '{}',
-        max_history_depth INTEGER DEFAULT 16,
-        cost_per_1k_input_tokens INTEGER DEFAULT 5,
-        cost_per_1k_output_tokens INTEGER DEFAULT 15
+        max_history_depth INTEGER DEFAULT 16
       )`
   },
   {
@@ -1038,6 +1015,34 @@ export const CORE_SCHEMA_TABLES: { name: string; query: string }[] = [
         is_slow BOOLEAN DEFAULT true,
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
       )`
+  },
+  {
+    name: 'forms',
+    query: `CREATE TABLE IF NOT EXISTS forms (
+        id SERIAL PRIMARY KEY,
+        title VARCHAR(255) NOT NULL,
+        slug VARCHAR(255) UNIQUE,
+        description TEXT,
+        fields JSONB DEFAULT '[]',
+        settings JSONB DEFAULT '{}',
+        status VARCHAR(50) DEFAULT 'published',
+        submissions_count INTEGER DEFAULT 0,
+        created_by INTEGER REFERENCES users(id) ON DELETE SET NULL,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      )`
+  },
+  {
+    name: 'form_submissions',
+    query: `CREATE TABLE IF NOT EXISTS form_submissions (
+        id SERIAL PRIMARY KEY,
+        form_id INTEGER NOT NULL REFERENCES forms(id) ON DELETE CASCADE,
+        user_id INTEGER REFERENCES users(id) ON DELETE SET NULL,
+        data JSONB NOT NULL DEFAULT '{}',
+        ip_address VARCHAR(100),
+        user_agent TEXT,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      )`
   }
 ];
 
@@ -1088,7 +1093,6 @@ export async function applyCoreColumnEnforcements(targetPool: QueryClient) {
   await ensureColumnsBulk(targetPool, 'tool_orchestrator', {
     task_description: { type: 'TEXT' },
     task_description_ar: { type: 'TEXT' },
-    cost_per_usage: { type: 'INTEGER', default: 0 },
     fallback_1_provider: { type: 'VARCHAR(50)' },
     fallback_1_model: { type: 'VARCHAR(100)' },
     fallback_2_provider: { type: 'VARCHAR(50)' },
@@ -1262,22 +1266,6 @@ export async function applyCoreColumnEnforcements(targetPool: QueryClient) {
     ip_address: { type: 'VARCHAR(45)' },
     user_agent: { type: 'TEXT' },
     metadata: { type: 'JSONB', default: "'{}'" }
-  });
-
-  await ensureColumnsBulk(targetPool, 'media_assets', {
-    id: { type: 'UUID' },
-    stored_path: { type: 'TEXT' },
-    original_filename: { type: 'TEXT' },
-    context: { type: 'TEXT', default: 'general' },
-    format: { type: 'TEXT', default: 'webp' },
-    width: { type: 'INT', default: 0 },
-    height: { type: 'INT', default: 0 },
-    size_bytes: { type: 'INT', default: 0 },
-    sha256_hash: { type: 'TEXT' },
-    is_public: { type: 'BOOLEAN', default: false },
-    user_id: { type: 'INTEGER' },
-    metadata: { type: 'JSONB', default: "'{}'" },
-    file_data: { type: 'BYTEA' }
   });
 
   await ensureColumnsBulk(targetPool, 'advertisements', {
@@ -1495,11 +1483,37 @@ export async function applyCoreColumnEnforcements(targetPool: QueryClient) {
     created_at: { type: 'TIMESTAMP', default: 'CURRENT_TIMESTAMP' },
     completed_at: { type: 'TIMESTAMP' }
   });
+
+  await ensureColumnsBulk(targetPool, 'forms', {
+    title: { type: 'VARCHAR(255)' },
+    slug: { type: 'VARCHAR(255)' },
+    description: { type: 'TEXT' },
+    fields: { type: 'JSONB', default: "'[]'" },
+    settings: { type: 'JSONB', default: "'{}'" },
+    status: { type: 'VARCHAR(50)', default: "'published'" },
+    submissions_count: { type: 'INTEGER', default: 0 },
+    created_by: { type: 'INTEGER' },
+    created_at: { type: 'TIMESTAMP', default: 'CURRENT_TIMESTAMP' },
+    updated_at: { type: 'TIMESTAMP', default: 'CURRENT_TIMESTAMP' }
+  });
+
+  await ensureColumnsBulk(targetPool, 'form_submissions', {
+    form_id: { type: 'INTEGER' },
+    user_id: { type: 'INTEGER' },
+    data: { type: 'JSONB', default: "'{}'" },
+    ip_address: { type: 'VARCHAR(100)' },
+    user_agent: { type: 'TEXT' },
+    created_at: { type: 'TIMESTAMP', default: 'CURRENT_TIMESTAMP' }
+  });
 }
 
 export const CORE_INDEXES: string[] = [
   `CREATE INDEX IF NOT EXISTS idx_push_tokens_user ON push_tokens(user_id)`,
   `CREATE INDEX IF NOT EXISTS idx_push_tokens_active ON push_tokens(is_active) WHERE is_active = true`,
+  `CREATE UNIQUE INDEX IF NOT EXISTS forms_pkey ON forms(id)`,
+  `CREATE UNIQUE INDEX IF NOT EXISTS forms_slug_key ON forms(slug)`,
+  `CREATE UNIQUE INDEX IF NOT EXISTS form_submissions_pkey ON form_submissions(id)`,
+  `CREATE INDEX IF NOT EXISTS idx_form_submissions_form_id ON form_submissions(form_id)`,
   `CREATE UNIQUE INDEX IF NOT EXISTS referral_invitations_pkey ON referral_invitations(id)`,
   `CREATE INDEX IF NOT EXISTS idx_referral_invitations_referrer ON referral_invitations(referrer_id)`,
   `CREATE INDEX IF NOT EXISTS idx_referral_invitations_email ON referral_invitations(email)`,
@@ -1546,11 +1560,6 @@ export const CORE_INDEXES: string[] = [
   `CREATE UNIQUE INDEX IF NOT EXISTS video_resources_pkey ON video_resources(id)`,
   `CREATE INDEX IF NOT EXISTS idx_video_resources_chat_id ON video_resources(chat_id)`,
   `CREATE INDEX IF NOT EXISTS idx_video_resources_user_id ON video_resources(user_id)`,
-  `CREATE UNIQUE INDEX IF NOT EXISTS media_assets_pkey ON media_assets(id)`,
-  `CREATE INDEX IF NOT EXISTS idx_media_assets_context ON media_assets(context)`,
-  `CREATE INDEX IF NOT EXISTS idx_media_assets_hash ON media_assets(sha256_hash)`,
-  `CREATE INDEX IF NOT EXISTS idx_media_assets_stored_path ON media_assets(stored_path)`,
-  `CREATE INDEX IF NOT EXISTS idx_media_assets_user_id ON media_assets(user_id)`,
   `CREATE INDEX IF NOT EXISTS idx_users_avatar_asset_id ON users(avatar_asset_id)`,
   `CREATE INDEX IF NOT EXISTS idx_bulletin_ads_user_id ON bulletin_ads(user_id)`,
   `CREATE INDEX IF NOT EXISTS idx_bulletin_ads_page_id ON bulletin_ads(page_id)`,
@@ -1600,7 +1609,13 @@ export const CORE_INDEXES: string[] = [
   `CREATE UNIQUE INDEX IF NOT EXISTS api_performance_logs_pkey ON api_performance_logs(id)`,
   `CREATE INDEX IF NOT EXISTS idx_api_performance_logs_created_at ON api_performance_logs(created_at DESC)`,
   `CREATE INDEX IF NOT EXISTS idx_api_performance_logs_duration ON api_performance_logs(duration_ms)`,
-  `CREATE INDEX IF NOT EXISTS idx_api_performance_logs_endpoint ON api_performance_logs(endpoint)`
+  `CREATE INDEX IF NOT EXISTS idx_api_performance_logs_endpoint ON api_performance_logs(endpoint)`,
+  `CREATE EXTENSION IF NOT EXISTS pg_trgm`,
+  `CREATE INDEX IF NOT EXISTS idx_bulletin_ads_title_trgm ON bulletin_ads USING gin (title gin_trgm_ops)`,
+  `CREATE INDEX IF NOT EXISTS idx_bulletin_ads_desc_trgm ON bulletin_ads USING gin (description gin_trgm_ops)`,
+  `CREATE INDEX IF NOT EXISTS idx_bulletin_ads_hashtags_trgm ON bulletin_ads USING gin (hashtags gin_trgm_ops)`,
+  `CREATE INDEX IF NOT EXISTS idx_bulletin_ads_category_trgm ON bulletin_ads USING gin (category gin_trgm_ops)`,
+  `CREATE INDEX IF NOT EXISTS idx_bulletin_ads_status_expires_created ON bulletin_ads(status, expires_at DESC, created_at DESC)`
 ];
 
 export const CORE_RELATIONS: ForeignKeyRelation[] = [
@@ -1613,14 +1628,14 @@ export const CORE_RELATIONS: ForeignKeyRelation[] = [
   { table: 'user_files', constraint: 'user_files_chat_id_fkey', column: 'chat_id', ref: 'chats', onDelete: 'SET NULL' },
   { table: 'user_files', constraint: 'user_files_user_id_fkey', column: 'user_id', ref: 'users' },
   { table: 'users', constraint: 'users_referred_by_fkey', column: 'referred_by', ref: 'users', onDelete: 'SET NULL' },
-  { table: 'media_assets', constraint: 'fk_media_assets_user_id', column: 'user_id', ref: 'users', onDelete: 'SET NULL' },
-  { table: 'users', constraint: 'fk_users_avatar_asset_id', column: 'avatar_asset_id', ref: 'media_assets', onDelete: 'SET NULL' },
   { table: 'user_sessions', constraint: 'fk_user_sessions_user', column: 'user_id', ref: 'users', onDelete: 'CASCADE' },
   { table: 'admin_approval_queue', constraint: 'fk_admin_approval_queue_requester', column: 'requester_id', ref: 'users', onDelete: 'CASCADE' },
   { table: 'ad_pricing_audit', constraint: 'fk_ad_pricing_audit_admin', column: 'admin_id', ref: 'users', onDelete: 'CASCADE' },
   { table: 'gpu_provider_models', constraint: 'fk_gpu_provider_models_provider', column: 'provider_id', ref: 'gpu_providers', onDelete: 'CASCADE' },
   { table: 'gpu_execution_jobs', constraint: 'fk_gpu_execution_jobs_user', column: 'user_id', ref: 'users', onDelete: 'SET NULL' },
-  { table: 'gpu_execution_jobs', constraint: 'fk_gpu_execution_jobs_provider', column: 'provider_id', ref: 'gpu_providers', onDelete: 'SET NULL' }
+  { table: 'gpu_execution_jobs', constraint: 'fk_gpu_execution_jobs_provider', column: 'provider_id', ref: 'gpu_providers', onDelete: 'SET NULL' },
+  { table: 'forms', constraint: 'fk_forms_created_by', column: 'created_by', ref: 'users', onDelete: 'SET NULL' },
+  { table: 'form_submissions', constraint: 'fk_form_submissions_form', column: 'form_id', ref: 'forms', onDelete: 'CASCADE' }
 ];
 
 export async function applyCoreRelations(targetPool: QueryClient) {
@@ -1708,23 +1723,23 @@ export async function seedCoreDatabase(targetPool: QueryClient, targetLedgerPool
 
   // Tool Orchestrator Seed
   await targetPool.query(`
-    INSERT INTO tool_orchestrator (tool_id, primary_provider, primary_model, task_description, task_description_ar, cost_per_usage)
+    INSERT INTO tool_orchestrator (tool_id, primary_provider, primary_model, task_description, task_description_ar)
     VALUES
-      ('chat_fast', '', '', 'High-speed technical intelligence agent for quick insights.', 'عميل ذكاء تقني سريع للاستفسارات الفورية.', 5),
-      ('chat_pro', '', '', 'Advanced perplexta reasoning engine for deep technical problem solving.', 'محرك استنتاج استراتيجي متقدم لحل المشكلات التقنية العميقة.', 25),
-      ('chat_reasoning', '', '', 'Complex multi-step reasoning protocol for high-stakes intelligence.', 'بروتوكول تفكير معقد متعدد الخطوات للمهام فائقة الأهمية.', 50),
-      ('perplexta_analysis', '', '', 'Perplexta Document, File & Vision Forensic Analysis Protocol.', 'استخراج وتدقيق المستندات والملفات والصور والمخططات.', 15),
-      ('image', '', '', 'High-precision visual synthesis engine for professional assets.', 'محرك توليد بصري عالي الدقة للأصول المهنية.', 30),
-      ('video', '', '', 'Global standard video generation and cinematic synthesis.', 'توليد فيديو بمعايير عالمية وتوليد سينمائي متقدم.', 100),
-      ('tts', '', '', 'Elite natural acoustic synthesis and voice engineering.', 'توليد صوتي طبيعي متطور وهندسة صوتية نخبوية.', 10),
-      ('stt', '', '', 'High-fidelity acoustic transcription and linguistic extraction.', 'تحويل صوتي عالي الدقة واستخراج لغوي متقن.', 5),
-      ('ads_copilot', '', '', 'Perplexta Ads & Growth Copilot for Meta, Google, TikTok, and ViralBook campaigns.', 'مساعد الإعلانات والنمو التجاري لمنصة فيرال بوك والمنصات العالمية.', 25),
-      ('code', '', '', 'Master-level software engineering workstation and logic constructor.', 'محطة عمل هندسة البرمجيات وبناء المنطق البرمجي المتقدم.', 20),
-      ('canvas', '', '', 'Perplexta creative studio and multi-modal design canvas.', 'استوديو الإبداع المتقدم ولوحة التصميم متعددة الوسائط.', 25),
-      ('sovereign_search', '', '', 'Perplexta Research & Studies Protocol for comprehensive academic literature synthesis.', 'منظومة البحوث والدراسات الأكاديمية والمراجعة المنهجية.', 10),
-      ('perplexta_music', '', '', 'Advanced acoustic composition and structural music synthesis.', 'التأليف الصوتي المتقدم والتركيب الموسيقي الهيكلي.', 50),
-      ('x402_api', '', '', 'Dynamic high-fidelity artificial intelligence analytics gateway for programmatic developer clients connected via x402 payment protocol.', 'بوابة تحليلات الذكاء الاصطناعي عالية الدقة الديناميكية لعملاء الوكلاء البرمجيين المتصلين ببروتوكول دفع x402.', 15),
-      ('vision', '', '', 'High-performance visual understanding, computer vision and multimodal document analysis.', 'نظام الرؤية الحاسوبية والفهم البصري المتقدم وتحليل الوثائق والصور.', 20)
+      ('chat_fast', '', '', 'High-speed technical intelligence agent for quick insights.', 'عميل ذكاء تقني سريع للاستفسارات الفورية.'),
+      ('chat_pro', '', '', 'Advanced perplexta reasoning engine for deep technical problem solving.', 'محرك استنتاج استراتيجي متقدم لحل المشكلات التقنية العميقة.'),
+      ('chat_reasoning', '', '', 'Complex multi-step reasoning protocol for high-stakes intelligence.', 'بروتوكول تفكير معقد متعدد الخطوات للمهام فائقة الأهمية.'),
+      ('perplexta_analysis', '', '', 'Perplexta Document, File & Vision Forensic Analysis Protocol.', 'استخراج وتدقيق المستندات والملفات والصور والمخططات.'),
+      ('image', '', '', 'High-precision visual synthesis engine for professional assets.', 'محرك توليد بصري عالي الدقة للأصول المهنية.'),
+      ('video', '', '', 'Global standard video generation and cinematic synthesis.', 'توليد فيديو بمعايير عالمية وتوليد سينمائي متقدم.'),
+      ('tts', '', '', 'Elite natural acoustic synthesis and voice engineering.', 'توليد صوتي طبيعي متطور وهندسة صوتية نخبوية.'),
+      ('stt', '', '', 'High-fidelity acoustic transcription and linguistic extraction.', 'تحويل صوتي عالي الدقة واستخراج لغوي متقن.'),
+      ('ads_copilot', '', '', 'Perplexta Ads & Growth Copilot for Meta, Google, TikTok, and ViralBook campaigns.', 'مساعد الإعلانات والنمو التجاري لمنصة فيرال بوك والمنصات العالمية.'),
+      ('code', '', '', 'Master-level software engineering workstation and logic constructor.', 'محطة عمل هندسة البرمجيات وبناء المنطق البرمجي المتقدم.'),
+      ('canvas', '', '', 'Perplexta creative studio and multi-modal design canvas.', 'استوديو الإبداع المتقدم ولوحة التصميم متعددة الوسائط.'),
+      ('sovereign_search', '', '', 'Perplexta Research & Studies Protocol for comprehensive academic literature synthesis.', 'منظومة البحوث والدراسات الأكاديمية والمراجعة المنهجية.'),
+      ('perplexta_music', '', '', 'Advanced acoustic composition and structural music synthesis.', 'التأليف الصوتي المتقدم والتركيب الموسيقي الهيكلي.'),
+      ('x402_api', '', '', 'Dynamic high-fidelity artificial intelligence analytics gateway for programmatic developer clients connected via x402 payment protocol.', 'بوابة تحليلات الذكاء الاصطناعي عالية الدقة الديناميكية لعملاء الوكلاء البرمجيين المتصلين ببروتوكول دفع x402.'),
+      ('vision', '', '', 'High-performance visual understanding, computer vision and multimodal document analysis.', 'نظام الرؤية الحاسوبية والفهم البصري المتقدم وتحليل الوثائق والصور.')
     ON CONFLICT (tool_id) DO NOTHING
   `);
 

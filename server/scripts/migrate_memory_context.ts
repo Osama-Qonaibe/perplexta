@@ -128,7 +128,8 @@ async function main() {
     process.env.DATABASE_URL || '',
     process.env.LEDGER_DATABASE_URL || '',
     process.env.EXTERNAL_DATABASE_URL || '',
-    process.env.SECURITY_DATABASE_URL || ''
+    process.env.SECURITY_DATABASE_URL || '',
+    process.env.MEDIA_DATABASE_URL || ''
   );
   await synchronizePerplextaPoolsFromRegistry().catch((e) => {
     console.warn('[Script] Registry sync warning:', e.message || e);
@@ -145,7 +146,7 @@ async function main() {
 }
 
 // Only execute directly if invoked via CLI/node
-if (import.meta.url === `file://${process.argv[1]}`) {
+if (typeof require !== 'undefined' && require.main === module) {
   main().catch((err) => {
     console.error('[Script] ❌ Unhandled error during memory context migration:', err);
     process.exit(1);

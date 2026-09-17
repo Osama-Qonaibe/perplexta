@@ -36,7 +36,8 @@ import {
 import {
   MEDIA_SCHEMA_TABLES,
   applyMediaColumnEnforcements,
-  MEDIA_INDEXES
+  MEDIA_INDEXES,
+  applyMediaRelations
 } from './media.schema.js';
 
 import { runVersionedMigrations } from './versioned.js';
@@ -209,18 +210,7 @@ export async function initDb(
   // 8. Apply Relations
   await applyCoreRelations(targetPool);
   await applyLedgerRelations(targetLedgerPool);
-
-  // 9. In scratch mode, seed migration_history with baseline versioned names so runVersionedMigrations completes in zero latency
-  if (mode === 'scratch') {
-    const allMigrationNames = [
-      "v1_core_schema","v2_additive_columns","v3_ledger_schema_v1","v4_registry_seed","v5_orchestrator_cleanup","v6_coupon_system_expansion","v7_finance_expansion","v9_route_seo_metadata_table","v8_security_hardening","v9_filler_reconciliation","v10_economy_refactor","v11_ensure_baseline_tables","v12_token_blacklist_security_hardening","v13_payment_gateways_expansion","v14_paypal_settings","v15_transaction_hide_column","v16_user_referral_code","v17_messages_schema_update","v18_user_sessions_schema","v19_seo_upgrade","v20_seo_image","v21_google_site_verification","v22_forum_and_blog_schema","v23_blog_ratings_and_sharing","v24_seed_blog_platform_data","v25_marketplace_schema","v26_marketplace_seed_extension_v2","v27_update_forum_categories_for_pioneers_and_developers","v28_refine_forum_categories_names","v30_forum_category_colors_differentiation","v31_marketplace_purchases_and_referrals","v32_marketplace_referral_percent","v33_marketplace_highlights_and_licenses","v34_default_language_en","v35_logo_light_theme","v36_agent_auth","v37_agent_auth_user_id","v38_admin_audit_logs","v39_ensure_plan_type_column","v40_video_resources_table","v41_hash_existing_tokens","v42_missing_indexes","v43_forum_fk_integrity","v44_encrypt_registry_passwords","v45_orchestrator_max_history_depth","v46_protocol_config","v47_image_prompt_pref_threshold","v48_marketplace_reviews_and_ratings","v49_forum_categories_control","v50_forum_images_and_ratings","v51_dynamic_seo_blocking","v52_token_based_billing","v53_referral_invitations","v54_referral_invitations_fields_v2","v55_seo_site_name_fields","v56_shared_snapshots","v57_permanently_drop_forum_tables","v58_gifts_and_ads_pricing","v59_admin_approval_queue","v60_ad_pricing_audit","v61_ad_performance_stats","v62_bulletin_social_features","v63_bulletin_ad_features","v64_bulletin_quick_questions","v65_route_seo_settings","v66_asset_metadata_and_seo_integrity","v67_recommendation_engine","v68_ensure_chat_memories_and_shortcuts","v69_add_user_shortcuts_fk","v70_encrypt_smtp_password","v71_add_fks","v72_registered_agents_schema_fix","v73_add_file_url_indexes","v74_google_tool_connections","v75_language_font_config","v76_ensure_email_notifications","v77_custom_thresholds","v78_drop_system_settings_logo_indexes","v79_sync_content_seo_metadata","v81_advertisements_format_column","v80_sidebar_ads_columns","v82_update_blog_article_images","v83_media_assets_table_and_constraints","v84_media_player_mute_defaults","v85_bulletin_ads_nullable_image_url","v86_bulletin_post_options_features","v87_create_seo_metadata_table","v88_create_gpu_providers_infrastructure","v89_create_gpu_execution_jobs","v90_add_pages_and_marketplace_owner_id","v91_create_og_preview_cache","v92_add_meta_tags_updated_at","v93_purge_mock_gpu_providers","v94_purge_preprogrammed_tool_models","v95_reconcile_admin_seeded_wallet","v84_add_file_data_columns_to_user_files_and_media_assets","v85_safely_remove_marketplace_ecosystem","v99_clean_slate_and_deep_architecture_purge","v100_restore_registry_database_connections","v101_add_bulletin_pages_managers","v102_control_panel_unified_keys_schema","v105_canonical_theme_bootstrap","v106_bulk_route_seo_metadata","v107_perplexta_unified_ai_tokens","v108_allow_null_user_id_in_media_assets","v109_sanitize_registry_db_connections","v110_apply_sovereign_identity_v4_tokens"
-    ];
-    await Promise.all(
-      allMigrationNames.map(name =>
-        targetPool.query(`INSERT INTO migration_history (migration_name, applied_at) VALUES ($1, CURRENT_TIMESTAMP) ON CONFLICT (migration_name) DO NOTHING`, [name]).catch(() => {})
-      )
-    );
-  }
+  await applyMediaRelations(targetMediaPool);
 }
 
 /**
@@ -465,7 +455,7 @@ export async function runDatabaseMigrations(targetId?: string, type: 'additive' 
 
     if (type !== 'scratch') {
       console.log('[Migrations] Running dynamic schema auto-repair...');
-      await initDb('additive', pool, ledgerPool, externalPool, securityPool);
+      await initDb('additive', pool, ledgerPool, externalPool, securityPool, mediaPool);
     }
 
     // Run all versioned migrations (v1 - v83)

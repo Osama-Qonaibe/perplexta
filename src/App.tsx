@@ -499,6 +499,7 @@ const PWAWrapper = ({ children }: { children: React.ReactNode }) => {
   return (
     <Suspense fallback={null}>
       <GoogleAnalytics />
+      {!isAdminPath && <PwaInstallBanner />}
       {!isAdminPath && (
         <div 
           id="platform-banners-stack"
@@ -509,7 +510,6 @@ const PWAWrapper = ({ children }: { children: React.ReactNode }) => {
           }`}
         >
           <ServiceUpdateToast />
-          <PwaInstallBanner />
           <CookieConsentBanner />
         </div>
       )}

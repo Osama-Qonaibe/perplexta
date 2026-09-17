@@ -141,7 +141,7 @@ export const ThemeStudioView: React.FC<ThemeStudioViewProps> = ({
                       : 'Design System & Brand Visual Identity Control Map'}
                   </h2>
                   <span className="text-[10px] font-mono px-2 py-0.5 rounded-[var(--radius-xs)] border border-[var(--border-default)] bg-[var(--surface-subtle)] text-[var(--fg-accent)] font-bold">
-                    PERPLEXA PRIMER V4.0
+                    PERPLEXTA PRIMER V4.0
                   </span>
                 </div>
                 <p className="text-xs text-[var(--text-secondary)] mt-1 max-w-3xl leading-relaxed">

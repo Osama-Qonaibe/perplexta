@@ -3307,7 +3307,7 @@ export const BulletinBoardPage: React.FC = () => {
               onClick={() => {
                 triggerHaptic('light');
               }}
-              className="group/logo-link relative w-8 h-8 rounded-shape-sm overflow-hidden border border-[var(--pub-border-default)] hover:border-cyan-500/30 bg-transparent hover:bg-cyan-500/10 transition-all duration-150 flex items-center justify-center flex-shrink-0 active:scale-95 cursor-pointer before:absolute before:-inset-1.5 before:content-['']"
+              className="group/logo-link relative w-8 h-8 rounded-shape-sm overflow-hidden border border-[var(--border-default)] hover:border-[var(--border-accent)] bg-transparent hover:bg-[color-mix(in_oklab,var(--accent)_12%,transparent)] transition-all duration-150 flex items-center justify-center flex-shrink-0 active:scale-95 cursor-pointer before:absolute before:-inset-1.5 before:content-['']"
               title={t('appName') || siteSettings?.siteName || "Perplexta"}
               aria-label={t('appName') || siteSettings?.siteName || "Perplexta"}
             >
@@ -3318,12 +3318,12 @@ export const BulletinBoardPage: React.FC = () => {
                     alt={t('appName') || siteSettings?.siteName || "Perplexta"}
                     size={32}
                     className="w-full h-full object-contain block"
-                    fallbackIcon={<Cpu size={14} className="text-cyan-400" />}
+                    fallbackIcon={<Cpu size={14} className="text-[var(--accent)]" />}
                   />
                 </div>
               ) : (
-                <div className="flex items-center justify-center text-[var(--pub-text-primary)]">
-                  <Cpu size={14} className="text-cyan-400" />
+                <div className="flex items-center justify-center text-[var(--text-primary)]">
+                  <Cpu size={14} className="text-[var(--accent)]" />
                 </div>
               )}
             </NavLink>
@@ -3365,7 +3365,7 @@ export const BulletinBoardPage: React.FC = () => {
                     setIsCategoryDropdownOpen(!isCategoryDropdownOpen);
                     setIsSortDropdownOpen(false);
                   }}
-                  className="group h-8 px-2.5 rounded-shape-sm border border-[var(--border-default)] hover:border-cyan-500/60 dark:hover:border-cyan-400/60 bg-transparent hover:bg-[var(--surface-subtle)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] text-xs font-bold transition-all duration-150 flex items-center gap-1.5 active:scale-95 cursor-pointer shadow-2xs"
+                  className="group h-8 px-2.5 rounded-shape-sm border border-[var(--border-default)] hover:border-[var(--border-accent)] bg-transparent hover:bg-[var(--surface-subtle)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] text-xs font-bold transition-all duration-150 flex items-center gap-1.5 active:scale-95 cursor-pointer shadow-2xs"
                   title={isRtl ? 'تصفية حسب الفئة' : 'Filter by Category'}
                 >
                   <Tag size={13} className="text-[var(--text-muted)] group-hover:text-[var(--text-primary)] transition-colors duration-150" />
@@ -3408,12 +3408,12 @@ export const BulletinBoardPage: React.FC = () => {
                               }}
                               className={`w-full flex items-center justify-between px-2.5 py-1.5 rounded-shape-sm text-xs font-semibold transition-all duration-150 cursor-pointer select-none group ${
                                 isSelected
-                                  ? 'bg-cyan-500/10 text-cyan-600 dark:text-cyan-400 font-bold'
+                                  ? 'bg-[color-mix(in_oklab,var(--accent)_12%,transparent)] text-[var(--accent)] font-bold'
                                   : 'text-[var(--text-secondary)] hover:bg-[var(--surface-subtle)] hover:text-[var(--text-primary)]'
                               }`}
                             >
                               <span className="truncate min-w-0 transition-colors">{label}</span>
-                              {isSelected && <Check size={12} className="text-cyan-500 dark:text-cyan-400 shrink-0 ms-1.5" />}
+                              {isSelected && <Check size={12} className="text-[var(--accent)] shrink-0 ms-1.5" />}
                             </button>
                           );
                         })}
@@ -3433,7 +3433,7 @@ export const BulletinBoardPage: React.FC = () => {
                     setIsSortDropdownOpen(!isSortDropdownOpen);
                     setIsCategoryDropdownOpen(false);
                   }}
-                  className="group h-8 px-2.5 rounded-shape-sm border border-[var(--border-default)] hover:border-cyan-500/60 dark:hover:border-cyan-400/60 bg-transparent hover:bg-[var(--surface-subtle)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] text-xs font-bold transition-all duration-150 flex items-center gap-1.5 active:scale-95 cursor-pointer shadow-2xs"
+                  className="group h-8 px-2.5 rounded-shape-sm border border-[var(--border-default)] hover:border-[var(--border-accent)] bg-transparent hover:bg-[var(--surface-subtle)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] text-xs font-bold transition-all duration-150 flex items-center gap-1.5 active:scale-95 cursor-pointer shadow-2xs"
                   title={isRtl ? 'ترتيب المنشورات' : 'Sort Posts'}
                 >
                   <ArrowUpDown size={13} className="text-[var(--text-muted)] group-hover:text-[var(--text-primary)] transition-colors duration-150" />
@@ -3457,7 +3457,7 @@ export const BulletinBoardPage: React.FC = () => {
                         animate={{ opacity: 1, scale: 1 }}
                         exit={{ opacity: 0, scale: 0.96 }}
                         transition={{ duration: 0.14, ease: [0.16, 1, 0.3, 1] }}
-                        className={`absolute top-full mt-1.5 ${isRtl ? 'right-0 origin-top-right' : 'left-0 origin-top-left'} w-max min-w-[160px] p-1 rounded-shape-md border border-[var(--border-default)] shadow-lg flex flex-col gap-0.5 z-[100] bg-[var(--surface-card)] backdrop-blur-xl overscroll-contain`}
+                         className={`absolute top-full mt-1.5 ${isRtl ? 'right-0 origin-top-right' : 'left-0 origin-top-left'} w-max min-w-[160px] p-1 rounded-shape-md border border-[var(--border-default)] shadow-lg flex flex-col gap-0.5 z-[100] bg-[var(--surface-card)] backdrop-blur-xl overscroll-contain`}
                         dir={isRtl ? 'rtl' : 'ltr'}
                       >
                         <div className="px-2 py-1 text-[10px] font-bold text-[var(--text-muted)] uppercase tracking-wider border-b border-[var(--border-default)] mb-0.5">
@@ -3476,12 +3476,12 @@ export const BulletinBoardPage: React.FC = () => {
                               }}
                               className={`w-full flex items-center justify-between px-2.5 py-1.5 rounded-shape-sm text-xs font-semibold transition-all duration-150 cursor-pointer select-none group ${
                                 isSelected
-                                  ? 'bg-cyan-500/10 text-cyan-600 dark:text-cyan-400 font-bold'
+                                  ? 'bg-[color-mix(in_oklab,var(--accent)_12%,transparent)] text-[var(--accent)] font-bold'
                                   : 'text-[var(--text-secondary)] hover:bg-[var(--surface-subtle)] hover:text-[var(--text-primary)]'
                               }`}
                             >
                               <span className="truncate min-w-0 transition-colors">{label}</span>
-                              {isSelected && <Check size={12} className="text-cyan-500 dark:text-cyan-400 shrink-0 ms-1.5" />}
+                              {isSelected && <Check size={12} className="text-[var(--accent)] shrink-0 ms-1.5" />}
                             </button>
                           );
                         })}
@@ -3493,8 +3493,8 @@ export const BulletinBoardPage: React.FC = () => {
             )}
 
             {/* Search Input */}
-            <form onSubmit={handleSearchSubmit} className="relative hidden md:flex items-center md:w-60 lg:w-72 h-8 rounded-shape-sm bg-[var(--surface-subtle)] border border-[var(--border-default)] focus-within:border-cyan-500/60 dark:focus-within:border-cyan-400/60 focus-within:ring-2 focus-within:ring-cyan-500/10 transition-all duration-150 shadow-2xs group">
-              <Search size={13} className="absolute start-2.5 top-1/2 -translate-y-1/2 text-[var(--text-muted)] pointer-events-none transition-colors group-focus-within:text-cyan-500 dark:group-focus-within:text-cyan-400" />
+            <form onSubmit={handleSearchSubmit} className="relative hidden md:flex items-center md:w-60 lg:w-72 h-8 rounded-shape-sm bg-[var(--surface-subtle)] border border-[var(--border-default)] focus-within:border-[var(--border-accent)] focus-within:ring-2 focus-within:ring-[var(--accent)]/10 transition-all duration-150 shadow-2xs group">
+              <Search size={13} className="absolute start-2.5 top-1/2 -translate-y-1/2 text-[var(--text-muted)] pointer-events-none transition-colors group-focus-within:text-[var(--accent)]" />
               <input
                 type="text"
                 value={searchQuery}
@@ -3519,7 +3519,7 @@ export const BulletinBoardPage: React.FC = () => {
               <button
                 type="button"
                 onClick={() => setIsLocationFlyoutOpen(!isLocationFlyoutOpen)}
-                className="group/loc-btn relative hidden sm:flex w-8 h-8 rounded-shape-sm border border-[var(--border-default)] hover:border-cyan-500/60 dark:hover:border-cyan-400/60 bg-transparent hover:bg-[var(--surface-subtle)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-all duration-150 items-center justify-center shrink-0 active:scale-95 cursor-pointer shadow-2xs"
+                className="group/loc-btn relative hidden sm:flex w-8 h-8 rounded-shape-sm border border-[var(--border-default)] hover:border-[var(--border-accent)] bg-transparent hover:bg-[var(--surface-subtle)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-all duration-150 items-center justify-center shrink-0 active:scale-95 cursor-pointer shadow-2xs"
                 title={
                   selectedCity === 'all'
                     ? (isRtl ? 'تحديد نطاق تغطية الموقع (كافة المحافظات)' : 'Location radius filter (All Regions)')
@@ -3545,7 +3545,7 @@ export const BulletinBoardPage: React.FC = () => {
                   if (selectedPageDetail) setSelectedPageDetail(null);
                   setActiveTab('inquiries');
                 }}
-                className="group hidden sm:flex w-8 h-8 rounded-shape-sm border border-[var(--border-default)] hover:border-cyan-500/60 dark:hover:border-cyan-400/60 bg-transparent hover:bg-[var(--surface-subtle)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] items-center justify-center transition-all duration-150 active:scale-95 cursor-pointer shadow-2xs relative"
+                className="group hidden sm:flex w-8 h-8 rounded-shape-sm border border-[var(--border-default)] hover:border-[var(--border-accent)] bg-transparent hover:bg-[var(--surface-subtle)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] items-center justify-center transition-all duration-150 active:scale-95 cursor-pointer shadow-2xs relative"
                 title={isRtl ? 'الرسائل والاستفسارات' : 'Inquiries & Messages'}
               >
                 <MessageSquare size={14} className="text-[var(--text-muted)] group-hover:text-[var(--text-primary)] transition-colors duration-150" />
@@ -3564,14 +3564,14 @@ export const BulletinBoardPage: React.FC = () => {
                 triggerHaptic('light');
                 setLanguage(language === 'ar' ? 'en' : 'ar');
               }}
-              className="group w-8 h-8 rounded-shape-sm border border-[var(--border-default)] hover:border-cyan-500/60 dark:hover:border-cyan-400/60 bg-transparent hover:bg-[var(--surface-subtle)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] flex items-center justify-center transition-all duration-150 active:scale-95 cursor-pointer shadow-2xs"
+              className="group w-8 h-8 rounded-shape-sm border border-[var(--border-default)] hover:border-[var(--border-accent)] bg-transparent hover:bg-[var(--surface-subtle)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] flex items-center justify-center transition-all duration-150 active:scale-95 cursor-pointer shadow-2xs"
               title={language === 'ar' ? 'English' : 'العربية'}
             >
               <Languages size={14} className="text-[var(--text-muted)] group-hover:text-[var(--text-primary)] transition-colors duration-150" />
             </button>
 
             {/* Theme Toggle */}
-            <ThemeToggleButton variant="icon-button" size="sm" className="!w-8 !h-8 !rounded-shape-sm !border-[var(--border-default)] hover:!border-cyan-500/60 dark:hover:!border-cyan-400/60 !bg-transparent hover:!bg-[var(--surface-subtle)] !text-[var(--text-muted)] hover:!text-[var(--text-primary)] shadow-2xs transition-all duration-150" />
+            <ThemeToggleButton variant="icon-button" size="sm" className="!w-8 !h-8 !rounded-shape-sm !border-[var(--border-default)] hover:!border-[var(--border-accent)] !bg-transparent hover:!bg-[var(--surface-subtle)] !text-[var(--text-muted)] hover:!text-[var(--text-primary)] shadow-2xs transition-all duration-150" />
 
             <div className="w-px h-5 bg-[var(--border-default)] shrink-0 hidden xs:block" />
 
@@ -3586,7 +3586,7 @@ export const BulletinBoardPage: React.FC = () => {
                 }
                 navigate('/chat');
               }}
-              className="group h-8 px-2.5 sm:px-3 rounded-shape-sm border border-[var(--border-default)] hover:border-cyan-500/60 dark:hover:border-cyan-400/60 bg-transparent hover:bg-[var(--surface-subtle)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] font-bold text-xs flex items-center gap-1.5 transition-all duration-150 active:scale-95 shadow-2xs cursor-pointer shrink-0"
+              className="group h-8 px-2.5 sm:px-3 rounded-shape-sm border border-[var(--border-default)] hover:border-[var(--border-accent)] bg-transparent hover:bg-[var(--surface-subtle)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] font-bold text-xs flex items-center gap-1.5 transition-all duration-150 active:scale-95 shadow-2xs cursor-pointer shrink-0"
               title={selectedPageDetail ? (isRtl ? 'رجوع إلى الخلاصة' : 'Back to Feed') : (isRtl ? 'العودة إلى الصفحة الرئيسية' : 'Back to Home')}
             >
               {isRtl ? (
@@ -4482,13 +4482,13 @@ export const BulletinBoardPage: React.FC = () => {
                           className={`w-full flex items-center justify-between px-2.5 py-1.5 rounded-shape-sm text-xs font-semibold transition-all duration-150 cursor-pointer select-none ${
                             item.isDestructive
                               ? 'text-rose-500 hover:bg-rose-500/10 font-bold'
-                              : 'text-[var(--text-primary)] hover:bg-cyan-500/10 hover:text-cyan-400 group'
+                              : 'text-[var(--text-primary)] hover:bg-[color-mix(in_oklab,var(--accent)_12%,transparent)] hover:text-[var(--accent)] group'
                           }`}
                         >
-                          <span className={`truncate min-w-0 ${item.isDestructive ? '' : 'group-hover:text-cyan-400 transition-colors'}`}>
+                          <span className={`truncate min-w-0 ${item.isDestructive ? '' : 'group-hover:text-[var(--accent)] transition-colors'}`}>
                             {item.label}
                           </span>
-                          <Icon size={14} className={`${item.isDestructive ? 'text-rose-500' : 'text-[var(--text-muted)] group-hover:text-cyan-400 transition-all duration-150'} shrink-0 ms-2`} />
+                          <Icon size={14} className={`${item.isDestructive ? 'text-rose-500' : 'text-[var(--text-muted)] group-hover:text-[var(--accent)] transition-all duration-150'} shrink-0 ms-2`} />
                         </button>
                       );
                     })}
@@ -7114,13 +7114,13 @@ export const BulletinBoardPage: React.FC = () => {
             }}
             className={`group w-8 h-8 rounded-shape-sm border transition-all duration-150 active:scale-95 cursor-pointer shadow-2xs relative touch-manipulation select-none shrink-0 flex items-center justify-center ${
               activeTab === 'board' && !selectedPageDetail && !isMobileSearchOpen
-                ? 'bg-[var(--surface-card)] text-[var(--text-primary)] border-[var(--border-default)] font-bold shadow-2xs'
-                : 'bg-transparent border-[var(--border-default)] hover:border-cyan-500/60 dark:hover:border-cyan-400/60 hover:bg-[var(--surface-subtle)] text-[var(--text-secondary)] hover:text-[var(--text-primary)]'
+                ? 'bg-[var(--surface-card)] text-[var(--accent)] border-[var(--border-accent)] font-bold shadow-2xs'
+                : 'bg-transparent border-[var(--border-default)] hover:border-[var(--border-accent)] hover:bg-[var(--surface-subtle)] text-[var(--text-secondary)] hover:text-[var(--text-primary)]'
             }`}
             title={isRtl ? 'الرئيسية' : 'Feed'}
             aria-label={isRtl ? 'الرئيسية' : 'Feed'}
           >
-            <Megaphone size={14} className={activeTab === 'board' && !selectedPageDetail && !isMobileSearchOpen ? 'text-cyan-500 dark:text-cyan-400' : 'text-[var(--text-muted)] group-hover:text-[var(--text-primary)] transition-colors duration-150'} />
+            <Megaphone size={14} className={activeTab === 'board' && !selectedPageDetail && !isMobileSearchOpen ? 'text-[var(--accent)]' : 'text-[var(--text-muted)] group-hover:text-[var(--text-primary)] transition-colors duration-150'} />
           </button>
 
           {/* Search */}
@@ -7135,13 +7135,13 @@ export const BulletinBoardPage: React.FC = () => {
             }}
             className={`group w-8 h-8 rounded-shape-sm border transition-all duration-150 active:scale-95 cursor-pointer shadow-2xs relative touch-manipulation select-none shrink-0 flex items-center justify-center ${
               isMobileSearchOpen
-                ? 'bg-[var(--surface-card)] text-[var(--text-primary)] border-[var(--border-default)] font-bold shadow-2xs'
-                : 'bg-transparent border-[var(--border-default)] hover:border-cyan-500/60 dark:hover:border-cyan-400/60 hover:bg-[var(--surface-subtle)] text-[var(--text-secondary)] hover:text-[var(--text-primary)]'
+                ? 'bg-[var(--surface-card)] text-[var(--accent)] border-[var(--border-accent)] font-bold shadow-2xs'
+                : 'bg-transparent border-[var(--border-default)] hover:border-[var(--border-accent)] hover:bg-[var(--surface-subtle)] text-[var(--text-secondary)] hover:text-[var(--text-primary)]'
             }`}
             title={isRtl ? 'البحث' : 'Search'}
             aria-label={isRtl ? 'البحث' : 'Search'}
           >
-            <Search size={14} className={isMobileSearchOpen ? 'text-cyan-500 dark:text-cyan-400' : 'text-[var(--text-muted)] group-hover:text-[var(--text-primary)] transition-colors duration-150'} />
+            <Search size={14} className={isMobileSearchOpen ? 'text-[var(--accent)]' : 'text-[var(--text-muted)] group-hover:text-[var(--text-primary)] transition-colors duration-150'} />
           </button>
 
           {/* Create Reel */}
@@ -7155,7 +7155,7 @@ export const BulletinBoardPage: React.FC = () => {
               }
               openReelUploadModal();
             }}
-            className="group w-8 h-8 rounded-shape-sm border border-[var(--border-default)] hover:border-cyan-500/60 dark:hover:border-cyan-400/60 bg-transparent hover:bg-[var(--surface-subtle)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] flex items-center justify-center transition-all duration-150 active:scale-95 cursor-pointer shadow-2xs touch-manipulation select-none shrink-0"
+            className="group w-8 h-8 rounded-shape-sm border border-[var(--border-default)] hover:border-[var(--border-accent)] bg-transparent hover:bg-[var(--surface-subtle)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] flex items-center justify-center transition-all duration-150 active:scale-95 cursor-pointer shadow-2xs touch-manipulation select-none shrink-0"
             title={isRtl ? 'إنشاء ريلز جديد' : 'Create Reel'}
             aria-label={isRtl ? 'إنشاء ريلز جديد' : 'Create Reel'}
           >
@@ -7177,13 +7177,13 @@ export const BulletinBoardPage: React.FC = () => {
             }}
             className={`group w-8 h-8 rounded-shape-sm border transition-all duration-150 active:scale-95 cursor-pointer shadow-2xs relative touch-manipulation select-none shrink-0 flex items-center justify-center ${
               activeTab === 'inquiries' && !selectedPageDetail
-                ? 'bg-[var(--surface-card)] text-[var(--text-primary)] border-[var(--border-default)] font-bold shadow-2xs'
-                : 'bg-transparent border-[var(--border-default)] hover:border-cyan-500/60 dark:hover:border-cyan-400/60 hover:bg-[var(--surface-subtle)] text-[var(--text-secondary)] hover:text-[var(--text-primary)]'
+                ? 'bg-[var(--surface-card)] text-[var(--accent)] border-[var(--border-accent)] font-bold shadow-2xs'
+                : 'bg-transparent border-[var(--border-default)] hover:border-[var(--border-accent)] hover:bg-[var(--surface-subtle)] text-[var(--text-secondary)] hover:text-[var(--text-primary)]'
             }`}
             title={isRtl ? 'سجل المحادثات' : 'Chats / Inquiries'}
             aria-label={isRtl ? 'سجل المحادثات' : 'Chats / Inquiries'}
           >
-            <MessageSquareText size={14} className={activeTab === 'inquiries' && !selectedPageDetail ? 'text-cyan-500 dark:text-cyan-400' : 'text-[var(--text-muted)] group-hover:text-[var(--text-primary)] transition-colors duration-150'} />
+            <MessageSquareText size={14} className={activeTab === 'inquiries' && !selectedPageDetail ? 'text-[var(--accent)]' : 'text-[var(--text-muted)] group-hover:text-[var(--text-primary)] transition-colors duration-150'} />
             {inquiriesList.length > 0 && (
               <span className="absolute -top-1 -end-1 w-3.5 h-3.5 rounded-shape-full bg-red-500 text-white text-[8px] font-black flex items-center justify-center ring-1 ring-[var(--surface-page)]">
                 {inquiriesList.length > 9 ? '9+' : inquiriesList.length}
@@ -7198,7 +7198,7 @@ export const BulletinBoardPage: React.FC = () => {
               triggerHaptic('medium');
               setIsMobileSidebarOpen(true);
             }}
-            className="group w-8 h-8 rounded-shape-sm border border-[var(--border-default)] hover:border-cyan-500/60 dark:hover:border-cyan-400/60 bg-transparent hover:bg-[var(--surface-subtle)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] flex items-center justify-center transition-all duration-150 active:scale-95 cursor-pointer shadow-2xs touch-manipulation select-none shrink-0"
+            className="group w-8 h-8 rounded-shape-sm border border-[var(--border-default)] hover:border-[var(--border-accent)] bg-transparent hover:bg-[var(--surface-subtle)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] flex items-center justify-center transition-all duration-150 active:scale-95 cursor-pointer shadow-2xs touch-manipulation select-none shrink-0"
             title={isRtl ? 'القائمة' : 'Menu'}
             aria-label={isRtl ? 'القائمة' : 'Menu'}
           >

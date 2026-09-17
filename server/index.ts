@@ -56,9 +56,9 @@ async function initDatabase(): Promise<boolean> {
       if (!isDatabaseConnected()) {
         throw new Error('Database operating in Degraded Mode (unreachable or missing credentials).');
       }
+      await synchronizePerplextaPoolsFromRegistry();
       await runDatabaseMigrations();
       await ensureDatabaseTables();
-      await synchronizePerplextaPoolsFromRegistry();
       await Promise.allSettled([
         syncSystemTemplates(),
         refreshCachedAppName(),

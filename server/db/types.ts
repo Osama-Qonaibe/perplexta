@@ -159,7 +159,6 @@ export interface ToolOrchestrator {
   task_description: string | null;
   task_description_ar: string | null;
   is_active: boolean;
-  cost_per_usage: number;
   max_history_depth: number;
   updated_at: Date | string;
   protocol_config: any;

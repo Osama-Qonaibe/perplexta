@@ -233,40 +233,78 @@ export async function runGpuEndpointDiscovery(options?: { forceAll?: boolean }):
       }
     }
 
-    // 2. Invalidate relevant caches across the system
     invalidateGpuCache();
     memoryCache.delete('admin:orchestrator:models');
     memoryCache.delete('admin:orchestrator:routes');
     invalidateOrchestratorConfigCache();
 
-    // 3. Reconcile with Tool Orchestrator routes
-    // Check if any tool configured with a GPU provider is pointing to an offline provider or missing model
     const gpuToolsRes = await pool.query(
-      `SELECT tool_id, primary_provider, primary_model, fallback_1_provider, fallback_1_model 
+      `SELECT id, tool_id, primary_provider, primary_model, fallback_1_provider, fallback_1_model, fallback_2_provider, fallback_2_model 
        FROM tool_orchestrator 
        WHERE tool_id IN ('image', 'video', 'vision', 'perplexta_vision')`
     );
 
-    const activeProviderSlugs = new Set(
-      providerReports.filter((p) => p.status === 'online').map((p) => p.provider_id.toLowerCase())
-    );
-    const activeModelIds = new Set(
-      providerReports
-        .filter((p) => p.status === 'online')
-        .flatMap((p) => p.models.map((m) => m.model_id.toLowerCase()))
-    );
+    const providerModelMap = new Map<string, Array<{ model_id: string; task_type: string }>>();
+    for (const p of providerReports) {
+      if (p.status === 'online' && p.models.length > 0) {
+        providerModelMap.set(p.provider_id.toLowerCase(), p.models);
+      }
+    }
 
     for (const tool of gpuToolsRes.rows) {
-      if (tool.primary_provider && !activeProviderSlugs.has(tool.primary_provider.toLowerCase())) {
-        console.warn(
-          `[GPU Discovery Reconcile] Tool '${tool.tool_id}' references provider '${tool.primary_provider}' which is currently offline or unconfirmed.`
+      let needsUpdate = false;
+      let newPrimaryModel = tool.primary_model;
+      let newFallback1Model = tool.fallback_1_model;
+      let newFallback2Model = tool.fallback_2_model;
+
+      if (tool.primary_provider && providerModelMap.has(tool.primary_provider.toLowerCase())) {
+        const availableModels = providerModelMap.get(tool.primary_provider.toLowerCase()) || [];
+        const match = availableModels.find(
+          (m) => m.model_id.toLowerCase() === (tool.primary_model || '').toLowerCase()
+        );
+        if (!match && availableModels.length > 0) {
+          const taskMatched = availableModels.find((m) => m.task_type.includes(tool.tool_id)) || availableModels[0];
+          newPrimaryModel = taskMatched.model_id;
+          needsUpdate = true;
+        }
+      }
+
+      if (tool.fallback_1_provider && providerModelMap.has(tool.fallback_1_provider.toLowerCase())) {
+        const availableModels = providerModelMap.get(tool.fallback_1_provider.toLowerCase()) || [];
+        const match = availableModels.find(
+          (m) => m.model_id.toLowerCase() === (tool.fallback_1_model || '').toLowerCase()
+        );
+        if (!match && availableModels.length > 0) {
+          const taskMatched = availableModels.find((m) => m.task_type.includes(tool.tool_id)) || availableModels[0];
+          newFallback1Model = taskMatched.model_id;
+          needsUpdate = true;
+        }
+      }
+
+      if (tool.fallback_2_provider && providerModelMap.has(tool.fallback_2_provider.toLowerCase())) {
+        const availableModels = providerModelMap.get(tool.fallback_2_provider.toLowerCase()) || [];
+        const match = availableModels.find(
+          (m) => m.model_id.toLowerCase() === (tool.fallback_2_model || '').toLowerCase()
+        );
+        if (!match && availableModels.length > 0) {
+          const taskMatched = availableModels.find((m) => m.task_type.includes(tool.tool_id)) || availableModels[0];
+          newFallback2Model = taskMatched.model_id;
+          needsUpdate = true;
+        }
+      }
+
+      if (needsUpdate) {
+        await pool.query(
+          `UPDATE tool_orchestrator 
+           SET primary_model = $1, fallback_1_model = $2, fallback_2_model = $3, updated_at = CURRENT_TIMESTAMP
+           WHERE id = $4`,
+          [newPrimaryModel, newFallback1Model, newFallback2Model, tool.id]
         );
       }
-      if (tool.primary_model && !activeModelIds.has(tool.primary_model.toLowerCase())) {
-        console.warn(
-          `[GPU Discovery Reconcile] Tool '${tool.tool_id}' references model '${tool.primary_model}' which was not reported by active endpoints.`
-        );
-      }
+    }
+
+    if (gpuToolsRes.rows.length > 0) {
+      invalidateOrchestratorConfigCache();
     }
 
     const duration = ((Date.now() - startTime) / 1000).toFixed(2);

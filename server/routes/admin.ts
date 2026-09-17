@@ -1,7 +1,7 @@
 import express from 'express';
 import fs from 'fs/promises';
 import path from 'path';
-import { pool, ledgerPool, getSecurityPool } from '../db/index.js';
+import { pool, ledgerPool, getSecurityPool, mediaPool } from '../db/index.js';
 import { authenticateAdmin, invalidateUserCache } from '../middleware/auth.js';
 import { syncProviderModelsInternal, checkProviderStatus, invalidateVaultCache } from '../services/ai.js';
 import { memoryCache } from '../utils/cache.js';
@@ -888,10 +888,10 @@ router.get("/orchestrator/routes", authenticateAdmin, async (req, res) => {
       console.log(`[Admin Orchestrator] Seeding ${missingTools.length} missing tools to DB tool_orchestrator...`);
       for (const t of missingTools) {
         await pool.query(`
-          INSERT INTO tool_orchestrator (tool_id, primary_provider, primary_model, is_active, cost_per_usage, task_description, task_description_ar)
-          VALUES ($1, '', '', true, $2, $3, $4)
+          INSERT INTO tool_orchestrator (tool_id, primary_provider, primary_model, is_active, task_description, task_description_ar)
+          VALUES ($1, '', '', true, $2, $3)
           ON CONFLICT (tool_id) DO NOTHING
-        `, [t.id, t.cost, t.desc, t.descAr]);
+        `, [t.id, t.desc, t.descAr]);
       }
     }
 
@@ -923,8 +923,7 @@ router.post("/orchestrator/routes", authenticateAdmin, async (req, res) => {
           fallback_1_provider, fallback_1_model, 
           fallback_2_provider, fallback_2_model,
           fallback_3_provider, fallback_3_model,
-          is_active, cost_per_usage,
-          cost_per_1k_input_tokens, cost_per_1k_output_tokens
+          is_active
         } = route;
         
         if (!tool_id) continue;
@@ -940,10 +939,9 @@ router.post("/orchestrator/routes", authenticateAdmin, async (req, res) => {
             fallback_1_provider, fallback_1_model, 
             fallback_2_provider, fallback_2_model,
             fallback_3_provider, fallback_3_model,
-            is_active, cost_per_usage,
-            cost_per_1k_input_tokens, cost_per_1k_output_tokens
+            is_active
           )
-          VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)
+          VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
           ON CONFLICT (tool_id) DO UPDATE SET
             primary_provider = EXCLUDED.primary_provider,
             primary_model = EXCLUDED.primary_model,
@@ -954,9 +952,6 @@ router.post("/orchestrator/routes", authenticateAdmin, async (req, res) => {
             fallback_3_provider = EXCLUDED.fallback_3_provider,
             fallback_3_model = EXCLUDED.fallback_3_model,
             is_active = EXCLUDED.is_active,
-            cost_per_usage = EXCLUDED.cost_per_usage,
-            cost_per_1k_input_tokens = EXCLUDED.cost_per_1k_input_tokens,
-            cost_per_1k_output_tokens = EXCLUDED.cost_per_1k_output_tokens,
             updated_at = CURRENT_TIMESTAMP
         `, [
           tool_id, 
@@ -964,10 +959,7 @@ router.post("/orchestrator/routes", authenticateAdmin, async (req, res) => {
           fallback_1_provider || '', fallback_1_model || '', 
           fallback_2_provider || '', fallback_2_model || '',
           fallback_3_provider || '', fallback_3_model || '',
-          is_active !== undefined ? is_active : true, 
-          cost_per_usage !== undefined && cost_per_usage !== null ? cost_per_usage : 10,
-          cost_per_1k_input_tokens !== undefined ? cost_per_1k_input_tokens : 5,
-          cost_per_1k_output_tokens !== undefined ? cost_per_1k_output_tokens : 15
+          is_active !== undefined ? is_active : true
         ]);
       }
       await client.query('COMMIT');
@@ -3664,7 +3656,8 @@ router.post("/maintenance/cleanup", authenticateAdmin, async (req, res) => {
     let orphanedMediaDeletedCount = 0;
     if (orphanedMediaAssets.length > 0) {
       const mediaIds = orphanedMediaAssets.map((m: any) => m.id);
-      await pool.query('DELETE FROM media_assets WHERE id = ANY($1::uuid[])', [mediaIds]);
+      const targetMediaPool = mediaPool || pool;
+      await targetMediaPool.query('DELETE FROM media_assets WHERE id = ANY($1::uuid[])', [mediaIds]);
       for (const m of orphanedMediaAssets) {
         if (m.stored_path) {
           const absPath = path.join(process.cwd(), m.stored_path);
@@ -4527,6 +4520,160 @@ router.delete("/theme-customizations", authenticateAdmin, async (req, res) => {
   } catch (err: any) {
     console.error('[Theme] Clear error:', err);
     res.status(500).json({ error: err.message || 'Failed to clear theme customizations' });
+  }
+});
+
+router.get("/forms", authenticateAdmin, async (req, res) => {
+  try {
+    const result = await pool.query(`
+      SELECT f.*, COUNT(s.id)::int AS actual_submissions_count
+      FROM forms f
+      LEFT JOIN form_submissions s ON s.form_id = f.id
+      GROUP BY f.id
+      ORDER BY f.created_at DESC
+    `);
+    res.json({ success: true, forms: result.rows });
+  } catch (error: any) {
+    res.status(500).json({ success: false, error: error.message || 'Failed to fetch forms' });
+  }
+});
+
+router.get("/forms/:id", authenticateAdmin, async (req, res) => {
+  try {
+    const { id } = req.params;
+    const isNum = /^\d+$/.test(id);
+    const result = isNum
+      ? await pool.query('SELECT * FROM forms WHERE id = $1', [parseInt(id, 10)])
+      : await pool.query('SELECT * FROM forms WHERE slug = $1', [id]);
+
+    if (result.rows.length === 0) {
+      return res.status(404).json({ success: false, error: 'Form not found' });
+    }
+    res.json({ success: true, form: result.rows[0] });
+  } catch (error: any) {
+    res.status(500).json({ success: false, error: error.message || 'Failed to fetch form' });
+  }
+});
+
+router.post("/forms", authenticateAdmin, async (req, res) => {
+  try {
+    const { title, slug, description, fields, settings, status } = req.body;
+    if (!title || typeof title !== 'string') {
+      return res.status(400).json({ success: false, error: 'Title is required' });
+    }
+    const adminId = (req as any).user?.id || null;
+    const generatedSlug = (slug || title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '')) + '-' + Date.now().toString(36);
+    const resolvedFields = typeof fields === 'string' ? fields : JSON.stringify(fields || []);
+    const resolvedSettings = typeof settings === 'string' ? settings : JSON.stringify(settings || {});
+    const resolvedStatus = status || 'published';
+
+    const result = await pool.query(
+      `INSERT INTO forms (title, slug, description, fields, settings, status, created_by, created_at, updated_at)
+       VALUES ($1, $2, $3, $4::jsonb, $5::jsonb, $6, $7, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
+       RETURNING *`,
+      [title.trim(), generatedSlug, description || '', resolvedFields, resolvedSettings, resolvedStatus, adminId]
+    );
+
+    await auditLog(adminId, 'Create Form', 'system', { formId: result.rows[0].id, title });
+    res.json({ success: true, form: result.rows[0] });
+  } catch (error: any) {
+    res.status(500).json({ success: false, error: error.message || 'Failed to create form' });
+  }
+});
+
+router.put("/forms/:id", authenticateAdmin, async (req, res) => {
+  try {
+    const { id } = req.params;
+    const formId = parseInt(id, 10);
+    if (isNaN(formId)) return res.status(400).json({ success: false, error: 'Invalid form ID' });
+
+    const { title, slug, description, fields, settings, status } = req.body;
+    const existing = await pool.query('SELECT * FROM forms WHERE id = $1', [formId]);
+    if (existing.rows.length === 0) {
+      return res.status(404).json({ success: false, error: 'Form not found' });
+    }
+
+    const resolvedFields = fields !== undefined ? (typeof fields === 'string' ? fields : JSON.stringify(fields)) : JSON.stringify(existing.rows[0].fields);
+    const resolvedSettings = settings !== undefined ? (typeof settings === 'string' ? settings : JSON.stringify(settings)) : JSON.stringify(existing.rows[0].settings);
+
+    const result = await pool.query(
+      `UPDATE forms
+       SET title = COALESCE($1, title),
+           slug = COALESCE($2, slug),
+           description = COALESCE($3, description),
+           fields = $4::jsonb,
+           settings = $5::jsonb,
+           status = COALESCE($6, status),
+           updated_at = CURRENT_TIMESTAMP
+       WHERE id = $7
+       RETURNING *`,
+      [title, slug, description, resolvedFields, resolvedSettings, status, formId]
+    );
+
+    const adminId = (req as any).user?.id || null;
+    await auditLog(adminId, 'Update Form', 'system', { formId, title: result.rows[0].title });
+    res.json({ success: true, form: result.rows[0] });
+  } catch (error: any) {
+    res.status(500).json({ success: false, error: error.message || 'Failed to update form' });
+  }
+});
+
+router.delete("/forms/:id", authenticateAdmin, async (req, res) => {
+  try {
+    const { id } = req.params;
+    const formId = parseInt(id, 10);
+    if (isNaN(formId)) return res.status(400).json({ success: false, error: 'Invalid form ID' });
+
+    const existing = await pool.query('SELECT id, title FROM forms WHERE id = $1', [formId]);
+    if (existing.rows.length === 0) {
+      return res.status(404).json({ success: false, error: 'Form not found' });
+    }
+
+    const formTitle = existing.rows[0].title;
+    await pool.query('DELETE FROM form_submissions WHERE form_id = $1', [formId]);
+    await pool.query('DELETE FROM forms WHERE id = $1', [formId]);
+
+    const adminId = (req as any).user?.id || null;
+    await auditLog(adminId, 'Delete Form', 'system', { formId, title: formTitle });
+    res.json({ success: true, message: 'Form permanently removed from database', deleted_id: formId });
+  } catch (error: any) {
+    res.status(500).json({ success: false, error: error.message || 'Failed to delete form' });
+  }
+});
+
+router.get("/forms/:id/submissions", authenticateAdmin, async (req, res) => {
+  try {
+    const { id } = req.params;
+    const formId = parseInt(id, 10);
+    if (isNaN(formId)) return res.status(400).json({ success: false, error: 'Invalid form ID' });
+
+    const result = await pool.query(
+      `SELECT s.*, u.name AS user_name, u.email AS user_email
+       FROM form_submissions s
+       LEFT JOIN users u ON s.user_id = u.id
+       WHERE s.form_id = $1
+       ORDER BY s.created_at DESC`,
+      [formId]
+    );
+    res.json({ success: true, submissions: result.rows });
+  } catch (error: any) {
+    res.status(500).json({ success: false, error: error.message || 'Failed to fetch form submissions' });
+  }
+});
+
+router.delete("/forms/:id/submissions/:submissionId", authenticateAdmin, async (req, res) => {
+  try {
+    const { id, submissionId } = req.params;
+    const formId = parseInt(id, 10);
+    const subId = parseInt(submissionId, 10);
+    if (isNaN(formId) || isNaN(subId)) return res.status(400).json({ success: false, error: 'Invalid parameters' });
+
+    await pool.query('DELETE FROM form_submissions WHERE id = $1 AND form_id = $2', [subId, formId]);
+    await pool.query('UPDATE forms SET submissions_count = (SELECT COUNT(*) FROM form_submissions WHERE form_id = $1) WHERE id = $1', [formId]);
+
+    res.json({ success: true, message: 'Submission removed from database' });
+  } catch (error: any) {
+    res.status(500).json({ success: false, error: error.message || 'Failed to delete submission' });
   }
 });
 

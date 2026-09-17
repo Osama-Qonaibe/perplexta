@@ -443,9 +443,9 @@ echo json_encode($products);
   const logoSrc = (theme === 'light' && siteSettings?.logoLightBase64) ? siteSettings.logoLightBase64 : siteSettings?.logoBase64;
 
   return (
-    <div className="min-h-screen bg-[#080c14] text-slate-100 font-sans flex flex-col overflow-hidden">
+    <div className="min-h-screen bg-[var(--surface-page)] text-[var(--text-primary)] font-sans flex flex-col overflow-hidden">
       {/* Top Header Bar */}
-      <header className="h-14 bg-[#090d16] border-b border-slate-800/90 px-4 flex items-center justify-between shrink-0 select-none">
+      <header className="h-14 bg-[var(--surface-card)] border-b border-[var(--border-default)] px-4 flex items-center justify-between shrink-0 select-none">
         <div className="flex items-center gap-3">
           <Button variant="secondary" size="sm" onClick={() => navigate('/app')}>
             {dir === 'rtl' ? <ChevronRight size={16} /> : <ChevronLeft size={16} />}
@@ -459,7 +459,7 @@ echo json_encode($products);
                 className="w-7 h-7 object-contain rounded-md" 
               />
             ) : (
-              <div className="w-7 h-7 rounded-[6px] bg-[#0d131f] border border-slate-800/90 flex items-center justify-center text-accent">
+              <div className="w-7 h-7 rounded-[6px] bg-[var(--surface-subtle)] border border-[var(--border-default)] flex items-center justify-center text-accent">
                 <Code size={16} />
               </div>
             )}
@@ -476,7 +476,7 @@ echo json_encode($products);
           {/* Database Button */}
           <button
             onClick={() => setIsDbModalOpen(true)}
-            className="h-9 px-3.5 rounded-shape-sm bg-[#0d131f] border border-slate-800/90 hover:border-accent/50 flex items-center gap-2 text-xs font-bold transition-theme cursor-pointer text-slate-100 relative"
+            className="h-9 px-3.5 rounded-shape-sm bg-[var(--surface-subtle)] border border-[var(--border-default)] hover:border-accent/50 flex items-center gap-2 text-xs font-bold transition-theme cursor-pointer text-[var(--text-primary)] relative"
           >
             <Database size={15} className="text-amber-500" />
             <span>{language === 'ar' ? 'قاعدة البيانات' : 'Database'}</span>
@@ -488,9 +488,9 @@ echo json_encode($products);
           {/* Terminal Toggle Button */}
           <button
             onClick={() => setIsTerminalOpen(!isTerminalOpen)}
-            className="h-9 px-3 rounded-shape-sm bg-[#0d131f] border border-slate-800/90 hover:border-accent/50 flex items-center gap-2 text-xs font-bold transition-theme cursor-pointer text-slate-100"
+            className="h-9 px-3 rounded-shape-sm bg-[var(--surface-subtle)] border border-[var(--border-default)] hover:border-accent/50 flex items-center gap-2 text-xs font-bold transition-theme cursor-pointer text-[var(--text-primary)]"
           >
-            <Terminal size={15} className="text-cyan-500" />
+            <Terminal size={15} className="text-[var(--fg-accent)]" />
             <span>{language === 'ar' ? 'الطرفية' : 'Terminal'}</span>
             {terminalLogs.some(l => l.type === 'error') && (
               <span className="w-2 h-2 rounded-full bg-red-500 animate-pulse" />
@@ -506,7 +506,7 @@ echo json_encode($products);
           {/* GitHub Export */}
           <button
             onClick={() => toast.info(dir === 'rtl' ? 'جاري ربط مستودع GitHub...' : 'Connecting GitHub repository...')}
-            className="h-9 px-3 rounded-shape-sm bg-[#0d131f] border border-slate-800/90 hover:border-accent/50 flex items-center gap-2 text-xs font-bold transition-theme cursor-pointer text-slate-100"
+            className="h-9 px-3 rounded-shape-sm bg-[var(--surface-subtle)] border border-[var(--border-default)] hover:border-accent/50 flex items-center gap-2 text-xs font-bold transition-theme cursor-pointer text-[var(--text-primary)]"
           >
             <Github size={15} />
             <span>{language === 'ar' ? 'تصدير GitHub' : 'GitHub'}</span>
@@ -517,11 +517,11 @@ echo json_encode($products);
       {/* Main Layout Grid */}
       <div className="flex-1 flex overflow-hidden">
         {/* 1. Prompt Input Panel (~15-20% width) */}
-        <aside className="w-72 lg:w-80 bg-[#090d16] border-e border-slate-800/90 flex flex-col shrink-0 select-none p-4 justify-between">
+        <aside className="w-72 lg:w-80 bg-[var(--surface-card)] border-e border-[var(--border-default)] flex flex-col shrink-0 select-none p-4 justify-between">
           <div className="space-y-4">
             <div className="space-y-2">
               <div className="flex items-center justify-between">
-                <span className="text-[11px] font-bold text-slate-300 flex items-center gap-1.5">
+                <span className="text-[11px] font-bold text-[var(--text-secondary)] flex items-center gap-1.5">
                   <Sparkles size={13} className="text-accent" />
                   <span>{language === 'ar' ? 'سجل نشاط المساعد' : 'Agent Activity Log'}</span>
                 </span>
@@ -529,7 +529,7 @@ echo json_encode($products);
               </div>
               <div 
                 dir={dir}
-                className="p-2.5 rounded-shape-sm bg-[#0d131f] border border-slate-800/90 text-[11px] text-slate-300 space-y-1.5 max-h-36 overflow-y-auto font-mono"
+                className="p-2.5 rounded-shape-sm bg-[var(--surface-subtle)] border border-[var(--border-default)] text-[11px] text-[var(--text-secondary)] space-y-1.5 max-h-36 overflow-y-auto font-mono"
                 style={{ textAlign: dir === 'rtl' ? 'right' : 'left' }}
               >
                 {terminalLogs.slice(-8).map((log, idx) => (
@@ -545,8 +545,8 @@ echo json_encode($products);
           </div>
 
           {/* Unified High-Precision Input Box (Paperclip, Mic, Send) */}
-          <div className="space-y-3 pt-4 border-t border-slate-800/90">
-            <div className="relative rounded-shape-sm bg-[#0d131f] border border-slate-800/90 hover:border-accent/50 focus-within:border-accent/60 transition-all p-1.5 shadow-xs">
+          <div className="space-y-3 pt-4 border-t border-[var(--border-default)]">
+            <div className="relative rounded-shape-sm bg-[var(--surface-subtle)] border border-[var(--border-default)] hover:border-accent/50 focus-within:border-accent/60 transition-all p-1.5 shadow-xs">
               <textarea
                 value={promptQuery}
                 onChange={(e) => setPromptQuery(e.target.value)}
@@ -557,13 +557,13 @@ echo json_encode($products);
                   }
                 }}
                 placeholder={language === 'ar' ? 'صف التعديل المطلوب أو اطلب ميزة جديدة للمشروع...' : 'Describe requested modification...'}
-                className="w-full bg-transparent border-0 outline-none text-xs text-slate-100 placeholder-[var(--text-muted)] resize-none h-12 leading-relaxed px-1 pt-1"
+                className="w-full bg-transparent border-0 outline-none text-xs text-[var(--text-primary)] placeholder-[var(--text-muted)] resize-none h-12 leading-relaxed px-1 pt-1"
               />
 
-              <div className="flex items-center justify-between pt-1.5 border-t border-slate-800/90/60">
+              <div className="flex items-center justify-between pt-1.5 border-t border-[var(--border-default)]/60">
                 <div className="flex items-center gap-1">
                   {/* Paperclip File Upload */}
-                  <label className="p-1.5 rounded-shape-sm text-slate-500 hover:text-accent hover:bg-[#090d16] border border-transparent hover:border-slate-800/90 transition-all cursor-pointer">
+                  <label className="p-1.5 rounded-shape-sm text-[var(--text-muted)] hover:text-accent hover:bg-[var(--surface-card)] border border-transparent hover:border-[var(--border-default)] transition-all cursor-pointer">
                     <Paperclip size={15} />
                     <input type="file" className="hidden" onChange={(e) => {
                       const f = e.target.files?.[0];
@@ -578,7 +578,7 @@ echo json_encode($products);
                   <button
                     type="button"
                     onClick={() => toast.info(dir === 'rtl' ? 'الإملاء الصوتي نشط...' : 'Voice recording active...')}
-                    className="p-1.5 rounded-shape-sm text-slate-500 hover:text-accent hover:bg-[#090d16] border border-transparent hover:border-slate-800/90 transition-all cursor-pointer"
+                    className="p-1.5 rounded-shape-sm text-[var(--text-muted)] hover:text-accent hover:bg-[var(--surface-card)] border border-transparent hover:border-[var(--border-default)] transition-all cursor-pointer"
                   >
                     <Mic size={15} />
                   </button>
@@ -610,10 +610,10 @@ echo json_encode($products);
         </aside>
 
         {/* 2. File Tree & Explorer */}
-        <aside className="w-64 bg-[#090d16] border-e border-slate-800/90 flex flex-col shrink-0 select-none">
+        <aside className="w-64 bg-[var(--surface-card)] border-e border-[var(--border-default)] flex flex-col shrink-0 select-none">
 
-          <div className="p-3 border-b border-slate-800/90 flex items-center justify-between">
-            <span className="text-xs font-bold uppercase tracking-wider text-slate-500 flex items-center gap-1.5">
+          <div className="p-3 border-b border-[var(--border-default)] flex items-center justify-between">
+            <span className="text-xs font-bold uppercase tracking-wider text-[var(--text-muted)] flex items-center gap-1.5">
               <Folder size={14} className="text-accent" />
               <span>{language === 'ar' ? 'شجرة الملفات' : 'Project Files'}</span>
             </span>
@@ -629,7 +629,7 @@ echo json_encode($products);
                   addLog('success', `تم إنشاء الملف: ${name}`);
                 }
               }}
-              className="p-1 rounded hover:bg-[#0d131f] text-slate-500 hover:text-accent cursor-pointer"
+              className="p-1 rounded hover:bg-[var(--surface-subtle)] text-[var(--text-muted)] hover:text-accent cursor-pointer"
               title="إضافة ملف جديد"
             >
               <Plus size={15} />
@@ -654,7 +654,7 @@ echo json_encode($products);
                     className={`flex items-center justify-between px-2.5 py-2 rounded-shape-sm cursor-pointer transition-theme relative ${
                       isSelected 
                         ? 'bg-[var(--bg-accent-muted)] text-accent border border-[var(--border-accent)]/40 font-bold shadow-xs' 
-                        : 'text-slate-300 hover:bg-[#0d131f] hover:text-slate-100'
+                        : 'text-[var(--text-secondary)] hover:bg-[var(--surface-subtle)] hover:text-[var(--text-primary)]'
                     }`}
                   >
                     {isSelected && (
@@ -687,11 +687,11 @@ echo json_encode($products);
 
                   {apiFiles.length > 0 && (
                     <div className="space-y-1">
-                      <div className="flex items-center gap-1.5 px-2 py-1 text-[11px] font-bold text-slate-500">
+                      <div className="flex items-center gap-1.5 px-2 py-1 text-[11px] font-bold text-[var(--text-muted)]">
                         <Folder size={13} className="text-amber-500" />
                         <span>api/</span>
                       </div>
-                      <div className="ps-3 space-y-1 border-s border-slate-800/90 ms-2">
+                      <div className="ps-3 space-y-1 border-s border-[var(--border-default)] ms-2">
                         {apiFiles.map(renderFileItem)}
                       </div>
                     </div>
@@ -699,11 +699,11 @@ echo json_encode($products);
 
                   {dbFiles.length > 0 && (
                     <div className="space-y-1">
-                      <div className="flex items-center gap-1.5 px-2 py-1 text-[11px] font-bold text-slate-500">
+                      <div className="flex items-center gap-1.5 px-2 py-1 text-[11px] font-bold text-[var(--text-muted)]">
                         <Folder size={13} className="text-emerald-500" />
                         <span>db/</span>
                       </div>
-                      <div className="ps-3 space-y-1 border-s border-slate-800/90 ms-2">
+                      <div className="ps-3 space-y-1 border-s border-[var(--border-default)] ms-2">
                         {dbFiles.map(renderFileItem)}
                       </div>
                     </div>
@@ -715,17 +715,17 @@ echo json_encode($products);
         </aside>
 
         {/* 3. Central Area: Editor & Live Preview */}
-        <main className="flex-1 flex flex-col bg-[#080c14] overflow-hidden relative">
+        <main className="flex-1 flex flex-col bg-[var(--surface-page)] overflow-hidden relative">
           {/* Editor Header / Tabs & Preview Toolbar */}
-          <div className="h-12 bg-[#090d16] border-b border-slate-800/90 px-4 flex items-center justify-between shrink-0">
+          <div className="h-12 bg-[var(--surface-card)] border-b border-[var(--border-default)] px-4 flex items-center justify-between shrink-0">
             <div className="flex items-center gap-3">
               {/* Preview Button */}
               <button
                 onClick={() => setActiveTab('preview')}
                 className={`px-3.5 py-1.5 rounded-shape-sm border text-xs font-bold flex items-center gap-2 transition-all cursor-pointer ${
                   activeTab === 'preview'
-                    ? 'bg-[#0d131f] border-accent text-accent shadow-xs'
-                    : 'bg-transparent border-slate-800/90 text-slate-500 hover:text-slate-100 hover:border-slate-800/90'
+                    ? 'bg-[var(--surface-subtle)] border-accent text-accent shadow-xs'
+                    : 'bg-transparent border-[var(--border-default)] text-[var(--text-muted)] hover:text-[var(--text-primary)] hover:border-[var(--border-default)]'
                 }`}
               >
                 <span className={`w-1.5 h-1.5 rounded-full ${activeTab === 'preview' ? 'bg-accent animate-pulse' : 'bg-transparent'}`} />
@@ -737,8 +737,8 @@ echo json_encode($products);
                 onClick={() => setActiveTab('code')}
                 className={`px-3.5 py-1.5 rounded-shape-sm border text-xs font-bold flex items-center gap-2 transition-all cursor-pointer ${
                   activeTab === 'code'
-                    ? 'bg-[#0d131f] border-accent text-accent shadow-xs'
-                    : 'bg-transparent border-slate-800/90 text-slate-500 hover:text-slate-100 hover:border-slate-800/90'
+                    ? 'bg-[var(--surface-subtle)] border-accent text-accent shadow-xs'
+                    : 'bg-transparent border-[var(--border-default)] text-[var(--text-muted)] hover:text-[var(--text-primary)] hover:border-[var(--border-default)]'
                 }`}
               >
                 <span className={`w-1.5 h-1.5 rounded-full ${activeTab === 'code' ? 'bg-accent animate-pulse' : 'bg-transparent'}`} />
@@ -753,7 +753,7 @@ echo json_encode($products);
                 <div className="relative">
                   <button
                     onClick={() => setIsDeviceMenuOpen(prev => !prev)}
-                    className="p-1.5 px-2.5 rounded-shape-sm border border-slate-800/90 bg-[#0d131f] text-slate-100 hover:border-accent/60 text-xs font-medium flex items-center gap-1.5 cursor-pointer transition-all"
+                    className="p-1.5 px-2.5 rounded-shape-sm border border-[var(--border-default)] bg-[var(--surface-subtle)] text-[var(--text-primary)] hover:border-accent/60 text-xs font-medium flex items-center gap-1.5 cursor-pointer transition-all"
                     title={language === 'ar' ? 'أبعاد العرض' : 'Screen dimensions'}
                   >
                     {deviceMode === 'mobile' ? <Smartphone size={14} className="text-accent" /> : deviceMode === 'tablet' ? <Tablet size={14} className="text-accent" /> : <Monitor size={14} className="text-accent" />}
@@ -768,21 +768,21 @@ echo json_encode($products);
                       <PopCard className="absolute right-0 mt-1.5 z-50 origin-top-right">
                         <button
                           onClick={() => { setDeviceMode('responsive'); setIsDeviceMenuOpen(false); }}
-                          className={`w-full px-3 py-2 rounded-shape-sm text-xs font-medium flex items-center gap-3 transition-colors cursor-pointer ${deviceMode === 'responsive' ? 'bg-[#0d131f] text-accent font-bold' : 'text-slate-100 hover:bg-[#0d131f]'}`}
+                          className={`w-full px-3 py-2 rounded-shape-sm text-xs font-medium flex items-center gap-3 transition-colors cursor-pointer ${deviceMode === 'responsive' ? 'bg-[var(--surface-subtle)] text-accent font-bold' : 'text-[var(--text-primary)] hover:bg-[var(--surface-subtle)]'}`}
                         >
                           <Monitor size={14} />
                           <span>{language === 'ar' ? 'شاشة كاملة (Responsive)' : 'Current screen size'}</span>
                         </button>
                         <button
                           onClick={() => { setDeviceMode('mobile'); setIsDeviceMenuOpen(false); }}
-                          className={`w-full px-3 py-2 rounded-shape-sm text-xs font-medium flex items-center gap-3 transition-colors cursor-pointer ${deviceMode === 'mobile' ? 'bg-[#0d131f] text-accent font-bold' : 'text-slate-100 hover:bg-[#0d131f]'}`}
+                          className={`w-full px-3 py-2 rounded-shape-sm text-xs font-medium flex items-center gap-3 transition-colors cursor-pointer ${deviceMode === 'mobile' ? 'bg-[var(--surface-subtle)] text-accent font-bold' : 'text-[var(--text-primary)] hover:bg-[var(--surface-subtle)]'}`}
                         >
                           <Smartphone size={14} />
                           <span>{language === 'ar' ? 'موبايل (375px)' : 'Mobile'}</span>
                         </button>
                         <button
                           onClick={() => { setDeviceMode('tablet'); setIsDeviceMenuOpen(false); }}
-                          className={`w-full px-3 py-2 rounded-shape-sm text-xs font-medium flex items-center gap-3 transition-colors cursor-pointer ${deviceMode === 'tablet' ? 'bg-[#0d131f] text-accent font-bold' : 'text-slate-100 hover:bg-[#0d131f]'}`}
+                          className={`w-full px-3 py-2 rounded-shape-sm text-xs font-medium flex items-center gap-3 transition-colors cursor-pointer ${deviceMode === 'tablet' ? 'bg-[var(--surface-subtle)] text-accent font-bold' : 'text-[var(--text-primary)] hover:bg-[var(--surface-subtle)]'}`}
                         >
                           <Tablet size={14} />
                           <span>{language === 'ar' ? 'تابلت (768px)' : 'Tablet'}</span>
@@ -798,7 +798,7 @@ echo json_encode($products);
                     setIframeKey(prev => prev + 1);
                     toast.success(language === 'ar' ? 'تم تحديث المعاينة بنجاح' : 'Preview refreshed successfully');
                   }}
-                  className="p-1.5 rounded-shape-sm border border-slate-800/90 bg-[#0d131f] text-slate-500 hover:text-slate-100 hover:border-slate-800/90 transition-all cursor-pointer"
+                  className="p-1.5 rounded-shape-sm border border-[var(--border-default)] bg-[var(--surface-subtle)] text-[var(--text-muted)] hover:text-[var(--text-primary)] hover:border-[var(--border-default)] transition-all cursor-pointer"
                   title={language === 'ar' ? 'تحديث المعاينة' : 'Refresh preview'}
                 >
                   <RefreshCw size={14} />
@@ -807,7 +807,7 @@ echo json_encode($products);
                 {/* Fullscreen Toggle */}
                 <button
                   onClick={() => setIsPreviewFullscreen(prev => !prev)}
-                  className="p-1.5 rounded-shape-sm border border-slate-800/90 bg-[#0d131f] text-slate-500 hover:text-slate-100 hover:border-slate-800/90 transition-all cursor-pointer"
+                  className="p-1.5 rounded-shape-sm border border-[var(--border-default)] bg-[var(--surface-subtle)] text-[var(--text-muted)] hover:text-[var(--text-primary)] hover:border-[var(--border-default)] transition-all cursor-pointer"
                   title={language === 'ar' ? 'ملء الشاشة' : 'Fullscreen preview'}
                 >
                   {isPreviewFullscreen ? <Minimize2 size={14} /> : <Maximize2 size={14} />}
@@ -819,11 +819,11 @@ echo json_encode($products);
                     setIsDbModalOpen(true);
                     toast.success(language === 'ar' ? 'فتح لوحة قاعدة البيانات SQLite' : 'Opened SQLite Database manager');
                   }}
-                  className="p-1.5 rounded-shape-sm border border-slate-800/90 bg-[#0d131f] text-slate-500 hover:text-emerald-500 hover:border-emerald-500/60 transition-all cursor-pointer flex items-center gap-1.5 px-2.5"
+                  className="p-1.5 rounded-shape-sm border border-[var(--border-default)] bg-[var(--surface-subtle)] text-[var(--text-muted)] hover:text-emerald-500 hover:border-emerald-500/60 transition-all cursor-pointer flex items-center gap-1.5 px-2.5"
                   title={language === 'ar' ? 'إدارة قاعدة البيانات SQLite' : 'SQLite Database Manager'}
                 >
                   <Database size={14} className="text-emerald-500" />
-                  <span className="text-xs font-bold text-slate-100 hidden sm:inline">DB</span>
+                  <span className="text-xs font-bold text-[var(--text-primary)] hidden sm:inline">DB</span>
                 </button>
 
                 {/* Manual Editor / Quick Adjust Tool */}
@@ -832,7 +832,7 @@ echo json_encode($products);
                     setActiveTab('code');
                     toast.info(language === 'ar' ? 'أداة التحرير اليدوي نشطة' : 'Manual editor tool active');
                   }}
-                  className="p-1.5 rounded-shape-sm border border-slate-800/90 bg-[#0d131f] text-slate-500 hover:text-accent hover:border-accent/60 transition-all cursor-pointer"
+                  className="p-1.5 rounded-shape-sm border border-[var(--border-default)] bg-[var(--surface-subtle)] text-[var(--text-muted)] hover:text-accent hover:border-accent/60 transition-all cursor-pointer"
                   title={language === 'ar' ? 'أداة التحرير اليدوي' : 'Manual editor tool'}
                 >
                   <Wand2 size={14} />
@@ -842,14 +842,14 @@ echo json_encode($products);
           </div>
 
           {/* View Content: Preview vs Code */}
-          <div className={`flex-1 relative overflow-hidden flex flex-col ${isPreviewFullscreen ? 'fixed inset-0 z-[200] bg-[#080c14]' : ''}`}>
+          <div className={`flex-1 relative overflow-hidden flex flex-col ${isPreviewFullscreen ? 'fixed inset-0 z-[200] bg-[var(--surface-page)]' : ''}`}>
             {/* Fullscreen Exit bar if fullscreen */}
             {isPreviewFullscreen && (
-              <div className="h-10 bg-[#090d16] border-b border-slate-800/90 px-4 flex items-center justify-between shrink-0">
+              <div className="h-10 bg-[var(--surface-card)] border-b border-[var(--border-default)] px-4 flex items-center justify-between shrink-0">
                 <span className="text-xs font-bold">{language === 'ar' ? 'معاينة ملء الشاشة' : 'Fullscreen Preview'}</span>
                 <button
                   onClick={() => setIsPreviewFullscreen(false)}
-                  className="px-3 py-1 rounded-shape-sm bg-[#0d131f] border border-slate-800/90 text-xs font-bold hover:border-accent cursor-pointer flex items-center gap-1.5"
+                  className="px-3 py-1 rounded-shape-sm bg-[var(--surface-subtle)] border border-[var(--border-default)] text-xs font-bold hover:border-accent cursor-pointer flex items-center gap-1.5"
                 >
                   <X size={14} />
                   <span>{language === 'ar' ? 'خروج' : 'Exit'}</span>
@@ -858,26 +858,26 @@ echo json_encode($products);
             )}
 
             {activeTab === 'preview' ? (
-              <div className="flex-1 w-full h-full bg-[#080c14] p-0 m-0 relative flex flex-col overflow-hidden">
-                <div className={`flex flex-col bg-[#090d16] transition-all flex-1 w-full h-full ${
+              <div className="flex-1 w-full h-full bg-[var(--surface-page)] p-0 m-0 relative flex flex-col overflow-hidden">
+                <div className={`flex flex-col bg-[var(--surface-card)] transition-all flex-1 w-full h-full ${
                   deviceMode === 'mobile' 
-                    ? 'w-[375px] h-[667px] max-w-[375px] max-h-[667px] m-auto rounded-2xl border border-slate-800/90 shadow-2xl overflow-hidden shrink-0' 
+                    ? 'w-[375px] h-[667px] max-w-[375px] max-h-[667px] m-auto rounded-2xl border border-[var(--border-default)] shadow-2xl overflow-hidden shrink-0' 
                     : deviceMode === 'tablet' 
-                    ? 'w-[768px] h-[900px] max-w-[768px] max-h-[900px] m-auto rounded-2xl border border-slate-800/90 shadow-2xl overflow-hidden shrink-0' 
+                    ? 'w-[768px] h-[900px] max-w-[768px] max-h-[900px] m-auto rounded-2xl border border-[var(--border-default)] shadow-2xl overflow-hidden shrink-0' 
                     : 'w-full h-full rounded-none border-0 shadow-none flex flex-col'
                 }`}>
                   {/* Browser Mockup Header */}
-                  <div className="h-9 bg-[#0d131f] border-b border-slate-800/90 px-3 flex items-center justify-between shrink-0 select-none">
+                  <div className="h-9 bg-[var(--surface-subtle)] border-b border-[var(--border-default)] px-3 flex items-center justify-between shrink-0 select-none">
                     <div className="flex items-center gap-1.5">
                       <div className="w-2.5 h-2.5 rounded-full bg-red-400" />
                       <div className="w-2.5 h-2.5 rounded-full bg-amber-400" />
                       <div className="w-2.5 h-2.5 rounded-full bg-emerald-400" />
                     </div>
-                    <div className="px-3 py-1 rounded bg-[#090d16] border border-slate-800/90 text-[10px] font-mono text-slate-500 flex items-center gap-1.5 w-64 justify-center">
+                    <div className="px-3 py-1 rounded bg-[var(--surface-card)] border border-[var(--border-default)] text-[10px] font-mono text-[var(--text-muted)] flex items-center gap-1.5 w-64 justify-center">
                       <Globe size={11} className="text-emerald-500" />
                       <span className="truncate">http://localhost:3000/</span>
                     </div>
-                    <div className="text-[10px] font-mono text-slate-500">
+                    <div className="text-[10px] font-mono text-[var(--text-muted)]">
                       {deviceMode === 'mobile' ? '375x667' : deviceMode === 'tablet' ? '768x1024' : '100%'}
                     </div>
                   </div>
@@ -895,12 +895,12 @@ echo json_encode($products);
                 </div>
               </div>
             ) : (
-              <div className="flex-1 flex flex-col bg-[#090d16]">
+              <div className="flex-1 flex flex-col bg-[var(--surface-card)]">
                 {/* Professional Code Header */}
-                <div className="h-10 bg-[#0d131f] border-b border-slate-800/90 px-4 flex items-center justify-between shrink-0">
+                <div className="h-10 bg-[var(--surface-subtle)] border-b border-[var(--border-default)] px-4 flex items-center justify-between shrink-0">
                   <div className="flex items-center gap-2">
                     <FileCode size={15} className="text-accent" />
-                    <span className="text-xs font-mono font-bold text-slate-100">{activeFilePath}</span>
+                    <span className="text-xs font-mono font-bold text-[var(--text-primary)]">{activeFilePath}</span>
                     <span className="px-2 py-0.5 rounded text-[10px] font-mono bg-accent/10 text-accent border border-accent/20">
                       {activeFile?.content.split('\n').length || 0} lines
                     </span>
@@ -911,7 +911,7 @@ echo json_encode($products);
                         navigator.clipboard.writeText(activeFile?.content || '');
                         toast.success(dir === 'rtl' ? 'تم نسخ الكود بنجاح!' : 'Code copied to clipboard!');
                       }}
-                      className="px-2.5 py-1 rounded text-xs font-bold bg-[#090d16] border border-slate-800/90 text-slate-300 hover:text-slate-100 hover:border-accent cursor-pointer flex items-center gap-1.5"
+                      className="px-2.5 py-1 rounded text-xs font-bold bg-[var(--surface-card)] border border-[var(--border-default)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:border-accent cursor-pointer flex items-center gap-1.5"
                     >
                       <span>{language === 'ar' ? 'نسخ الكود' : 'Copy Code'}</span>
                     </button>
@@ -927,10 +927,10 @@ echo json_encode($products);
                       [activeFilePath]: { ...prev[activeFilePath], content: val }
                     }));
                   }}
-                  className="flex-1 w-full h-full p-4 font-mono text-xs sm:text-sm bg-[#0d131f] text-slate-100 outline-none resize-none leading-relaxed border-0"
+                  className="flex-1 w-full h-full p-4 font-mono text-xs sm:text-sm bg-[var(--surface-inset)] text-[var(--text-primary)] outline-none resize-none leading-relaxed border-0"
                   spellCheck={false}
                 />
-                <div className="p-3 bg-[#090d16] border-t border-slate-800/90 flex items-center justify-between">
+                <div className="p-3 bg-[var(--surface-card)] border-t border-[var(--border-default)] flex items-center justify-between">
                   <div className="flex items-center gap-2">
                     {hasUnsavedChanges && (
                       <span className="text-xs font-bold text-amber-500 flex items-center gap-1.5 animate-pulse">
@@ -943,7 +943,7 @@ echo json_encode($products);
                     <button
                       onClick={handleUndoChanges}
                       disabled={!hasUnsavedChanges}
-                      className="px-3 py-1.5 rounded-lg text-xs font-bold bg-[#0d131f] border border-slate-800/90 text-slate-300 hover:text-slate-100 hover:border-accent disabled:opacity-40 disabled:cursor-not-allowed transition-all cursor-pointer flex items-center gap-1.5"
+                      className="px-3 py-1.5 rounded-lg text-xs font-bold bg-[var(--surface-subtle)] border border-[var(--border-default)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:border-accent disabled:opacity-40 disabled:cursor-not-allowed transition-all cursor-pointer flex items-center gap-1.5"
                     >
                       <span>{language === 'ar' ? 'تراجع عن التغييرات' : 'Undo Changes'}</span>
                     </button>
@@ -966,24 +966,24 @@ echo json_encode($products);
                   initial={{ height: 0, opacity: 0 }}
                   animate={{ height: 220, opacity: 1 }}
                   exit={{ height: 0, opacity: 0 }}
-                  className="bg-slate-950 text-slate-200 border-t border-slate-800 flex flex-col shrink-0 font-mono text-xs z-20"
+                  className="bg-[var(--surface-inset)] text-[var(--text-primary)] border-t border-[var(--border-default)] flex flex-col shrink-0 font-mono text-xs z-20"
                 >
-                  <div className="h-9 px-4 bg-slate-900 border-b border-slate-800 flex items-center justify-between">
+                  <div className="h-9 px-4 bg-[var(--surface-card)] border-b border-[var(--border-default)] flex items-center justify-between">
                     <div className="flex items-center gap-2">
-                      <Terminal size={14} className="text-cyan-400" />
+                      <Terminal size={14} className="text-[var(--fg-accent)]" />
                       <span className="font-bold">{language === 'ar' ? 'طرفية النظام والتشغيل الحي' : 'System Terminal & Logs'}</span>
                     </div>
                     <div className="flex items-center gap-2">
                       <button
                         onClick={handleAiFix}
-                        className="px-2.5 py-1 rounded bg-indigo-600 hover:bg-indigo-700 text-white text-[11px] font-bold flex items-center gap-1.5 cursor-pointer shadow-xs"
+                        className="px-2.5 py-1 rounded bg-[var(--comp-button-primary-bg)] hover:opacity-90 text-[var(--comp-button-primary-fg)] text-[11px] font-bold flex items-center gap-1.5 cursor-pointer shadow-xs"
                       >
                         <Sparkles size={12} />
                         <span>{language === 'ar' ? 'إصلاح بالذكاء الاصطناعي' : 'AI Fix'}</span>
                       </button>
                       <button 
                         onClick={() => setIsTerminalOpen(false)}
-                        className="p-1 rounded hover:bg-slate-800 text-slate-400 hover:text-white cursor-pointer"
+                        className="p-1 rounded hover:bg-[var(--surface-subtle)] text-[var(--text-muted)] hover:text-[var(--text-primary)] cursor-pointer"
                       >
                         <X size={15} />
                       </button>
@@ -992,10 +992,10 @@ echo json_encode($products);
                   <div className="flex-1 p-3 overflow-y-auto space-y-1.5">
                     {terminalLogs.map((log, idx) => (
                       <div key={idx} className="flex items-start gap-2">
-                        <span className="text-slate-500 text-[10px] select-none">[{log.time}]</span>
+                        <span className="text-[var(--text-muted)] text-[10px] select-none">[{log.time}]</span>
                         <span className={`flex-1 ${
                           log.type === 'error' ? 'text-red-400 font-bold' :
-                          log.type === 'success' ? 'text-emerald-400' : 'text-slate-300'
+                          log.type === 'success' ? 'text-emerald-400' : 'text-[var(--text-secondary)]'
                         }`}>
                           {log.text}
                         </span>
@@ -1024,19 +1024,19 @@ echo json_encode($products);
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.95, opacity: 0 }}
               onClick={(e) => e.stopPropagation()}
-              className="bg-[#090d16] border border-slate-800/90 rounded-2xl w-full max-w-4xl max-h-[85vh] flex flex-col shadow-2xl overflow-hidden"
+              className="bg-[var(--surface-card)] border border-[var(--border-default)] rounded-2xl w-full max-w-4xl max-h-[85vh] flex flex-col shadow-2xl overflow-hidden"
             >
-              <div className="p-4 border-b border-slate-800/90 flex items-center justify-between bg-[#0d131f]">
+              <div className="p-4 border-b border-[var(--border-default)] flex items-center justify-between bg-[var(--surface-subtle)]">
                 <div className="flex items-center gap-2.5">
                   <Database size={18} className="text-amber-500" />
                   <div>
                     <h2 className="text-sm font-bold">{language === 'ar' ? 'مدير قاعدة البيانات الافتراضية (SQLite Wasm)' : 'SQLite Database Manager'}</h2>
-                    <p className="text-[11px] text-slate-500">إدارة الجداول وتنفيذ استعلامات SQL الفورية</p>
+                    <p className="text-[11px] text-[var(--text-muted)]">إدارة الجداول وتنفيذ استعلامات SQL الفورية</p>
                   </div>
                 </div>
                 <button
                   onClick={() => setIsDbModalOpen(false)}
-                  className="p-1.5 rounded-lg hover:bg-[#090d16] text-slate-500 hover:text-slate-100 cursor-pointer"
+                  className="p-1.5 rounded-lg hover:bg-[var(--surface-card)] text-[var(--text-muted)] hover:text-[var(--text-primary)] cursor-pointer"
                 >
                   <X size={18} />
                 </button>
@@ -1044,8 +1044,8 @@ echo json_encode($products);
 
               <div className="flex-1 flex overflow-hidden">
                 {/* Tables List */}
-                <div className="w-56 border-e border-slate-800/90 p-3 space-y-2 bg-[#0d131f] overflow-y-auto">
-                  <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">{language === 'ar' ? 'الجداول المتوفرة' : 'Tables'}</span>
+                <div className="w-56 border-e border-[var(--border-default)] p-3 space-y-2 bg-[var(--surface-subtle)] overflow-y-auto">
+                  <span className="text-[11px] font-bold text-[var(--text-muted)] uppercase tracking-wider">{language === 'ar' ? 'الجداول المتوفرة' : 'Tables'}</span>
                   <div className="space-y-1">
                     {sqlTables.map(tbl => (
                       <button
@@ -1054,7 +1054,7 @@ echo json_encode($products);
                         className={`w-full text-right px-3 py-2 rounded-lg text-xs font-mono font-bold transition-all cursor-pointer flex items-center justify-between ${
                           selectedTable === tbl 
                             ? 'bg-[var(--bg-accent-muted)] text-accent border border-[var(--border-accent)]/40' 
-                            : 'text-slate-300 hover:bg-[#090d16]'
+                            : 'text-[var(--text-secondary)] hover:bg-[var(--surface-card)]'
                         }`}
                       >
                         <span>{tbl}</span>
@@ -1068,13 +1068,13 @@ echo json_encode($products);
                 <div className="flex-1 flex flex-col overflow-hidden p-4 space-y-4">
                   {/* SQL Query Editor */}
                   <div className="space-y-2">
-                    <span className="text-xs font-bold text-slate-300">{language === 'ar' ? 'محرر استعلامات SQL' : 'SQL Query Editor'}</span>
+                    <span className="text-xs font-bold text-[var(--text-secondary)]">{language === 'ar' ? 'محرر استعلامات SQL' : 'SQL Query Editor'}</span>
                     <div className="flex gap-2">
                       <input
                         type="text"
                         value={sqlCustomQuery}
                         onChange={(e) => setSqlCustomQuery(e.target.value)}
-                        className="flex-1 px-3 py-2 bg-[#0d131f] border border-slate-800/90 rounded-xl font-mono text-xs text-slate-100 outline-none focus:border-accent"
+                        className="flex-1 px-3 py-2 bg-[var(--surface-subtle)] border border-[var(--border-default)] rounded-xl font-mono text-xs text-[var(--text-primary)] outline-none focus:border-accent"
                         placeholder="SELECT * FROM users;"
                       />
                       <button
@@ -1088,31 +1088,31 @@ echo json_encode($products);
 
                   {/* Results / Data Grid */}
                   <div className="flex-1 flex flex-col space-y-2 overflow-hidden">
-                    <span className="text-xs font-bold text-slate-300">
+                    <span className="text-xs font-bold text-[var(--text-secondary)]">
                       {language === 'ar' ? `بيانات الجدول: ${selectedTable}` : `Table Data: ${selectedTable}`}
                     </span>
-                    <div className="flex-1 overflow-auto rounded-xl border border-slate-800/90 bg-[#0d131f]">
+                    <div className="flex-1 overflow-auto rounded-xl border border-[var(--border-default)] bg-[var(--surface-subtle)]">
                       {tableColumns.length > 0 ? (
                         <table className="w-full text-right text-xs font-mono">
-                          <thead className="bg-[#090d16] border-b border-slate-800/90 sticky top-0">
+                          <thead className="bg-[var(--surface-card)] border-b border-[var(--border-default)] sticky top-0">
                             <tr>
                               {tableColumns.map(col => (
-                                <th key={col} className="px-3 py-2.5 font-bold text-slate-100">{col}</th>
+                                <th key={col} className="px-3 py-2.5 font-bold text-[var(--text-primary)]">{col}</th>
                               ))}
                             </tr>
                           </thead>
                           <tbody className="divide-y divide-[var(--border-default)]">
                             {tableDataRows.map((row, rIdx) => (
-                              <tr key={rIdx} className="hover:bg-[#090d16]/50 transition-colors">
+                              <tr key={rIdx} className="hover:bg-[var(--surface-card)]/50 transition-colors">
                                 {row.map((cell: any, cIdx: any) => (
-                                  <td key={cIdx} className="px-3 py-2 text-slate-300">{String(cell)}</td>
+                                  <td key={cIdx} className="px-3 py-2 text-[var(--text-secondary)]">{String(cell)}</td>
                                 ))}
                               </tr>
                             ))}
                           </tbody>
                         </table>
                       ) : (
-                        <div className="p-8 text-center text-xs text-slate-500">
+                        <div className="p-8 text-center text-xs text-[var(--text-muted)]">
                           {language === 'ar' ? 'لا توجد بيانات متاحة في هذا الجدول.' : 'No data available in this table.'}
                         </div>
                       )}

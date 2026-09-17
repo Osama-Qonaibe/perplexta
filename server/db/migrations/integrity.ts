@@ -1,4 +1,4 @@
-import { pool, ledgerPool, externalPool, securityPool, createInternalPool } from "../index.js";
+import { pool, ledgerPool, externalPool, securityPool, mediaPool, createInternalPool } from "../index.js";
 import { ensureColumnsBulk } from "./helpers.js";
 import { decrypt } from "../../utils/crypto.js";
 import { getIo } from "./maintenance.js";
@@ -7,6 +7,7 @@ import { CORE_INDEXES } from "./core.schema.js";
 import { LEDGER_INDEXES } from "./ledger.schema.js";
 import { EXTERNAL_INDEXES } from "./external.schema.js";
 import { SECURITY_INDEXES } from "./security.schema.js";
+import { MEDIA_INDEXES } from "./media.schema.js";
 
 function safelyDecryptConnectionString(encrypted: string): string {
   try {
@@ -176,7 +177,7 @@ export async function verifySchemaIntegrity() {
         columns: ['id', 'provider', 'encrypted_key', 'daily_budget', 'used_today', 'last_reset_date', 'models', 'model_list', 'is_active', 'created_at', 'updated_at', 'url_key', 'protocol_config']
       },
       tool_orchestrator: {
-        columns: ['id', 'tool_id', 'primary_provider', 'primary_model', 'fallback_1_provider', 'fallback_1_model', 'fallback_2_provider', 'fallback_2_model', 'fallback_3_provider', 'fallback_3_model', 'task_description', 'task_description_ar', 'is_active', 'cost_per_usage', 'updated_at', 'protocol_config', 'max_history_depth', 'cost_per_1k_input_tokens', 'cost_per_1k_output_tokens']
+        columns: ['id', 'tool_id', 'primary_provider', 'primary_model', 'fallback_1_provider', 'fallback_1_model', 'fallback_2_provider', 'fallback_2_model', 'fallback_3_provider', 'fallback_3_model', 'task_description', 'task_description_ar', 'is_active', 'updated_at', 'protocol_config', 'max_history_depth']
       },
       subscriptions: {
         columns: ['id', 'user_id', 'plan_id', 'stripe_customer_id', 'stripe_subscription_id', 'status', 'billing_period', 'current_period_end', 'last_period_start', 'updated_at', 'created_at']
@@ -316,14 +317,6 @@ export async function verifySchemaIntegrity() {
       },
       google_tool_connections: {
         columns: ['id', 'user_id', 'tool_id', 'is_connected', 'config', 'access_token', 'refresh_token', 'expires_at', 'scopes', 'last_connected_at', 'created_at', 'updated_at']
-      },
-      media_assets: {
-        columns: ['id', 'stored_path', 'original_filename', 'context', 'format', 'width', 'height', 'size_bytes', 'sha256_hash', 'is_public', 'user_id', 'metadata', 'created_at', 'updated_at'],
-        repairCols: {
-          context: { type: 'TEXT', default: "'general'" },
-          format: { type: 'TEXT', default: "'webp'" },
-          metadata: { type: 'JSONB', default: "'{}'" }
-        }
       },
       advertisements: {
         columns: ['id', 'title_ar', 'title_en', 'description_ar', 'description_en', 'image_url', 'video_url', 'poster_url', 'target_url', 'sponsor_name', 'badge_text_ar', 'badge_text_en', 'position', 'format', 'display_order', 'is_active', 'meta_title_ar', 'meta_title_en', 'meta_description_ar', 'meta_description_en', 'keywords_ar', 'keywords_en', 'click_count', 'impression_count', 'start_date', 'end_date', 'created_at', 'updated_at'],
@@ -680,6 +673,31 @@ export async function verifySchemaIntegrity() {
           created_at: { type: 'TIMESTAMP', default: 'CURRENT_TIMESTAMP' }
         }
       }
+    },
+    media: {
+      media_assets: {
+        columns: ['id', 'stored_path', 'original_filename', 'context', 'format', 'width', 'height', 'size_bytes', 'sha256_hash', 'is_public', 'user_id', 'metadata', 'created_at', 'updated_at'],
+        repairCols: {
+          context: { type: 'TEXT', default: "'general'" },
+          format: { type: 'TEXT', default: "'webp'" },
+          metadata: { type: 'JSONB', default: "'{}'" }
+        }
+      },
+      canvas_sessions: {
+        columns: ['id', 'user_id', 'session_name', 'dimensions', 'state', 'thumbnail_url', 'is_active', 'created_at', 'updated_at'],
+        repairCols: {
+          dimensions: { type: 'JSONB', default: "'{\"width\": 800, \"height\": 600}'" },
+          state: { type: 'JSONB', default: "'{}'" },
+          is_active: { type: 'BOOLEAN', default: true }
+        }
+      },
+      canvas_history: {
+        columns: ['id', 'session_id', 'action_type', 'undo_state', 'redo_state', 'created_at'],
+        repairCols: {
+          undo_state: { type: 'JSONB', default: "'{}'" },
+          redo_state: { type: 'JSONB', default: "'{}'" }
+        }
+      }
     }
   };
 
@@ -687,10 +705,11 @@ export async function verifySchemaIntegrity() {
     core: CORE_INDEXES,
     ledger: LEDGER_INDEXES,
     external: EXTERNAL_INDEXES,
-    security: SECURITY_INDEXES
+    security: SECURITY_INDEXES,
+    media: MEDIA_INDEXES
   };
 
-  const verifyDbGroup = async (groupName: 'core' | 'ledger' | 'external' | 'security', targetPoolObj: any) => {
+  const verifyDbGroup = async (groupName: 'core' | 'ledger' | 'external' | 'security' | 'media', targetPoolObj: any) => {
     if (!targetPoolObj) return;
     try {
       let activeTables = await queryColumns(targetPoolObj);
@@ -705,7 +724,7 @@ export async function verifySchemaIntegrity() {
 
           try {
             console.log(`[Schema Integrity] Attempting table reconstruction for ${tableName}...`);
-            await initDb('additive', pool, ledgerPool, externalPool, securityPool);
+            await initDb('additive', pool, ledgerPool, externalPool, securityPool, mediaPool);
             report.repairedTables.push(tableName);
             repairedSomething = true;
             console.log(`[Schema Integrity] Table ${tableName} reconstructed successfully.`);
@@ -769,6 +788,7 @@ export async function verifySchemaIntegrity() {
   await verifyDbGroup('ledger', ledgerPool || pool);
   await verifyDbGroup('external', externalPool || pool);
   await verifyDbGroup('security', securityPool || pool);
+  await verifyDbGroup('media', mediaPool || pool);
 
   if (report.passed) {
     console.log('[Schema Integrity] All expected tables and columns verified successfully across all active pools!');

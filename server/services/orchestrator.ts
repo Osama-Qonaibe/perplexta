@@ -35,9 +35,7 @@ const UPDATE_SUMMARY_TIMEOUT_MS = 30000;
 
 async function recordProviderUsage(provider: string, route: any) {
   try {
-    const settings = await getEconomySettings();
-    const pointsPerDollar = parseFloat(settings.points_per_dollar || '1000');
-    const estimatedCost = (route.cost_per_usage || 0) / pointsPerDollar;
+    const estimatedCost = 0.01;
     if (estimatedCost > 0) {
       await pool.query(
         'UPDATE api_keys_vault SET used_today = used_today + $1, updated_at = CURRENT_TIMESTAMP WHERE provider = $2',

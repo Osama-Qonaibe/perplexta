@@ -9,7 +9,7 @@ import { getUserFiles, saveFileMetadata, getUserStorageUsage } from '../services
 import { auditFilePipeline, resolveMediaAbsolutePath } from '../services/fileValidationService.js';
 import { processUploadedVideo } from '../services/videoProcessor.js';
 import { optimizeUploadedImage } from '../services/mediaOptimizationService.js';
-import { pool } from '../db/index.js';
+import { pool, mediaPool } from '../db/index.js';
 import fs from 'fs/promises';
 import crypto from 'crypto';
 import path from 'path';
@@ -166,7 +166,8 @@ router.post("/upload", authenticateToken, checkDiskSpace, (upload.single('file')
            let mContext = 'general';
            if (mimetype.startsWith('video/') || isVideoExtension) mContext = 'general';
            
-           await pool.query(`
+           const targetMediaPool = mediaPool || pool;
+           await targetMediaPool.query(`
               INSERT INTO media_assets (
                 stored_path, original_filename, context, format, width, height, size_bytes, sha256_hash, is_public,
                 user_id, metadata, file_data

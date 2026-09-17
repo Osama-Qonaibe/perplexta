@@ -861,7 +861,7 @@ const ChatPage: React.FC = () => {
                 <VisitorShell>
                   <div className="w-full flex-1 flex flex-col justify-center items-center py-2 sm:py-6">
                     <div className={`${contentMaxWidthClass} ${contentPaddingClass} mb-2 sm:mb-4 ${dir === 'rtl' ? 'text-right' : 'text-left'} select-none`}>
-                      <h1 className="text-xl sm:text-2xl md:text-3xl font-extrabold sm:font-black text-[var(--pub-text-primary)] tracking-tight font-sans leading-snug">
+                      <h1 className="text-xl sm:text-2xl md:text-3xl font-extrabold sm:font-black text-[var(--text-primary)] tracking-tight font-sans leading-snug">
                         <span className="sm:hidden">{dir === 'rtl' ? 'ما الذي تريد معرفته اليوم؟' : 'What to explore today?'}</span>
                         <span className="hidden sm:inline">{dir === 'rtl' ? 'ما الذي ترغب في معرفته أو تحليله اليوم؟' : 'What do you want to know?'}</span>
                       </h1>
@@ -887,7 +887,7 @@ const ChatPage: React.FC = () => {
                   <div className={themeConfig.visitor.content}>
                     <div className="w-full flex-1 flex flex-col justify-center items-center py-2 sm:py-6">
                       <div className={`${contentMaxWidthClass} ${contentPaddingClass} mb-2 sm:mb-4 ${dir === 'rtl' ? 'text-right' : 'text-left'} select-none`}>
-                        <h1 className="text-xl sm:text-2xl md:text-3xl font-extrabold sm:font-black text-[var(--pub-text-primary)] tracking-tight font-sans leading-snug">
+                        <h1 className="text-xl sm:text-2xl md:text-3xl font-extrabold sm:font-black text-[var(--text-primary)] tracking-tight font-sans leading-snug">
                           <span className="sm:hidden">{dir === 'rtl' ? 'ما الذي تريد معرفته اليوم؟' : 'What to explore today?'}</span>
                           <span className="hidden sm:inline">{dir === 'rtl' ? 'ما الذي ترغب في معرفته أو تحليله اليوم؟' : 'What do you want to know?'}</span>
                         </h1>

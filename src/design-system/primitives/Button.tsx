@@ -1,7 +1,7 @@
 /**
  * 🏛️ PERPLEXTA DESIGN SYSTEM — BUTTON PRIMITIVE (v4.0.0)
  * 
- * Strict implementation of Perplexa Brand Guide v4.0.0:
+ * Strict implementation of Perplexta Brand Guide v4.0.0:
  * - Primary: var(--github-green) with translateY(-1px) hover and Oklab brightness mix
  * - Secondary: var(--muted) with border hover
  * - Focus: 3px box-shadow with var(--github-blue) 18% opacity (no outline)

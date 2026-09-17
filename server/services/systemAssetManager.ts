@@ -3,7 +3,7 @@ import path from 'path';
 import fs from 'fs/promises';
 import { existsSync, mkdirSync, readFileSync } from 'fs';
 import crypto from 'crypto';
-import { pool } from '../db/index.js';
+import { pool, mediaPool } from '../db/index.js';
 import { getCachedSystemSettings, invalidateSystemSettingsCache } from '../db/queries.js';
 
 export interface IconVariantSpec {
@@ -511,11 +511,12 @@ export async function generateAppIconsFromSource(
   }
 
   // 3. Register in media_assets database table if available
-  if (options.registerInMediaAssets !== false && pool) {
+  if (options.registerInMediaAssets !== false && (mediaPool || pool)) {
     try {
+      const targetPool = mediaPool || pool;
       for (const asset of results) {
         const storedPath = `uploads/brand/${asset.filename}`;
-        await pool.query(`
+        await targetPool.query(`
           INSERT INTO media_assets (
             stored_path, original_filename, context, format, width, height, size_bytes, sha256_hash, is_public, metadata
           ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, true, $9)

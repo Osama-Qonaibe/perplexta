@@ -241,8 +241,8 @@ export async function getCachedSystemSettings(): Promise<any> {
     paypal_mode: 'sandbox',
     image_prompt_pref_threshold: 0.7,
     blocked_paths: '',
-    seo_site_name_en: 'Perplexa',
-    seo_site_name_ar: 'بيربليكسا',
+    seo_site_name_en: 'Perplexta',
+    seo_site_name_ar: 'بيربليكستا',
     font_loading_config: JSON.stringify({
       ar: { fontFamily: 'Cairo', enabled: true, url: 'https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700&display=swap' },
       en: { fontFamily: 'Geist', enabled: true, url: 'https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&display=swap' },
@@ -626,7 +626,7 @@ export async function getCachedRouteSeo(route: string): Promise<any> {
   }
   try {
     const result = await pool.query(
-      'SELECT * FROM route_seo_settings WHERE route = $1 AND is_active = true LIMIT 1',
+      'SELECT * FROM route_seo_settings WHERE route = $1 LIMIT 1',
       [route]
     );
     const data = result.rows[0] || null;

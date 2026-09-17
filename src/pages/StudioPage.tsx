@@ -19,7 +19,7 @@ export const StudioPage: React.FC = () => {
     const list = [
       {
         id: 'chat_engine',
-        icon: <MessageSquare className="w-5 h-5 text-cyan-600 dark:text-cyan-400" />,
+        icon: <MessageSquare className="w-5 h-5 text-[var(--accent)]" />,
         title: language === 'ar' ? 'المحادثة والتحليل الذكي' : 'Smart Chat & Reasoning',
         desc: language === 'ar' ? 'محركات ذكاء اصطناعي متعددة مع نظام التوجيه والتبديل الصامت.' : 'Multi-model AI engines with dynamic failover orchestration.',
         action: () => navigate('/chat'),
@@ -27,7 +27,7 @@ export const StudioPage: React.FC = () => {
       },
       {
         id: 'bulletin_hub',
-        icon: <Sparkles className="w-5 h-5 text-cyan-600 dark:text-cyan-400" />,
+        icon: <Sparkles className="w-5 h-5 text-[var(--accent)]" />,
         title: language === 'ar' ? 'منصة بيربليكستا بورد والمجتمع' : 'Perplexta Board Community Hub',
         desc: language === 'ar' ? 'مجتمع تفاعلي، ريلز، وقنوات تجارية موثقة بدقة متناهية.' : 'Interactive feed, verified commercial pages, and short reels.',
         action: () => navigate('/bulletin'),
@@ -35,7 +35,7 @@ export const StudioPage: React.FC = () => {
       },
       {
         id: 'api_portal',
-        icon: <Terminal className="w-5 h-5 text-cyan-600 dark:text-cyan-400" />,
+        icon: <Terminal className="w-5 h-5 text-[var(--accent)]" />,
         title: language === 'ar' ? 'بوابة المطورين والـ API' : 'Developer & API Portal',
         desc: language === 'ar' ? 'مفاتيح API، توجيه الروبوتات، والتحليلات البرمجية المستقلة.' : 'API keys, autonomous bots routing, and programmatic workflows.',
         action: () => navigate('/settings/developer'),
@@ -43,7 +43,7 @@ export const StudioPage: React.FC = () => {
       },
       {
         id: 'wallet_economy',
-        icon: <CreditCard className="w-5 h-5 text-cyan-600 dark:text-cyan-400" />,
+        icon: <CreditCard className="w-5 h-5 text-[var(--accent)]" />,
         title: language === 'ar' ? 'المحفظة والاشتراكات' : 'Wallet & Plans',
         desc: language === 'ar' ? 'نظام مالي مدقق بسجل غير قابل للتعديل لشحن النقاط والترقية.' : 'Audited ledger financial system for credits and tier upgrades.',
         action: () => navigate('/settings/wallet'),
@@ -51,7 +51,7 @@ export const StudioPage: React.FC = () => {
       },
       {
         id: 'app_studio',
-        icon: <Code className="w-5 h-5 text-cyan-600 dark:text-cyan-400" />,
+        icon: <Code className="w-5 h-5 text-[var(--accent)]" />,
         title: language === 'ar' ? 'استوديو التطبيق (IDE متكامل)' : 'App Studio & Live IDE',
         desc: language === 'ar' ? 'معاينة حيّة، شجرة ملفات، قاعدة بيانات SQLite، وتصحيح ذكي.' : 'Live preview, file tree, SQLite database, and AI code fixing.',
         action: () => navigate('/app'),
@@ -59,7 +59,7 @@ export const StudioPage: React.FC = () => {
       },
       {
         id: 'audio_studio',
-        icon: <Music className="w-5 h-5 text-cyan-600 dark:text-cyan-400" />,
+        icon: <Music className="w-5 h-5 text-[var(--accent)]" />,
         title: language === 'ar' ? 'استوديو الصوت والإنتاج' : 'Audio Studio & Production',
         desc: language === 'ar' ? 'محركات تأليف النطق، تحويل الصوت، والموسيقى الأوركسترالية المتطورة.' : 'State-of-the-art TTS vocal synthesis, speech transcribing, and orchestral music composition.',
         action: () => navigate('/audio-studio'),
@@ -81,7 +81,7 @@ export const StudioPage: React.FC = () => {
             <button 
               type="button"
               onClick={() => navigate(-1)} 
-              className="h-8 px-2.5 flex items-center gap-1 rounded-shape-sm bg-transparent border border-[var(--border-default)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:border-cyan-500/60 dark:hover:border-cyan-400/60 hover:bg-[var(--surface-subtle)] transition-all duration-150 active:scale-95 cursor-pointer"
+              className="h-8 px-2.5 flex items-center gap-1 rounded-shape-sm bg-transparent border border-[var(--border-default)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:border-[var(--border-accent)] hover:bg-[var(--surface-subtle)] transition-all duration-150 active:scale-95 cursor-pointer"
               title={dir === 'rtl' ? 'رجوع' : 'Back'}
             >
               {dir === 'rtl' ? <ChevronRight size={14} /> : <ChevronLeft size={14} />}
@@ -92,7 +92,7 @@ export const StudioPage: React.FC = () => {
                 <img src={resolveImageUrl(logo, 'general')} alt={siteName} className="w-7 h-7 rounded-[6px] object-cover" />
               ) : (
                 <div className="w-7 h-7 rounded-[6px] bg-[var(--surface-subtle)] border border-[var(--border-default)] flex items-center justify-center">
-                  <Cpu className="w-3.5 h-3.5 text-cyan-600 dark:text-cyan-400" />
+                  <Cpu className="w-3.5 h-3.5 text-[var(--accent)]" />
                 </div>
               )}
               <h1 className="text-xs sm:text-sm font-bold tracking-wide">
@@ -105,12 +105,12 @@ export const StudioPage: React.FC = () => {
             <button
               type="button"
               onClick={() => setLanguage(language === 'ar' ? 'en' : 'ar')}
-              className="w-8 h-8 rounded-shape-sm border border-[var(--border-default)] hover:border-cyan-500/60 dark:hover:border-cyan-400/60 bg-transparent hover:bg-[var(--surface-subtle)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] flex items-center justify-center transition-all duration-150 active:scale-95 cursor-pointer"
+              className="w-8 h-8 rounded-shape-sm border border-[var(--border-default)] hover:border-[var(--border-accent)] bg-transparent hover:bg-[var(--surface-subtle)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] flex items-center justify-center transition-all duration-150 active:scale-95 cursor-pointer"
               title={language === 'ar' ? 'English' : 'العربية'}
             >
               <Languages size={14} />
             </button>
-            <ThemeToggleButton variant="icon-button" size="sm" className="!w-8 !h-8 !rounded-shape-sm !border-[var(--border-default)] hover:!border-cyan-500/60 dark:hover:!border-cyan-400/60 !bg-transparent hover:!bg-[var(--surface-subtle)] !text-[var(--text-secondary)] hover:!text-[var(--text-primary)] transition-all duration-150" />
+            <ThemeToggleButton variant="icon-button" size="sm" className="!w-8 !h-8 !rounded-shape-sm !border-[var(--border-default)] hover:!border-[var(--border-accent)] !bg-transparent hover:!bg-[var(--surface-subtle)] !text-[var(--text-secondary)] hover:!text-[var(--text-primary)] transition-all duration-150" />
           </div>
         </div>
       </header>
@@ -121,11 +121,11 @@ export const StudioPage: React.FC = () => {
             <div 
               key={feat.id}
               onClick={feat.action}
-              className="p-5 rounded-shape-md bg-[var(--surface-card)] border border-[var(--border-default)] hover:border-cyan-500/40 hover:bg-[var(--surface-subtle)] active:scale-[0.99] transition-all cursor-pointer flex flex-col justify-between group shadow-2xs space-y-4"
+              className="p-5 rounded-shape-md bg-[var(--surface-card)] border border-[var(--border-default)] hover:border-[color-mix(in_oklab,var(--accent)_40%,var(--border-default))] hover:bg-[var(--surface-subtle)] active:scale-[0.99] transition-all cursor-pointer flex flex-col justify-between group shadow-2xs space-y-4"
             >
               <div className="space-y-3">
                 <div className="flex items-center justify-between">
-                  <div className="w-10 h-10 rounded-shape-sm bg-cyan-500/10 border border-cyan-500/20 text-cyan-600 dark:text-cyan-400 flex items-center justify-center group-hover:scale-105 transition-transform">
+                  <div className="w-10 h-10 rounded-shape-sm bg-[color-mix(in_oklab,var(--accent)_10%,transparent)] border border-[color-mix(in_oklab,var(--accent)_20%,transparent)] text-[var(--accent)] flex items-center justify-center group-hover:scale-105 transition-transform">
                     {feat.icon}
                   </div>
                   <span className="px-2.5 py-0.5 text-[10px] font-bold rounded-full bg-[var(--surface-subtle)] text-[var(--text-muted)] border border-[var(--border-default)]">
@@ -133,9 +133,9 @@ export const StudioPage: React.FC = () => {
                   </span>
                 </div>
                 <div>
-                  <h3 className="text-sm font-bold text-[var(--text-primary)] group-hover:text-cyan-600 dark:group-hover:text-cyan-400 transition-colors flex items-center justify-between">
+                  <h3 className="text-sm font-bold text-[var(--text-primary)] group-hover:text-[var(--accent)] transition-colors flex items-center justify-between">
                     <span>{feat.title}</span>
-                    <ArrowUpRight size={14} className="opacity-0 group-hover:opacity-100 transition-opacity text-cyan-600 dark:text-cyan-400" />
+                    <ArrowUpRight size={14} className="opacity-0 group-hover:opacity-100 transition-opacity text-[var(--accent)]" />
                   </h3>
                   <p 
                     className="text-xs text-[var(--text-muted)] mt-1.5 line-clamp-2 leading-relaxed"
@@ -156,7 +156,7 @@ export const StudioPage: React.FC = () => {
         <section className="pt-2 space-y-4 text-center">
           <div className="p-5 rounded-shape-md border border-[var(--border-default)] bg-[var(--surface-card)] max-w-xl mx-auto space-y-2 shadow-2xs">
             <div className="flex items-center justify-center gap-2 text-[var(--text-primary)]">
-              <ShieldCheck className="w-4 h-4 text-cyan-600 dark:text-cyan-400" />
+              <ShieldCheck className="w-4 h-4 text-[var(--accent)]" />
               <h4 className="text-xs font-bold uppercase tracking-wider">
                 {language === 'ar' ? 'أمان وحماية البيانات المتقدمة' : 'Enterprise Data Security & Privacy'}
               </h4>
