@@ -8,7 +8,7 @@ import { refreshCachedAppName } from '../services/system.js';
 import { ensureAdsSeedData } from '../routes/ads.js';
 import { ensureBulletinSeedData } from '../routes/bulletin.js';
 
-async function resetAndReinitDatabases() {
+async function migrateAndVerifyDatabases() {
   console.log('================================================================');
   console.log('[PERPLEXTA DB MIGRATION RUNNER] Running Sequential Migrations via Migration History...');
   console.log('================================================================');
@@ -79,8 +79,7 @@ async function resetAndReinitDatabases() {
   process.exit(0);
 }
 
-resetAndReinitDatabases().catch((err) => {
+migrateAndVerifyDatabases().catch((err) => {
   console.error('[DB Migration] ❌ FATAL ERROR during database migration:', err);
   process.exit(1);
 });
-

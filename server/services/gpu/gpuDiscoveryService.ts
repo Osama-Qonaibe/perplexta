@@ -251,21 +251,23 @@ export async function runGpuEndpointDiscovery(options?: { forceAll?: boolean }):
       }
     }
 
+    const getExplicitTaskType = (toolId: string): string => {
+      if (toolId === 'image') return 'image_gen';
+      if (toolId === 'video') return 'video_gen';
+      if (toolId === 'vision' || toolId === 'perplexta_vision') return 'vision_analysis';
+      return toolId;
+    };
+
     for (const tool of gpuToolsRes.rows) {
-      let needsUpdate = false;
-      let newPrimaryModel = tool.primary_model;
-      let newFallback1Model = tool.fallback_1_model;
-      let newFallback2Model = tool.fallback_2_model;
+      const targetTaskType = getExplicitTaskType(tool.tool_id);
 
       if (tool.primary_provider && providerModelMap.has(tool.primary_provider.toLowerCase())) {
         const availableModels = providerModelMap.get(tool.primary_provider.toLowerCase()) || [];
         const match = availableModels.find(
           (m) => m.model_id.toLowerCase() === (tool.primary_model || '').toLowerCase()
         );
-        if (!match && availableModels.length > 0) {
-          const taskMatched = availableModels.find((m) => m.task_type.includes(tool.tool_id)) || availableModels[0];
-          newPrimaryModel = taskMatched.model_id;
-          needsUpdate = true;
+        if (!match) {
+          console.warn(`[GPU Discovery] ⚠️ WARNING: Tool ${tool.tool_id} primary model '${tool.primary_model}' is not registered on active provider '${tool.primary_provider}'. Task type needed: ${targetTaskType}. Available:`, availableModels.map(a => a.model_id));
         }
       }
 
@@ -274,10 +276,8 @@ export async function runGpuEndpointDiscovery(options?: { forceAll?: boolean }):
         const match = availableModels.find(
           (m) => m.model_id.toLowerCase() === (tool.fallback_1_model || '').toLowerCase()
         );
-        if (!match && availableModels.length > 0) {
-          const taskMatched = availableModels.find((m) => m.task_type.includes(tool.tool_id)) || availableModels[0];
-          newFallback1Model = taskMatched.model_id;
-          needsUpdate = true;
+        if (!match) {
+          console.warn(`[GPU Discovery] ⚠️ WARNING: Tool ${tool.tool_id} fallback_1 model '${tool.fallback_1_model}' is not registered on active provider '${tool.fallback_1_provider}'. Task type needed: ${targetTaskType}. Available:`, availableModels.map(a => a.model_id));
         }
       }
 
@@ -286,20 +286,9 @@ export async function runGpuEndpointDiscovery(options?: { forceAll?: boolean }):
         const match = availableModels.find(
           (m) => m.model_id.toLowerCase() === (tool.fallback_2_model || '').toLowerCase()
         );
-        if (!match && availableModels.length > 0) {
-          const taskMatched = availableModels.find((m) => m.task_type.includes(tool.tool_id)) || availableModels[0];
-          newFallback2Model = taskMatched.model_id;
-          needsUpdate = true;
+        if (!match) {
+          console.warn(`[GPU Discovery] ⚠️ WARNING: Tool ${tool.tool_id} fallback_2 model '${tool.fallback_2_model}' is not registered on active provider '${tool.fallback_2_provider}'. Task type needed: ${targetTaskType}. Available:`, availableModels.map(a => a.model_id));
         }
-      }
-
-      if (needsUpdate) {
-        await pool.query(
-          `UPDATE tool_orchestrator 
-           SET primary_model = $1, fallback_1_model = $2, fallback_2_model = $3, updated_at = CURRENT_TIMESTAMP
-           WHERE id = $4`,
-          [newPrimaryModel, newFallback1Model, newFallback2Model, tool.id]
-        );
       }
     }
 

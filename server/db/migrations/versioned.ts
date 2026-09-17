@@ -2480,17 +2480,23 @@ export async function runVersionedMigrations(
       `).catch(() => {});
     });
 
-    await runVersioned('v113_drop_legacy_cost_columns', 'Drop legacy point deduction and wallet cost columns and indices from tool_orchestrator table', async (tx) => {
-      await tx.query(`
-        ALTER TABLE tool_orchestrator DROP COLUMN IF EXISTS wallet_cost CASCADE;
-        ALTER TABLE tool_orchestrator DROP COLUMN IF EXISTS points_required CASCADE;
-        ALTER TABLE tool_orchestrator DROP COLUMN IF EXISTS cost_per_usage CASCADE;
-        ALTER TABLE tool_orchestrator DROP COLUMN IF EXISTS cost_per_1k_input_tokens CASCADE;
-        ALTER TABLE tool_orchestrator DROP COLUMN IF EXISTS cost_per_1k_output_tokens CASCADE;
-      `).catch((err) => {
-        console.warn('[Migration v113] Warning during legacy cost columns dropping:', err.message);
+    // v113 is suspended from execution by default until a formal business decision is made.
+    // The dangerous CASCADE clauses have been removed to prevent unintended schema dependency drops.
+    if (process.env.ENABLE_V113_MIGRATION === 'YES') {
+      await runVersioned('v113_drop_legacy_cost_columns', 'Drop legacy point deduction and wallet cost columns and indices from tool_orchestrator table', async (tx) => {
+        await tx.query(`
+          ALTER TABLE tool_orchestrator DROP COLUMN IF EXISTS wallet_cost;
+          ALTER TABLE tool_orchestrator DROP COLUMN IF EXISTS points_required;
+          ALTER TABLE tool_orchestrator DROP COLUMN IF EXISTS cost_per_usage;
+          ALTER TABLE tool_orchestrator DROP COLUMN IF EXISTS cost_per_1k_input_tokens;
+          ALTER TABLE tool_orchestrator DROP COLUMN IF EXISTS cost_per_1k_output_tokens;
+        `).catch((err) => {
+          console.warn('[Migration v113] Warning during legacy cost columns dropping:', err.message);
+        });
       });
-    });
+    } else {
+      console.log('[Migration] Suspension state of v113: Preserving legacy wallet cost and point columns in tool_orchestrator.');
+    }
     
   console.log("[Migrations] All versioned migrations completed successfully.");
 }

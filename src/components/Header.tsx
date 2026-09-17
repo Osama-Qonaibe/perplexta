@@ -290,7 +290,7 @@ export const Header: React.FC<{ activeLanguage?: string }> = ({ activeLanguage }
             triggerHaptic('medium');
             setIsSidebarOpen(true);
           }}
-          className="group/logo-btn relative w-8 h-8 rounded-[var(--radius-sm)] overflow-hidden border border-[var(--border-default)] hover:border-cyan-500/60 dark:hover:border-cyan-400/60 bg-transparent hover:bg-[var(--surface-subtle)] transition-all duration-150 flex items-center justify-center flex-shrink-0 cursor-pointer active:scale-95 before:absolute before:-inset-1.5 before:content-['']"
+          className="group/logo-btn relative w-8 h-8 rounded-[var(--radius-sm)] overflow-hidden border border-[var(--border-default)] hover:border-[var(--accent-foreground)]/60 bg-transparent hover:bg-[var(--surface-subtle)] transition-all duration-150 flex items-center justify-center flex-shrink-0 cursor-pointer active:scale-95 before:absolute before:-inset-1.5 before:content-['']"
           title={language === 'ar' ? 'فتح الشريط الجانبي' : 'Open Sidebar'}
           aria-label="Open Sidebar"
         >
@@ -346,7 +346,7 @@ export const Header: React.FC<{ activeLanguage?: string }> = ({ activeLanguage }
           <NavLink 
             to="/" 
             onClick={handleNewChat} 
-            className="group/logo-link relative w-8 h-8 rounded-[var(--radius-sm)] overflow-hidden border border-[var(--border-default)] hover:border-cyan-500/60 dark:hover:border-cyan-400/60 bg-transparent hover:bg-[var(--surface-subtle)] transition-all duration-150 flex items-center justify-center flex-shrink-0 active:scale-95 before:absolute before:-inset-1.5 before:content-['']"
+            className="group/logo-link relative w-8 h-8 rounded-[var(--radius-sm)] overflow-hidden border border-[var(--border-default)] hover:border-[var(--accent-foreground)]/60 bg-transparent hover:bg-[var(--surface-subtle)] transition-all duration-150 flex items-center justify-center flex-shrink-0 active:scale-95 before:absolute before:-inset-1.5 before:content-['']"
             title={brandName}
           >
             {(siteSettings.logoBase64 || siteSettings.logoLightBase64) ? (
@@ -354,7 +354,7 @@ export const Header: React.FC<{ activeLanguage?: string }> = ({ activeLanguage }
                 className="w-full h-full overflow-hidden flex items-center justify-center"
                 animate={isStreaming ? {
                   scale: [1, 1.03, 1],
-                  borderColor: ["var(--border-default)", "rgba(6,182,212,0.4)", "var(--border-default)"]
+                  borderColor: ["var(--border-default)", "var(--accent-foreground)", "var(--border-default)"]
                 } : {}}
                 transition={isStreaming ? {
                   duration: 1.8,
@@ -536,9 +536,9 @@ export const Header: React.FC<{ activeLanguage?: string }> = ({ activeLanguage }
                   : 'border-[var(--border-default)] hover:border-cyan-500/60 dark:hover:border-cyan-400/60 hover:bg-[var(--surface-subtle)] text-[var(--text-secondary)] hover:text-[var(--text-primary)]'
               }`}
             >
-              <Bell size={14} className={`transition-colors duration-150 ${unreadCount > 0 ? "text-cyan-500 dark:text-cyan-400" : isNotifOpen ? "text-cyan-500 dark:text-cyan-400" : "text-[var(--text-muted)] group-hover:text-[var(--text-primary)]"}`} />
+              <Bell size={14} className={`transition-colors duration-150 ${unreadCount > 0 ? "text-[var(--accent-foreground)]" : isNotifOpen ? "text-[var(--accent-foreground)]" : "text-[var(--text-muted)] group-hover:text-[var(--text-primary)]"}`} />
               {unreadCount > 0 && (
-                <span className="absolute top-1.5 right-1.5 w-1.5 h-1.5 bg-cyan-400 rounded-full border border-[var(--surface-page)] shadow-[0_0_6px_rgba(6,182,212,0.8)]"></span>
+                <span className="absolute top-1.5 right-1.5 w-1.5 h-1.5 bg-cyan-400 rounded-full border border-[var(--surface-page)] shadow-[0_0_6px_var(--accent-foreground)]"></span>
               )}
             </button>
 
@@ -615,7 +615,7 @@ export const Header: React.FC<{ activeLanguage?: string }> = ({ activeLanguage }
                           <div className="flex-1 min-w-0">
                             <div className="flex items-center justify-between gap-1 flex-row-reverse">
                               {!notif.is_read && (
-                                <span className="w-1.5 h-1.5 bg-cyan-400 rounded-full shrink-0 shadow-[0_0_6px_rgba(6,182,212,0.8)]" />
+                                <span className="w-1.5 h-1.5 bg-cyan-400 rounded-full shrink-0 shadow-[0_0_6px_var(--accent-foreground)]" />
                               )}
                               <h4 className={`text-[11px] sm:text-xs font-bold truncate transition-all duration-150 ${!notif.is_read ? 'text-cyan-500 dark:text-cyan-400' : 'text-[var(--text-primary)]'}`}>
                                 {language === 'ar' ? notif.title_ar : notif.title_en}
@@ -966,12 +966,12 @@ export const Header: React.FC<{ activeLanguage?: string }> = ({ activeLanguage }
           animate={{ opacity: 1, scaleX: 1 }}
           exit={{ opacity: 0, scaleX: 0 }}
           transition={{ duration: 0.15 }}
-          className="absolute bottom-0 left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-cyan-500/20 to-transparent z-[90] origin-left overflow-hidden pointer-events-none"
+          className="absolute bottom-0 left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-[var(--accent-foreground)]/20 to-transparent z-[90] origin-left overflow-hidden pointer-events-none"
         >
           <motion.div
             animate={{ x: ['-100%', '100%'] }}
             transition={{ repeat: Infinity, duration: 1.5, ease: 'easeInOut' }}
-            className="w-full h-full bg-gradient-to-r from-transparent via-cyan-500/40 to-transparent shadow-[0_0_12px_rgba(6,182,212,0.6)]"
+            className="w-full h-full bg-gradient-to-r from-transparent via-[var(--accent-foreground)]/40 to-transparent shadow-[0_0_12px_var(--accent-foreground)]"
           />
         </motion.div>
       )}

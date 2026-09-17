@@ -237,6 +237,20 @@ export async function ensureForeignKey(
     console.error(`[Schema] Invalid identifiers for foreign key ${constraintName}`);
     return;
   }
+
+  // Bypass physical foreign key constraints if separate media database is used to prevent cross-database failures
+  const hasDistinctMediaDb = process.env.MEDIA_DATABASE_URL && process.env.MEDIA_DATABASE_URL !== process.env.DATABASE_URL;
+  if (hasDistinctMediaDb) {
+    const isCrossDb = (
+      (tableName === 'media_assets' && (referencedTable === 'users' || referencedTable === 'marketplace_items')) ||
+      (referencedTable === 'media_assets' && (tableName === 'users' || tableName === 'marketplace_items'))
+    );
+    if (isCrossDb) {
+      console.log(`[Schema] Skipping physical cross-database foreign key ${constraintName} between ${tableName} and ${referencedTable} due to separate Media database.`);
+      return;
+    }
+  }
+
   const validOnDelete = ['CASCADE', 'SET NULL', 'RESTRICT', 'NO ACTION', 'SET DEFAULT'];
   const safeOnDelete = validOnDelete.includes(onDelete.toUpperCase()) ? onDelete.toUpperCase() : 'CASCADE';
   try {

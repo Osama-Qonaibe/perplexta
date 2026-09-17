@@ -1884,13 +1884,13 @@ async function injectSEOTags(
   let currentKeywords = defaultKeywords;
   let currentSiteName = defaultSiteName;
   
-  const DEFAULT_OG_IMAGE = settings.logo_url || settings.favicon_url || '/apple-touch-icon.png';
+  const DEFAULT_OG_IMAGE = (settings.logo_url && !settings.logo_url.startsWith('data:')) ? settings.logo_url : ((settings.favicon_url && !settings.favicon_url.startsWith('data:')) ? settings.favicon_url : '/apple-touch-icon.png');
   let imageUrl = settings.seo_image_url || '';
 
   /** Combines a base URL and relative path, strictly avoiding duplicate slash errors */
   const combineUrl = (base: string, relativePath: string): string => {
     if (!relativePath) return base;
-    if (relativePath.startsWith('http://') || relativePath.startsWith('https://') || relativePath.startsWith('data:')) {
+    if (relativePath.startsWith('http://') || relativePath.startsWith('https://')) {
       return relativePath;
     }
     const cleanBase = base.endsWith('/') ? base.slice(0, -1) : base;
@@ -1903,9 +1903,9 @@ async function injectSEOTags(
   const validateImageUrl = (url: string): string => {
     if (!url) return '';
 
-    // Handle base64 data URIs immediately
-    if (url.startsWith('data:image/')) {
-      return url;
+    // Filter out data URI base64 images as they are unsupported in Open Graph tags
+    if (url.startsWith('data:')) {
+      return '';
     }
 
     let cleanUrl = url;

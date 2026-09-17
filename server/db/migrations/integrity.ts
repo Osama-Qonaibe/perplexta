@@ -103,6 +103,58 @@ export async function monitorDatabases() {
   }
 }
 
+export async function migrateMediaAssetsData() {
+  const hasDistinctMediaDb = process.env.MEDIA_DATABASE_URL && process.env.MEDIA_DATABASE_URL !== process.env.DATABASE_URL;
+  if (!hasDistinctMediaDb) {
+    console.log('[Media Migration] Core and Media share the same database pool. No data transfer required.');
+    return;
+  }
+
+  console.log('[Media Migration] Detected distinct Core and Media databases. Initiating data transfer verification...');
+  try {
+    const coreTableCheck = await pool.query(`
+      SELECT EXISTS (
+        SELECT FROM information_schema.tables 
+        WHERE table_name = 'media_assets'
+      )
+    `);
+    if (!coreTableCheck.rows[0].exists) {
+      console.log('[Media Migration] Source table media_assets does not exist in Core. No data to migrate.');
+      return;
+    }
+
+    const coreAssets = await pool.query('SELECT * FROM media_assets');
+    if (coreAssets.rows.length === 0) {
+      console.log('[Media Migration] Source table media_assets is empty in Core. No assets to transfer.');
+      return;
+    }
+
+    console.log(`[Media Migration] Found ${coreAssets.rows.length} media_assets in Core DB. Transferring to Media DB...`);
+    let migratedCount = 0;
+    
+    for (const row of coreAssets.rows) {
+      const fields = Object.keys(row);
+      const values = Object.values(row);
+      const placeholders = fields.map((_, i) => `$${i + 1}`).join(', ');
+      const queryText = `
+        INSERT INTO media_assets (${fields.map(f => `"${f}"`).join(', ')})
+        VALUES (${placeholders})
+        ON CONFLICT (id) DO NOTHING
+      `;
+      const result = await (mediaPool || pool).query(queryText, values);
+      if (result.rowCount && result.rowCount > 0) {
+        migratedCount++;
+      }
+    }
+
+    const mediaCountCheck = await (mediaPool || pool).query('SELECT COUNT(*) FROM media_assets');
+    const finalMediaCount = parseInt(mediaCountCheck.rows[0].count, 10);
+    console.log(`[Media Migration] Migration complete. Transferred: ${migratedCount} new records. Total in Media DB: ${finalMediaCount}.`);
+  } catch (err: any) {
+    console.error('[Media Migration] ❌ Error executing media migration transfer:', err?.message || err);
+  }
+}
+
 export async function verifySchemaIntegrity() {
   if (!pool) {
     console.warn('[Schema Integrity] Skipping validation: No core pool initialized.');
@@ -789,6 +841,9 @@ export async function verifySchemaIntegrity() {
   await verifyDbGroup('external', externalPool || pool);
   await verifyDbGroup('security', securityPool || pool);
   await verifyDbGroup('media', mediaPool || pool);
+
+  // Transfer any legacy media_assets data if running separate media database
+  await migrateMediaAssetsData();
 
   if (report.passed) {
     console.log('[Schema Integrity] All expected tables and columns verified successfully across all active pools!');

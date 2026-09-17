@@ -9,7 +9,7 @@ export const MEDIA_SCHEMA_TABLES: { name: string; query: string }[] = [
         id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
         stored_path TEXT NOT NULL UNIQUE,
         original_filename TEXT NOT NULL,
-        context TEXT NOT NULL DEFAULT 'general' CHECK (context IN ('avatar', 'bulletin', 'ad', 'system', 'general', 'video')),
+        context TEXT NOT NULL DEFAULT 'general',
         format TEXT NOT NULL DEFAULT 'webp',
         width INT NOT NULL DEFAULT 0,
         height INT NOT NULL DEFAULT 0,
