@@ -33,6 +33,7 @@ import { ensureBulletinSeedData } from './routes/bulletin.js';
 import { initCronJobs } from './jobs/cron.js';
 import { validateRequiredSecrets } from './utils/validateSecrets.js';
 import { initUploadsMonitor } from './services/uploadsMonitorService.js';
+import { connectCache } from './utils/cache.js';
 
 const PORT = 3000;
 const MAX_DB_ATTEMPTS = 3;
@@ -86,6 +87,7 @@ async function startServer() {
     console.log('[Server] Initializing Perplexta Ecosystem...');
 
     validateRequiredSecrets();
+    await connectCache();
 
     if (process.env.NODE_ENV !== 'production') {
       const vite = await createViteServer({

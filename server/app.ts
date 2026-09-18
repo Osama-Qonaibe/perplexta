@@ -408,6 +408,19 @@ app.use(helmet({
   crossOriginOpenerPolicy: { policy: "same-origin-allow-popups" }
 }));
 
+// ===== PERFORMANCE: Compression =====
+app.use(compression({
+  level: 6, // gzip level (1-9)
+  threshold: 1024, // compress if > 1KB
+  filter: (req, res) => {
+    if (req.headers['x-no-compression']) {
+      return false;
+    }
+    return compression.filter(req, res);
+  }
+}) as any);
+// ====================================
+
 const allowedOrigins = process.env.ALLOWED_ORIGINS?.split(',') || [
   'https://perplexta.online',
   'https://www.perplexta.online',
@@ -644,11 +657,14 @@ app.get('/version.json', (req, res) => {
 
 app.use(wellKnownRouter);
 
-app.use(express.static(publicPath, {
+// ===== PERFORMANCE: Static caching =====
+app.use(express.static('public', {
   etag: true,
   lastModified: true,
-  maxAge: '1d'
+  maxAge: '1d', // browser cache for 1 day
+  immutable: false
 }));
+// =======================================
 
 import jwt from 'jsonwebtoken';
 import { getSystemSettings } from './services/system.js';

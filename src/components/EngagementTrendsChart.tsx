@@ -438,3 +438,5 @@ export const EngagementTrendsChart: React.FC<EngagementTrendsChartProps> = ({
     </div>
   );
 };
+
+export default EngagementTrendsChart;

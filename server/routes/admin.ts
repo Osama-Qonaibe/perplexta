@@ -7,7 +7,7 @@ import { ERROR_CODES } from '../utils/errorCodes.js';
 import { pool, ledgerPool, getSecurityPool, mediaPool } from '../db/index.js';
 import { authenticateAdmin, invalidateUserCache } from '../middleware/auth.js';
 import { syncProviderModelsInternal, checkProviderStatus, invalidateVaultCache } from '../services/ai.js';
-import { memoryCache } from '../utils/cache.js';
+import { memoryCache, getCache, setCache } from '../utils/cache.js';
 import { runDatabaseMigrations } from '../db/migrations.js';
 import { encrypt, decrypt } from '../utils/crypto.js';
 import { invalidateStripeClient } from '../services/payments.js';
@@ -581,6 +581,12 @@ router.get("/users", authenticateAdmin, async (req, res) => {
     if (limit > 1000) limit = 1000;
     if (isNaN(offset) || offset < 0) offset = 0;
 
+    const cacheKey = `admin:users:${limit}:${offset}`;
+    const cached = await getCache(cacheKey);
+    if (cached) {
+      return res.json(cached);
+    }
+
     const result = await pool.query(`
       SELECT 
         u.id, u.name, u.email, u.role, u.status, u.created_at, u.last_active_at,
@@ -617,6 +623,8 @@ router.get("/users", authenticateAdmin, async (req, res) => {
         points: wallet ? wallet.points : 0
       };
     });
+
+    await setCache(cacheKey, usersWithWallets, 120);
 
     res.json(usersWithWallets);
   } catch (error) {
@@ -1672,11 +1680,17 @@ router.get("/security-alerts", authenticateAdmin, async (req, res) => {
   }
 });
 
-router.get("/activity-stream", authenticateAdmin, async (req, res) => {
+router.get("/activity-stream", authenticateAdmin, async (req: any, res) => {
   try {
+    const cacheKey = `admin:activity:${req.user?.id || 'default'}`;
+    const cached = await getCache(cacheKey);
+    if (cached) {
+      return res.json(cached);
+    }
     const result = await pool.query(
       'SELECT id, user_id, action, type, description, details, metadata, ip_address, created_at FROM system_logs ORDER BY created_at DESC LIMIT 50'
     );
+    await setCache(cacheKey, result.rows, 300);
     res.json(result.rows);
   } catch {
     res.status(500).json({ error: 'Internal Error' });

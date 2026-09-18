@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, lazy, Suspense } from 'react';
 import { motion } from 'motion/react';
 import { useNavigate } from 'react-router-dom';
 import { 
@@ -18,7 +18,8 @@ import {
 import { useAppContext } from '../context/AppContext';
 import { RecommendationWidget } from '../components/RecommendationWidget';
 import { RecommendationPreferencesModal } from '../components/RecommendationPreferencesModal';
-import { EngagementTrendsChart } from '../components/EngagementTrendsChart';
+
+const EngagementTrendsChart = lazy(() => import('../components/EngagementTrendsChart'));
 
 export const RecommendationsPage: React.FC = () => {
   const { language, token, user, setIsAuthModalOpen, dir } = useAppContext();
@@ -192,7 +193,9 @@ export const RecommendationsPage: React.FC = () => {
 
         {/* Section 0: D3 Analytics & Engagement Trends */}
         <section className="p-3.5 sm:p-5 rounded-shape-md border border-[var(--border-default)] bg-[var(--surface-card)] shadow-2xs transition-theme">
-          <EngagementTrendsChart initialTimeframe="30d" />
+          <Suspense fallback={<div className="p-8 text-center text-sm text-[var(--text-muted)] animate-pulse">Loading chart...</div>}>
+            <EngagementTrendsChart initialTimeframe="30d" />
+          </Suspense>
         </section>
 
         {/* Section 1: Top Picks Unified Widget */}

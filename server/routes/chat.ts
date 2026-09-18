@@ -21,6 +21,7 @@ import { validatePromptLength } from '../utils/security.js';
 import { extractFollowUps } from '../utils/helpers.js';
 import { getUserWallet } from '../services/wallet.js';
 import { userLoader, subscriptionLoader } from '../db/queries.js';
+import { getCache, setCache, delCache } from '../utils/cache.js';
 
 const router = express.Router();
 
@@ -77,7 +78,13 @@ router.post("/", authenticateToken, chatLimiter, async (req: any, res) => {
 
 router.get("/", authenticateToken, async (req: any, res) => {
   try {
+    const cacheKey = `chats:user:${req.user.id}`;
+    const cached = await getCache(cacheKey);
+    if (cached) {
+      return res.json(cached);
+    }
     const chats = await getUserChats(req.user.id);
+    await setCache(cacheKey, chats, 60);
     res.json(chats);
   } catch (error: any) {
     const status = error.message === 'Database initializing' ? 503 : 500;
@@ -112,6 +119,7 @@ router.post("/:id/messages", authenticateToken, chatLimiter, async (req: any, re
     }
     const chatId = req.params.id;
     await addChatMessage(chatId, msgRole, content, tool);
+    await delCache(`chat:messages:${chatId}:${req.user.id}`);
     res.json({ success: true });
     const count = await getMessageCount(chatId);
     if (count === 1 && msgRole === 'user') {
@@ -125,8 +133,14 @@ router.post("/:id/messages", authenticateToken, chatLimiter, async (req: any, re
 
 router.get("/:id/messages", authenticateToken, async (req: any, res) => {
   try {
+    const cacheKey = `chat:messages:${req.params.id}:${req.user.id}`;
+    const cached = await getCache(cacheKey);
+    if (cached) {
+      return res.json(cached);
+    }
     const messages = await getChatMessages(req.params.id, req.user.id);
     if (!messages) return res.status(404).json({ error: 'Chat not found' });
+    await setCache(cacheKey, messages, 30);
     res.json(messages);
   } catch (error: any) {
     const status = error.message === 'Database initializing' ? 503 : 500;
