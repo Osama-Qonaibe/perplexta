@@ -604,8 +604,8 @@ export const Sidebar: React.FC<{ activeLanguage?: string }> = ({ activeLanguage 
                                 <motion.div
                                   key={`sidebar-chat-${chat.id}`}
                                   animate={streamingChatId === chat.id ? {
-                                    backgroundColor: ["rgba(9,105,218,0)", "rgba(9,105,218,0.12)", "rgba(9,105,218,0)"],
-                                    borderColor: ["rgba(9,105,218,0)", "rgba(9,105,218,0.35)", "rgba(9,105,218,0)"]
+                                    backgroundColor: ["rgba(9,105,218,0)", "rgba(9,105,218,0.06)", "rgba(9,105,218,0)"],
+                                    borderColor: ["rgba(9,105,218,0)", "rgba(9,105,218,0.18)", "rgba(9,105,218,0)"]
                                   } : {}}
                                   transition={{
                                     duration: 1.5,

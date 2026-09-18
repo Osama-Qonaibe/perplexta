@@ -1,3 +1,4 @@
+import 'dotenv/config';
 import { pool, initializePerplextaPools, synchronizePerplextaPoolsFromRegistry } from '../db/index.js';
 import { syncAllContentSeoMetadata } from '../services/seoSync.js';
 
