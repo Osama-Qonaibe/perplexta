@@ -89,9 +89,9 @@ export const StudioPage: React.FC = () => {
             </button>
             <div className="flex items-center gap-2">
               {logo ? (
-                <img src={resolveImageUrl(logo, 'general')} alt={siteName} className="w-7 h-7 rounded-[6px] object-cover" />
+                <img src={resolveImageUrl(logo, 'general')} alt={siteName} className="w-7 h-7 rounded-shape-sm object-cover" />
               ) : (
-                <div className="w-7 h-7 rounded-[6px] bg-[var(--surface-subtle)] border border-[var(--border-default)] flex items-center justify-center">
+                <div className="w-7 h-7 rounded-shape-sm bg-[var(--surface-subtle)] border border-[var(--border-default)] flex items-center justify-center">
                   <Cpu className="w-3.5 h-3.5 text-[var(--accent)]" />
                 </div>
               )}

@@ -546,7 +546,7 @@ export const renderChildrenWithCitations = (node: React.ReactNode, msg: any, dep
             return (
               <React.Fragment key={`cit-frag-badge-${i}-${part}`}>
                 {prefix}
-                <span className="inline-flex items-center justify-center px-1.5 py-0.2 rounded text-[10.5px] font-mono font-bold bg-[var(--surface-subtle)] text-[var(--fg-accent)] dark:text-cyan-400 border border-[var(--border-default)] dark:border-slate-800/80 mx-0.5 align-middle select-none">
+                <span className="inline-flex items-center justify-center px-1.5 py-0.2 rounded text-[10.5px] font-mono font-bold bg-[var(--surface-subtle)] text-[var(--fg-accent)]  border border-[var(--border-default)] dark:border-slate-800/80 mx-0.5 align-middle select-none">
                   [{index}]
                 </span>
               </React.Fragment>

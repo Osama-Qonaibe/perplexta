@@ -374,7 +374,7 @@ export const Header: React.FC<{ activeLanguage?: string }> = ({ activeLanguage }
                   alt={brandName} 
                   size={32}
                   className="w-full h-full object-contain block"
-                  fallbackIcon={<Cpu size={14} className="text-cyan-400" />}
+                  fallbackIcon={<Cpu size={14} className="text-[var(--fg-accent)]" />}
                 />
               </motion.div>
             ) : (
@@ -389,7 +389,7 @@ export const Header: React.FC<{ activeLanguage?: string }> = ({ activeLanguage }
                   ease: "easeInOut"
                 } : {}}
               >
-                <Cpu size={14} className="text-cyan-400" />
+                <Cpu size={14} className="text-[var(--fg-accent)]" />
               </motion.div>
             )}
           </NavLink>
@@ -425,7 +425,7 @@ export const Header: React.FC<{ activeLanguage?: string }> = ({ activeLanguage }
           className={`hidden sm:flex items-center justify-center w-8 h-8 rounded-[var(--radius-sm)] border transition-all duration-150 active:scale-95 group shrink-0 relative cursor-pointer before:absolute before:-inset-1.5 before:content-[''] ${
             isViralbookActive
               ? 'bg-[var(--surface-card)] text-[var(--text-primary)] border-[var(--border-default)] font-bold shadow-2xs' 
-              : 'bg-transparent border-[var(--border-default)] hover:border-cyan-500/60 dark:hover:border-cyan-400/60 hover:bg-[var(--surface-subtle)] text-[var(--text-secondary)] hover:text-[var(--text-primary)]'
+              : 'bg-transparent border-[var(--border-default)] hover:border-[var(--border-accent)]/60 hover:bg-[var(--surface-subtle)] text-[var(--text-secondary)] hover:text-[var(--text-primary)]'
           }`}
           title={language === 'ar' ? 'فيرال بوك والمجتمع التفاعلي' : 'ViralBook & Community Feed'}
           aria-label={language === 'ar' ? 'فيرال بوك' : 'ViralBook'}
@@ -434,7 +434,7 @@ export const Header: React.FC<{ activeLanguage?: string }> = ({ activeLanguage }
             size={14} 
             className={`transition-colors duration-150 ${
               isViralbookActive
-                ? 'text-cyan-500 dark:text-cyan-400' 
+                ? 'text-[var(--fg-accent)]' 
                 : 'text-[var(--text-muted)] group-hover:text-[var(--text-primary)]'
             }`} 
           />
@@ -446,7 +446,7 @@ export const Header: React.FC<{ activeLanguage?: string }> = ({ activeLanguage }
           className={`flex items-center justify-center w-8 h-8 rounded-[var(--radius-sm)] border transition-all duration-150 active:scale-95 group shrink-0 relative cursor-pointer before:absolute before:-inset-1.5 before:content-[''] ${
             location.pathname === '/Studio' || location.pathname === '/studio' 
               ? 'bg-[var(--surface-card)] text-[var(--text-primary)] border-[var(--border-default)] font-bold shadow-2xs' 
-              : 'bg-transparent border-[var(--border-default)] hover:border-cyan-500/60 dark:hover:border-cyan-400/60 hover:bg-[var(--surface-subtle)] text-[var(--text-secondary)] hover:text-[var(--text-primary)]'
+              : 'bg-transparent border-[var(--border-default)] hover:border-[var(--border-accent)]/60 hover:bg-[var(--surface-subtle)] text-[var(--text-secondary)] hover:text-[var(--text-primary)]'
           }`}
           title={language === 'ar' ? 'استوديو بيربليكستا للمطورين' : 'Perplexta Developer Studio'}
           aria-label={language === 'ar' ? 'استوديو بيربليكستا' : 'Perplexta Developer Studio'}
@@ -455,7 +455,7 @@ export const Header: React.FC<{ activeLanguage?: string }> = ({ activeLanguage }
             size={14} 
             className={`transition-colors duration-150 ${
               location.pathname === '/Studio' || location.pathname === '/studio'
-                ? 'text-cyan-500 dark:text-cyan-400' 
+                ? 'text-[var(--fg-accent)]' 
                 : 'text-[var(--text-muted)] group-hover:text-[var(--text-primary)]'
             }`} 
           />
@@ -489,7 +489,7 @@ export const Header: React.FC<{ activeLanguage?: string }> = ({ activeLanguage }
           triggerHaptic('light');
           toggleLanguage();
         }}
-        className={`items-center justify-center w-8 h-8 rounded-[var(--radius-sm)] bg-transparent border border-[var(--border-default)] hover:border-cyan-500/60 dark:hover:border-cyan-400/60 hover:bg-[var(--surface-subtle)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-all duration-150 active:scale-95 group shrink-0 cursor-pointer relative before:absolute before:-inset-1.5 before:content-[''] ${
+        className={`items-center justify-center w-8 h-8 rounded-[var(--radius-sm)] bg-transparent border border-[var(--border-default)] hover:border-[var(--border-accent)]/60 hover:bg-[var(--surface-subtle)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-all duration-150 active:scale-95 group shrink-0 cursor-pointer relative before:absolute before:-inset-1.5 before:content-[''] ${
           isChatPage && chatHeaderData && chatHeaderData.hasMessages ? 'hidden sm:flex' : 'flex'
         }`}
         title={language === 'ar' ? 'تغيير اللغة (English)' : 'Change Language (العربية)'}
@@ -519,7 +519,7 @@ export const Header: React.FC<{ activeLanguage?: string }> = ({ activeLanguage }
               className={`hidden sm:flex items-center justify-center w-8 h-8 rounded-[var(--radius-sm)] border transition-all duration-150 relative active:scale-95 group shrink-0 cursor-pointer before:absolute before:-inset-1.5 before:content-[''] ${
                 location.pathname.includes('/inquiries') || location.search.includes('tab=inquiries')
                   ? 'bg-[var(--surface-card)] text-[var(--text-primary)] border-[var(--border-default)] font-bold shadow-2xs'
-                  : 'bg-transparent border-[var(--border-default)] hover:border-cyan-500/60 dark:hover:border-cyan-400/60 hover:bg-[var(--surface-subtle)] text-[var(--text-secondary)] hover:text-[var(--text-primary)]'
+                  : 'bg-transparent border-[var(--border-default)] hover:border-[var(--border-accent)]/60 hover:bg-[var(--surface-subtle)] text-[var(--text-secondary)] hover:text-[var(--text-primary)]'
               }`}
               title={language === 'ar' ? 'صندوق المحادثات والرسائل' : 'Messages & Inquiries Inbox'}
               aria-label={language === 'ar' ? 'صندوق المحادثات والرسائل' : 'Messages & Inquiries Inbox'}
@@ -528,7 +528,7 @@ export const Header: React.FC<{ activeLanguage?: string }> = ({ activeLanguage }
                 size={14} 
                 className={`transition-colors duration-150 ${
                   location.pathname.includes('/inquiries') || location.search.includes('tab=inquiries')
-                    ? 'text-cyan-500 dark:text-cyan-400'
+                    ? 'text-[var(--fg-accent)]'
                     : 'text-[var(--text-muted)] group-hover:text-[var(--text-primary)]'
                 }`} 
               />
@@ -545,12 +545,12 @@ export const Header: React.FC<{ activeLanguage?: string }> = ({ activeLanguage }
               className={`flex items-center justify-center w-8 h-8 rounded-[var(--radius-sm)] bg-transparent border transition-all duration-150 relative active:scale-95 group shrink-0 cursor-pointer before:absolute before:-inset-1.5 before:content-[''] ${
                 isNotifOpen 
                   ? 'bg-[var(--surface-card)] text-[var(--text-primary)] border-[var(--border-default)] shadow-2xs' 
-                  : 'border-[var(--border-default)] hover:border-cyan-500/60 dark:hover:border-cyan-400/60 hover:bg-[var(--surface-subtle)] text-[var(--text-secondary)] hover:text-[var(--text-primary)]'
+                  : 'border-[var(--border-default)] hover:border-[var(--border-accent)]/60 hover:bg-[var(--surface-subtle)] text-[var(--text-secondary)] hover:text-[var(--text-primary)]'
               }`}
             >
               <Bell size={14} className={`transition-colors duration-150 ${unreadCount > 0 ? "text-[var(--accent-foreground)]" : isNotifOpen ? "text-[var(--accent-foreground)]" : "text-[var(--text-muted)] group-hover:text-[var(--text-primary)]"}`} />
               {unreadCount > 0 && (
-                <span className="absolute top-1.5 right-1.5 w-1.5 h-1.5 bg-cyan-400 rounded-full border border-[var(--surface-page)] shadow-[0_0_6px_var(--accent-foreground)]"></span>
+                <span className="absolute top-1.5 right-1.5 w-1.5 h-1.5 bg-[var(--accent)] rounded-full border border-[var(--surface-page)] shadow-[0_0_6px_var(--accent-foreground)]"></span>
               )}
             </button>
 
@@ -573,7 +573,7 @@ export const Header: React.FC<{ activeLanguage?: string }> = ({ activeLanguage }
                         disabled={unreadCount === 0}
                         className={`text-[9px] sm:text-[10px] font-bold flex items-center gap-1 transition-all duration-150 ${
                           unreadCount > 0 
-                            ? 'text-cyan-500 dark:text-cyan-400 hover:opacity-80 cursor-pointer' 
+                            ? 'text-[var(--fg-accent)] hover:opacity-80 cursor-pointer' 
                             : 'text-[var(--text-muted)] opacity-40 cursor-not-allowed'
                         }`}
                       >
@@ -611,12 +611,12 @@ export const Header: React.FC<{ activeLanguage?: string }> = ({ activeLanguage }
                             }
                           }}
                           className={`w-full p-2.5 sm:p-4 flex gap-2 sm:gap-3 text-right hover:bg-[var(--surface-subtle)] transition-all duration-150 border-b border-[var(--border-default)] last:border-0 group relative cursor-pointer ${
-                            !notif.is_read ? 'bg-[var(--surface-subtle)]/70 border-r-2 border-r-cyan-500' : ''
+                            !notif.is_read ? 'bg-[var(--surface-subtle)]/70 border-r-2 border-r-[var(--border-accent)]' : ''
                           }`}
                           dir={dir}
                         >
                           <div className={`mt-0.5 h-7 w-7 sm:h-8 sm:w-8 rounded-[var(--radius-sm)] flex items-center justify-center shrink-0 transition-all duration-150 overflow-hidden ${
-                            !notif.is_read ? 'bg-cyan-500/20 text-cyan-500 dark:text-cyan-400 font-bold' : 'bg-[var(--surface-subtle)] text-[var(--text-muted)]'
+                            !notif.is_read ? 'bg-[var(--bg-accent-muted)] text-[var(--fg-accent)] font-bold' : 'bg-[var(--surface-subtle)] text-[var(--text-muted)]'
                           }`}>
                             <NotificationIconRenderer 
                               src={notif.image || notif.icon_url || notif.avatar || null}
@@ -627,9 +627,9 @@ export const Header: React.FC<{ activeLanguage?: string }> = ({ activeLanguage }
                           <div className="flex-1 min-w-0">
                             <div className="flex items-center justify-between gap-1 flex-row-reverse">
                               {!notif.is_read && (
-                                <span className="w-1.5 h-1.5 bg-cyan-400 rounded-full shrink-0 shadow-[0_0_6px_var(--accent-foreground)]" />
+                                <span className="w-1.5 h-1.5 bg-[var(--accent)] rounded-full shrink-0 shadow-[0_0_6px_var(--accent-foreground)]" />
                               )}
-                              <h4 className={`text-[11px] sm:text-xs font-bold truncate transition-all duration-150 ${!notif.is_read ? 'text-cyan-500 dark:text-cyan-400' : 'text-[var(--text-primary)]'}`}>
+                              <h4 className={`text-[11px] sm:text-xs font-bold truncate transition-all duration-150 ${!notif.is_read ? 'text-[var(--fg-accent)]' : 'text-[var(--text-primary)]'}`}>
                                 {language === 'ar' ? notif.title_ar : notif.title_en}
                               </h4>
                             </div>
@@ -645,7 +645,7 @@ export const Header: React.FC<{ activeLanguage?: string }> = ({ activeLanguage }
                                 {!notif.is_read && (
                                   <button 
                                     onClick={(e) => { e.stopPropagation(); markAsRead(notif.id); }}
-                                    className="p-0.5 sm:p-1 text-cyan-500/70 hover:text-cyan-400 opacity-100 sm:opacity-0 group-hover:opacity-100 transition-all duration-150 cursor-pointer"
+                                    className="p-0.5 sm:p-1 text-[var(--fg-accent)]/70 hover:text-[var(--fg-accent)] opacity-100 sm:opacity-0 group-hover:opacity-100 transition-all duration-150 cursor-pointer"
                                     title={language === 'ar' ? 'تحديد كمقروء' : 'Mark as read'}
                                   >
                                     <Check size={11} className="stroke-[3px]" />
@@ -746,7 +746,7 @@ export const Header: React.FC<{ activeLanguage?: string }> = ({ activeLanguage }
                     className={`w-8 h-8 rounded-[var(--radius-sm)] border flex items-center justify-center transition-all duration-150 cursor-pointer shrink-0 relative active:scale-95 group ${
                       chatHeaderData.activeChatTab === 'answer'
                         ? 'bg-[var(--surface-card)] text-[var(--text-primary)] border-[var(--border-default)] font-bold shadow-2xs'
-                        : 'bg-transparent border-[var(--border-default)] hover:border-cyan-500/60 dark:hover:border-cyan-400/60 hover:bg-[var(--surface-subtle)] text-[var(--text-secondary)] hover:text-[var(--text-primary)]'
+                        : 'bg-transparent border-[var(--border-default)] hover:border-[var(--border-accent)]/60 hover:bg-[var(--surface-subtle)] text-[var(--text-secondary)] hover:text-[var(--text-primary)]'
                     }`}
                     title={globalLang === 'ar' ? 'الإجابة والتحليل' : 'Answer'}
                     aria-label={globalLang === 'ar' ? 'الإجابة والتحليل' : 'Answer'}
@@ -767,14 +767,14 @@ export const Header: React.FC<{ activeLanguage?: string }> = ({ activeLanguage }
                     className={`h-8 min-w-[32px] px-1.5 rounded-[var(--radius-sm)] border flex items-center justify-center gap-1 transition-all duration-150 cursor-pointer shrink-0 relative active:scale-95 group ${
                       chatHeaderData.activeChatTab === 'links'
                         ? 'bg-[var(--surface-card)] text-[var(--text-primary)] border-[var(--border-default)] font-bold shadow-2xs'
-                        : 'bg-transparent border-[var(--border-default)] hover:border-cyan-500/60 dark:hover:border-cyan-400/60 hover:bg-[var(--surface-subtle)] text-[var(--text-secondary)] hover:text-[var(--text-primary)]'
+                        : 'bg-transparent border-[var(--border-default)] hover:border-[var(--border-accent)]/60 hover:bg-[var(--surface-subtle)] text-[var(--text-secondary)] hover:text-[var(--text-primary)]'
                     }`}
                     title={globalLang === 'ar' ? `المصادر (${chatHeaderData.citationsCount})` : `Sources (${chatHeaderData.citationsCount})`}
                     aria-label={globalLang === 'ar' ? `المصادر (${chatHeaderData.citationsCount})` : `Sources (${chatHeaderData.citationsCount})`}
                   >
                     <Globe size={14} className="text-[var(--text-muted)] group-hover:text-[var(--text-primary)] transition-colors duration-150" />
                     {chatHeaderData.citationsCount > 0 && (
-                      <span className="px-1.5 py-0.2 rounded-full text-[10px] bg-cyan-500/20 text-cyan-500 dark:text-cyan-400 font-mono font-bold">
+                      <span className="px-1.5 py-0.2 rounded-full text-[10px] bg-[var(--bg-accent-muted)] text-[var(--fg-accent)] font-mono font-bold">
                         {chatHeaderData.citationsCount}
                       </span>
                     )}
@@ -789,14 +789,14 @@ export const Header: React.FC<{ activeLanguage?: string }> = ({ activeLanguage }
                     className={`h-8 min-w-[32px] px-1.5 rounded-[var(--radius-sm)] border flex items-center justify-center gap-1 transition-all duration-150 cursor-pointer shrink-0 relative active:scale-95 group ${
                       chatHeaderData.activeChatTab === 'images'
                         ? 'bg-[var(--surface-card)] text-[var(--text-primary)] border-[var(--border-default)] font-bold shadow-2xs'
-                        : 'bg-transparent border-[var(--border-default)] hover:border-cyan-500/60 dark:hover:border-cyan-400/60 hover:bg-[var(--surface-subtle)] text-[var(--text-secondary)] hover:text-[var(--text-primary)]'
+                        : 'bg-transparent border-[var(--border-default)] hover:border-[var(--border-accent)]/60 hover:bg-[var(--surface-subtle)] text-[var(--text-secondary)] hover:text-[var(--text-primary)]'
                     }`}
                     title={globalLang === 'ar' ? `الوسائط (${chatHeaderData.imagesCount})` : `Media (${chatHeaderData.imagesCount})`}
                     aria-label={globalLang === 'ar' ? `الوسائط (${chatHeaderData.imagesCount})` : `Media (${chatHeaderData.imagesCount})`}
                   >
                     <ImageIcon size={14} className="text-[var(--text-muted)] group-hover:text-[var(--text-primary)] transition-colors duration-150" />
                     {chatHeaderData.imagesCount > 0 && (
-                      <span className="px-1.5 py-0.2 rounded-full text-[10px] bg-cyan-500/20 text-cyan-500 dark:text-cyan-400 font-mono font-bold">
+                      <span className="px-1.5 py-0.2 rounded-full text-[10px] bg-[var(--bg-accent-muted)] text-[var(--fg-accent)] font-mono font-bold">
                         {chatHeaderData.imagesCount}
                       </span>
                     )}
@@ -833,7 +833,7 @@ export const Header: React.FC<{ activeLanguage?: string }> = ({ activeLanguage }
                         setHeaderMenuTarget({ rect });
                       }
                     }}
-                    className={`w-8 h-8 rounded-[var(--radius-sm)] border border-[var(--border-default)] hover:border-cyan-500/60 dark:hover:border-cyan-400/60 hover:bg-[var(--surface-subtle)] flex items-center justify-center transition-all duration-150 cursor-pointer shrink-0 relative active:scale-95 group bg-transparent ${
+                    className={`w-8 h-8 rounded-[var(--radius-sm)] border border-[var(--border-default)] hover:border-[var(--border-accent)]/60 hover:bg-[var(--surface-subtle)] flex items-center justify-center transition-all duration-150 cursor-pointer shrink-0 relative active:scale-95 group bg-transparent ${
                       headerMenuTarget 
                         ? 'bg-[var(--surface-card)] text-[var(--text-primary)] shadow-2xs' 
                         : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)]'
@@ -841,7 +841,7 @@ export const Header: React.FC<{ activeLanguage?: string }> = ({ activeLanguage }
                     title={globalLang === 'ar' ? 'خيارات' : 'Options'}
                     aria-label={globalLang === 'ar' ? 'خيارات' : 'Options'}
                   >
-                    <MoreHorizontal size={14} className={`transition-colors duration-150 ${headerMenuTarget ? 'text-cyan-500 dark:text-cyan-400' : 'text-[var(--text-muted)] group-hover:text-[var(--text-primary)]'}`} />
+                    <MoreHorizontal size={14} className={`transition-colors duration-150 ${headerMenuTarget ? 'text-[var(--fg-accent)]' : 'text-[var(--text-muted)] group-hover:text-[var(--text-primary)]'}`} />
                   </button>
                 </div>
               </div>
@@ -862,7 +862,7 @@ export const Header: React.FC<{ activeLanguage?: string }> = ({ activeLanguage }
                   className={`w-7 h-7 rounded-[var(--radius-sm)] border flex items-center justify-center transition-all duration-150 cursor-pointer shrink-0 relative active:scale-95 group ${
                     chatHeaderData.activeChatTab === 'answer'
                       ? 'bg-[var(--surface-card)] text-[var(--text-primary)] border-[var(--border-default)] font-bold shadow-2xs'
-                      : 'bg-transparent border-[var(--border-default)] hover:border-cyan-500/60 dark:hover:border-cyan-400/60 hover:bg-[var(--surface-subtle)] text-[var(--text-secondary)] hover:text-[var(--text-primary)]'
+                      : 'bg-transparent border-[var(--border-default)] hover:border-[var(--border-accent)]/60 hover:bg-[var(--surface-subtle)] text-[var(--text-secondary)] hover:text-[var(--text-primary)]'
                   }`}
                   title={globalLang === 'ar' ? 'الإجابة والتحليل' : 'Answer'}
                 >
@@ -882,13 +882,13 @@ export const Header: React.FC<{ activeLanguage?: string }> = ({ activeLanguage }
                   className={`h-7 min-w-[28px] px-1 rounded-[var(--radius-sm)] border flex items-center justify-center gap-1 transition-all duration-150 cursor-pointer shrink-0 relative active:scale-95 group ${
                     chatHeaderData.activeChatTab === 'links'
                       ? 'bg-[var(--surface-card)] text-[var(--text-primary)] border-[var(--border-default)] font-bold shadow-2xs'
-                      : 'bg-transparent border-[var(--border-default)] hover:border-cyan-500/60 dark:hover:border-cyan-400/60 hover:bg-[var(--surface-subtle)] text-[var(--text-secondary)] hover:text-[var(--text-primary)]'
+                      : 'bg-transparent border-[var(--border-default)] hover:border-[var(--border-accent)]/60 hover:bg-[var(--surface-subtle)] text-[var(--text-secondary)] hover:text-[var(--text-primary)]'
                   }`}
                   title={globalLang === 'ar' ? `المصادر (${chatHeaderData.citationsCount})` : `Sources (${chatHeaderData.citationsCount})`}
                 >
                   <Globe size={13} className="text-[var(--text-muted)] group-hover:text-[var(--text-primary)] transition-colors duration-150" />
                   {chatHeaderData.citationsCount > 0 && (
-                    <span className="px-1 py-0.2 rounded-full text-[9px] bg-cyan-500/20 text-cyan-500 dark:text-cyan-400 font-mono font-bold">
+                    <span className="px-1 py-0.2 rounded-full text-[9px] bg-[var(--bg-accent-muted)] text-[var(--fg-accent)] font-mono font-bold">
                       {chatHeaderData.citationsCount}
                     </span>
                   )}
@@ -903,13 +903,13 @@ export const Header: React.FC<{ activeLanguage?: string }> = ({ activeLanguage }
                   className={`h-7 min-w-[28px] px-1 rounded-[var(--radius-sm)] border flex items-center justify-center gap-1 transition-all duration-150 cursor-pointer shrink-0 relative active:scale-95 group ${
                     chatHeaderData.activeChatTab === 'images'
                       ? 'bg-[var(--surface-card)] text-[var(--text-primary)] border-[var(--border-default)] font-bold shadow-2xs'
-                      : 'bg-transparent border-[var(--border-default)] hover:border-cyan-500/60 dark:hover:border-cyan-400/60 hover:bg-[var(--surface-subtle)] text-[var(--text-secondary)] hover:text-[var(--text-primary)]'
+                      : 'bg-transparent border-[var(--border-default)] hover:border-[var(--border-accent)]/60 hover:bg-[var(--surface-subtle)] text-[var(--text-secondary)] hover:text-[var(--text-primary)]'
                   }`}
                   title={globalLang === 'ar' ? `الوسائط (${chatHeaderData.imagesCount})` : `Media (${chatHeaderData.imagesCount})`}
                 >
                   <ImageIcon size={13} className="text-[var(--text-muted)] group-hover:text-[var(--text-primary)] transition-colors duration-150" />
                   {chatHeaderData.imagesCount > 0 && (
-                    <span className="px-1 py-0.2 rounded-full text-[9px] bg-cyan-500/20 text-cyan-500 dark:text-cyan-400 font-mono font-bold">
+                    <span className="px-1 py-0.2 rounded-full text-[9px] bg-[var(--bg-accent-muted)] text-[var(--fg-accent)] font-mono font-bold">
                       {chatHeaderData.imagesCount}
                     </span>
                   )}
@@ -943,14 +943,14 @@ export const Header: React.FC<{ activeLanguage?: string }> = ({ activeLanguage }
                       setHeaderMenuTarget({ rect });
                     }
                   }}
-                  className={`w-7 h-7 rounded-[var(--radius-sm)] border border-[var(--border-default)] hover:border-cyan-500/60 dark:hover:border-cyan-400/60 hover:bg-[var(--surface-subtle)] flex items-center justify-center transition-all duration-150 cursor-pointer shrink-0 relative active:scale-95 group bg-transparent ${
+                  className={`w-7 h-7 rounded-[var(--radius-sm)] border border-[var(--border-default)] hover:border-[var(--border-accent)]/60 hover:bg-[var(--surface-subtle)] flex items-center justify-center transition-all duration-150 cursor-pointer shrink-0 relative active:scale-95 group bg-transparent ${
                     headerMenuTarget 
                       ? 'bg-[var(--surface-card)] text-[var(--text-primary)] shadow-2xs' 
                       : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)]'
                   }`}
                   title={globalLang === 'ar' ? 'خيارات' : 'Options'}
                 >
-                  <MoreHorizontal size={13} className={`transition-colors duration-150 ${headerMenuTarget ? 'text-cyan-500 dark:text-cyan-400' : 'text-[var(--text-muted)] group-hover:text-[var(--text-primary)]'}`} />
+                  <MoreHorizontal size={13} className={`transition-colors duration-150 ${headerMenuTarget ? 'text-[var(--fg-accent)]' : 'text-[var(--text-muted)] group-hover:text-[var(--text-primary)]'}`} />
                 </button>
               </div>
             </div>
@@ -1098,7 +1098,7 @@ export const Header: React.FC<{ activeLanguage?: string }> = ({ activeLanguage }
                     e.stopPropagation();
                     item.action();
                   }}
-                  className={`group w-full h-[36px] min-h-[36px] flex items-center gap-2.5 px-3 py-2 rounded-[8px] border border-transparent transition-all duration-150 cursor-pointer select-none text-start text-xs font-medium ${
+                  className={`group w-full h-[36px] min-h-[36px] flex items-center gap-2.5 px-3 py-2 rounded-shape-sm border border-transparent transition-all duration-150 cursor-pointer select-none text-start text-xs font-medium ${
                     isDanger
                       ? 'bg-transparent hover:bg-rose-500/10 text-rose-500'
                       : 'bg-transparent hover:bg-[var(--surface-subtle)] text-[var(--text-secondary)] hover:text-[var(--text-primary)]'
@@ -1109,7 +1109,7 @@ export const Header: React.FC<{ activeLanguage?: string }> = ({ activeLanguage }
                     className={`shrink-0 transition-colors duration-150 ${
                       isDanger
                         ? 'text-rose-500 group-hover:text-rose-400'
-                        : 'text-[var(--text-muted)] group-hover:text-cyan-400'
+                        : 'text-[var(--text-muted)] group-hover:text-[var(--text-primary)]'
                     }`}
                   />
                   <span

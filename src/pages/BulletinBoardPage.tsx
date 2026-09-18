@@ -3696,14 +3696,14 @@ export const BulletinBoardPage: React.FC = () => {
               >
                 <div className="p-4 border-b border-[var(--border-default)] flex items-center justify-between">
                   <div className="flex items-center gap-2">
-                    <div className="w-8 h-8 rounded-[8px] bg-accent/10 flex items-center justify-center text-accent font-bold">
+                    <div className="w-8 h-8 rounded-shape-sm bg-accent/10 flex items-center justify-center text-accent font-bold">
                       <SlidersHorizontal size={14} />
                     </div>
                     <h3 className="text-xs font-extrabold">{isRtl ? 'قائمة بيربليكستا بورد والتحكم' : 'Perplexta Board Menu & Controls'}</h3>
                   </div>
                   <button
                     onClick={() => setIsMobileSidebarOpen(false)}
-                    className="w-8 h-8 rounded-[8px] border border-[var(--border-default)] flex items-center justify-center text-[var(--text-muted)] hover:text-[var(--text-primary)] hover:bg-[var(--surface-subtle)] active:scale-95 transition-theme"
+                    className="w-8 h-8 rounded-shape-sm border border-[var(--border-default)] flex items-center justify-center text-[var(--text-muted)] hover:text-[var(--text-primary)] hover:bg-[var(--surface-subtle)] active:scale-95 transition-theme"
                   >
                     <X size={14} />
                   </button>
@@ -3751,7 +3751,7 @@ export const BulletinBoardPage: React.FC = () => {
                           <span>{isRtl ? 'الرسائل والاستفسارات' : 'Inquiries & Messages'}</span>
                         </div>
                         {inquiriesList.length > 0 && (
-                          <span className="px-2 py-0.5 rounded-[4px] bg-accent/10 text-accent text-[10px] font-black">
+                          <span className="px-2 py-0.5 rounded-shape-xs bg-accent/10 text-accent text-[10px] font-black">
                             {inquiriesList.length}
                           </span>
                         )}
@@ -3973,7 +3973,7 @@ export const BulletinBoardPage: React.FC = () => {
                     <div className="h-32 sm:h-52 w-full bg-[var(--surface-subtle)] relative cursor-pointer overflow-hidden rounded-t-xl" onClick={() => handleOpenPageDetail(page.id)}>
                       <img src={getMediaUrl(page.cover_url)} alt={page.name} className="w-full h-full object-cover" />
                       <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent"></div>
-                      <span className="absolute top-3 start-3 px-3 py-1 rounded-[4px] bg-black/60 text-[var(--text-primary)] text-[11px] font-bold backdrop-blur-md">
+                      <span className="absolute top-3 start-3 px-3 py-1 rounded-shape-xs bg-black/60 text-[var(--text-primary)] text-[11px] font-bold backdrop-blur-md">
                         {page.category}
                       </span>
                     </div>
@@ -4509,7 +4509,7 @@ export const BulletinBoardPage: React.FC = () => {
                   }}
                   exit={{ opacity: 0, y: -20, scale: 0.8 }}
                   transition={{ duration: 0.2, ease: [0.16, 1, 0.3, 1] }}
-                  className={`absolute -top-3 left-1/2 -translate-x-1/2 z-50 flex items-center gap-2 px-3.5 py-1.5 rounded-[4px] border shadow-xl backdrop-blur-md transition-theme pointer-events-none ${
+                  className={`absolute -top-3 left-1/2 -translate-x-1/2 z-50 flex items-center gap-2 px-3.5 py-1.5 rounded-shape-xs border shadow-xl backdrop-blur-md transition-theme pointer-events-none ${
                     isRefreshing || pullDistance >= 55
                       ? 'bg-accent/10 dark:bg-accent/40 border-accent/40 text-accent shadow-none'
                       : 'bg-[var(--surface-card)]/90 border-[var(--border-default)] text-[var(--fg-secondary)]'
@@ -4568,7 +4568,7 @@ export const BulletinBoardPage: React.FC = () => {
                     alt={selectedPageDetail.page.name}
                     className="w-full h-full object-cover"
                   />
-                  <span className="absolute top-3 start-3 px-3 py-1 rounded-[4px] bg-black/60 text-[var(--text-primary)] text-xs font-bold backdrop-blur-md">
+                  <span className="absolute top-3 start-3 px-3 py-1 rounded-shape-xs bg-black/60 text-[var(--text-primary)] text-xs font-bold backdrop-blur-md">
                     {selectedPageDetail.page.category}
                   </span>
                 </div>
@@ -5581,7 +5581,7 @@ export const BulletinBoardPage: React.FC = () => {
                         {adFormData.has_whatsapp_button && (
                           <div className="mt-2 p-2 sm:p-3 bg-[var(--surface-inset)] rounded-xl border border-[var(--border-default)] flex items-center justify-between gap-2 sm:gap-3">
                             <div className="flex items-center gap-2 min-w-0">
-                              <div className="w-7 h-7 sm:w-9 sm:h-9 rounded-[4px] bg-[#25D366]/10 flex items-center justify-center text-[#25D366] shrink-0">
+                              <div className="w-7 h-7 sm:w-9 sm:h-9 rounded-shape-xs bg-[#25D366]/10 flex items-center justify-center text-[#25D366] shrink-0">
                                 <MessageCircle size={16} className="text-[#25D366] sm:size-5" />
                               </div>
                               <div className="min-w-0">
@@ -5602,7 +5602,7 @@ export const BulletinBoardPage: React.FC = () => {
                               <button
                                 type="button"
                                 onClick={() => setAdFormData(prev => ({ ...prev, has_whatsapp_button: false }))}
-                                className="w-6 h-6 sm:w-7 sm:h-7 rounded-[4px] bg-[var(--surface-subtle)] hover:bg-red-500 hover:text-[var(--text-primary)] flex items-center justify-center text-[var(--text-muted)] transition-colors cursor-pointer"
+                                className="w-6 h-6 sm:w-7 sm:h-7 rounded-shape-xs bg-[var(--surface-subtle)] hover:bg-red-500 hover:text-[var(--text-primary)] flex items-center justify-center text-[var(--text-muted)] transition-colors cursor-pointer"
                                 title={isRtl ? 'إزالة زر الواتساب' : 'Remove WhatsApp CTA'}
                               >
                                 <X size={11} />
@@ -5645,13 +5645,13 @@ export const BulletinBoardPage: React.FC = () => {
                     )}
 
                     {}
-                    <div className="px-3 py-1.5 rounded-[12px] border border-[var(--border-default)] bg-[var(--surface-card)] flex items-center justify-between shadow-xs">
+                    <div className="px-3 py-1.5 rounded-shape-md border border-[var(--border-default)] bg-[var(--surface-card)] flex items-center justify-between shadow-xs">
                       <span className="text-[11px] font-bold text-[var(--text-primary)] shrink-0">
                         {isRtl ? 'إضافة إلى منشورك' : 'Add to your post'}
                       </span>
                       <div className="flex items-center gap-1">
                         {}
-                        <label className="p-1 rounded-[6px] hover:bg-[var(--status-success-subtle)] text-[var(--fg-success)] cursor-pointer transition-colors" title={isRtl ? 'صور / فيديو' : 'Photos / Video'}>
+                        <label className="p-1 rounded-shape-sm hover:bg-[var(--status-success-subtle)] text-[var(--fg-success)] cursor-pointer transition-colors" title={isRtl ? 'صور / فيديو' : 'Photos / Video'}>
                           <ImageIcon size={16} />
                           <input
                             type="file"
@@ -5664,7 +5664,7 @@ export const BulletinBoardPage: React.FC = () => {
                         <button
                           type="button"
                           onClick={() => setComposerView('tagging')}
-                          className="p-1 rounded-[6px] hover:bg-accent/10 text-accent transition-colors"
+                          className="p-1 rounded-shape-sm hover:bg-accent/10 text-accent transition-colors"
                           title={isRtl ? 'إشارة إلى أشخاص' : 'Tag people'}
                         >
                           <Users size={16} />
@@ -5683,7 +5683,7 @@ export const BulletinBoardPage: React.FC = () => {
                               toast.success(isRtl ? 'تم إرفاق زر المراسلة عبر واتساب' : 'WhatsApp CTA button attached');
                             }
                           }}
-                          className={`p-1 rounded-[6px] transition-colors ${adFormData.has_whatsapp_button ? 'bg-[#25D366]/15 text-[#25D366]' : 'hover:bg-[#25D366]/10 text-[#25D366]'}`}
+                          className={`p-1 rounded-shape-sm transition-colors ${adFormData.has_whatsapp_button ? 'bg-[#25D366]/15 text-[#25D366]' : 'hover:bg-[#25D366]/10 text-[#25D366]'}`}
                           title={isRtl ? 'زر مراسلة واتساب' : 'WhatsApp Button'}
                         >
                           <MessageCircle size={16} />
@@ -5693,7 +5693,7 @@ export const BulletinBoardPage: React.FC = () => {
                         <button
                           type="button"
                           onClick={() => setComposerView('location')}
-                          className={`p-1 rounded-[6px] transition-colors ${adFormData.location_city ? 'bg-rose-500/15 text-rose-500' : 'hover:bg-rose-500/10 text-rose-500'}`}
+                          className={`p-1 rounded-shape-sm transition-colors ${adFormData.location_city ? 'bg-rose-500/15 text-rose-500' : 'hover:bg-rose-500/10 text-rose-500'}`}
                           title={isRtl ? 'الموقع' : 'Location'}
                         >
                           <MapPin size={16} />
@@ -5703,7 +5703,7 @@ export const BulletinBoardPage: React.FC = () => {
                         <button
                           type="button"
                           onClick={() => setComposerView('feelings')}
-                          className={`p-1 rounded-[6px] transition-colors ${adFormData.feeling ? 'bg-amber-500/15 text-amber-500' : 'hover:bg-amber-500/10 text-amber-500'}`}
+                          className={`p-1 rounded-shape-sm transition-colors ${adFormData.feeling ? 'bg-amber-500/15 text-amber-500' : 'hover:bg-amber-500/10 text-amber-500'}`}
                           title={isRtl ? 'الشعور / النشاط' : 'Feeling / Activity'}
                         >
                           <Smile size={16} />
@@ -5713,7 +5713,7 @@ export const BulletinBoardPage: React.FC = () => {
                         <button
                           type="button"
                           onClick={() => setIsAddToPostModalOpen(true)}
-                          className="p-1 rounded-[6px] hover:bg-[var(--surface-subtle)] text-[var(--text-secondary)] transition-colors"
+                          className="p-1 rounded-shape-sm hover:bg-[var(--surface-subtle)] text-[var(--text-secondary)] transition-colors"
                           title={isRtl ? 'المزيد' : 'More'}
                         >
                           <SlidersHorizontal size={16} />
@@ -5779,7 +5779,7 @@ export const BulletinBoardPage: React.FC = () => {
                         <div>
                           <h3 className="text-xs sm:text-sm font-black text-[var(--text-primary)] flex items-center gap-1.5">
                             <span>{isRtl ? 'قائمة تحديد موقع المنشور والتغطية' : 'Post Location & Radius Flyout'}</span>
-                            <span className="text-[9px] bg-accent/15 text-accent px-1.5 py-0.5 rounded-[8px] font-bold">
+                            <span className="text-[9px] bg-accent/15 text-accent px-1.5 py-0.5 rounded-shape-sm font-bold">
                               {isRtl ? 'مباشر' : 'Live'}
                             </span>
                           </h3>
@@ -5792,7 +5792,7 @@ export const BulletinBoardPage: React.FC = () => {
                       <button
                         type="button"
                         onClick={() => setComposerView('main')}
-                        className="w-8 h-8 rounded-[8px] bg-[var(--surface-subtle)] flex items-center justify-center text-[var(--text-muted)] hover:text-[var(--text-primary)] transition-theme hover:rotate-90"
+                        className="w-8 h-8 rounded-shape-sm bg-[var(--surface-subtle)] flex items-center justify-center text-[var(--text-muted)] hover:text-[var(--text-primary)] transition-theme hover:rotate-90"
                         title={isRtl ? 'إغلاق' : 'Close'}
                       >
                         <X size={15} />
@@ -6119,7 +6119,7 @@ export const BulletinBoardPage: React.FC = () => {
               {}
               <div className="p-4 border-b border-[var(--border-default)] flex items-center justify-between">
                 <div className="flex items-center gap-2">
-                  <div className="w-8 h-8 rounded-[8px] bg-accent/10 text-accent flex items-center justify-center">
+                  <div className="w-8 h-8 rounded-shape-sm bg-accent/10 text-accent flex items-center justify-center">
                     <Globe size={18} />
                   </div>
                   <h3 className="text-base font-black text-[var(--text-primary)]">
@@ -6129,7 +6129,7 @@ export const BulletinBoardPage: React.FC = () => {
                 <button
                   type="button"
                   onClick={() => setIsAudienceModalOpen(false)}
-                  className="w-8 h-8 rounded-[8px] bg-[var(--surface-subtle)] flex items-center justify-center text-[var(--text-muted)] hover:text-[var(--text-primary)] transition-colors"
+                  className="w-8 h-8 rounded-shape-sm bg-[var(--surface-subtle)] flex items-center justify-center text-[var(--text-muted)] hover:text-[var(--text-primary)] transition-colors"
                 >
                   <X size={16} />
                 </button>
@@ -6273,7 +6273,7 @@ export const BulletinBoardPage: React.FC = () => {
                 <button
                   type="button"
                   onClick={() => setIsAddToPostModalOpen(false)}
-                  className="p-2 rounded-[8px] hover:bg-[var(--surface-subtle)] text-[var(--text-secondary)] transition-colors"
+                  className="p-2 rounded-shape-sm hover:bg-[var(--surface-subtle)] text-[var(--text-secondary)] transition-colors"
                 >
                   <ArrowLeft size={20} className={isRtl ? 'rotate-180' : ''} />
                 </button>
@@ -6286,7 +6286,7 @@ export const BulletinBoardPage: React.FC = () => {
               <div className="grid grid-cols-2 gap-2 py-2">
                 {}
                 <label className="flex items-center gap-3 p-3 rounded-xl hover:bg-[var(--surface-subtle)] cursor-pointer transition-theme group">
-                  <div className="w-10 h-10 rounded-[8px] bg-accent/10 flex items-center justify-center text-accent transition-theme">
+                  <div className="w-10 h-10 rounded-shape-sm bg-accent/10 flex items-center justify-center text-accent transition-theme">
                     <ImageIcon size={22} />
                   </div>
                   <div className="flex flex-col">
@@ -6309,7 +6309,7 @@ export const BulletinBoardPage: React.FC = () => {
                   }}
                   className="flex items-center gap-3 p-3 rounded-xl hover:bg-[var(--surface-subtle)] text-left rtl:text-right transition-theme group"
                 >
-                  <div className="w-10 h-10 rounded-[8px] bg-orange-500/10 flex items-center justify-center text-orange-500 transition-theme">
+                  <div className="w-10 h-10 rounded-shape-sm bg-orange-500/10 flex items-center justify-center text-orange-500 transition-theme">
                     <Smile size={22} />
                   </div>
                   <div className="flex flex-col">
@@ -6327,7 +6327,7 @@ export const BulletinBoardPage: React.FC = () => {
                   }}
                   className="flex items-center gap-3 p-3 rounded-xl hover:bg-[var(--surface-subtle)] text-left rtl:text-right transition-theme group"
                 >
-                  <div className="w-10 h-10 rounded-[8px] bg-accent/10 flex items-center justify-center text-accent transition-theme">
+                  <div className="w-10 h-10 rounded-shape-sm bg-accent/10 flex items-center justify-center text-accent transition-theme">
                     <Users size={22} />
                   </div>
                   <div className="flex flex-col">
@@ -6345,7 +6345,7 @@ export const BulletinBoardPage: React.FC = () => {
                   }}
                   className="flex items-center gap-3 p-3 rounded-xl hover:bg-[var(--surface-subtle)] text-left rtl:text-right transition-theme group"
                 >
-                  <div className="w-10 h-10 rounded-[8px] bg-red-500/10 flex items-center justify-center text-red-500 transition-theme">
+                  <div className="w-10 h-10 rounded-shape-sm bg-red-500/10 flex items-center justify-center text-red-500 transition-theme">
                     <MapPin size={22} />
                   </div>
                   <div className="flex flex-col">
@@ -6364,7 +6364,7 @@ export const BulletinBoardPage: React.FC = () => {
                   }}
                   className="flex items-center gap-3 p-3 rounded-xl hover:bg-[var(--surface-subtle)] text-left rtl:text-right transition-theme group"
                 >
-                  <div className="w-10 h-10 rounded-[8px] bg-accent/10 flex items-center justify-center text-accent transition-theme">
+                  <div className="w-10 h-10 rounded-shape-sm bg-accent/10 flex items-center justify-center text-accent transition-theme">
                     <Phone size={22} />
                   </div>
                   <div className="flex flex-col">
@@ -6394,7 +6394,7 @@ export const BulletinBoardPage: React.FC = () => {
                   }}
                   className="flex items-center gap-3 p-3 rounded-xl hover:bg-[var(--surface-subtle)] text-left rtl:text-right transition-theme group"
                 >
-                  <div className="w-10 h-10 rounded-[8px] bg-accent/10 flex items-center justify-center text-accent font-extrabold text-xs transition-theme">
+                  <div className="w-10 h-10 rounded-shape-sm bg-accent/10 flex items-center justify-center text-accent font-extrabold text-xs transition-theme">
                     GIF
                   </div>
                   <div className="flex flex-col">
@@ -6413,7 +6413,7 @@ export const BulletinBoardPage: React.FC = () => {
                   }}
                   className="flex items-center gap-3 p-3 rounded-xl hover:bg-[var(--surface-subtle)] text-left rtl:text-right transition-theme group"
                 >
-                  <div className="w-10 h-10 rounded-[8px] bg-red-600/10 flex items-center justify-center text-red-500 transition-theme">
+                  <div className="w-10 h-10 rounded-shape-sm bg-red-600/10 flex items-center justify-center text-red-500 transition-theme">
                     <Radio size={22} className="animate-pulse" />
                   </div>
                   <div className="flex flex-col">
@@ -6432,7 +6432,7 @@ export const BulletinBoardPage: React.FC = () => {
                   }}
                   className="flex items-center gap-3 p-3 rounded-xl hover:bg-[var(--surface-subtle)] text-left rtl:text-right transition-theme group"
                 >
-                  <div className="w-10 h-10 rounded-[8px] bg-accent/10 flex items-center justify-center text-accent transition-theme">
+                  <div className="w-10 h-10 rounded-shape-sm bg-accent/10 flex items-center justify-center text-accent transition-theme">
                     <Bookmark size={22} />
                   </div>
                   <div className="flex flex-col">
@@ -6765,7 +6765,7 @@ export const BulletinBoardPage: React.FC = () => {
                   <div>
                     <h3 className="text-xs sm:text-sm font-black text-[var(--text-primary)] flex items-center gap-1">
                       <span>{isRtl ? 'قائمة التغطية والموقع السريعة' : 'Instant Location & Radius Flyout'}</span>
-                      <span className="text-[9px] bg-accent/15 text-accent px-1.5 py-0.5 rounded-[4px] font-bold">
+                      <span className="text-[9px] bg-accent/15 text-accent px-1.5 py-0.5 rounded-shape-xs font-bold">
                         {isRtl ? 'مباشر' : 'Live'}
                       </span>
                     </h3>
@@ -6778,7 +6778,7 @@ export const BulletinBoardPage: React.FC = () => {
                 <button
                   type="button"
                   onClick={() => setIsLocationFlyoutOpen(false)}
-                  className="w-7 h-7 rounded-[4px] bg-[var(--surface-subtle)] hover:bg-[var(--surface-inset)] flex items-center justify-center text-[var(--text-muted)] transition-theme hover:rotate-90"
+                  className="w-7 h-7 rounded-shape-xs bg-[var(--surface-subtle)] hover:bg-[var(--surface-inset)] flex items-center justify-center text-[var(--text-muted)] transition-theme hover:rotate-90"
                 >
                   <X size={15} />
                 </button>
@@ -7380,7 +7380,7 @@ export const BulletinBoardPage: React.FC = () => {
                   className="w-full h-full object-cover"
                 />
               )}
-              <div className="absolute top-4 start-4 flex items-center gap-2 bg-black/20 backdrop-blur-md p-1.5 pr-3 rounded-[4px]">
+              <div className="absolute top-4 start-4 flex items-center gap-2 bg-black/20 backdrop-blur-md p-1.5 pr-3 rounded-shape-xs">
                 <BulletinAvatar
                   src={stories.find(s => s.id === previewingVideoStoryId)?.author_avatar}
                   alt={stories.find(s => s.id === previewingVideoStoryId)?.author_name}

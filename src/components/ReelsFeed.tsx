@@ -1782,7 +1782,7 @@ export const ReelsFeed: React.FC<ReelsFeedProps> = ({
           {onClose && (
             <button
               onClick={onClose}
-              className="w-8 h-8 sm:w-9 sm:h-9 rounded-shape-sm flex items-center justify-center bg-black/50 md:bg-[var(--surface-card)] hover:bg-cyan-500/10 md:hover:bg-cyan-500/10 text-white md:text-[var(--text-primary)] hover:text-cyan-400 border border-white/20 md:border-[var(--border-default)] hover:border-cyan-500/30 transition-all duration-150 active:scale-95 cursor-pointer shadow-xs relative before:absolute before:-inset-1.5 before:content-['']"
+              className="w-8 h-8 sm:w-9 sm:h-9 rounded-shape-sm flex items-center justify-center bg-black/50 md:bg-[var(--surface-card)] hover:bg-[var(--bg-accent-muted)] md:hover:bg-[var(--bg-accent-muted)] text-white md:text-[var(--text-primary)] hover:text-[var(--fg-accent)] border border-white/20 md:border-[var(--border-default)] hover:border-[var(--border-accent)]/30 transition-all duration-150 active:scale-95 cursor-pointer shadow-xs relative before:absolute before:-inset-1.5 before:content-['']"
               title={isRtl ? 'رجوع' : 'Back'}
               aria-label={isRtl ? 'رجوع' : 'Back'}
             >
@@ -1798,7 +1798,7 @@ export const ReelsFeed: React.FC<ReelsFeedProps> = ({
             className="flex items-center gap-1 px-2 py-1 rounded-shape-xs bg-black/40 md:bg-[var(--surface-subtle)] text-white/90 md:text-[var(--text-primary)] text-[11px] sm:text-xs font-bold select-none whitespace-nowrap"
             title={isRtl ? 'عدد المشاهدات' : 'View Count'}
           >
-            <Eye size={13} className="text-cyan-400 stroke-[2.5]" />
+            <Eye size={13} className="text-[var(--fg-accent)] stroke-[2.5]" />
             <span className="tabular-nums tracking-wide">
               {formatCompactCount(
                 reelsList[activeIndex]
@@ -1816,11 +1816,11 @@ export const ReelsFeed: React.FC<ReelsFeedProps> = ({
               setActiveTab('for_you');
               setActiveIndex(0);
             }}
-            className="relative h-full flex items-center justify-center px-1.5 sm:px-2 text-xs sm:text-sm font-bold transition-all duration-150 cursor-pointer select-none whitespace-nowrap active:opacity-75 bg-transparent border-0 outline-none hover:text-cyan-400"
+            className="relative h-full flex items-center justify-center px-1.5 sm:px-2 text-xs sm:text-sm font-bold transition-all duration-150 cursor-pointer select-none whitespace-nowrap active:opacity-75 bg-transparent border-0 outline-none hover:text-[var(--fg-accent)]"
           >
             <span className={`transition-colors duration-150 ${
               activeTab === 'for_you'
-                ? 'text-cyan-400 font-black'
+                ? 'text-[var(--fg-accent)] font-black'
                 : 'text-white/75 md:text-[var(--text-muted)]'
             }`}>
               {isRtl ? 'لك' : 'For You'}
@@ -1828,7 +1828,7 @@ export const ReelsFeed: React.FC<ReelsFeedProps> = ({
             {activeTab === 'for_you' && (
               <motion.div
                 layoutId="activeTabUnderline"
-                className="absolute bottom-0 left-0.5 right-0.5 h-0.5 bg-cyan-400 rounded-full shadow-[0_0_8px_rgba(6,182,212,0.8)]"
+                className="absolute bottom-0 left-0.5 right-0.5 h-0.5 bg-[var(--accent)] rounded-full shadow-xs"
                 transition={{ type: "spring", stiffness: 380, damping: 30 }}
               />
             )}
@@ -1840,11 +1840,11 @@ export const ReelsFeed: React.FC<ReelsFeedProps> = ({
               setActiveTab('following');
               setActiveIndex(0);
             }}
-            className="relative h-full flex items-center justify-center px-1.5 sm:px-2 text-xs sm:text-sm font-bold transition-all duration-150 cursor-pointer select-none whitespace-nowrap active:opacity-75 bg-transparent border-0 outline-none hover:text-cyan-400"
+            className="relative h-full flex items-center justify-center px-1.5 sm:px-2 text-xs sm:text-sm font-bold transition-all duration-150 cursor-pointer select-none whitespace-nowrap active:opacity-75 bg-transparent border-0 outline-none hover:text-[var(--fg-accent)]"
           >
             <span className={`transition-colors duration-150 ${
               activeTab === 'following'
-                ? 'text-cyan-400 font-black'
+                ? 'text-[var(--fg-accent)] font-black'
                 : 'text-white/75 md:text-[var(--text-muted)]'
             }`}>
               {isRtl ? 'المتابَعون' : 'Following'}
@@ -1852,7 +1852,7 @@ export const ReelsFeed: React.FC<ReelsFeedProps> = ({
             {activeTab === 'following' && (
               <motion.div
                 layoutId="activeTabUnderline"
-                className="absolute bottom-0 left-0.5 right-0.5 h-0.5 bg-cyan-400 rounded-full shadow-[0_0_8px_rgba(6,182,212,0.8)]"
+                className="absolute bottom-0 left-0.5 right-0.5 h-0.5 bg-[var(--accent)] rounded-full shadow-xs"
                 transition={{ type: "spring", stiffness: 380, damping: 30 }}
               />
             )}
@@ -1864,7 +1864,7 @@ export const ReelsFeed: React.FC<ReelsFeedProps> = ({
           {/* Search Button */}
           <button
             onClick={() => setIsSearchOpen(true)}
-            className="w-8 h-8 sm:w-9 sm:h-9 rounded-shape-sm flex items-center justify-center text-white md:text-[var(--text-primary)] bg-black/50 md:bg-[var(--surface-card)] hover:bg-cyan-500/10 md:hover:bg-cyan-500/10 text-[var(--text-muted)] hover:text-cyan-400 transition-all duration-150 active:scale-95 cursor-pointer border border-white/20 md:border-[var(--border-default)] hover:border-cyan-500/30 shadow-xs relative before:absolute before:-inset-1.5 before:content-['']"
+            className="w-8 h-8 sm:w-9 sm:h-9 rounded-shape-sm flex items-center justify-center text-white md:text-[var(--text-primary)] bg-black/50 md:bg-[var(--surface-card)] hover:bg-[var(--bg-accent-muted)] md:hover:bg-[var(--bg-accent-muted)] text-[var(--text-muted)] hover:text-[var(--fg-accent)] transition-all duration-150 active:scale-95 cursor-pointer border border-white/20 md:border-[var(--border-default)] hover:border-[var(--border-accent)]/30 shadow-xs relative before:absolute before:-inset-1.5 before:content-['']"
             title={isRtl ? 'بحث في مقاطع ريلز' : 'Search Reels'}
           >
             <Search size={14} />
@@ -1873,7 +1873,7 @@ export const ReelsFeed: React.FC<ReelsFeedProps> = ({
           {/* Upload Button */}
           <button
             onClick={handleUploadReelClick}
-            className="w-8 h-8 sm:w-9 sm:h-9 rounded-shape-sm flex items-center justify-center text-white md:text-[var(--text-primary)] bg-black/50 md:bg-[var(--surface-card)] hover:bg-cyan-500/10 md:hover:bg-cyan-500/10 text-[var(--text-muted)] hover:text-cyan-400 transition-all duration-150 active:scale-95 cursor-pointer border border-white/20 md:border-[var(--border-default)] hover:border-cyan-500/30 shadow-xs relative before:absolute before:-inset-1.5 before:content-['']"
+            className="w-8 h-8 sm:w-9 sm:h-9 rounded-shape-sm flex items-center justify-center text-white md:text-[var(--text-primary)] bg-black/50 md:bg-[var(--surface-card)] hover:bg-[var(--bg-accent-muted)] md:hover:bg-[var(--bg-accent-muted)] text-[var(--text-muted)] hover:text-[var(--fg-accent)] transition-all duration-150 active:scale-95 cursor-pointer border border-white/20 md:border-[var(--border-default)] hover:border-[var(--border-accent)]/30 shadow-xs relative before:absolute before:-inset-1.5 before:content-['']"
             title={isRtl ? 'رفع مقطع ريلز جديد' : 'Upload New Reel'}
           >
             <Plus size={16} />
@@ -1887,7 +1887,7 @@ export const ReelsFeed: React.FC<ReelsFeedProps> = ({
           >
             <button
               onClick={toggleMute}
-              className="w-8 h-8 sm:w-9 sm:h-9 rounded-shape-sm flex items-center justify-center text-white md:text-[var(--text-primary)] bg-black/50 md:bg-[var(--surface-card)] hover:bg-cyan-500/10 md:hover:bg-cyan-500/10 text-[var(--text-muted)] hover:text-cyan-400 transition-all duration-150 active:scale-95 cursor-pointer border border-white/20 md:border-[var(--border-default)] hover:border-cyan-500/30 shadow-xs relative before:absolute before:-inset-1.5 before:content-['']"
+              className="w-8 h-8 sm:w-9 sm:h-9 rounded-shape-sm flex items-center justify-center text-white md:text-[var(--text-primary)] bg-black/50 md:bg-[var(--surface-card)] hover:bg-[var(--bg-accent-muted)] md:hover:bg-[var(--bg-accent-muted)] text-[var(--text-muted)] hover:text-[var(--fg-accent)] transition-all duration-150 active:scale-95 cursor-pointer border border-white/20 md:border-[var(--border-default)] hover:border-[var(--border-accent)]/30 shadow-xs relative before:absolute before:-inset-1.5 before:content-['']"
               title={isMuted ? (isRtl ? 'تشغيل الصوت (M)' : 'Unmute (M)') : (isRtl ? 'كتم الصوت (M)' : 'Mute (M)')}
             >
               {isMuted ? (
@@ -1915,7 +1915,7 @@ export const ReelsFeed: React.FC<ReelsFeedProps> = ({
                     step="0.05"
                     value={isMuted ? 0 : volume}
                     onChange={(e) => handleVolumeChange(parseFloat(e.target.value))}
-                    className="w-20 h-1.5 bg-[var(--surface-subtle)] rounded-lg appearance-none cursor-pointer accent-cyan-400"
+                    className="w-20 h-1.5 bg-[var(--surface-subtle)] rounded-lg appearance-none cursor-pointer accent-[var(--accent)]"
                     title={isRtl ? 'مستوى الصوت' : 'Volume'}
                   />
                   <span className="text-[10px] font-mono font-bold text-[var(--text-secondary)] ms-2 select-none whitespace-nowrap">
@@ -2183,14 +2183,14 @@ export const ReelsFeed: React.FC<ReelsFeedProps> = ({
                         animate={{ scale: 1, opacity: 1 }}
                         exit={{ scale: 0.6, opacity: 0 }}
                         transition={{ type: 'spring', damping: 20, stiffness: 320 }}
-                        className="absolute z-20 w-16 h-16 sm:w-20 sm:h-20 rounded-shape-md bg-black/25 hover:bg-black/40 backdrop-blur-xs flex items-center justify-center text-cyan-400 border border-white/20 hover:border-cyan-400/60 shadow-[0_0_25px_rgba(6,182,212,0.35)] pointer-events-auto cursor-pointer hover:scale-110 active:scale-90 transition-all select-none group/play"
+                        className="absolute z-20 w-16 h-16 sm:w-20 sm:h-20 rounded-shape-md bg-black/25 hover:bg-black/40 backdrop-blur-xs flex items-center justify-center text-[var(--fg-accent)] border border-white/20 hover:border-[var(--border-accent)]/60 shadow-lg pointer-events-auto cursor-pointer hover:scale-110 active:scale-90 transition-all select-none group/play"
                         onClick={(e) => {
                           e.stopPropagation();
                           togglePlayPause(reel.id);
                         }}
                         title={isRtl ? 'تشغيل الفيديو' : 'Play Video'}
                       >
-                        <Play size={34} className="ms-1 fill-cyan-400 text-cyan-400 relative z-10 drop-shadow-[0_0_12px_rgba(6,182,212,0.85)] group-hover/play:scale-110 transition-transform" />
+                        <Play size={34} className="ms-1 fill-[var(--accent)] text-[var(--accent)] relative z-10  group-hover/play:scale-110 transition-transform" />
                       </motion.div>
                     )}
                   </AnimatePresence>
@@ -2250,7 +2250,7 @@ export const ReelsFeed: React.FC<ReelsFeedProps> = ({
                     <div className="relative group mb-0.5 flex flex-col items-center">
                       <div
                         onClick={() => reel.page_id && onOpenPageDetail && onOpenPageDetail(reel.page_id)}
-                        className="w-9 h-9 sm:w-10 sm:h-10 rounded-shape-sm p-0.5 bg-black/60 backdrop-blur-md border border-cyan-400/40 shadow-md cursor-pointer active:scale-95 transition-transform overflow-hidden flex items-center justify-center relative before:absolute before:-inset-1.5 before:content-['']"
+                        className="w-9 h-9 sm:w-10 sm:h-10 rounded-shape-sm p-0.5 bg-black/60 backdrop-blur-md border border-[var(--border-accent)]/40 shadow-md cursor-pointer active:scale-95 transition-transform overflow-hidden flex items-center justify-center relative before:absolute before:-inset-1.5 before:content-['']"
                       >
                         <BulletinAvatar
                           src={reel.author_avatar}
@@ -2295,7 +2295,7 @@ export const ReelsFeed: React.FC<ReelsFeedProps> = ({
                     <div className="flex flex-col items-center gap-0.5 select-none">
                       <button
                         onClick={(e) => openCommentsDrawer(e, reel.id)}
-                        className="w-9 h-9 sm:w-10 sm:h-10 rounded-shape-sm flex items-center justify-center bg-black/50 backdrop-blur-md border border-white/20 hover:bg-cyan-500/10 hover:border-cyan-500/30 text-white hover:text-cyan-400 active:scale-95 transition-all duration-150 cursor-pointer shadow-md relative before:absolute before:-inset-1.5 before:content-['']"
+                        className="w-9 h-9 sm:w-10 sm:h-10 rounded-shape-sm flex items-center justify-center bg-black/50 backdrop-blur-md border border-white/20 hover:bg-[var(--bg-accent-muted)] hover:border-[var(--border-accent)]/30 text-white hover:text-[var(--fg-accent)] active:scale-95 transition-all duration-150 cursor-pointer shadow-md relative before:absolute before:-inset-1.5 before:content-['']"
                         title={isRtl ? 'التعليقات' : 'Comments'}
                       >
                         <MessageCircle size={18} className="stroke-[2.2]" />
@@ -2330,7 +2330,7 @@ export const ReelsFeed: React.FC<ReelsFeedProps> = ({
                     <div className="flex flex-col items-center gap-0.5 select-none">
                       <button
                         onClick={(e) => openShareSheet(e, reel)}
-                        className="w-9 h-9 sm:w-10 sm:h-10 rounded-shape-sm flex items-center justify-center bg-black/50 backdrop-blur-md border border-white/20 hover:bg-cyan-500/10 hover:border-cyan-500/30 text-white hover:text-cyan-400 active:scale-95 transition-all duration-150 cursor-pointer shadow-md relative before:absolute before:-inset-1.5 before:content-['']"
+                        className="w-9 h-9 sm:w-10 sm:h-10 rounded-shape-sm flex items-center justify-center bg-black/50 backdrop-blur-md border border-white/20 hover:bg-[var(--bg-accent-muted)] hover:border-[var(--border-accent)]/30 text-white hover:text-[var(--fg-accent)] active:scale-95 transition-all duration-150 cursor-pointer shadow-md relative before:absolute before:-inset-1.5 before:content-['']"
                         title={isRtl ? 'مشاركة' : 'Share'}
                       >
                         <Share2 size={18} className="stroke-[2.2]" />
@@ -2347,7 +2347,7 @@ export const ReelsFeed: React.FC<ReelsFeedProps> = ({
                           e.stopPropagation();
                           setMoreMenuReel(reel);
                         }}
-                        className="w-9 h-9 sm:w-10 sm:h-10 rounded-shape-sm flex items-center justify-center bg-black/50 backdrop-blur-md border border-white/20 hover:bg-cyan-500/10 hover:border-cyan-500/30 text-white hover:text-cyan-400 active:scale-95 transition-all duration-150 cursor-pointer shadow-md relative before:absolute before:-inset-1.5 before:content-['']"
+                        className="w-9 h-9 sm:w-10 sm:h-10 rounded-shape-sm flex items-center justify-center bg-black/50 backdrop-blur-md border border-white/20 hover:bg-[var(--bg-accent-muted)] hover:border-[var(--border-accent)]/30 text-white hover:text-[var(--fg-accent)] active:scale-95 transition-all duration-150 cursor-pointer shadow-md relative before:absolute before:-inset-1.5 before:content-['']"
                         title={isRtl ? 'خيارات إضافية' : 'More options'}
                       >
                         <MoreVertical size={18} className="stroke-[2.2]" />
@@ -2377,7 +2377,7 @@ export const ReelsFeed: React.FC<ReelsFeedProps> = ({
                           {/* Inner Vinyl Ring */}
                           <div className="w-full h-full rounded-full border border-zinc-800/80 flex items-center justify-center bg-gradient-to-br from-zinc-900 via-zinc-950 to-black">
                             {/* Center Vinyl Label / Album Art */}
-                            <div className="w-3.5 h-3.5 sm:w-4 sm:h-4 rounded-full bg-cyan-950 border border-cyan-400/70 flex items-center justify-center shadow-inner overflow-hidden relative">
+                            <div className="w-3.5 h-3.5 sm:w-4 sm:h-4 rounded-full bg-[var(--surface-subtle)] border border-[var(--border-accent)]/70 flex items-center justify-center shadow-inner overflow-hidden relative">
                               {reel.author_avatar ? (
                                 <img
                                   src={reel.author_avatar}
@@ -2386,7 +2386,7 @@ export const ReelsFeed: React.FC<ReelsFeedProps> = ({
                                   referrerPolicy="no-referrer"
                                 />
                               ) : (
-                                <Music size={8} className="text-cyan-400" />
+                                <Music size={8} className="text-[var(--fg-accent)]" />
                               )}
                               {/* Spindle Center Hole */}
                               <div className="absolute inset-0 m-auto w-1 h-1 rounded-full bg-black/90 border border-white/40" />
@@ -2398,7 +2398,7 @@ export const ReelsFeed: React.FC<ReelsFeedProps> = ({
                       {/* Floating Note Indicator when playing */}
                       {isCurrentActive && isPlaying && (
                         <div className="absolute -top-1.5 -start-1 pointer-events-none animate-bounce">
-                          <Music size={10} className="text-cyan-400 opacity-90 drop-shadow-[0_0_6px_rgba(6,182,212,0.8)]" />
+                          <Music size={10} className="text-[var(--fg-accent)] opacity-90 " />
                         </div>
                       )}
                     </div>
@@ -2629,7 +2629,7 @@ export const ReelsFeed: React.FC<ReelsFeedProps> = ({
                         {/* Inner Vinyl Ring */}
                         <div className="w-full h-full rounded-full border border-zinc-800/80 flex items-center justify-center bg-gradient-to-br from-zinc-900 via-zinc-950 to-black">
                           {/* Center Vinyl Label / Album Art */}
-                          <div className="w-4 h-4 lg:w-5 lg:h-5 rounded-full bg-cyan-950 border border-cyan-400/70 flex items-center justify-center shadow-inner overflow-hidden relative">
+                          <div className="w-4 h-4 lg:w-5 lg:h-5 rounded-full bg-[var(--surface-subtle)] border border-[var(--border-accent)]/70 flex items-center justify-center shadow-inner overflow-hidden relative">
                             {reel.author_avatar ? (
                               <img
                                 src={reel.author_avatar}
@@ -2638,7 +2638,7 @@ export const ReelsFeed: React.FC<ReelsFeedProps> = ({
                                 referrerPolicy="no-referrer"
                               />
                             ) : (
-                              <Music size={10} className="text-cyan-400" />
+                              <Music size={10} className="text-[var(--fg-accent)]" />
                             )}
                             {/* Spindle Center Hole */}
                             <div className="absolute inset-0 m-auto w-1.5 h-1.5 rounded-full bg-black/90 border border-white/40" />
@@ -2650,7 +2650,7 @@ export const ReelsFeed: React.FC<ReelsFeedProps> = ({
                     {/* Floating Note Indicator when playing */}
                     {isCurrentActive && isPlaying && (
                       <div className="absolute -top-2 -start-1 pointer-events-none animate-bounce">
-                        <Music size={11} className="text-cyan-400 opacity-90 drop-shadow-[0_0_6px_rgba(6,182,212,0.8)]" />
+                        <Music size={11} className="text-[var(--fg-accent)] opacity-90 " />
                       </div>
                     )}
                   </div>

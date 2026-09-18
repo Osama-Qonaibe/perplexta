@@ -290,11 +290,11 @@ export const MobileNavigation: React.FC = () => {
                       onClick={() => setIsDrawerOpen(false)}
                       className={`flex items-center gap-3 px-3 py-2.5 rounded-[var(--radius-sm)] text-xs font-bold transition-all duration-150 border group ${
                         isActive
-                          ? 'bg-[var(--surface-card)] text-[var(--text-primary)] border-[var(--border-default)] border-s-2 border-s-cyan-500 dark:border-s-cyan-400 font-bold shadow-2xs'
+                          ? 'bg-[var(--surface-card)] text-[var(--text-primary)] border-[var(--border-default)] border-s-2 border-s-[var(--border-accent)] font-bold shadow-2xs'
                           : 'border-transparent text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--surface-subtle)]'
                       }`}
                     >
-                      <span className={`transition-colors duration-150 ${isActive ? 'text-cyan-500 dark:text-cyan-400' : 'text-[var(--text-muted)] group-hover:text-[var(--text-primary)]'}`}>
+                      <span className={`transition-colors duration-150 ${isActive ? 'text-[var(--fg-accent)]' : 'text-[var(--text-muted)] group-hover:text-[var(--text-primary)]'}`}>
                         {item.icon}
                       </span>
                       <span>{item.label}</span>
@@ -401,8 +401,8 @@ export const MobileNavigation: React.FC = () => {
                   title={isRtl ? item.labelAr : item.labelEn}
                   className={`relative flex items-center justify-center w-8 h-8 rounded-shape-sm border transition-all duration-150 active:scale-95 cursor-pointer shrink-0 before:absolute before:-inset-1.5 before:content-[''] ${
                     isDrawerOpen
-                      ? 'bg-cyan-500/15 border-cyan-500/30 text-cyan-400 shadow-[0_0_12px_rgba(6,182,212,0.08)] font-bold'
-                      : 'bg-transparent border-[var(--border-default)] text-[var(--text-muted)] hover:text-cyan-400 hover:bg-cyan-500/10 hover:border-cyan-500/20'
+                      ? 'bg-[var(--bg-accent-muted)] border-[var(--border-accent)]/30 text-[var(--fg-accent)] shadow-xs font-bold'
+                      : 'bg-transparent border-[var(--border-default)] text-[var(--text-muted)] hover:text-[var(--fg-accent)] hover:bg-[var(--bg-accent-muted)] hover:border-[var(--border-accent)]/20'
                   }`}
                 >
                   <AnimatePresence mode="wait">
@@ -415,7 +415,7 @@ export const MobileNavigation: React.FC = () => {
                         transition={{ duration: 0.15 }}
                         className="flex items-center justify-center"
                       >
-                        <X size={14} className="text-cyan-400 stroke-[2.2]" />
+                        <X size={14} className="text-[var(--fg-accent)] stroke-[2.2]" />
                       </motion.div>
                     ) : (
                       <motion.div
@@ -449,16 +449,16 @@ export const MobileNavigation: React.FC = () => {
                 title={isRtl ? item.labelAr : item.labelEn}
                 className={`relative flex items-center justify-center w-8 h-8 rounded-shape-sm border transition-all duration-150 active:scale-95 cursor-pointer shrink-0 before:absolute before:-inset-1.5 before:content-[''] ${
                   active
-                    ? 'bg-cyan-500/15 border-cyan-500/30 text-cyan-400 shadow-[0_0_12px_rgba(6,182,212,0.08)] font-bold'
-                    : 'bg-transparent border-[var(--border-default)] text-[var(--text-muted)] hover:text-cyan-400 hover:bg-cyan-500/10 hover:border-cyan-500/20'
+                    ? 'bg-[var(--bg-accent-muted)] border-[var(--border-accent)]/30 text-[var(--fg-accent)] shadow-xs font-bold'
+                    : 'bg-transparent border-[var(--border-default)] text-[var(--text-muted)] hover:text-[var(--fg-accent)] hover:bg-[var(--bg-accent-muted)] hover:border-[var(--border-accent)]/20'
                 }`}
               >
                 <Icon
                   size={14}
                   className={`transition-all duration-150 ${
                     active 
-                      ? 'text-cyan-400' 
-                      : 'text-[var(--text-muted)] group-hover:text-cyan-400'
+                      ? 'text-[var(--fg-accent)]' 
+                      : 'text-[var(--text-muted)] group-hover:text-[var(--fg-accent)]'
                   }`}
                 />
 

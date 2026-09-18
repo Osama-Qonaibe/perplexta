@@ -164,7 +164,7 @@ export const CollapsibleTable: React.FC<CollapsibleTableProps> = ({ children, di
           <button
             type="button"
             onClick={toggleCollapse}
-            className="h-8 px-2.5 sm:px-3 rounded-shape-sm text-xs font-medium text-[var(--text-secondary)] hover:text-[var(--text-primary)] bg-[var(--surface-card)] hover:bg-[var(--surface-subtle)] border border-[var(--border-default)] hover:border-cyan-500/50 dark:hover:border-cyan-400/50 flex items-center gap-1.5 transition-colors cursor-pointer shrink-0 shadow-2xs"
+            className="h-8 px-2.5 sm:px-3 rounded-shape-sm text-xs font-medium text-[var(--text-secondary)] hover:text-[var(--text-primary)] bg-[var(--surface-card)] hover:bg-[var(--surface-subtle)] border border-[var(--border-default)] hover:border-[var(--border-accent)]/50 flex items-center gap-1.5 transition-colors cursor-pointer shrink-0 shadow-2xs"
             title={isCollapsed ? (dir === 'rtl' ? 'توسيع الجدول' : 'Expand Table') : (dir === 'rtl' ? 'طي الجدول' : 'Collapse Table')}
           >
             {isCollapsed ? <ChevronDown size={14} className="text-[var(--text-muted)]" /> : <ChevronUp size={14} className="text-[var(--text-muted)]" />}
@@ -210,7 +210,7 @@ export const CollapsibleTable: React.FC<CollapsibleTableProps> = ({ children, di
                 <button
                   type="button"
                   onClick={handleCopyMarkdown}
-                  className="h-8 px-2.5 sm:px-3 rounded-shape-sm bg-[var(--surface-card)] hover:bg-[var(--surface-subtle)] border border-[var(--border-default)] hover:border-cyan-500/50 dark:hover:border-cyan-400/50 text-xs font-medium text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors cursor-pointer flex items-center gap-1.5 shrink-0 shadow-2xs"
+                  className="h-8 px-2.5 sm:px-3 rounded-shape-sm bg-[var(--surface-card)] hover:bg-[var(--surface-subtle)] border border-[var(--border-default)] hover:border-[var(--border-accent)]/50 text-xs font-medium text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors cursor-pointer flex items-center gap-1.5 shrink-0 shadow-2xs"
                   title={dir === 'rtl' ? 'نسخ محتوى الجدول' : 'Copy Table'}
                 >
                   {copied ? <Check size={14} className="text-emerald-500 shrink-0" /> : <Copy size={14} className="text-[var(--text-muted)] shrink-0" />}
@@ -220,7 +220,7 @@ export const CollapsibleTable: React.FC<CollapsibleTableProps> = ({ children, di
                 <button
                   type="button"
                   onClick={handleDownloadCSV}
-                  className="h-8 px-2.5 sm:px-3 rounded-shape-sm bg-[var(--surface-card)] hover:bg-[var(--surface-subtle)] border border-[var(--border-default)] hover:border-cyan-500/60 dark:hover:border-cyan-400/60 text-xs font-medium text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors cursor-pointer flex items-center gap-1.5 shrink-0 shadow-2xs"
+                  className="h-8 px-2.5 sm:px-3 rounded-shape-sm bg-[var(--surface-card)] hover:bg-[var(--surface-subtle)] border border-[var(--border-default)] hover:border-[var(--border-accent)]/60 text-xs font-medium text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors cursor-pointer flex items-center gap-1.5 shrink-0 shadow-2xs"
                   title={dir === 'rtl' ? 'تنزيل كملف CSV' : 'Download CSV'}
                 >
                   <FileSpreadsheet size={14} className="text-[var(--fg-accent)] shrink-0" />
@@ -230,7 +230,7 @@ export const CollapsibleTable: React.FC<CollapsibleTableProps> = ({ children, di
                 <button
                   type="button"
                   onClick={handleDownloadMarkdown}
-                  className="h-8 px-2.5 sm:px-3 rounded-shape-sm bg-[var(--surface-card)] hover:bg-[var(--surface-subtle)] border border-[var(--border-default)] hover:border-cyan-500/60 dark:hover:border-cyan-400/60 text-xs font-medium text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors cursor-pointer flex items-center gap-1.5 shrink-0 shadow-2xs"
+                  className="h-8 px-2.5 sm:px-3 rounded-shape-sm bg-[var(--surface-card)] hover:bg-[var(--surface-subtle)] border border-[var(--border-default)] hover:border-[var(--border-accent)]/60 text-xs font-medium text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors cursor-pointer flex items-center gap-1.5 shrink-0 shadow-2xs"
                   title={dir === 'rtl' ? 'تصدير قالب الجدول' : 'Export Template'}
                 >
                   <FileText size={14} className="text-[var(--text-muted)] shrink-0" />

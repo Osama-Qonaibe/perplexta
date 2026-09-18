@@ -239,9 +239,9 @@ export function SelectDropdown<T extends string | number = string>({
         className={`
           w-full flex items-center justify-between gap-2 rounded-shape-sm border font-semibold
           transition-all duration-150 cursor-pointer select-none outline-none
-          focus:ring-2 focus:ring-cyan-500/20 focus:border-cyan-500/50
+          focus:ring-2 focus:ring-[var(--border-accent)]/20 focus:border-[var(--border-accent)]/50
           ${disabled ? 'opacity-40 cursor-not-allowed pointer-events-none' : ''}
-          ${isOpen ? 'ring-2 ring-cyan-500/20 border-cyan-500/50' : ''}
+          ${isOpen ? 'ring-2 ring-[var(--border-accent)]/20 border-[var(--border-accent)]/50' : ''}
           ${sizeClasses}
           ${variantClasses}
           ${triggerClassName}
@@ -249,7 +249,7 @@ export function SelectDropdown<T extends string | number = string>({
       >
         <div className="flex items-center gap-2 min-w-0 flex-1 truncate">
           {selectedOption?.icon && (
-            <span className="shrink-0 flex items-center justify-center w-4 h-4 text-cyan-500 dark:text-cyan-400">
+            <span className="shrink-0 flex items-center justify-center w-4 h-4 text-[var(--fg-accent)]">
               {selectedOption.icon}
             </span>
           )}
@@ -267,7 +267,7 @@ export function SelectDropdown<T extends string | number = string>({
           <ChevronDown
             size={14}
             className={`text-[var(--text-muted)] transition-transform duration-200 ${
-              isOpen ? 'rotate-180 text-cyan-500 dark:text-cyan-400' : ''
+              isOpen ? 'rotate-180 text-[var(--fg-accent)]' : ''
             }`}
           />
         </div>
@@ -307,7 +307,7 @@ export function SelectDropdown<T extends string | number = string>({
                       setFocusedIndex(0);
                     }}
                     placeholder={searchPlaceholder || (dir === 'rtl' ? 'بحث...' : 'Search...')}
-                    className="w-full bg-[var(--surface-subtle)] border border-[var(--border-subtle)] rounded-shape-xs ps-7 pe-2 py-1 text-[11px] font-sans text-[var(--text-primary)] placeholder-[var(--text-muted)] focus:outline-none focus:border-cyan-500/40"
+                    className="w-full bg-[var(--surface-subtle)] border border-[var(--border-subtle)] rounded-shape-xs ps-7 pe-2 py-1 text-[11px] font-sans text-[var(--text-primary)] placeholder-[var(--text-muted)] focus:outline-none focus:border-[var(--border-accent)]/40"
                     onClick={(e) => e.stopPropagation()}
                   />
                 </div>
@@ -342,7 +342,7 @@ export function SelectDropdown<T extends string | number = string>({
                         transition-all duration-150 text-[11.5px] font-sans font-medium text-start select-none
                         ${opt.disabled || opt.isLocked ? 'opacity-40 cursor-not-allowed pointer-events-none' : 'cursor-pointer'}
                         ${isSelected 
-                          ? 'bg-cyan-500/15 border border-cyan-500/30 text-cyan-600 dark:text-cyan-400 font-bold' 
+                          ? 'bg-cyan-500/15 border border-cyan-500/30 text-[var(--fg-accent)] font-bold' 
                           : isFocused
                             ? 'bg-[var(--surface-subtle)] text-[var(--text-primary)] border border-transparent'
                             : 'bg-transparent text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--surface-subtle)] border border-transparent'
@@ -352,13 +352,13 @@ export function SelectDropdown<T extends string | number = string>({
                       <div className="flex items-center gap-2 min-w-0 flex-1">
                         {opt.icon && (
                           <span className={`shrink-0 flex items-center justify-center w-3.5 h-3.5 ${
-                            isSelected ? 'text-cyan-600 dark:text-cyan-400' : 'text-[var(--text-muted)]'
+                            isSelected ? 'text-[var(--fg-accent)]' : 'text-[var(--text-muted)]'
                           }`}>
                             {opt.icon}
                           </span>
                         )}
                         <div className="flex flex-col min-w-0">
-                          <span className={`truncate leading-tight ${isSelected ? 'text-cyan-600 dark:text-cyan-400 font-bold' : ''}`}>
+                          <span className={`truncate leading-tight ${isSelected ? 'text-[var(--fg-accent)] font-bold' : ''}`}>
                             {opt.label}
                           </span>
                           {opt.description && (
@@ -385,7 +385,7 @@ export function SelectDropdown<T extends string | number = string>({
                         )}
 
                         {isSelected && (
-                          <Check size={13} className="text-cyan-600 dark:text-cyan-400 shrink-0 stroke-[2.5]" />
+                          <Check size={13} className="text-[var(--fg-accent)] shrink-0 stroke-[2.5]" />
                         )}
                       </div>
                     </button>

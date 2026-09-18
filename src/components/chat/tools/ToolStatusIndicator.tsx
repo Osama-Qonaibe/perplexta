@@ -95,8 +95,8 @@ export const getToolDetails = (toolId: string | undefined, dir: 'ltr' | 'rtl', t
       return {
         label: dir === 'rtl' ? 'استوديو الصوتيات' : 'Audio Studio',
         icon: Music,
-        colorClass: 'text-cyan-500',
-        bgClass: 'bg-cyan-500/10 border-cyan-500/20'
+        colorClass: 'text-[var(--fg-accent)]',
+        bgClass: 'bg-[var(--bg-accent-muted)] border-[var(--border-accent)]/20'
       };
     case 'tts':
       return {

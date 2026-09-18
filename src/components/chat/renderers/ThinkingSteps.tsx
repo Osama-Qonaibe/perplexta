@@ -78,7 +78,7 @@ export const ThinkingSteps: React.FC<ThinkingStepsProps> = ({
       <button
         type="button"
         onClick={() => setIsCollapsed(!isCollapsed)}
-        className="group inline-flex items-center gap-2 h-8 px-2.5 sm:px-3 rounded-shape-sm text-xs font-medium bg-[var(--surface-card)] hover:bg-[var(--surface-subtle)] border border-[var(--border-default)] hover:border-cyan-500/60 dark:hover:border-cyan-400/60 transition-colors cursor-pointer select-none shadow-2xs"
+        className="group inline-flex items-center gap-2 h-8 px-2.5 sm:px-3 rounded-shape-sm text-xs font-medium bg-[var(--surface-card)] hover:bg-[var(--surface-subtle)] border border-[var(--border-default)] hover:border-[var(--border-accent)]/60 transition-colors cursor-pointer select-none shadow-2xs"
       >
         <div className="flex items-center gap-1.5 min-w-0">
           <div className="relative flex items-center justify-center shrink-0 w-[22px] h-[22px]">

@@ -219,7 +219,7 @@ export const ChatComposer: React.FC<ChatComposerProps> = ({
                   transition={{ duration: 0.15 }}
                   className="flex items-center gap-1.5 max-w-full overflow-hidden"
                 >
-                  <div className="inline-flex items-stretch h-8 rounded-[8px] border border-[var(--border-default)] bg-transparent divide-x divide-[var(--border-default)] rtl:divide-x-reverse overflow-x-auto scrollbar-none">
+                  <div className="inline-flex items-stretch h-8 rounded-shape-sm border border-[var(--border-default)] bg-transparent divide-x divide-[var(--border-default)] rtl:divide-x-reverse overflow-x-auto scrollbar-none">
                     {['16:9', '9:16', '4:3', '3:4', '3:2', '2:3', '1:1'].map((ratio) => {
                       const currentRatio = selectedTool === 'video'
                         ? (videoSettings?.aspectRatio || '1:1')
@@ -244,8 +244,8 @@ export const ChatComposer: React.FC<ChatComposerProps> = ({
                           title={dir === 'rtl' ? RATIO_TOOLTIPS[ratio]?.ar : RATIO_TOOLTIPS[ratio]?.en}
                           className={`px-2.5 sm:px-3 h-full flex items-center justify-center text-[11px] font-mono font-bold transition-all duration-200 whitespace-nowrap active:scale-95 bg-transparent ${
                             isActive
-                              ? 'text-cyan-400 font-extrabold drop-shadow-[0_0_6px_rgba(6,182,212,0.8)]'
-                              : 'text-[var(--text-muted)] hover:text-[var(--text-primary)] hover:brightness-125 hover:drop-shadow-[0_0_6px_currentColor]'
+                              ? 'text-[var(--fg-accent)] font-extrabold'
+                              : 'text-[var(--text-muted)] hover:text-[var(--text-primary)] hover:brightness-125'
                           }`}
                         >
                           {ratio}
@@ -261,9 +261,9 @@ export const ChatComposer: React.FC<ChatComposerProps> = ({
                       localStorage.setItem('perplexta_aspect_bar_collapsed', 'true');
                     }}
                     title={dir === 'rtl' ? 'طي شريط الأبعاد' : 'Collapse ratio bar'}
-                    className="w-8 h-8 flex items-center justify-center rounded-shape-sm border border-[var(--border-default)] bg-transparent hover:border-cyan-500/60 dark:hover:border-cyan-400/60 text-[var(--text-muted)] hover:text-[var(--text-primary)] transition-colors duration-200 active:scale-95 shrink-0 cursor-pointer group relative before:absolute before:-inset-1.5 before:content-['']"
+                    className="w-8 h-8 flex items-center justify-center rounded-shape-sm border border-[var(--border-default)] bg-transparent hover:border-[var(--border-accent)]/60 text-[var(--text-muted)] hover:text-[var(--text-primary)] transition-colors duration-200 active:scale-95 shrink-0 cursor-pointer group relative before:absolute before:-inset-1.5 before:content-['']"
                   >
-                    <ChevronUp size={14} className="text-[var(--text-muted)] group-hover:text-cyan-400 transition-colors" />
+                    <ChevronUp size={14} className="text-[var(--text-muted)] group-hover:text-[var(--text-primary)] transition-colors" />
                   </button>
                 </motion.div>
               ) : (
@@ -279,14 +279,14 @@ export const ChatComposer: React.FC<ChatComposerProps> = ({
                     localStorage.setItem('perplexta_aspect_bar_collapsed', 'false');
                   }}
                   title={dir === 'rtl' ? 'توسيع شريط الأبعاد' : 'Expand ratio bar'}
-                  className="h-8 px-2.5 flex items-center justify-center gap-1.5 rounded-shape-sm border border-[var(--border-default)] bg-transparent hover:border-cyan-500/60 dark:hover:border-cyan-400/60 transition-colors duration-200 active:scale-95 group shrink-0 text-[11px] font-mono font-bold cursor-pointer relative before:absolute before:-inset-1.5 before:content-['']"
+                  className="h-8 px-2.5 flex items-center justify-center gap-1.5 rounded-shape-sm border border-[var(--border-default)] bg-transparent hover:border-[var(--border-accent)]/60 transition-colors duration-200 active:scale-95 group shrink-0 text-[11px] font-mono font-bold cursor-pointer relative before:absolute before:-inset-1.5 before:content-['']"
                 >
-                  <span className="text-cyan-400 font-extrabold drop-shadow-[0_0_6px_rgba(6,182,212,0.8)]">
+                  <span className="text-[var(--fg-accent)] font-extrabold">
                     {selectedTool === 'video'
                       ? (videoSettings?.aspectRatio || '1:1')
                       : (imageSettings?.aspectRatio || '1:1')}
                   </span>
-                  <ChevronDown size={14} className="text-[var(--text-muted)] group-hover:text-cyan-400 transition-colors" />
+                  <ChevronDown size={14} className="text-[var(--text-muted)] group-hover:text-[var(--text-primary)] transition-colors" />
                 </motion.button>
               )}
             </AnimatePresence>
@@ -354,7 +354,7 @@ export const ChatComposer: React.FC<ChatComposerProps> = ({
                       setQuery(query + ' ' + interimText);
                       setInterimText('');
                     }}
-                    className="text-[10px] font-black uppercase text-cyan-600 dark:text-cyan-400 hover:text-cyan-700 dark:hover:text-cyan-300 border border-cyan-500/30 hover:bg-cyan-500/10 px-2 py-1 rounded-shape-xs transition-theme shrink-0 cursor-pointer"
+                    className="text-[10px] font-black uppercase text-[var(--fg-accent)] hover:opacity-90 border border-[var(--border-accent)]/30 hover:bg-[var(--bg-accent-muted)] px-2 py-1 rounded-shape-xs transition-theme shrink-0 cursor-pointer"
                   >
                     {dir === 'rtl' ? 'إدراج' : 'Insert'}
                   </button>
@@ -372,7 +372,7 @@ export const ChatComposer: React.FC<ChatComposerProps> = ({
                       <img src={previewUrl} alt="preview" className="w-full h-full object-cover" referrerPolicy="no-referrer" />
                     </div>
                   ) : (
-                    <div className="w-8 h-8 rounded-shape-sm flex items-center justify-center bg-[var(--surface-card)] text-cyan-600 dark:text-cyan-400 border border-[var(--border-default)] shadow-xs">
+                    <div className="w-8 h-8 rounded-shape-sm flex items-center justify-center bg-[var(--surface-card)] text-[var(--fg-accent)] border border-[var(--border-default)] shadow-xs">
                       {getFileIcon(selectedFile.type)}
                     </div>
                   )}
@@ -407,9 +407,9 @@ export const ChatComposer: React.FC<ChatComposerProps> = ({
                   <button
                     type="button"
                     onClick={triggerForensicDiagnostic}
-                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-shape-sm border border-transparent hover:border-cyan-500/30 hover:bg-cyan-500/5 text-xs font-semibold text-cyan-600 dark:text-cyan-400 transition-theme shadow-none bg-transparent cursor-pointer"
+                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-shape-sm border border-transparent hover:border-[var(--border-accent)]/40 hover:bg-[var(--bg-accent-muted)] text-xs font-semibold text-[var(--fg-accent)] transition-theme shadow-none bg-transparent cursor-pointer"
                   >
-                    <Sparkles size={13} className="text-cyan-600 dark:text-cyan-400 animate-pulse" />
+                    <Sparkles size={13} className="text-[var(--fg-accent)] animate-pulse" />
                     <span>{dir === 'rtl' ? 'فحص جنائي مباشر' : 'Run Forensic Scan'}</span>
                   </button>
 
@@ -423,10 +423,10 @@ export const ChatComposer: React.FC<ChatComposerProps> = ({
                         onChange={(e) => setForensicMode(e.target.checked)}
                         className="sr-only"
                       />
-                      <div className={`w-8 h-4 bg-slate-300 dark:bg-slate-800 rounded-full transition-theme ${forensicMode ? 'bg-cyan-500 dark:bg-cyan-500/80' : ''}`} />
+                      <div className={`w-8 h-4 bg-slate-300 dark:bg-slate-800 rounded-full transition-theme ${forensicMode ? 'bg-[var(--accent)]' : ''}`} />
                       <div className={`absolute top-0.5 left-0.5 w-3 h-3 rounded-full bg-white shadow-md transition-transform duration-300 ${forensicMode ? 'transform translate-x-4' : ''}`} />
                     </div>
-                    <span className={`text-[10px] font-bold font-sans ${forensicMode ? 'text-cyan-600 dark:text-cyan-400' : 'text-[var(--text-muted)]'}`}>
+                    <span className={`text-[10px] font-bold font-sans ${forensicMode ? 'text-[var(--fg-accent)]' : 'text-[var(--text-muted)]'}`}>
                       {dir === 'rtl' ? 'وضع التحقيق الجنائي' : 'Forensic Mode'}
                     </span>
                   </label>
@@ -525,7 +525,7 @@ export const ChatComposer: React.FC<ChatComposerProps> = ({
           <div className="mx-4 h-px bg-gradient-to-r from-transparent via-[var(--border-default)] to-transparent -mt-2 mb-2" />
 
           {/* 2. Bottom Toolbar (Single-Row Baseline & Language Button Visual Identity) */}
-          <div className="flex items-center justify-between px-3.5 py-2.5 flex-nowrap -mx-3.5 -mb-3.5 sm:-mx-3.5 sm:-mb-3.5 bg-[var(--surface-subtle)] border-t border-[var(--border-subtle)] rounded-b-[14px] transition-colors">
+          <div className="flex items-center justify-between px-3.5 py-2.5 flex-nowrap -mx-3.5 -mb-3.5 sm:-mx-3.5 sm:-mb-3.5 bg-[var(--surface-subtle)] border-t border-[var(--border-subtle)] rounded-b-shape-md transition-colors">
             
             {/* Left Action Chips / Tools */}
             <div className="flex items-center gap-2 sm:gap-2 flex-nowrap min-w-0">
@@ -545,7 +545,7 @@ export const ChatComposer: React.FC<ChatComposerProps> = ({
                                   setIsAdvancedToolsOpen(false);
                                 }
                               }}
-                              className={`w-8 h-8 sm:w-auto sm:px-2.5 sm:h-8 flex items-center justify-center gap-1 sm:gap-1.5 rounded-shape-sm border border-[var(--border-default)] hover:border-cyan-500/60 dark:hover:border-cyan-400/60 transition-colors duration-200 text-xs font-mono cursor-pointer shrink-0 bg-transparent ${
+                              className={`w-8 h-8 sm:w-auto sm:px-2.5 sm:h-8 flex items-center justify-center gap-1 sm:gap-1.5 rounded-shape-sm border border-[var(--border-default)] hover:border-[var(--border-accent)]/60 transition-colors duration-200 text-xs font-mono cursor-pointer shrink-0 bg-transparent ${
                                 isModelActive 
                                   ? 'text-[var(--text-primary)]' 
                                   : 'text-[var(--text-muted)] hover:text-[var(--text-primary)] shadow-2xs'
@@ -557,13 +557,13 @@ export const ChatComposer: React.FC<ChatComposerProps> = ({
                                       size: 14, 
                                       className: `w-3.5 h-3.5 transition-all duration-300 ${
                                         isModelActive 
-                                          ? 'text-cyan-400 fill-cyan-400 drop-shadow-[0_0_8px_rgba(6,182,212,0.95)]' 
+                                          ? 'text-[var(--fg-accent)] fill-[var(--fg-accent)]' 
                                           : 'text-[var(--text-muted)]'
                                       }` 
                                     })
                                   : <Zap className={`w-3.5 h-3.5 transition-all duration-300 ${
                                       isModelActive 
-                                        ? 'fill-cyan-400 text-cyan-400 drop-shadow-[0_0_8px_rgba(6,182,212,0.95)]' 
+                                        ? 'fill-[var(--fg-accent)] text-[var(--fg-accent)]' 
                                         : 'text-[var(--text-muted)]'
                                     }`} />}
                               </span>
@@ -578,7 +578,7 @@ export const ChatComposer: React.FC<ChatComposerProps> = ({
                                 exit={{ opacity: 0, scale: 0.98 }}
                                 transition={{ duration: 0.10, ease: [0.16, 1, 0.3, 1] }}
                                 style={{ transformOrigin: dir === 'rtl' ? 'bottom right' : 'bottom left' }}
-                                className={`absolute bottom-full mb-2 ${dir === 'rtl' ? 'right-0' : 'left-0'} w-40 p-1.5 rounded-[14px] border border-[var(--border-default)] shadow-2xl ring-1 ring-black/5 dark:ring-white/10 flex flex-col gap-0.5 z-[200] bg-[var(--surface-card)] backdrop-blur-2xl`}
+                                className={`absolute bottom-full mb-2 ${dir === 'rtl' ? 'right-0' : 'left-0'} w-40 p-1.5 rounded-shape-md border border-[var(--border-default)] shadow-2xl ring-1 ring-black/5 dark:ring-white/10 flex flex-col gap-0.5 z-[200] bg-[var(--surface-card)] backdrop-blur-2xl`}
                                 onClick={(e) => e.stopPropagation()}
                               >
                                 {sortedModels.map((model, idx) => {
@@ -599,11 +599,11 @@ export const ChatComposer: React.FC<ChatComposerProps> = ({
                                         setActiveDropdown('model');
                                         setIsModelMenuOpen(false);
                                       }}
-                                      className={`group flex items-center justify-between w-full h-[36px] min-h-[36px] px-3 py-2 rounded-[8px] flex-nowrap transition-all duration-150 text-xs font-medium cursor-pointer ${
+                                      className={`group flex items-center justify-between w-full h-[36px] min-h-[36px] px-3 py-2 rounded-shape-sm flex-nowrap transition-all duration-150 text-xs font-medium cursor-pointer ${
                                         isLocked
                                           ? 'opacity-40 cursor-not-allowed text-[var(--text-disabled)]'
                                           : isSelected
-                                            ? 'bg-cyan-500/10 text-cyan-400 font-semibold border border-cyan-500/20'
+                                            ? 'bg-[var(--bg-accent-muted)] text-[var(--fg-accent)] font-semibold border border-[var(--border-accent)]/30'
                                             : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--surface-subtle)] border border-transparent'
                                       }`}
                                     >
@@ -612,15 +612,15 @@ export const ChatComposer: React.FC<ChatComposerProps> = ({
                                           isLocked 
                                             ? 'text-[var(--text-disabled)] opacity-60' 
                                             : isSelected 
-                                              ? 'text-cyan-400 fill-cyan-400 drop-shadow-[0_0_8px_rgba(6,182,212,0.95)]' 
-                                              : 'text-[var(--text-muted)] group-hover:text-cyan-400'
+                                              ? 'text-[var(--fg-accent)] fill-[var(--fg-accent)]' 
+                                              : 'text-[var(--text-muted)] group-hover:text-[var(--text-primary)]'
                                         }`}>
                                           {React.isValidElement(model.icon) 
                                             ? React.cloneElement(model.icon as React.ReactElement<{ size?: number; className?: string }>, { 
                                                 size: 14, 
-                                                className: `w-3.5 h-3.5 transition-colors duration-150 ${isSelected ? 'text-cyan-400 drop-shadow-[0_0_8px_rgba(6,182,212,0.95)]' : ''}` 
+                                                className: `w-3.5 h-3.5 transition-colors duration-150 ${isSelected ? 'text-[var(--fg-accent)]' : ''}` 
                                               })
-                                            : <Zap className={`w-3.5 h-3.5 transition-colors duration-150 ${isSelected ? 'fill-cyan-400 text-cyan-400 drop-shadow-[0_0_8px_rgba(6,182,212,0.95)]' : ''}`} />}
+                                            : <Zap className={`w-3.5 h-3.5 transition-colors duration-150 ${isSelected ? 'fill-[var(--fg-accent)] text-[var(--fg-accent)]' : ''}`} />}
                                         </span>
                                         <span className={`whitespace-nowrap transition-colors duration-150 ${
                                           isLocked ? '' : 'group-hover:text-[var(--text-primary)]'
@@ -658,7 +658,7 @@ export const ChatComposer: React.FC<ChatComposerProps> = ({
                                   setIsModelMenuOpen(false);
                                 }
                               }}
-                              className={`w-8 h-8 sm:w-auto sm:px-2.5 sm:h-8 flex items-center justify-center gap-1 sm:gap-1.5 rounded-shape-sm border border-[var(--border-default)] hover:border-cyan-500/60 dark:hover:border-cyan-400/60 transition-colors duration-200 text-xs font-medium cursor-pointer shrink-0 bg-transparent ${
+                              className={`w-8 h-8 sm:w-auto sm:px-2.5 sm:h-8 flex items-center justify-center gap-1 sm:gap-1.5 rounded-shape-sm border border-[var(--border-default)] hover:border-[var(--border-accent)]/60 transition-colors duration-200 text-xs font-medium cursor-pointer shrink-0 bg-transparent ${
                                 isToolActive 
                                   ? 'text-[var(--text-primary)]' 
                                   : 'text-[var(--text-muted)] hover:text-[var(--text-primary)] shadow-2xs'
@@ -668,9 +668,9 @@ export const ChatComposer: React.FC<ChatComposerProps> = ({
                                 {React.isValidElement(currentTool?.icon) 
                                   ? React.cloneElement(currentTool.icon as React.ReactElement<{ size?: number; className?: string }>, { 
                                       size: 14, 
-                                      className: `w-3.5 h-3.5 shrink-0 transition-all duration-300 ${isToolActive ? 'text-cyan-400 drop-shadow-[0_0_8px_rgba(6,182,212,0.95)]' : 'text-[var(--text-muted)]'}` 
+                                      className: `w-3.5 h-3.5 shrink-0 transition-all duration-300 ${isToolActive ? 'text-[var(--fg-accent)]' : 'text-[var(--text-muted)]'}` 
                                     })
-                                  : <Search className={`w-3.5 h-3.5 shrink-0 transition-all duration-300 ${isToolActive ? 'text-cyan-400 drop-shadow-[0_0_8px_rgba(6,182,212,0.95)]' : 'text-[var(--text-muted)]'}`} />}
+                                  : <Search className={`w-3.5 h-3.5 shrink-0 transition-all duration-300 ${isToolActive ? 'text-[var(--fg-accent)]' : 'text-[var(--text-muted)]'}`} />}
                               </span>
                               <span className="hidden sm:inline whitespace-nowrap">{currentTool?.label || (dir === 'rtl' ? 'تحليل' : 'Analysis')}</span>
                               <ChevronDown className="w-3 h-3 hidden sm:inline ml-0.5 shrink-0 text-[var(--text-muted)] transition-colors" />
@@ -683,7 +683,7 @@ export const ChatComposer: React.FC<ChatComposerProps> = ({
                                 exit={{ opacity: 0, scale: 0.98 }}
                                 transition={{ duration: 0.10, ease: [0.16, 1, 0.3, 1] }}
                                 style={{ transformOrigin: dir === 'rtl' ? 'bottom right' : 'bottom left' }}
-                                className={`absolute bottom-full mb-2 ${dir === 'rtl' ? 'right-0' : 'left-0'} w-52 max-w-[calc(100vw-2rem)] rounded-[14px] border border-[var(--border-default)] shadow-2xl ring-1 ring-black/5 dark:ring-white/10 flex flex-col z-[200] overflow-hidden bg-[var(--surface-card)] backdrop-blur-2xl p-1.5`}
+                                className={`absolute bottom-full mb-2 ${dir === 'rtl' ? 'right-0' : 'left-0'} w-52 max-w-[calc(100vw-2rem)] rounded-shape-md border border-[var(--border-default)] shadow-2xl ring-1 ring-black/5 dark:ring-white/10 flex flex-col z-[200] overflow-hidden bg-[var(--surface-card)] backdrop-blur-2xl p-1.5`}
                                 onClick={(e) => e.stopPropagation()}
                               >
                                 <div className="flex flex-col gap-0.5 max-h-[70vh] sm:max-h-[60vh] overflow-y-auto custom-scrollbar">
@@ -708,11 +708,11 @@ export const ChatComposer: React.FC<ChatComposerProps> = ({
                                           setActiveDropdown('tool');
                                           setIsAdvancedToolsOpen(false);
                                         }}
-                                        className={`group flex items-center justify-between w-full h-[36px] min-h-[36px] px-3 py-2 rounded-[8px] transition-all duration-150 text-xs font-medium cursor-pointer select-none ${
+                                        className={`group flex items-center justify-between w-full h-[36px] min-h-[36px] px-3 py-2 rounded-shape-sm transition-all duration-150 text-xs font-medium cursor-pointer select-none ${
                                           isLocked 
                                             ? 'opacity-40 cursor-not-allowed text-[var(--text-disabled)]'
                                             : isSelected 
-                                              ? 'bg-cyan-500/10 text-cyan-400 font-semibold border border-cyan-500/20'
+                                              ? 'bg-[var(--bg-accent-muted)] text-[var(--fg-accent)] font-semibold border border-[var(--border-accent)]/30'
                                               : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--surface-subtle)] border border-transparent'
                                         }`}
                                       >
@@ -722,15 +722,15 @@ export const ChatComposer: React.FC<ChatComposerProps> = ({
                                             isLocked 
                                               ? 'text-[var(--text-disabled)] opacity-70' 
                                               : isSelected 
-                                                ? 'text-cyan-400 drop-shadow-[0_0_8px_rgba(6,182,212,0.95)]' 
-                                                : 'text-[var(--text-muted)] group-hover:text-cyan-400'
+                                                ? 'text-[var(--fg-accent)]' 
+                                                : 'text-[var(--text-muted)] group-hover:text-[var(--text-primary)]'
                                           }`}>
                                             {React.isValidElement(tool.icon) 
                                               ? React.cloneElement(tool.icon as React.ReactElement<{ size?: number; className?: string }>, { 
                                                   size: 14, 
-                                                  className: `w-3.5 h-3.5 transition-colors duration-150 ${isSelected ? 'text-cyan-400 drop-shadow-[0_0_8px_rgba(6,182,212,0.95)]' : ''}` 
+                                                  className: `w-3.5 h-3.5 transition-colors duration-150 ${isSelected ? 'text-[var(--fg-accent)]' : ''}` 
                                                 })
-                                              : <Sparkles className={`w-3.5 h-3.5 transition-colors duration-150 ${isSelected ? 'text-cyan-400 drop-shadow-[0_0_8px_rgba(6,182,212,0.95)]' : ''}`} />}
+                                              : <Sparkles className={`w-3.5 h-3.5 transition-colors duration-150 ${isSelected ? 'text-[var(--fg-accent)]' : ''}`} />}
                                           </span>
                                           <span className={`truncate transition-colors duration-150 ${
                                             isLocked ? '' : 'group-hover:text-[var(--text-primary)]'
@@ -745,7 +745,7 @@ export const ChatComposer: React.FC<ChatComposerProps> = ({
                                             <ArrowUpRight size={13} className="text-[var(--fg-accent)] shrink-0" />
                                           )}
                                           {tool.isNew && !isLocked && !isSelected && !tool.isRouter && (
-                                            <span className="px-1.5 py-0.5 rounded-[4px] bg-slate-200 dark:bg-slate-800/90 border border-slate-300 dark:border-slate-700/60 text-slate-700 dark:text-slate-300 text-[8.5px] font-mono font-bold uppercase tracking-wider">
+                                            <span className="px-1.5 py-0.5 rounded-shape-xs bg-slate-200 dark:bg-slate-800/90 border border-slate-300 dark:border-slate-700/60 text-slate-700 dark:text-slate-300 text-[8.5px] font-mono font-bold uppercase tracking-wider">
                                               NEW
                                             </span>
                                           )}
@@ -772,7 +772,7 @@ export const ChatComposer: React.FC<ChatComposerProps> = ({
                       className={`w-8 h-8 sm:w-auto sm:px-2.5 sm:h-8 flex items-center justify-center gap-1 sm:gap-1.5 rounded-shape-sm border transition-colors duration-200 text-xs font-medium disabled:opacity-30 disabled:cursor-not-allowed shrink-0 cursor-pointer bg-transparent ${
                         isRecording 
                           ? 'border-rose-500/60 hover:border-rose-400 text-[var(--text-primary)] animate-pulse' 
-                          : 'border-[var(--border-default)] hover:border-cyan-500/60 dark:hover:border-cyan-400/60 text-[var(--text-muted)] hover:text-[var(--text-primary)] shadow-2xs'
+                          : 'border-[var(--border-default)] hover:border-[var(--border-accent)]/60 text-[var(--text-muted)] hover:text-[var(--text-primary)] shadow-2xs'
                       }`}
                     >
                       <Mic className={`w-3.5 h-3.5 shrink-0 transition-all duration-300 ${isRecording ? 'text-rose-500 dark:text-rose-400 drop-shadow-[0_0_8px_rgba(244,63,94,0.95)]' : 'text-[var(--text-muted)]'}`} />
@@ -789,7 +789,7 @@ export const ChatComposer: React.FC<ChatComposerProps> = ({
                   }
                 }}
                 disabled={isInputDisabled}
-                className="w-8 h-8 sm:w-auto sm:px-2.5 sm:h-8 flex items-center justify-center gap-1 sm:gap-1.5 rounded-shape-sm border border-[var(--border-default)] bg-transparent hover:border-cyan-500/60 dark:hover:border-cyan-400/60 text-[var(--text-muted)] hover:text-[var(--text-primary)] transition-colors duration-200 text-xs font-medium disabled:opacity-30 disabled:cursor-not-allowed shrink-0 cursor-pointer shadow-2xs"
+                className="w-8 h-8 sm:w-auto sm:px-2.5 sm:h-8 flex items-center justify-center gap-1 sm:gap-1.5 rounded-shape-sm border border-[var(--border-default)] bg-transparent hover:border-[var(--border-accent)]/60 text-[var(--text-muted)] hover:text-[var(--text-primary)] transition-colors duration-200 text-xs font-medium disabled:opacity-30 disabled:cursor-not-allowed shrink-0 cursor-pointer shadow-2xs"
               >
                 <Paperclip className="w-3.5 h-3.5 text-[var(--text-muted)] shrink-0" />
                 <span className="hidden sm:inline whitespace-nowrap">{dir === 'rtl' ? 'إرفاق' : 'Attach'}</span>
@@ -807,7 +807,7 @@ export const ChatComposer: React.FC<ChatComposerProps> = ({
                 isGenerating
                   ? 'bg-rose-500 text-white border-rose-500 hover:bg-rose-600 font-bold shadow-md shadow-rose-500/20 animate-pulse'
                   : query.trim()
-                    ? 'bg-cyan-500 text-slate-950 dark:text-slate-950 border-cyan-500 hover:bg-cyan-400 font-bold shadow-md shadow-cyan-500/20'
+                    ? 'bg-[var(--accent)] text-[var(--fg-on-emphasis)] border-[var(--border-accent)] hover:opacity-90 font-bold shadow-xs'
                     : 'bg-[var(--surface-card)] text-[var(--text-muted)] border-[var(--border-default)] opacity-40 cursor-not-allowed'
               }`}
               title={isGenerating ? (dir === 'rtl' ? 'إيقاف التوليد' : 'Stop Generation') : (dir === 'rtl' ? 'إرسال' : 'Send')}
@@ -831,7 +831,7 @@ export const ChatComposer: React.FC<ChatComposerProps> = ({
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.97, y: 4 }}
               transition={{ duration: 0.14, ease: [0.16, 1, 0.3, 1] }}
-              className="absolute top-full mt-2 left-0 right-0 z-50 pointer-events-auto box-border overflow-hidden rounded-[14px] border border-[var(--border-default)] bg-[var(--surface-card)] shadow-2xl backdrop-blur-xl p-1.5 space-y-0.5 text-[var(--text-primary)]"
+              className="absolute top-full mt-2 left-0 right-0 z-50 pointer-events-auto box-border overflow-hidden rounded-shape-md border border-[var(--border-default)] bg-[var(--surface-card)] shadow-2xl backdrop-blur-xl p-1.5 space-y-0.5 text-[var(--text-primary)]"
             >
               <div className="w-full max-h-[260px] overflow-y-auto custom-scrollbar space-y-0.5">
                 {suggestions.map((item, idx) => {
@@ -866,7 +866,7 @@ export const ChatComposer: React.FC<ChatComposerProps> = ({
                         </span>
                       </div>
                       {categoryText ? (
-                        <span className={`text-[10px] font-medium px-1.5 py-0.5 rounded border shrink-0 transition-colors duration-150 ${
+                        <span className={`text-[10px] font-medium px-1.5 py-0.5 rounded-shape-xs border shrink-0 transition-colors duration-150 ${
                           isHighlighted 
                             ? 'text-[var(--text-secondary)] border-[var(--border-default)] bg-[var(--surface-card)]' 
                             : 'text-[var(--text-muted)] border-[var(--border-default)]/60 bg-transparent'

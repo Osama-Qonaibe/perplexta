@@ -998,10 +998,10 @@ export const UniversalMediaPlayer: React.FC<UniversalMediaPlayerProps> = ({
         {!isPlaying && !isBuffering && !hasFatalError && directVideoUrl && (
           <button
             onClick={togglePlay}
-            className="absolute inset-0 z-20 m-auto w-16 h-16 sm:w-18 sm:h-18 rounded-shape-md bg-black/25 hover:bg-black/40 text-cyan-400 border border-white/20 hover:border-cyan-400/60 flex items-center justify-center shadow-[0_0_25px_rgba(6,182,212,0.35)] backdrop-blur-xs transition-all duration-200 hover:scale-110 active:scale-90 cursor-pointer group"
+            className="absolute inset-0 z-20 m-auto w-16 h-16 sm:w-18 sm:h-18 rounded-shape-md bg-black/25 hover:bg-black/40 text-[var(--fg-accent)] border border-white/20 hover:border-[var(--border-accent)]/60 flex items-center justify-center shadow-lg backdrop-blur-xs transition-all duration-200 hover:scale-110 active:scale-90 cursor-pointer group"
             title={isRtl ? 'تشغيل الفيديو' : 'Play Video'}
           >
-            <Play size={30} className="translate-x-0.5 fill-cyan-400 text-cyan-400 drop-shadow-[0_0_10px_rgba(6,182,212,0.8)] group-hover:scale-110 transition-transform" />
+            <Play size={30} className="translate-x-0.5 fill-[var(--accent)] text-[var(--accent)]  group-hover:scale-110 transition-transform" />
           </button>
         )}
 

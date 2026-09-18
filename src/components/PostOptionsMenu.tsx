@@ -656,7 +656,7 @@ export const PostOptionsMenu: React.FC<PostOptionsMenuProps> = ({
                     onClick={item.action}
                     className="group w-full h-[36px] min-h-[36px] flex items-center gap-2.5 px-3 py-2 rounded-[8px] border border-transparent bg-transparent hover:bg-[var(--surface-subtle)] transition-all duration-150 cursor-pointer select-none text-start"
                   >
-                    <Icon size={14} className={`${item.iconColor || 'text-[var(--text-muted)]'} group-hover:text-cyan-400 shrink-0 transition-colors duration-150`} />
+                    <Icon size={14} className={`${item.iconColor || 'text-[var(--text-muted)]'} group-hover:text-[var(--fg-accent)] shrink-0 transition-colors duration-150`} />
                     <span className="truncate min-w-0 flex-1 text-xs font-medium text-[var(--text-secondary)] group-hover:text-[var(--text-primary)] transition-colors duration-150">
                       {item.label}
                     </span>
@@ -680,7 +680,7 @@ export const PostOptionsMenu: React.FC<PostOptionsMenuProps> = ({
                         : 'bg-transparent hover:bg-[var(--surface-subtle)]'
                     }`}
                   >
-                    <Icon size={14} className={`${item.isDestructive ? 'text-rose-500 group-hover:text-rose-400' : 'text-[var(--text-muted)] group-hover:text-cyan-400'} shrink-0 transition-colors duration-150`} />
+                    <Icon size={14} className={`${item.isDestructive ? 'text-rose-500 group-hover:text-rose-400' : 'text-[var(--text-muted)] group-hover:text-[var(--fg-accent)]'} shrink-0 transition-colors duration-150`} />
                     <span className={`truncate min-w-0 flex-1 text-xs ${item.isDestructive ? 'font-bold text-rose-500 group-hover:text-rose-400' : 'font-medium text-[var(--text-secondary)] group-hover:text-[var(--text-primary)]'} transition-colors duration-150`}>
                       {item.label}
                     </span>

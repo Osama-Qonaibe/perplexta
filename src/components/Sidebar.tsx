@@ -894,11 +894,11 @@ export const Sidebar: React.FC<{ activeLanguage?: string }> = ({ activeLanguage 
                       <NavLink to="/terms" className="text-[6.5px] font-bold text-[var(--text-muted)] hover:text-[var(--accent)] transition-all duration-150 whitespace-nowrap">
                         {t('termsOfUse')}
                       </NavLink>
-                      <span className="w-0.5 h-0.5 rounded-[1px] bg-[var(--border-default)] flex-shrink-0" />
+                      <span className="w-0.5 h-0.5 rounded-full bg-[var(--border-default)] flex-shrink-0" />
                       <NavLink to="/privacy" className="text-[6.5px] font-bold text-[var(--text-muted)] hover:text-[var(--accent)] transition-all duration-150 whitespace-nowrap">
                         {t('privacyPolicy')}
                       </NavLink>
-                      <span className="w-0.5 h-0.5 rounded-[1px] bg-[var(--border-default)] flex-shrink-0" />
+                      <span className="w-0.5 h-0.5 rounded-full bg-[var(--border-default)] flex-shrink-0" />
                       <NavLink to="/about" className="text-[6.5px] font-bold text-[var(--text-muted)] hover:text-[var(--accent)] transition-all duration-150 whitespace-nowrap">
                         {language === 'ar' ? 'عن المنصة' : 'About'}
                       </NavLink>
@@ -1174,7 +1174,7 @@ export const Sidebar: React.FC<{ activeLanguage?: string }> = ({ activeLanguage 
                       e.stopPropagation();
                       item.action();
                     }}
-                    className={`group w-full h-[36px] min-h-[36px] flex items-center gap-2.5 px-3 py-2 rounded-[8px] border border-transparent transition-all duration-150 cursor-pointer select-none text-start ${
+                    className={`group w-full h-[36px] min-h-[36px] flex items-center gap-2.5 px-3 py-2 rounded-shape-sm border border-transparent transition-all duration-150 cursor-pointer select-none text-start ${
                       isDanger
                         ? 'bg-transparent hover:bg-rose-500/10 text-rose-500'
                         : 'bg-transparent hover:bg-[var(--surface-subtle)] text-[var(--text-secondary)] hover:text-[var(--text-primary)]'
@@ -1252,9 +1252,9 @@ export const Sidebar: React.FC<{ activeLanguage?: string }> = ({ activeLanguage 
           return (
             <div className="flex flex-col p-1.5 gap-0.5 font-sans w-full max-w-full" dir={dir}>
               {/* User profile header summary */}
-              <div className="flex items-center gap-2.5 px-3 py-2 rounded-[8px] bg-[var(--surface-subtle)] border border-[var(--border-default)] mb-1 overflow-hidden shadow-2xs">
+              <div className="flex items-center gap-2.5 px-3 py-2 rounded-shape-sm bg-[var(--surface-subtle)] border border-[var(--border-default)] mb-1 overflow-hidden shadow-2xs">
                 <div 
-                  className="w-7 h-7 rounded-[6px] bg-[var(--surface-card)] flex items-center justify-center flex-shrink-0 overflow-hidden border shadow-2xs"
+                  className="w-7 h-7 rounded-shape-sm bg-[var(--surface-card)] flex items-center justify-center flex-shrink-0 overflow-hidden border shadow-2xs"
                   style={{ borderColor: user.subscription?.plan_color || 'var(--border-default)' }}
                 >
                   {user.avatar ? (
@@ -1271,7 +1271,7 @@ export const Sidebar: React.FC<{ activeLanguage?: string }> = ({ activeLanguage 
                 </div>
                 {user.subscription?.plan_name_en && (
                   <span 
-                    className="text-[8px] font-black uppercase px-1.5 py-0.5 rounded-[4px] border border-current leading-none shrink-0"
+                    className="text-[8px] font-black uppercase px-1.5 py-0.5 rounded-shape-xs border border-current leading-none shrink-0"
                     style={{ color: user.subscription?.plan_color || 'var(--text-primary)' }}
                   >
                     {user.subscription?.plan_name_en}
@@ -1291,7 +1291,7 @@ export const Sidebar: React.FC<{ activeLanguage?: string }> = ({ activeLanguage 
                       setProfileMenuTarget(null);
                       if (isMobile) setIsSidebarOpen(false);
                     }}
-                    className="group w-full h-[36px] min-h-[36px] flex items-center gap-2.5 px-3 py-2 rounded-[8px] border border-transparent bg-transparent hover:bg-[var(--surface-subtle)] transition-colors duration-150 cursor-pointer select-none text-start text-xs font-medium text-[var(--text-secondary)] hover:text-[var(--text-primary)]"
+                    className="group w-full h-[36px] min-h-[36px] flex items-center gap-2.5 px-3 py-2 rounded-shape-sm border border-transparent bg-transparent hover:bg-[var(--surface-subtle)] transition-colors duration-150 cursor-pointer select-none text-start text-xs font-medium text-[var(--text-secondary)] hover:text-[var(--text-primary)]"
                   >
                     <Icon size={14} className="text-[var(--text-muted)] group-hover:text-[var(--accent)] shrink-0 transition-colors duration-150" />
                     <span className="truncate min-w-0 flex-1 text-xs font-medium text-[var(--text-primary)] group-hover:text-[var(--text-primary)] transition-colors duration-150">
@@ -1311,7 +1311,7 @@ export const Sidebar: React.FC<{ activeLanguage?: string }> = ({ activeLanguage 
                   setProfileMenuTarget(null);
                   if (isMobile) setIsSidebarOpen(false);
                 }}
-                className="group w-full h-[36px] min-h-[36px] flex items-center gap-2.5 px-3 py-2 rounded-[8px] border border-transparent bg-transparent hover:bg-rose-500/10 text-rose-500 transition-colors duration-150 cursor-pointer select-none text-start"
+                className="group w-full h-[36px] min-h-[36px] flex items-center gap-2.5 px-3 py-2 rounded-shape-sm border border-transparent bg-transparent hover:bg-rose-500/10 text-rose-500 transition-colors duration-150 cursor-pointer select-none text-start"
               >
                 <LogOut size={14} className="text-rose-500 group-hover:text-rose-400 shrink-0 transition-colors duration-150" />
                 <span className="truncate min-w-0 flex-1 text-xs font-bold text-rose-500 group-hover:text-rose-400 transition-colors duration-150">

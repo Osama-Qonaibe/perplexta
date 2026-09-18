@@ -143,7 +143,7 @@ export const StoryArchive: React.FC<StoryArchiveProps> = ({ dir, token, showToas
             <div className="flex gap-1 w-full">
               <button 
                 onClick={() => handleReshare(story.id)}
-                className="flex-1 py-1.5 bg-cyan-600 hover:bg-cyan-500 text-white rounded-[var(--radius-xs)] text-[10px] font-bold flex justify-center items-center gap-1 transition-all cursor-pointer"
+                className="flex-1 py-1.5 bg-[var(--accent)] hover:opacity-90 text-[var(--fg-on-emphasis)] rounded-[var(--radius-xs)] text-[10px] font-bold flex justify-center items-center gap-1 transition-all cursor-pointer"
                 title={dir === 'rtl' ? 'إعادة نشر' : 'Reshare'}
               >
                 <RotateCcw size={12} />

@@ -122,8 +122,8 @@ export const SearchableSelect: React.FC<SearchableSelectProps> = ({
           disabled ? 'opacity-50 cursor-not-allowed pointer-events-none' : ''
         } ${
           isOpen
-            ? 'border-cyan-500 bg-[var(--surface-subtle)] ring-1 ring-cyan-500/20 shadow-2xs'
-            : 'bg-[var(--surface-subtle)] border-[var(--border-default)] hover:border-cyan-500/50 hover:bg-[var(--surface-card)]'
+            ? 'border-[var(--border-accent)] bg-[var(--surface-subtle)] ring-1 ring-[var(--border-accent)]/20 shadow-2xs'
+            : 'bg-[var(--surface-subtle)] border-[var(--border-default)] hover:border-[var(--border-accent)]/50 hover:bg-[var(--surface-card)]'
         } text-[var(--text-primary)]`}
         onClick={() => {
           if (!disabled) {
@@ -145,7 +145,7 @@ export const SearchableSelect: React.FC<SearchableSelectProps> = ({
       >
         <div className="flex items-center gap-2 truncate flex-1 min-w-0">
           {selectedOption?.icon && (
-            <span className="shrink-0 text-cyan-500 dark:text-cyan-400">{selectedOption.icon}</span>
+            <span className="shrink-0 text-[var(--fg-accent)]">{selectedOption.icon}</span>
           )}
           <span className={`truncate font-bold text-start ${selectedOption ? 'text-[var(--text-primary)]' : 'text-[var(--text-muted)] font-medium'}`}>
             {selectedOption ? selectedOption.label : placeholder}
@@ -154,7 +154,7 @@ export const SearchableSelect: React.FC<SearchableSelectProps> = ({
         <ChevronDown 
           size={14} 
           className={`opacity-60 transition-transform duration-200 shrink-0 ms-1.5 text-[var(--text-muted)] ${
-            isOpen ? 'rotate-180 text-cyan-500 dark:text-cyan-400 opacity-100' : ''
+            isOpen ? 'rotate-180 text-[var(--fg-accent)] opacity-100' : ''
           }`} 
         />
       </div>
@@ -186,13 +186,13 @@ export const SearchableSelect: React.FC<SearchableSelectProps> = ({
               <div 
                 className={`group px-3 py-2 text-xs rounded-shape-xs cursor-pointer transition-colors duration-150 flex items-center justify-between ${
                   !value 
-                    ? 'font-bold bg-cyan-500/10 text-cyan-600 dark:text-cyan-400' 
+                    ? 'font-bold bg-[var(--bg-accent-muted)] text-[var(--fg-accent)]' 
                     : 'text-[var(--text-secondary)] hover:bg-[var(--surface-subtle)] hover:text-[var(--text-primary)]'
                 }`}
                 onClick={() => { onChange(''); setIsOpen(false); setSearchTerm(''); }}
               >
                 <span className="truncate">{placeholder}</span>
-                {!value && <Check size={14} className="shrink-0 text-cyan-500 ms-2" />}
+                {!value && <Check size={14} className="shrink-0 text-[var(--fg-accent)] ms-2" />}
               </div>
             )}
             {filteredOptions.map((option) => {
@@ -202,7 +202,7 @@ export const SearchableSelect: React.FC<SearchableSelectProps> = ({
                   key={option.value}
                   className={`group px-3 py-2 text-xs rounded-shape-xs font-semibold cursor-pointer transition-colors duration-150 flex items-center justify-between ${
                     isSelected 
-                      ? 'bg-cyan-500/10 text-cyan-600 dark:text-cyan-400 font-bold' 
+                      ? 'bg-[var(--bg-accent-muted)] text-[var(--fg-accent)] font-bold' 
                       : 'text-[var(--text-primary)] hover:bg-[var(--surface-subtle)] hover:text-[var(--text-primary)]'
                   }`}
                   onClick={() => { onChange(option.value); setIsOpen(false); setSearchTerm(''); }}
@@ -211,7 +211,7 @@ export const SearchableSelect: React.FC<SearchableSelectProps> = ({
                     {option.icon && <span className="shrink-0">{option.icon}</span>}
                     <span className="truncate">{option.label}</span>
                   </div>
-                  {isSelected && <Check size={14} className="shrink-0 text-cyan-500 ms-2" />}
+                  {isSelected && <Check size={14} className="shrink-0 text-[var(--fg-accent)] ms-2" />}
                 </div>
               );
             })}

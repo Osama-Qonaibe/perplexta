@@ -212,7 +212,7 @@ export const RecommendationPreferencesModal: React.FC<RecommendationPreferencesM
                   step="50"
                   value={maxPrice}
                   onChange={(e) => setMaxPrice(Number(e.target.value))}
-                  className="w-full accent-cyan-500 cursor-pointer"
+                  className="w-full accent-[var(--accent)] cursor-pointer"
                 />
                 <div className="flex justify-between text-[10px] text-[var(--text-muted)] font-semibold mt-0.5">
                   <span>$50 USD</span>

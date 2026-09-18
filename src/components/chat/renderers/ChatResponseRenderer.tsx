@@ -123,12 +123,12 @@ export const ChatResponseRenderer: React.FC<ChatResponseRendererProps> = ({
       </h2>
     ),
     h3: ({ children }: any) => (
-      <h3 className="text-[13.5px] sm:text-[14.5px] font-extrabold text-[var(--fg-accent)] dark:text-cyan-400 mt-4 mb-1.5 leading-snug text-start rtl:text-right ltr:text-left">
+      <h3 className="text-[13.5px] sm:text-[14.5px] font-extrabold text-[var(--fg-accent)]  mt-4 mb-1.5 leading-snug text-start rtl:text-right ltr:text-left">
         {formatChildren(children)}
       </h3>
     ),
     h4: ({ children }: any) => (
-      <h4 className="text-[12.5px] sm:text-[13px] font-extrabold text-[var(--fg-accent)]/90 dark:text-cyan-400/90 mt-4 mb-1.5 text-start rtl:text-right ltr:text-left">
+      <h4 className="text-[12.5px] sm:text-[13px] font-extrabold text-[var(--fg-accent)]/90  mt-4 mb-1.5 text-start rtl:text-right ltr:text-left">
         {formatChildren(children)}
       </h4>
     ),
@@ -190,12 +190,12 @@ export const ChatResponseRenderer: React.FC<ChatResponseRendererProps> = ({
       );
     },
     ul: ({ children }: any) => (
-      <ul className="list-disc ps-5 pe-5 mb-3 space-y-1.5 text-sm text-[var(--text-secondary)] dark:text-slate-300 marker:text-[var(--fg-accent)] dark:marker:text-cyan-400 text-start rtl:text-right ltr:text-left">
+      <ul className="list-disc ps-5 pe-5 mb-3 space-y-1.5 text-sm text-[var(--text-secondary)] dark:text-slate-300 marker:text-[var(--fg-accent)]  text-start rtl:text-right ltr:text-left">
         {children}
       </ul>
     ),
     ol: ({ children }: any) => (
-      <ol className="list-decimal ps-5 pe-5 mb-3 space-y-1.5 text-sm text-[var(--text-secondary)] dark:text-slate-300 marker:text-[var(--fg-accent)] dark:marker:text-cyan-400 text-start rtl:text-right ltr:text-left">
+      <ol className="list-decimal ps-5 pe-5 mb-3 space-y-1.5 text-sm text-[var(--text-secondary)] dark:text-slate-300 marker:text-[var(--fg-accent)]  text-start rtl:text-right ltr:text-left">
         {children}
       </ol>
     ),
@@ -211,7 +211,7 @@ export const ChatResponseRenderer: React.FC<ChatResponseRendererProps> = ({
         return (
           <code 
             dir="ltr" 
-            className="inline-block mx-0.5 px-1.5 py-0.5 rounded-md bg-[var(--surface-subtle)] dark:bg-[var(--surface-code)] border border-[var(--border-default)] dark:border-slate-800/80 text-xs font-mono text-[var(--fg-accent)] dark:text-cyan-400 font-semibold dir-ltr text-left" 
+            className="inline-block mx-0.5 px-1.5 py-0.5 rounded-md bg-[var(--surface-subtle)] dark:bg-[var(--surface-code)] border border-[var(--border-default)] dark:border-slate-800/80 text-xs font-mono text-[var(--fg-accent)]  font-semibold dir-ltr text-left" 
             style={{ direction: 'ltr', unicodeBidi: 'isolate' }}
             {...props}
           >

@@ -166,7 +166,7 @@ export function ArtifactCode({ artifact }: ArtifactCodeProps) {
               spellCheck={false}
               autoCapitalize="off"
               autoComplete="off"
-              className="flex-1 h-full w-full p-4 font-mono text-[12px] leading-5 bg-transparent text-slate-100 focus:outline-none resize-none overflow-auto custom-scrollbar selection:bg-cyan-500/30"
+              className="flex-1 h-full w-full p-4 font-mono text-[12px] leading-5 bg-transparent text-slate-100 focus:outline-none resize-none overflow-auto custom-scrollbar selection:bg-[var(--bg-accent-muted)]"
               style={{ tabSize: 2 }}
             />
           </div>

@@ -124,7 +124,7 @@ export const UsageRadar: React.FC = () => {
         {/* Header Row */}
         <div className="flex justify-between items-start mb-4 sm:mb-6">
           <div className="flex items-center gap-3">
-            <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-[var(--radius-sm)] flex items-center justify-center bg-cyan-500/10 text-cyan-400 border border-cyan-500/20 shrink-0">
+            <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-[var(--radius-sm)] flex items-center justify-center bg-[var(--bg-accent-muted)] text-[var(--fg-accent)] border border-[var(--border-accent)]/20 shrink-0">
                <Activity size={18} className="animate-pulse" />
             </div>
             <div>
@@ -140,7 +140,7 @@ export const UsageRadar: React.FC = () => {
 
         {/* Plan Info Card */}
         <div className="p-4 sm:p-6 rounded-[var(--radius-sm)] border border-[var(--border-default)] bg-[var(--surface-subtle)] flex flex-col items-center relative group">
-           <div className="hidden sm:flex absolute left-4 sm:left-6 top-1/2 -translate-y-1/2 w-16 h-16 sm:w-20 sm:h-20 rounded-[var(--radius-sm)] border border-cyan-500/20 items-center justify-center bg-cyan-500/5 text-cyan-400">
+           <div className="hidden sm:flex absolute left-4 sm:left-6 top-1/2 -translate-y-1/2 w-16 h-16 sm:w-20 sm:h-20 rounded-[var(--radius-sm)] border border-[var(--border-accent)]/20 items-center justify-center bg-[var(--bg-accent-muted)] text-[var(--fg-accent)]">
               <BarChart3 size={28} />
            </div>
 
@@ -149,7 +149,7 @@ export const UsageRadar: React.FC = () => {
                 <span className="text-[10px] font-bold uppercase tracking-wider text-[var(--text-muted)]">
                   {t('activeSubscription') || 'Active Subscription'}
                 </span>
-                <h3 className="text-xl sm:text-3xl md:text-4xl font-black leading-none select-none text-cyan-400">
+                <h3 className="text-xl sm:text-3xl md:text-4xl font-black leading-none select-none text-[var(--fg-accent)]">
                   {dir === 'rtl' ? data.plan.name_ar : data.plan.name_en}
                 </h3>
               </div>
@@ -169,7 +169,7 @@ export const UsageRadar: React.FC = () => {
                      </span>
                   </div>
                   {data.plan.id !== null && data.plan.status?.toLowerCase() === 'active' && (
-                    <div className="flex items-center gap-1 px-3 py-1 rounded-[var(--radius-xs)] bg-cyan-500/10 border border-cyan-500/20 text-cyan-400">
+                    <div className="flex items-center gap-1 px-3 py-1 rounded-[var(--radius-xs)] bg-[var(--bg-accent-muted)] border border-[var(--border-accent)]/20 text-[var(--fg-accent)]">
                        <Calendar size={12} />
                        <span className="text-[10px] font-bold tracking-wider">{startDate} - {renewalDate}</span>
                     </div>
@@ -199,7 +199,7 @@ export const UsageRadar: React.FC = () => {
               <div className="p-3.5 sm:p-5">
                 <div className="flex justify-between items-start mb-3">
                   <div className="space-y-0.5 min-w-0 pr-2">
-                    <h3 className="text-xs font-bold uppercase tracking-wider leading-tight text-cyan-400">
+                    <h3 className="text-xs font-bold uppercase tracking-wider leading-tight text-[var(--fg-accent)]">
                       {t(item.id) || (dir === 'rtl' ? (item.name_ar || item.id) : (item.name_en || item.id))}
                     </h3>
                     <p className="text-[10px] text-[var(--text-muted)] font-medium line-clamp-1 leading-snug">
@@ -209,7 +209,7 @@ export const UsageRadar: React.FC = () => {
                   <button 
                     type="button"
                     onClick={() => setExpanded(isExpanded ? null : item.id)}
-                    className="p-1.5 rounded-[var(--radius-xs)] transition-all duration-150 hover:bg-cyan-500/10 text-[var(--text-muted)] hover:text-cyan-400 shrink-0 cursor-pointer"
+                    className="p-1.5 rounded-[var(--radius-xs)] transition-all duration-150 hover:bg-[var(--bg-accent-muted)] text-[var(--text-muted)] hover:text-[var(--fg-accent)] shrink-0 cursor-pointer"
                   >
                     {isExpanded ? <ChevronUp size={15} /> : <ChevronDown size={15} />}
                   </button>
@@ -221,7 +221,7 @@ export const UsageRadar: React.FC = () => {
                   <div className="space-y-1">
                     <div className="flex justify-between text-[10px] font-bold uppercase tracking-wider">
                       <span className="text-[var(--text-muted)]">{isStorage ? (t('usageLoad') || 'Capacity') : (t('usageToday') || 'Daily usage')}</span>
-                      <span className={dailyPercent > 90 ? 'text-rose-400' : 'text-cyan-400'}>
+                      <span className={dailyPercent > 90 ? 'text-rose-400' : 'text-[var(--fg-accent)]'}>
                         {isStorage ? `${Math.round(item.usage.daily)} MB` : item.usage.daily} / {isDailyUnlimited ? '∞' : (isStorage ? `${item.limits.daily} MB` : item.limits.daily)}
                       </span>
                     </div>
@@ -230,7 +230,7 @@ export const UsageRadar: React.FC = () => {
                         style={{ 
                           width: isDailyUnlimited ? '0%' : `${Math.max(2, dailyPercent)}%`
                         }}
-                        className={`h-full rounded-full transition-all duration-300 ${dailyPercent > 90 ? 'bg-rose-500' : 'bg-cyan-500'}`}
+                        className={`h-full rounded-full transition-all duration-300 ${dailyPercent > 90 ? 'bg-rose-500' : 'bg-[var(--accent)]'}`}
                       />
                     </div>
                   </div>
@@ -249,7 +249,7 @@ export const UsageRadar: React.FC = () => {
                            <div className="space-y-1">
                             <div className="flex justify-between text-[10px] font-bold uppercase tracking-wider">
                               <span className="text-[var(--text-muted)]">{t('usageMonthly') || 'Monthly usage'}</span>
-                              <span className={monthlyPercent > 90 ? 'text-rose-400' : 'text-cyan-400'}>
+                              <span className={monthlyPercent > 90 ? 'text-rose-400' : 'text-[var(--fg-accent)]'}>
                                 {item.usage.monthly} / {isMonthlyUnlimited ? '∞' : item.limits.monthly}
                               </span>
                             </div>
@@ -258,7 +258,7 @@ export const UsageRadar: React.FC = () => {
                                 style={{ 
                                   width: isMonthlyUnlimited ? '100%' : `${Math.max(2, monthlyPercent)}%`
                                 }}
-                                className={`h-full rounded-full transition-all duration-300 ${monthlyPercent > 90 ? 'bg-rose-500' : 'bg-cyan-500 opacity-80'}`}
+                                className={`h-full rounded-full transition-all duration-300 ${monthlyPercent > 90 ? 'bg-rose-500' : 'bg-[var(--accent)] opacity-80'}`}
                               />
                             </div>
                           </div>
@@ -268,7 +268,7 @@ export const UsageRadar: React.FC = () => {
                           <div className="p-2.5 rounded-[var(--radius-sm)] flex flex-col items-center justify-center text-center bg-[var(--surface-subtle)] border border-[var(--border-default)]">
                             <Database size={13} className="text-[var(--text-muted)] mb-1" />
                             <span className="text-[9px] font-bold text-[var(--text-muted)] uppercase tracking-wider">{t('resourceId') || 'ID'}</span>
-                            <span className="text-[11px] font-bold font-mono text-cyan-400">{item.id}</span>
+                            <span className="text-[11px] font-bold font-mono text-[var(--fg-accent)]">{item.id}</span>
                           </div>
                           <div className="p-2.5 rounded-[var(--radius-sm)] flex flex-col items-center justify-center text-center bg-[var(--surface-subtle)] border border-[var(--border-default)]">
                             <Clock size={13} className="text-[var(--text-muted)] mb-1" />
@@ -287,13 +287,13 @@ export const UsageRadar: React.FC = () => {
       </div>
 
       {/* Info Section */}
-      <div className="p-4 sm:p-5 rounded-[var(--radius-md)] border border-cyan-500/20 bg-cyan-500/[0.03]">
+      <div className="p-4 sm:p-5 rounded-[var(--radius-md)] border border-[var(--border-accent)]/20 bg-[var(--bg-accent-muted)]">
         <div className="flex gap-3 items-start">
-          <div className="w-8 h-8 shrink-0 rounded-[var(--radius-sm)] flex items-center justify-center bg-cyan-500/10 text-cyan-400 border border-cyan-500/20">
+          <div className="w-8 h-8 shrink-0 rounded-[var(--radius-sm)] flex items-center justify-center bg-[var(--bg-accent-muted)] text-[var(--fg-accent)] border border-[var(--border-accent)]/20">
             <AlertCircle size={16} />
           </div>
           <div className="space-y-1">
-            <h4 className="text-xs sm:text-sm font-bold uppercase tracking-wider text-cyan-400">
+            <h4 className="text-xs sm:text-sm font-bold uppercase tracking-wider text-[var(--fg-accent)]">
               {t('quotaInfoTitle') || (dir === 'rtl' ? 'إدارة الحصص والحدود' : 'Quota Management')}
             </h4>
             <p className="text-[11px] sm:text-xs text-[var(--text-muted)] leading-relaxed font-medium">

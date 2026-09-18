@@ -366,11 +366,11 @@ authenticateAgent();`;
     <div className="space-y-8 font-tajawal">
       {/* Hero Header */}
       <div className="p-8 rounded-[var(--radius-md)] border border-[var(--border-default)] bg-[var(--surface-card)] relative overflow-hidden transition-theme">
-        <div className="absolute top-0 right-0 p-8 opacity-5 text-cyan-400 pointer-events-none">
+        <div className="absolute top-0 right-0 p-8 opacity-5 text-[var(--fg-accent)] pointer-events-none">
           <Terminal size={140} />
         </div>
         <div className="relative z-10 max-w-3xl space-y-3">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-[var(--radius-xs)] bg-cyan-500/10 border border-cyan-500/20 text-cyan-400 text-[11px] font-bold tracking-wider uppercase">
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-[var(--radius-xs)] bg-[var(--bg-accent-muted)] border border-[var(--border-accent)]/20 text-[var(--fg-accent)] text-[11px] font-bold tracking-wider uppercase">
             <Cpu size={12} />
             {isAr ? 'بروتوكول الوكلاء والأتمتة' : 'AI Bot & Agent Integration Profile'}
           </div>
@@ -392,7 +392,7 @@ authenticateAgent();`;
         <div className="lg:col-span-5 space-y-6">
           <div className="p-6 md:p-8 rounded-[var(--radius-md)] border border-[var(--border-default)] bg-[var(--surface-card)] space-y-6 transition-theme">
             <div className="flex items-center gap-2 pb-4 border-b border-[var(--border-default)]">
-              <Key size={18} className="text-cyan-400" />
+              <Key size={18} className="text-[var(--fg-accent)]" />
               <h3 className="font-bold text-base text-[var(--text-primary)]">
                 {isAr ? 'تسجيل وكيل برامجي جديد' : 'Register New Bot Client'}
               </h3>
@@ -407,7 +407,7 @@ authenticateAgent();`;
                   type="text"
                   required
                   placeholder={isAr ? 'مثال: نظام التحليل الآلي، Slack Bot' : 'e.g., Analytical Python Script, Telegram Bot'}
-                  className="w-full text-sm px-3.5 py-2.5 bg-[var(--surface-subtle)] text-[var(--text-primary)] border border-[var(--border-default)] focus:border-cyan-500/60 focus:ring-1 focus:ring-cyan-500/30 rounded-[var(--radius-sm)] transition-theme outline-none"
+                  className="w-full text-sm px-3.5 py-2.5 bg-[var(--surface-subtle)] text-[var(--text-primary)] border border-[var(--border-default)] focus:border-[var(--border-accent)] focus:ring-1 focus:ring-[var(--border-accent)]/30 rounded-[var(--radius-sm)] transition-theme outline-none"
                   value={clientName}
                   onChange={e => setClientName(e.target.value)}
                 />
@@ -433,7 +433,7 @@ authenticateAgent();`;
                 <input 
                   type="text"
                   placeholder="e.g., PerplextaExternalAgent/1.0"
-                  className="w-full text-sm px-3.5 py-2.5 bg-[var(--surface-subtle)] text-[var(--text-primary)] border border-[var(--border-default)] focus:border-cyan-500/60 focus:ring-1 focus:ring-cyan-500/30 rounded-[var(--radius-sm)] transition-theme outline-none"
+                  className="w-full text-sm px-3.5 py-2.5 bg-[var(--surface-subtle)] text-[var(--text-primary)] border border-[var(--border-default)] focus:border-[var(--border-accent)] focus:ring-1 focus:ring-[var(--border-accent)]/30 rounded-[var(--radius-sm)] transition-theme outline-none"
                   value={userAgent}
                   onChange={e => setUserAgent(e.target.value)}
                 />
@@ -446,7 +446,7 @@ authenticateAgent();`;
                 <input 
                   type="text"
                   placeholder={isAr ? 'الرابط للتوثيق المنقسم (مفصولة بفاصلة)' : 'Comma-separated URLs, if using interactive auth flows'}
-                  className="w-full text-sm px-3.5 py-2.5 bg-[var(--surface-subtle)] text-[var(--text-primary)] border border-[var(--border-default)] focus:border-cyan-500/60 focus:ring-1 focus:ring-cyan-500/30 rounded-[var(--radius-sm)] transition-theme outline-none"
+                  className="w-full text-sm px-3.5 py-2.5 bg-[var(--surface-subtle)] text-[var(--text-primary)] border border-[var(--border-default)] focus:border-[var(--border-accent)] focus:ring-1 focus:ring-[var(--border-accent)]/30 rounded-[var(--radius-sm)] transition-theme outline-none"
                   value={redirectUris}
                   onChange={e => setRedirectUris(e.target.value)}
                 />
@@ -458,7 +458,7 @@ authenticateAgent();`;
               <button
                 type="submit"
                 disabled={isRegistering}
-                className="w-full flex items-center justify-center gap-2 py-3 px-4 bg-cyan-500 hover:bg-cyan-400 text-black font-bold text-sm tracking-tight rounded-[var(--radius-sm)] shadow-sm transition-theme disabled:opacity-50 cursor-pointer"
+                className="w-full flex items-center justify-center gap-2 py-3 px-4 bg-[var(--accent)] hover:opacity-90 text-[var(--fg-on-emphasis)] font-bold text-sm tracking-tight rounded-[var(--radius-sm)] shadow-sm transition-theme disabled:opacity-50 cursor-pointer"
               >
                 {isRegistering ? (
                   <RefreshCw size={16} className="animate-spin" />
@@ -480,19 +480,19 @@ authenticateAgent();`;
           <div className="p-6 md:p-8 rounded-[var(--radius-md)] border border-[var(--border-default)] bg-[var(--surface-card)] space-y-4 transition-theme">
             <div className="flex items-center justify-between pb-4 border-b border-[var(--border-default)]">
               <div className="flex items-center gap-2">
-                <Globe size={18} className="text-cyan-400" />
+                <Globe size={18} className="text-[var(--fg-accent)]" />
                 <h3 className="font-bold text-base text-[var(--text-primary)]">
                   {isAr ? 'الوكلاء والأجهزة المرتبطة حالياً' : 'Your Registered Connected Systems'}
                 </h3>
               </div>
-              <span className="text-xs px-2.5 py-0.5 rounded-[var(--radius-xs)] bg-cyan-500/10 text-cyan-400 border border-cyan-500/20 font-bold">
+              <span className="text-xs px-2.5 py-0.5 rounded-[var(--radius-xs)] bg-[var(--bg-accent-muted)] text-[var(--fg-accent)] border border-[var(--border-accent)]/20 font-bold">
                 {agents.length}
               </span>
             </div>
 
             {isLoading ? (
               <div className="h-32 flex items-center justify-center">
-                <RefreshCw size={24} className="animate-spin text-cyan-400" />
+                <RefreshCw size={24} className="animate-spin text-[var(--fg-accent)]" />
               </div>
             ) : agents.length === 0 ? (
               <div className="h-32 flex flex-col items-center justify-center text-center space-y-2">
@@ -518,12 +518,12 @@ authenticateAgent();`;
                       </div>
                       <div className="flex items-center gap-1 font-mono text-[10px] text-[var(--text-muted)]">
                         <span>ID:</span>
-                        <span className="text-cyan-400">{agent.client_id}</span>
+                        <span className="text-[var(--fg-accent)]">{agent.client_id}</span>
                         <button 
                           onClick={() => handleCopy(agent.client_id, `cid-${agent.id}`)}
                           className="p-1 hover:text-[var(--text-primary)] transition-colors cursor-pointer"
                         >
-                          {copiedId === `cid-${agent.id}` ? <Check size={10} className="text-cyan-400" /> : <Copy size={10} />}
+                          {copiedId === `cid-${agent.id}` ? <Check size={10} className="text-[var(--fg-accent)]" /> : <Copy size={10} />}
                         </button>
                       </div>
                     </div>
@@ -552,10 +552,10 @@ authenticateAgent();`;
                 initial={{ opacity: 0, height: 0 }}
                 animate={{ opacity: 1, height: 'auto' }}
                 exit={{ opacity: 0, height: 0 }}
-                className="p-6 md:p-8 rounded-[var(--radius-md)] border border-cyan-500/30 bg-cyan-500/[0.03] space-y-4 overflow-hidden"
+                className="p-6 md:p-8 rounded-[var(--radius-md)] border border-[var(--border-accent)]/30 bg-[var(--bg-accent-muted)] space-y-4 overflow-hidden"
               >
                 <div className="flex items-start gap-3">
-                  <div className="p-2 rounded-[var(--radius-sm)] bg-cyan-500/10 text-cyan-400 border border-cyan-500/20 shrink-0">
+                  <div className="p-2 rounded-[var(--radius-sm)] bg-[var(--bg-accent-muted)] text-[var(--fg-accent)] border border-[var(--border-accent)]/20 shrink-0">
                     <ShieldAlert size={18} />
                   </div>
                   <div className="space-y-1">
@@ -577,13 +577,13 @@ authenticateAgent();`;
                   </div>
                   <div className="flex items-center justify-between gap-4 py-1.5 border-t border-[var(--border-default)]">
                     <span className="text-[var(--text-muted)]">Client ID:</span>
-                    <div className="flex items-center gap-1 text-cyan-400 font-bold">
+                    <div className="flex items-center gap-1 text-[var(--fg-accent)] font-bold">
                       <span>{generatedCredentials.client_id}</span>
                       <button 
                         onClick={() => handleCopy(generatedCredentials.client_id, 'gen-cid')}
                         className="p-1 hover:text-[var(--text-primary)] transition-colors cursor-pointer"
                       >
-                        {copiedId === 'gen-cid' ? <Check size={12} className="text-cyan-400" /> : <Copy size={12} />}
+                        {copiedId === 'gen-cid' ? <Check size={12} className="text-[var(--fg-accent)]" /> : <Copy size={12} />}
                       </button>
                     </div>
                   </div>
@@ -595,7 +595,7 @@ authenticateAgent();`;
                         onClick={() => handleCopy(generatedCredentials.client_secret, 'gen-sec')}
                         className="p-1 hover:text-[var(--text-primary)] transition-colors cursor-pointer"
                       >
-                        {copiedId === 'gen-sec' ? <Check size={12} className="text-cyan-400" /> : <Copy size={12} />}
+                        {copiedId === 'gen-sec' ? <Check size={12} className="text-[var(--fg-accent)]" /> : <Copy size={12} />}
                       </button>
                     </div>
                   </div>
@@ -608,7 +608,7 @@ authenticateAgent();`;
           <div className="p-6 md:p-8 rounded-[var(--radius-md)] border border-[var(--border-default)] bg-[var(--surface-card)] space-y-4 transition-theme">
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-2">
               <div className="flex items-center gap-2">
-                <Code size={18} className="text-cyan-400" />
+                <Code size={18} className="text-[var(--fg-accent)]" />
                 <h4 className="font-bold text-sm text-[var(--text-primary)]">
                   {isAr ? 'أمثلة للاتصال وحجز الرموز الأمنية' : 'Code Integration Samples'}
                 </h4>
@@ -618,19 +618,19 @@ authenticateAgent();`;
               <div className="flex items-center gap-1 bg-[var(--surface-subtle)] p-0.5 rounded-[var(--radius-sm)] self-start border border-[var(--border-default)]">
                 <button
                   onClick={() => setCodeLanguage('python')}
-                  className={`text-[10px] font-bold px-2.5 py-1 rounded-[var(--radius-xs)] transition-colors cursor-pointer ${codeLanguage === 'python' ? 'bg-cyan-500 text-black' : 'text-[var(--text-muted)] hover:text-[var(--text-primary)]'}`}
+                  className={`text-[10px] font-bold px-2.5 py-1 rounded-[var(--radius-xs)] transition-colors cursor-pointer ${codeLanguage === 'python' ? 'bg-[var(--accent)] text-[var(--fg-on-emphasis)]' : 'text-[var(--text-muted)] hover:text-[var(--text-primary)]'}`}
                 >
                   Python
                 </button>
                 <button
                   onClick={() => setCodeLanguage('node')}
-                  className={`text-[10px] font-bold px-2.5 py-1 rounded-[var(--radius-xs)] transition-colors cursor-pointer ${codeLanguage === 'node' ? 'bg-cyan-500 text-black' : 'text-[var(--text-muted)] hover:text-[var(--text-primary)]'}`}
+                  className={`text-[10px] font-bold px-2.5 py-1 rounded-[var(--radius-xs)] transition-colors cursor-pointer ${codeLanguage === 'node' ? 'bg-[var(--accent)] text-[var(--fg-on-emphasis)]' : 'text-[var(--text-muted)] hover:text-[var(--text-primary)]'}`}
                 >
                   NodeJS
                 </button>
                 <button
                   onClick={() => setCodeLanguage('curl')}
-                  className={`text-[10px] font-bold px-2.5 py-1 rounded-[var(--radius-xs)] transition-colors cursor-pointer ${codeLanguage === 'curl' ? 'bg-cyan-500 text-black' : 'text-[var(--text-muted)] hover:text-[var(--text-primary)]'}`}
+                  className={`text-[10px] font-bold px-2.5 py-1 rounded-[var(--radius-xs)] transition-colors cursor-pointer ${codeLanguage === 'curl' ? 'bg-[var(--accent)] text-[var(--fg-on-emphasis)]' : 'text-[var(--text-muted)] hover:text-[var(--text-primary)]'}`}
                 >
                   cURL
                 </button>
@@ -643,7 +643,7 @@ authenticateAgent();`;
                 className="absolute top-3 right-3 p-1.5 rounded-[var(--radius-xs)] bg-[var(--surface-card)] hover:bg-[var(--surface-card)] border border-[var(--border-default)] text-[var(--text-muted)] hover:text-[var(--text-primary)] transition-theme cursor-pointer"
                 title={isAr ? 'نسخ الكود' : 'Copy Code'}
               >
-                {copiedId === 'code-copy' ? <Check size={12} className="text-cyan-400" /> : <Copy size={12} />}
+                {copiedId === 'code-copy' ? <Check size={12} className="text-[var(--fg-accent)]" /> : <Copy size={12} />}
               </button>
               <pre className="text-[10px] font-mono leading-relaxed p-4 bg-[var(--surface-subtle)] text-[var(--text-secondary)] rounded-[var(--radius-sm)] overflow-x-auto max-h-52 no-scrollbar border border-[var(--border-default)]">
                 {getCodeSnippet()}
@@ -665,13 +665,13 @@ authenticateAgent();`;
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-2 border-b border-[var(--border-default)]">
               <div className="flex items-center gap-2">
                 <div className="relative">
-                  <Cpu size={20} className="text-cyan-400 animate-pulse" />
-                  <div className="absolute -inset-1 rounded-[var(--radius-sm)] bg-cyan-500/20 blur opacity-75"></div>
+                  <Cpu size={20} className="text-[var(--fg-accent)] animate-pulse" />
+                  <div className="absolute -inset-1 rounded-[var(--radius-sm)] bg-[var(--bg-accent-muted)] blur opacity-75"></div>
                 </div>
                 <div>
                   <h4 className="font-bold text-sm text-[var(--text-primary)] flex items-center gap-2">
                     {isAr ? 'مركز عمليات بروتوكول WebMCP المتكامل' : 'WebMCP Integrated Protocol Workspace'}
-                    <span className="px-1.5 py-0.5 rounded-[var(--radius-xs)] bg-cyan-500/10 text-cyan-400 border border-cyan-500/20 text-[9px] font-mono font-bold tracking-widest uppercase">
+                    <span className="px-1.5 py-0.5 rounded-[var(--radius-xs)] bg-[var(--bg-accent-muted)] text-[var(--fg-accent)] border border-[var(--border-accent)]/20 text-[9px] font-mono font-bold tracking-widest uppercase">
                       ACTIVE
                     </span>
                   </h4>
@@ -686,14 +686,14 @@ authenticateAgent();`;
                 <button
                   type="button"
                   onClick={() => setMcpMode('server')}
-                  className={`text-[10px] font-bold px-3 py-1 rounded-[var(--radius-xs)] cursor-pointer transition-theme ${mcpMode === 'server' ? 'bg-cyan-500 text-black shadow-sm' : 'text-[var(--text-muted)] hover:text-[var(--text-primary)]'}`}
+                  className={`text-[10px] font-bold px-3 py-1 rounded-[var(--radius-xs)] cursor-pointer transition-theme ${mcpMode === 'server' ? 'bg-[var(--accent)] text-[var(--fg-on-emphasis)] shadow-sm' : 'text-[var(--text-muted)] hover:text-[var(--text-primary)]'}`}
                 >
                   {isAr ? 'تشخيص الخادم المحلي' : 'Local Server Diagnostic'}
                 </button>
                 <button
                   type="button"
                   onClick={() => setMcpMode('federation')}
-                  className={`text-[10px] font-bold px-3 py-1 rounded-[var(--radius-xs)] cursor-pointer transition-theme ${mcpMode === 'federation' ? 'bg-cyan-500 text-black shadow-sm' : 'text-[var(--text-muted)] hover:text-[var(--text-primary)]'}`}
+                  className={`text-[10px] font-bold px-3 py-1 rounded-[var(--radius-xs)] cursor-pointer transition-theme ${mcpMode === 'federation' ? 'bg-[var(--accent)] text-[var(--fg-on-emphasis)] shadow-sm' : 'text-[var(--text-muted)] hover:text-[var(--text-primary)]'}`}
                 >
                   {isAr ? 'الترابط الفيدرالي الخارجي' : 'External Federation'}
                 </button>
@@ -707,7 +707,7 @@ authenticateAgent();`;
                 <div className="lg:col-span-6 space-y-4">
                   <div className="space-y-2">
                     <span className="text-xs font-bold text-[var(--text-primary)] flex items-center gap-1">
-                      <Activity size={14} className="text-cyan-400" />
+                      <Activity size={14} className="text-[var(--fg-accent)]" />
                       {isAr ? 'أدوات التحكم وتدفق الاكتشاف:' : 'Discovery Flow controls:'}
                     </span>
                     <p className="text-[11px] text-[var(--text-secondary)] leading-relaxed">
@@ -722,9 +722,9 @@ authenticateAgent();`;
                       type="button"
                       onClick={handleFetchMcpCard}
                       disabled={isMcpWorking}
-                      className="text-xs font-bold px-4 py-2 bg-[var(--surface-subtle)] hover:bg-[var(--surface-card)] rounded-[var(--radius-sm)] border border-[var(--border-default)] text-cyan-400 hover:text-cyan-300 flex items-center gap-1 transition-theme cursor-pointer disabled:opacity-50"
+                      className="text-xs font-bold px-4 py-2 bg-[var(--surface-subtle)] hover:bg-[var(--surface-card)] rounded-[var(--radius-sm)] border border-[var(--border-default)] text-[var(--fg-accent)] hover:text-[var(--fg-accent)] flex items-center gap-1 transition-theme cursor-pointer disabled:opacity-50"
                     >
-                      <Layers size={13} className="text-cyan-400" />
+                      <Layers size={13} className="text-[var(--fg-accent)]" />
                       {isAr ? 'فحص بطاقة الاكتشاف' : 'Query Server Card'}
                     </button>
 
@@ -732,9 +732,9 @@ authenticateAgent();`;
                       type="button"
                       onClick={handleFetchMcpTools}
                       disabled={isMcpWorking}
-                      className="text-xs font-bold px-4 py-2 bg-[var(--surface-subtle)] hover:bg-[var(--surface-card)] rounded-[var(--radius-sm)] border border-[var(--border-default)] text-cyan-400 hover:text-cyan-300 flex items-center gap-1 transition-theme cursor-pointer disabled:opacity-50"
+                      className="text-xs font-bold px-4 py-2 bg-[var(--surface-subtle)] hover:bg-[var(--surface-card)] rounded-[var(--radius-sm)] border border-[var(--border-default)] text-[var(--fg-accent)] hover:text-[var(--fg-accent)] flex items-center gap-1 transition-theme cursor-pointer disabled:opacity-50"
                     >
-                      <Database size={13} className="text-cyan-400" />
+                      <Database size={13} className="text-[var(--fg-accent)]" />
                       {isAr ? 'استرداد الأدوات النشطة' : 'List Active Tools'}
                     </button>
                   </div>
@@ -744,9 +744,9 @@ authenticateAgent();`;
                     <motion.div
                       initial={{ opacity: 0, y: 5 }}
                       animate={{ opacity: 1, y: 0 }}
-                      className="p-3 bg-[var(--surface-subtle)] rounded-[var(--radius-sm)] border border-cyan-500/20 space-y-1"
+                      className="p-3 bg-[var(--surface-subtle)] rounded-[var(--radius-sm)] border border-[var(--border-accent)]/20 space-y-1"
                     >
-                      <span className="text-[10px] text-cyan-400 font-bold font-mono uppercase tracking-wider block">
+                      <span className="text-[10px] text-[var(--fg-accent)] font-bold font-mono uppercase tracking-wider block">
                         [LIVE DISCOVERY META]
                       </span>
                       <div className="text-[11px] font-mono text-[var(--text-secondary)] space-y-1">
@@ -767,7 +767,7 @@ authenticateAgent();`;
                     >
                       <div className="space-y-1">
                         <span className="text-xs font-bold text-[var(--text-primary)] flex items-center gap-1">
-                          <CheckCircle2 size={13} className="text-cyan-400" />
+                          <CheckCircle2 size={13} className="text-[var(--fg-accent)]" />
                           {isAr ? 'استدعاء أداة WebMCP مباشرة:' : 'Execute Custom WebMCP Tool:'}
                         </span>
                         <p className="text-[10px] text-[var(--text-muted)]">
@@ -797,13 +797,13 @@ authenticateAgent();`;
                               value={mcpTestPrompt}
                               onChange={(e) => setMcpTestPrompt(e.target.value)}
                               placeholder={isAr ? 'اكتب معلمات المدخلات هنا...' : 'Enter prompt target here...'}
-                              className="flex-1 text-xs bg-[var(--surface-card)] border border-[var(--border-default)] rounded-[var(--radius-sm)] p-2 text-[var(--text-primary)] focus:border-cyan-500/60 focus:outline-none transition-colors"
+                              className="flex-1 text-xs bg-[var(--surface-card)] border border-[var(--border-default)] rounded-[var(--radius-sm)] p-2 text-[var(--text-primary)] focus:border-[var(--border-accent)] focus:outline-none transition-colors"
                             />
                             <button
                               type="button"
                               onClick={handleExecuteMcpTool}
                               disabled={isMcpWorking || !mcpSelectedTool}
-                              className="px-3.5 bg-cyan-500 hover:bg-cyan-400 disabled:opacity-50 text-black font-bold text-xs rounded-[var(--radius-sm)] flex items-center justify-center transition-theme cursor-pointer"
+                              className="px-3.5 bg-[var(--accent)] hover:opacity-90 disabled:opacity-50 text-[var(--fg-on-emphasis)] font-bold text-xs rounded-[var(--radius-sm)] flex items-center justify-center transition-theme cursor-pointer"
                             >
                               <Play size={12} fill="currentColor" />
                             </button>
@@ -814,8 +814,8 @@ authenticateAgent();`;
                       {/* Display Execution Result */}
                       {mcpExecutionResult && (
                         <div className="space-y-1">
-                          <span className="text-[10px] text-cyan-400 font-mono font-bold block">[EXECUTION RESULT]:</span>
-                          <pre className="text-[10px] font-mono leading-relaxed p-3 bg-[var(--surface-card)] text-[var(--text-secondary)] rounded-[var(--radius-sm)] border border-cyan-500/20 overflow-x-auto max-h-40 no-scrollbar select-all">
+                          <span className="text-[10px] text-[var(--fg-accent)] font-mono font-bold block">[EXECUTION RESULT]:</span>
+                          <pre className="text-[10px] font-mono leading-relaxed p-3 bg-[var(--surface-card)] text-[var(--text-secondary)] rounded-[var(--radius-sm)] border border-[var(--border-accent)]/20 overflow-x-auto max-h-40 no-scrollbar select-all">
                             {mcpExecutionResult}
                           </pre>
                         </div>
@@ -828,7 +828,7 @@ authenticateAgent();`;
                 <div className="lg:col-span-6 space-y-2">
                   <div className="flex items-center justify-between">
                     <span className="text-xs font-bold text-[var(--text-primary)] flex items-center gap-1">
-                      <Terminal size={14} className="text-cyan-400" />
+                      <Terminal size={14} className="text-[var(--fg-accent)]" />
                       {isAr ? 'سجل العمليات (WebMCP Stream Logs):' : 'Operations log (WebMCP Stream Logs):'}
                     </span>
                     <button
@@ -840,21 +840,21 @@ authenticateAgent();`;
                     </button>
                   </div>
 
-                  <div className="h-56 bg-[var(--surface-subtle)] p-4 rounded-[var(--radius-sm)] border border-[var(--border-default)] font-mono text-[10px] text-cyan-400 overflow-y-auto no-scrollbar space-y-2 flex flex-col-reverse shadow-inner">
+                  <div className="h-56 bg-[var(--surface-subtle)] p-4 rounded-[var(--radius-sm)] border border-[var(--border-default)] font-mono text-[10px] text-[var(--fg-accent)] overflow-y-auto no-scrollbar space-y-2 flex flex-col-reverse shadow-inner">
                     {mcpLogs.length === 0 ? (
                       <span className="text-[10px] text-[var(--text-muted)] block uppercase tracking-wider select-none h-full flex items-center justify-center text-center">
                         {isAr ? 'بانتظار تنفيذ العمليات في المنصة...' : 'System Idle. Awaiting WebMCP requests...'}
                       </span>
                     ) : (
                       mcpLogs.map((log, index) => (
-                        <div key={`mcp-log-${index}`} className="leading-relaxed break-all border-l-2 border-cyan-500/30 pl-2">
+                        <div key={`mcp-log-${index}`} className="leading-relaxed break-all border-l-2 border-[var(--border-accent)]/30 pl-2">
                           {log}
                         </div>
                       ))
                     )}
                   </div>
 
-                  <div className="p-3 bg-cyan-500/[0.03] rounded-[var(--radius-sm)] border border-cyan-500/10 text-[10px] text-[var(--text-muted)] leading-relaxed">
+                  <div className="p-3 bg-[var(--bg-accent-muted)] rounded-[var(--radius-sm)] border border-[var(--border-accent)]/10 text-[10px] text-[var(--text-muted)] leading-relaxed">
                     {isAr 
                       ? '💡 يدعم خادم WebMCP معيار SSE لنقل التدفق في بيئة الإنتاج المجهزة بكافة طاقاتها والبروتوكول متواضع بصفة آمنة تماماً.' 
                       : '💡 WebMCP Server natively supports active Server-Sent Events (SSE) stream channels to communicate synchronously with parent agents.'}
@@ -865,7 +865,7 @@ authenticateAgent();`;
               <div className="space-y-4">
                 <div className="space-y-1">
                   <span className="text-xs font-bold text-[var(--text-primary)] flex items-center gap-1">
-                    <Wifi size={14} className="text-cyan-400 animate-pulse" />
+                    <Wifi size={14} className="text-[var(--fg-accent)] animate-pulse" />
                     {isAr ? 'ربط شبكي فيدرالي مع خوادم WebMCP الخارجية:' : 'Federate with external WebMCP Platforms:'}
                   </span>
                   <p className="text-xs text-[var(--text-secondary)] leading-relaxed">
@@ -882,20 +882,20 @@ authenticateAgent();`;
                       value={externalMcpUrl}
                       onChange={(e) => setExternalMcpUrl(e.target.value)}
                       placeholder="https://mcp-server.example.com/sse"
-                      className="w-full text-xs bg-[var(--surface-subtle)] border border-[var(--border-default)] rounded-[var(--radius-sm)] p-2.5 text-[var(--text-primary)] focus:border-cyan-500/60 focus:outline-none transition-theme"
+                      className="w-full text-xs bg-[var(--surface-subtle)] border border-[var(--border-default)] rounded-[var(--radius-sm)] p-2.5 text-[var(--text-primary)] focus:border-[var(--border-accent)] focus:outline-none transition-theme"
                       required
                     />
                     {externalMcpStatus === 'connected' && (
                       <span className="absolute right-3 top-2.5 flex h-2 w-2">
-                        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-cyan-400 opacity-75"></span>
-                        <span className="relative inline-flex rounded-full h-2 w-2 bg-cyan-400"></span>
+                        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[var(--accent)] opacity-75"></span>
+                        <span className="relative inline-flex rounded-full h-2 w-2 bg-[var(--accent)]"></span>
                       </span>
                     )}
                   </div>
                   <button
                     type="submit"
                     disabled={isMcpWorking}
-                    className="px-4 bg-cyan-500 hover:bg-cyan-400 text-black font-bold text-xs rounded-[var(--radius-sm)] flex items-center gap-1 transition-theme cursor-pointer disabled:opacity-50 shrink-0"
+                    className="px-4 bg-[var(--accent)] hover:opacity-90 text-[var(--fg-on-emphasis)] font-bold text-xs rounded-[var(--radius-sm)] flex items-center gap-1 transition-theme cursor-pointer disabled:opacity-50 shrink-0"
                   >
                     <RefreshCw size={12} className={isMcpWorking ? 'animate-spin' : ''} />
                     {isAr ? 'ربط الخادم' : 'Federate'}
@@ -907,10 +907,10 @@ authenticateAgent();`;
                   <motion.div
                     initial={{ opacity: 0, scale: 0.99 }}
                     animate={{ opacity: 1, scale: 1 }}
-                    className="p-4 rounded-[var(--radius-sm)] border border-cyan-500/20 bg-cyan-500/[0.03] space-y-3 max-w-xl"
+                    className="p-4 rounded-[var(--radius-sm)] border border-[var(--border-accent)]/20 bg-[var(--bg-accent-muted)] space-y-3 max-w-xl"
                   >
                     <div className="flex items-center gap-2">
-                      <CheckCircle2 size={16} className="text-cyan-400" />
+                      <CheckCircle2 size={16} className="text-[var(--fg-accent)]" />
                       <span className="text-xs font-bold text-[var(--text-primary)]">
                         {isAr ? 'تم استيراد الأدوات وبث الخصائص بنجاح!' : 'Federated tools & capabilities merged!'}
                       </span>
@@ -922,11 +922,11 @@ authenticateAgent();`;
                       </div>
                       <div className="flex justify-between border-b border-[var(--border-default)] py-1">
                         <span>{isAr ? 'إصدار البروتوكول:' : 'MCP Version:'}</span>
-                        <span className="text-cyan-400 font-bold">2024-11-05</span>
+                        <span className="text-[var(--fg-accent)] font-bold">2024-11-05</span>
                       </div>
                       <div className="flex justify-between pt-1">
                         <span>{isAr ? 'الأدوات المتكاملة المستوردة:' : 'Imported capabilities:'}</span>
-                        <span className="text-cyan-400">tools (4), resources (2)</span>
+                        <span className="text-[var(--fg-accent)]">tools (4), resources (2)</span>
                       </div>
                     </div>
                   </motion.div>
@@ -938,7 +938,7 @@ authenticateAgent();`;
           {/* DNS for AI Discovery (DNS-AID) & Discoverability Docs */}
           <div className="p-6 md:p-8 rounded-[var(--radius-md)] border border-[var(--border-default)] bg-[var(--surface-card)] space-y-4 transition-theme">
             <div className="flex items-center gap-2 pb-2 border-b border-[var(--border-default)]">
-              <Globe size={18} className="text-cyan-400" />
+              <Globe size={18} className="text-[var(--fg-accent)]" />
               <h4 className="font-bold text-sm text-[var(--text-primary)]">
                 {isAr ? 'بروتوكول اكتشاف الوكلاء الذاتي بالـ DNS (DNS-AID)' : 'DNS for AI Discovery (DNS-AID) & Discovery'}
               </h4>
@@ -953,7 +953,7 @@ authenticateAgent();`;
             <div className="space-y-4">
               {/* DNS records block */}
               <div className="space-y-2">
-                <span className="text-[11px] font-bold text-cyan-400">
+                <span className="text-[11px] font-bold text-[var(--fg-accent)]">
                   {isAr ? '1. سجلات DNS المطلوبة (SVCB / HTTPS):' : '1. Required DNS Records (SVCB/HTTPS / Zone DNSSEC):'}
                 </span>
                 <div className="relative">
@@ -962,7 +962,7 @@ authenticateAgent();`;
                     className="absolute top-2 right-2 p-1 rounded-[var(--radius-xs)] bg-[var(--surface-card)] hover:bg-[var(--surface-card)] border border-[var(--border-default)] text-[var(--text-muted)] hover:text-[var(--text-primary)] transition-theme text-[10px] cursor-pointer"
                     title={isAr ? 'نسخ السجل' : 'Copy DNS Record'}
                   >
-                    {copiedId === 'dns-copy' ? <Check size={10} className="text-cyan-400" /> : <Copy size={10} />}
+                    {copiedId === 'dns-copy' ? <Check size={10} className="text-[var(--fg-accent)]" /> : <Copy size={10} />}
                   </button>
                   <pre className="text-[10px] font-mono leading-relaxed p-3 bg-[var(--surface-subtle)] text-[var(--text-secondary)] rounded-[var(--radius-sm)] overflow-x-auto no-scrollbar border border-[var(--border-default)]">
                     {`_a2a._agents.${window.location.hostname || 'example.com'}. 3600 IN SVCB 1 ${window.location.hostname || 'example.com'}. alpn="a2a" port=443 mandatory=alpn,port`}
@@ -977,7 +977,7 @@ authenticateAgent();`;
 
               {/* Link Headers block */}
               <div className="space-y-2 pt-2 border-t border-[var(--border-default)]">
-                <span className="text-[11px] font-bold text-cyan-400">
+                <span className="text-[11px] font-bold text-[var(--fg-accent)]">
                   {isAr ? '2. ترويسة اكتشاف الروابط المعينة (HTTP Link Headers):' : '2. Advertised Link HTTP Response Headers (RFC 8288):'}
                 </span>
                 <p className="text-[11px] text-[var(--text-secondary)] leading-relaxed">
@@ -995,7 +995,7 @@ authenticateAgent();`;
           {/* x402 Agent-Native Payments (HTTP 402) */}
           <div className="p-6 md:p-8 rounded-[var(--radius-md)] border border-[var(--border-default)] bg-[var(--surface-card)] space-y-4 transition-theme">
             <div className="flex items-center gap-2 pb-2 border-b border-[var(--border-default)]">
-              <Cpu size={18} className="text-cyan-400" />
+              <Cpu size={18} className="text-[var(--fg-accent)]" />
               <h4 className="font-bold text-sm text-[var(--text-primary)]">
                 {isAr ? 'بروتوكول الدفع الذاتي للوكلاء (x402 Protocol)' : 'x402 Agent-Native Programmatic Payments'}
               </h4>
@@ -1009,7 +1009,7 @@ authenticateAgent();`;
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2">
               <div className="p-4 bg-[var(--surface-subtle)] rounded-[var(--radius-sm)] border border-[var(--border-default)] space-y-2 font-mono text-xs">
-                <span className="text-cyan-400 font-bold block mb-1">
+                <span className="text-[var(--fg-accent)] font-bold block mb-1">
                   {isAr ? '⚙️ طرف التوصيل المحمي برمجياً:' : '⚙️ Protected Resource Endpoint:'}
                 </span>
                 <div className="text-[var(--text-primary)] bg-[var(--surface-card)] p-2 rounded-[var(--radius-xs)] text-[11px] select-all border border-[var(--border-default)]">
@@ -1026,7 +1026,7 @@ authenticateAgent();`;
                   </div>
                   <div className="flex justify-between">
                     <span>{isAr ? 'العنوان المستهدف محفظة:' : 'Recipient PayTo:'}</span>
-                    <span className="text-cyan-400 font-bold">0xX402...Wallet</span>
+                    <span className="text-[var(--fg-accent)] font-bold">0xX402...Wallet</span>
                   </div>
                   <div className="flex justify-between">
                     <span>{isAr ? 'السعر المحدد:' : 'Asset Pricing:'}</span>
@@ -1036,7 +1036,7 @@ authenticateAgent();`;
               </div>
 
               <div className="p-4 bg-[var(--surface-subtle)] rounded-[var(--radius-sm)] border border-[var(--border-default)] space-y-2">
-                <span className="text-cyan-400 font-bold text-xs block mb-1">
+                <span className="text-[var(--fg-accent)] font-bold text-xs block mb-1">
                   {isAr ? '💻 استجابة ترويسة x402 المتوقعة:' : '💻 Expected HTTP 402 Headers:'}
                 </span>
                 <p className="text-[10px] text-[var(--text-muted)]">

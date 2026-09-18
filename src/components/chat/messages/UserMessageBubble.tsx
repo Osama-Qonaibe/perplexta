@@ -135,7 +135,7 @@ export const UserMessageBubble: React.FC<UserMessageBubbleProps> = ({
               className={`w-8 h-8 rounded-shape-sm flex items-center justify-center border transition-colors duration-150 cursor-pointer relative before:absolute before:-inset-1.5 before:content-[''] active:scale-95 shrink-0 box-border ${
                 msg.is_pinned 
                   ? 'bg-[var(--surface-card)] border-[var(--border-default)] text-[var(--fg-accent)] shadow-2xs' 
-                  : 'border-transparent hover:border-cyan-500/60 dark:hover:border-cyan-400/60 bg-transparent hover:bg-[var(--surface-subtle)] text-[var(--text-muted)] hover:text-[var(--text-primary)]'
+                  : 'border-transparent hover:border-[var(--border-accent)]/60 bg-transparent hover:bg-[var(--surface-subtle)] text-[var(--text-muted)] hover:text-[var(--text-primary)]'
               }`}
               title={msg.is_pinned ? (dir === 'rtl' ? 'إلغاء التثبيت' : 'Unpin') : (dir === 'rtl' ? 'تثبيت' : 'Pin')}
             >
@@ -149,7 +149,7 @@ export const UserMessageBubble: React.FC<UserMessageBubbleProps> = ({
               className={`w-8 h-8 rounded-shape-sm flex items-center justify-center border transition-colors duration-150 cursor-pointer relative before:absolute before:-inset-1.5 before:content-[''] active:scale-95 shrink-0 box-border ${
                 copiedPromptIndex === idx
                   ? 'border-emerald-500/40 text-emerald-500 bg-emerald-500/10 shadow-2xs'
-                  : 'border-transparent hover:border-cyan-500/60 dark:hover:border-cyan-400/60 bg-transparent hover:bg-[var(--surface-subtle)] text-[var(--text-muted)] hover:text-[var(--text-primary)]'
+                  : 'border-transparent hover:border-[var(--border-accent)]/60 bg-transparent hover:bg-[var(--surface-subtle)] text-[var(--text-muted)] hover:text-[var(--text-primary)]'
               }`}
               title={dir === 'rtl' ? 'نسخ' : 'Copy'}
             >
@@ -167,7 +167,7 @@ export const UserMessageBubble: React.FC<UserMessageBubbleProps> = ({
                 setEditingMessageIndex(idx);
                 setEditValue(msg.content);
               }}
-              className="w-8 h-8 rounded-shape-sm flex items-center justify-center border border-transparent hover:border-cyan-500/60 dark:hover:border-cyan-400/60 bg-transparent hover:bg-[var(--surface-subtle)] text-[var(--text-muted)] hover:text-[var(--text-primary)] transition-colors duration-150 cursor-pointer relative before:absolute before:-inset-1.5 before:content-[''] active:scale-95 shrink-0 box-border"
+              className="w-8 h-8 rounded-shape-sm flex items-center justify-center border border-transparent hover:border-[var(--border-accent)]/60 bg-transparent hover:bg-[var(--surface-subtle)] text-[var(--text-muted)] hover:text-[var(--text-primary)] transition-colors duration-150 cursor-pointer relative before:absolute before:-inset-1.5 before:content-[''] active:scale-95 shrink-0 box-border"
               title={dir === 'rtl' ? 'تعديل' : 'Edit'}
             >
               <Pencil size={14} />

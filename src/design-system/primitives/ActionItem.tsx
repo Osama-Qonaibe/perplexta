@@ -69,7 +69,7 @@ export const ActionItem = forwardRef<HTMLButtonElement, ActionItemProps>(({
   } else if (isDanger) {
     stateClasses = 'text-rose-500 hover:bg-rose-500/10 hover:text-rose-400 font-bold';
   } else if (variant === 'accent') {
-    stateClasses = 'text-cyan-500 dark:text-cyan-400 hover:bg-[var(--surface-subtle)]';
+    stateClasses = 'text-[var(--fg-accent)] hover:bg-[var(--surface-subtle)]';
   } else if (variant === 'admin') {
     stateClasses = 'text-purple-500 hover:bg-[var(--surface-subtle)]';
   } else if (variant === 'success') {

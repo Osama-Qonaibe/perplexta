@@ -103,8 +103,8 @@ export function CanvasZoomControls({
           }}
           className={`px-2 h-8 rounded-shape-sm text-[11px] font-mono font-bold transition-colors duration-200 flex items-center gap-1 cursor-pointer active:scale-95 relative before:absolute before:-inset-1.5 bg-transparent border ${
             showPresetMenu 
-              ? 'border-[var(--border-default)] text-cyan-400' 
-              : 'border-transparent hover:border-cyan-500/50 text-[var(--text-primary)]'
+              ? 'border-[var(--border-default)] text-[var(--fg-accent)]' 
+              : 'border-transparent hover:border-[var(--border-accent)]/50 text-[var(--text-primary)]'
           }`}
           title={isAr ? 'قائمة نسب التكبير' : 'Zoom Presets'}
           aria-expanded={showPresetMenu}
@@ -113,7 +113,7 @@ export function CanvasZoomControls({
           <ChevronUp
             size={11}
             className={`text-[var(--text-muted)] transition-transform duration-150 ${
-              showPresetMenu ? 'rotate-180 text-cyan-400' : ''
+              showPresetMenu ? 'rotate-180 text-[var(--fg-accent)]' : ''
             }`}
           />
         </button>
@@ -126,7 +126,7 @@ export function CanvasZoomControls({
           >
             <div className="px-2.5 py-1 text-[10px] font-bold text-[var(--text-muted)] tracking-wider uppercase border-b border-[var(--border-default)]/50 mb-0.5 flex items-center justify-between">
               <span>{isAr ? 'نسب التكبير' : 'Zoom Presets'}</span>
-              <span className="font-mono text-[9px] text-cyan-400 font-bold">{Math.round(zoom * 100)}%</span>
+              <span className="font-mono text-[9px] text-[var(--fg-accent)] font-bold">{Math.round(zoom * 100)}%</span>
             </div>
 
             <button
@@ -138,10 +138,10 @@ export function CanvasZoomControls({
               className="w-full flex items-center justify-between px-2.5 py-1.5 rounded-shape-sm text-xs font-semibold text-[var(--text-primary)] bg-transparent group transition-all duration-200 cursor-pointer select-none"
             >
               <div className="flex items-center gap-1.5 min-w-0">
-                <Maximize size={12} className="text-[var(--text-muted)] group-hover:text-cyan-400 group-hover:drop-shadow-[0_0_8px_rgba(6,182,212,0.95)] transition-all duration-200 shrink-0" />
+                <Maximize size={12} className="text-[var(--text-muted)] group-hover:text-[var(--fg-accent)] group-hover:drop-shadow-[0_0_8px_rgba(6,182,212,0.95)] transition-all duration-200 shrink-0" />
                 <span className="truncate group-hover:brightness-125 group-hover:drop-shadow-[0_0_8px_currentColor] transition-all duration-200">{isAr ? 'ملاءمة الشاشة' : 'Fit to View'}</span>
               </div>
-              <kbd className="text-[9px] font-mono text-[var(--text-muted)] group-hover:text-cyan-400 transition-colors ms-2">F</kbd>
+              <kbd className="text-[9px] font-mono text-[var(--text-muted)] group-hover:text-[var(--fg-accent)] transition-colors ms-2">F</kbd>
             </button>
 
             <div className="h-px bg-[var(--border-default)] my-0.5" />
@@ -155,8 +155,8 @@ export function CanvasZoomControls({
                   onClick={() => handleSelectPreset(preset.value)}
                   className="w-full flex items-center justify-between px-2.5 py-1.5 rounded-shape-sm text-xs font-semibold transition-all duration-200 cursor-pointer select-none group bg-transparent text-[var(--text-primary)]"
                 >
-                  <span className={`font-mono transition-all duration-200 ${isActive ? 'text-cyan-400 font-bold drop-shadow-[0_0_6px_rgba(6,182,212,0.8)]' : 'group-hover:brightness-125 group-hover:drop-shadow-[0_0_8px_currentColor]'}`}>{preset.label}</span>
-                  {isActive && <Check size={12} className="text-cyan-400 drop-shadow-[0_0_8px_rgba(6,182,212,0.95)] shrink-0 ms-1.5" />}
+                  <span className={`font-mono transition-all duration-200 ${isActive ? 'text-[var(--fg-accent)] font-bold drop-shadow-[0_0_6px_rgba(6,182,212,0.8)]' : 'group-hover:brightness-125 group-hover:drop-shadow-[0_0_8px_currentColor]'}`}>{preset.label}</span>
+                  {isActive && <Check size={12} className="text-[var(--fg-accent)] shrink-0 ms-1.5" />}
                 </button>
               );
             })}
@@ -242,13 +242,13 @@ export function CanvasZoomControls({
           }}
           className={`w-7 h-8 rounded-shape-sm transition-colors duration-200 flex items-center justify-center cursor-pointer active:scale-95 relative before:absolute before:-inset-1.5 bg-transparent border ${
             showHelpPopover
-              ? 'border-[var(--border-default)] text-cyan-400'
-              : 'border-transparent hover:border-cyan-500/50 text-[var(--text-muted)] hover:text-[var(--text-primary)]'
+              ? 'border-[var(--border-default)] text-[var(--fg-accent)]'
+              : 'border-transparent hover:border-[var(--border-accent)]/50 text-[var(--text-muted)] hover:text-[var(--text-primary)]'
           }`}
           title={isAr ? 'اختصارات لوحة المفاتيح' : 'Keyboard Shortcuts'}
           aria-label={isAr ? 'اختصارات لوحة المفاتيح' : 'Keyboard Shortcuts'}
         >
-          <Keyboard size={13} className={showHelpPopover ? 'text-cyan-400 drop-shadow-[0_0_8px_rgba(6,182,212,0.95)]' : ''} />
+          <Keyboard size={13} className={showHelpPopover ? 'text-[var(--fg-accent)]' : ''} />
         </button>
 
         {showHelpPopover && (

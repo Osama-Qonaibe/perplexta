@@ -459,7 +459,7 @@ echo json_encode($products);
                 className="w-7 h-7 object-contain rounded-md" 
               />
             ) : (
-              <div className="w-7 h-7 rounded-[6px] bg-[var(--surface-subtle)] border border-[var(--border-default)] flex items-center justify-center text-accent">
+              <div className="w-7 h-7 rounded-shape-sm bg-[var(--surface-subtle)] border border-[var(--border-default)] flex items-center justify-center text-accent">
                 <Code size={16} />
               </div>
             )}

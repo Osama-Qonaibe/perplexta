@@ -73,7 +73,7 @@ const ActionButtonWithTooltip = ({
       className={`w-8 h-8 rounded-shape-sm flex items-center justify-center transition-colors duration-150 cursor-pointer border relative before:absolute before:-inset-1.5 before:content-[''] active:scale-95 disabled:opacity-40 disabled:pointer-events-none shrink-0 box-border ${
         active
           ? activeClass || 'border-[var(--border-default)] bg-[var(--surface-card)] text-[var(--fg-accent)] shadow-2xs'
-          : 'border-transparent hover:border-cyan-500/60 dark:hover:border-cyan-400/60 bg-transparent hover:bg-[var(--surface-subtle)] text-[var(--text-muted)] hover:text-[var(--text-primary)]'
+          : 'border-transparent hover:border-[var(--border-accent)]/60 bg-transparent hover:bg-[var(--surface-subtle)] text-[var(--text-muted)] hover:text-[var(--text-primary)]'
       } ${className}`}
     >
       {icon}
@@ -374,7 +374,7 @@ export const MessageActions: React.FC<MessageActionsProps> = ({
                           onClick={item.action}
                           className="group w-full h-[36px] min-h-[36px] flex items-center gap-2.5 px-3 py-2 rounded-[8px] border border-transparent bg-transparent hover:bg-[var(--surface-subtle)] transition-all duration-150 cursor-pointer select-none text-start text-xs font-medium text-[var(--text-secondary)] hover:text-[var(--text-primary)]"
                         >
-                          <Icon size={14} className={`${item.iconColor} group-hover:text-cyan-400 shrink-0 transition-colors duration-150`} />
+                          <Icon size={14} className={`${item.iconColor} group-hover:text-[var(--fg-accent)] shrink-0 transition-colors duration-150`} />
                           <span className="truncate min-w-0 flex-1 text-xs font-medium text-[var(--text-secondary)] group-hover:text-[var(--text-primary)] transition-colors duration-150">
                             {item.label}
                           </span>

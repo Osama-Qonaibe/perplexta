@@ -584,7 +584,7 @@ export const CodeBlock: React.FC<CodeBlockProps> = ({
       <code 
         dir="ltr" 
         style={{ direction: 'ltr', unicodeBidi: 'isolate', textAlign: 'left' }} 
-        className={`inline-block mx-0.5 px-1.5 py-0.5 rounded-md bg-[var(--surface-subtle)] dark:bg-[var(--surface-code)] border border-[var(--border-default)] dark:border-slate-800/80 text-xs font-mono text-[var(--fg-accent)] dark:text-cyan-400 font-semibold dir-ltr text-left ${className || ''}`}
+        className={`inline-block mx-0.5 px-1.5 py-0.5 rounded-md bg-[var(--surface-subtle)] dark:bg-[var(--surface-code)] border border-[var(--border-default)] dark:border-slate-800/80 text-xs font-mono text-[var(--fg-accent)]  font-semibold dir-ltr text-left ${className || ''}`}
       >
         {children}
       </code>
@@ -612,7 +612,7 @@ export const CodeBlock: React.FC<CodeBlockProps> = ({
               type="button"
               onClick={() => handleOpenInCanvas('preview')}
               disabled={isGenerating}
-              className="h-8 px-2.5 text-xs font-medium bg-transparent hover:bg-[var(--surface-subtle)] text-[var(--fg-accent)] hover:text-[var(--text-primary)] border border-transparent hover:border-cyan-500/60 dark:hover:border-cyan-400/60 rounded-shape-sm active:scale-95 transition-all cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-1.5 shrink-0 relative before:absolute before:-inset-1.5 before:content-['']"
+              className="h-8 px-2.5 text-xs font-medium bg-transparent hover:bg-[var(--surface-subtle)] text-[var(--fg-accent)] hover:text-[var(--text-primary)] border border-transparent hover:border-[var(--border-accent)]/60 rounded-shape-sm active:scale-95 transition-all cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-1.5 shrink-0 relative before:absolute before:-inset-1.5 before:content-['']"
               title={isAr ? 'معاينة الكود' : 'Preview'}
             >
               <Eye size={14} className="shrink-0 text-[var(--fg-accent)]" />
@@ -624,7 +624,7 @@ export const CodeBlock: React.FC<CodeBlockProps> = ({
             {isMediaUrl ? (
               <button 
                 onClick={() => downloadFile(children)} 
-                className="w-8 h-8 rounded-shape-sm bg-transparent hover:bg-[var(--surface-subtle)] text-[var(--text-muted)] hover:text-[var(--text-primary)] border border-transparent hover:border-cyan-500/60 dark:hover:border-cyan-400/60 transition-colors flex items-center justify-center shrink-0 relative before:absolute before:-inset-1.5 before:content-['']" 
+                className="w-8 h-8 rounded-shape-sm bg-transparent hover:bg-[var(--surface-subtle)] text-[var(--text-muted)] hover:text-[var(--text-primary)] border border-transparent hover:border-[var(--border-accent)]/60 transition-colors flex items-center justify-center shrink-0 relative before:absolute before:-inset-1.5 before:content-['']" 
                 title="Download"
               >
                 <Download size={14} />
@@ -633,7 +633,7 @@ export const CodeBlock: React.FC<CodeBlockProps> = ({
               <>
                 <button 
                   onClick={copyToClipboard} 
-                  className="relative w-8 h-8 rounded-shape-sm bg-transparent hover:bg-[var(--surface-subtle)] text-[var(--text-muted)] hover:text-[var(--text-primary)] border border-transparent hover:border-cyan-500/60 dark:hover:border-cyan-400/60 transition-colors flex items-center justify-center shrink-0 before:absolute before:-inset-1.5 before:content-['']" 
+                  className="relative w-8 h-8 rounded-shape-sm bg-transparent hover:bg-[var(--surface-subtle)] text-[var(--text-muted)] hover:text-[var(--text-primary)] border border-transparent hover:border-[var(--border-accent)]/60 transition-colors flex items-center justify-center shrink-0 before:absolute before:-inset-1.5 before:content-['']" 
                   title={copied ? (dir === 'rtl' ? 'تم النسخ' : 'Copied!') : (dir === 'rtl' ? 'نسخ الكود' : 'Copy code')}
                 >
                   {copied ? (
@@ -650,7 +650,7 @@ export const CodeBlock: React.FC<CodeBlockProps> = ({
                 {!isMediaUrl && (
                   <button 
                     onClick={downloadCode} 
-                    className="w-8 h-8 rounded-shape-sm bg-transparent hover:bg-[var(--surface-subtle)] text-[var(--text-muted)] hover:text-[var(--text-primary)] border border-transparent hover:border-cyan-500/60 dark:hover:border-cyan-400/60 transition-colors flex items-center justify-center shrink-0 relative before:absolute before:-inset-1.5 before:content-['']" 
+                    className="w-8 h-8 rounded-shape-sm bg-transparent hover:bg-[var(--surface-subtle)] text-[var(--text-muted)] hover:text-[var(--text-primary)] border border-transparent hover:border-[var(--border-accent)]/60 transition-colors flex items-center justify-center shrink-0 relative before:absolute before:-inset-1.5 before:content-['']" 
                     title={dir === 'rtl' ? 'تنزيل الملف' : 'Download file'}
                   >
                     <Download size={14} />

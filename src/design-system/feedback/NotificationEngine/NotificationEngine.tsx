@@ -420,16 +420,16 @@ const ToastCard: React.FC<{ item: NotificationItem; onDismiss: (id: string) => v
         };
       case 'loading':
         return {
-          iconBadge: 'bg-cyan-500/10 border-cyan-500/30 text-cyan-400',
-          progressBarBg: 'bg-cyan-500',
-          icon: <Loader2 size={15} className="animate-spin shrink-0 text-cyan-400" />,
+          iconBadge: 'bg-[var(--bg-accent-muted)] border-[var(--border-accent)]/30 text-[var(--fg-accent)]',
+          progressBarBg: 'bg-[var(--accent)]',
+          icon: <Loader2 size={15} className="animate-spin shrink-0 text-[var(--fg-accent)]" />,
         };
       case 'info':
       default:
         return {
-          iconBadge: 'bg-cyan-500/10 border-cyan-500/30 text-cyan-400',
-          progressBarBg: 'bg-cyan-500',
-          icon: <Info size={15} className="shrink-0 text-cyan-400" />,
+          iconBadge: 'bg-[var(--bg-accent-muted)] border-[var(--border-accent)]/30 text-[var(--fg-accent)]',
+          progressBarBg: 'bg-[var(--accent)]',
+          icon: <Info size={15} className="shrink-0 text-[var(--fg-accent)]" />,
         };
     }
   };
@@ -471,7 +471,7 @@ const ToastCard: React.FC<{ item: NotificationItem; onDismiss: (id: string) => v
               item.action?.onClick();
               onDismiss(item.id);
             }}
-            className="h-5.5 px-2 text-[10px] font-bold rounded-shape-xs bg-cyan-500 hover:bg-cyan-400 text-slate-950 transition-all cursor-pointer shrink-0 whitespace-nowrap"
+            className="h-5.5 px-2 text-[10px] font-bold rounded-shape-xs bg-[var(--accent)] hover:opacity-90 text-[var(--fg-on-emphasis)] transition-all cursor-pointer shrink-0 whitespace-nowrap"
           >
             {item.action.label}
           </button>

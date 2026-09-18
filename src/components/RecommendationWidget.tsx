@@ -399,7 +399,7 @@ export const RecommendationWidget: React.FC<RecommendationWidgetProps> = ({
                 >
                   <div className="flex items-center gap-2 min-w-0 flex-1">
                     {isToolItem ? (
-                      <div className="w-7 h-7 rounded-[8px] bg-[var(--bg-accent-muted)] border border-[var(--accent)]/30 text-[var(--accent)] flex items-center justify-center shrink-0">
+                      <div className="w-7 h-7 rounded-shape-sm bg-[var(--bg-accent-muted)] border border-[var(--border-accent)]/30 text-[var(--fg-accent)] flex items-center justify-center shrink-0">
                         <Zap size={14} />
                       </div>
                     ) : (
