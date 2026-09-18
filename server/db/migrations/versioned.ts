@@ -908,8 +908,8 @@ export async function runVersionedMigrations(
       }
 
       const lTarget = ledgerClient || client;
-      await lTarget.query(`CREATE INDEX IF NOT EXISTS idx_ledger_tx_user_id ON ledger_transactions(user_id)`);
-      await lTarget.query(`CREATE INDEX IF NOT EXISTS idx_ledger_tx_status ON ledger_transactions(status)`);
+      await lTarget.query(`CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_ledger_tx_user_id ON ledger_transactions(user_id)`);
+      await lTarget.query(`CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_ledger_tx_status ON ledger_transactions(status)`);
 
       const sTarget = securityClient || client;
       await sTarget.query(`CREATE INDEX IF NOT EXISTS idx_security_alerts_user_id ON security_alerts(user_id)`);

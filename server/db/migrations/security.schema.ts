@@ -112,12 +112,12 @@ export async function applySecurityColumnEnforcements(targetSecurityPool: QueryC
 }
 
 export const SECURITY_INDEXES: string[] = [
-  `CREATE INDEX IF NOT EXISTS idx_security_alerts_user_id ON security_alerts(user_id)`,
+  `CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_security_alerts_user_id ON security_alerts(user_id)`,
   `CREATE UNIQUE INDEX IF NOT EXISTS security_alerts_pkey ON security_alerts(id)`,
   `CREATE UNIQUE INDEX IF NOT EXISTS token_blacklist_pkey ON token_blacklist(id)`,
   `CREATE UNIQUE INDEX IF NOT EXISTS token_blacklist_token_key ON token_blacklist(token)`,
-  `CREATE INDEX IF NOT EXISTS idx_token_blacklist_active_expires ON token_blacklist(expires_at)`,
-  `CREATE INDEX IF NOT EXISTS idx_admin_audit_logs_admin_id ON admin_audit_logs(admin_id)`,
+  `CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_token_blacklist_active_expires ON token_blacklist(expires_at)`,
+  `CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_admin_audit_logs_admin_id ON admin_audit_logs(admin_id)`,
   `CREATE UNIQUE INDEX IF NOT EXISTS admin_audit_logs_pkey ON admin_audit_logs(id)`,
   `CREATE UNIQUE INDEX IF NOT EXISTS registered_agents_pkey ON registered_agents(id)`,
   `CREATE UNIQUE INDEX IF NOT EXISTS registered_agents_client_id_key ON registered_agents(client_id)`

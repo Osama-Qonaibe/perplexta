@@ -877,4 +877,30 @@ export async function verifySchemaIntegrity() {
   } catch (dbErr) {
     console.error('[Schema Integrity] Failed to write audit record to migration_security_audit:', dbErr instanceof Error ? dbErr.message : 'Unknown error');
   }
+
+  // ===== VERIFY FK CONSTRAINTS =====
+  try {
+    const fkCheck = await pool.query(`
+      SELECT conname, conrelid::regclass AS table_name
+      FROM pg_constraint
+      WHERE contype = 'f' AND convalidated = false
+    `);
+
+    if (fkCheck.rows.length > 0) {
+      throw new Error(
+        `[Integrity] ${fkCheck.rows.length} FK constraints not validated: ` +
+        fkCheck.rows.map((r: any) => `${r.conname} on ${r.table_name}`).join(', ')
+      );
+    }
+    console.log(`[Integrity] ✅ All FK constraints validated`);
+  } catch (fkErr: any) {
+    if (fkErr?.message && fkErr.message.includes('[Integrity]')) {
+      throw fkErr;
+    }
+    console.warn(`[Integrity] FK verification notice:`, fkErr?.message || fkErr);
+  }
+  // =================================
 }
+
+export const ensureIntegrity = verifySchemaIntegrity;
+

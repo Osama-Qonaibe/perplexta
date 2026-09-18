@@ -1,6 +1,13 @@
 import dotenv from 'dotenv';
 dotenv.config();
 
+import fs from 'fs';
+import path from 'path';
+import { exec } from 'child_process';
+import { promisify } from 'util';
+
+const execAsync = promisify(exec);
+
 import { pool, initializePerplextaPools } from '../db/index.js';
 import { runDatabaseMigrations, verifySchemaIntegrity } from '../db/migrations.js';
 import { syncSystemTemplates } from '../services/email.js';
@@ -12,6 +19,25 @@ async function migrateAndVerifyDatabases() {
   console.log('================================================================');
   console.log('[PERPLEXTA DB MIGRATION RUNNER] Running Sequential Migrations via Migration History...');
   console.log('================================================================');
+
+  // ===== STEP 0: BACKUP BEFORE MIGRATIONS =====
+  const BACKUP_DIR = process.env.BACKUP_DIR || path.join(process.cwd(), 'backups');
+  const dbUrl = process.env.DATABASE_URL;
+
+  if (dbUrl && process.env.NODE_ENV === 'production') {
+    const timestamp = Date.now();
+    const backupFile = path.join(BACKUP_DIR, `backup_${timestamp}.sql`);
+    
+    // Ensure backup dir exists
+    if (!fs.existsSync(BACKUP_DIR)) {
+      fs.mkdirSync(BACKUP_DIR, { recursive: true });
+    }
+    
+    console.log(`[Migrate] Creating backup to ${backupFile}...`);
+    await execAsync(`pg_dump "${dbUrl}" > "${backupFile}"`);
+    console.log(`[Migrate] ✅ Backup created: ${backupFile}`);
+  }
+  // ============================================
 
   const coreUrl = process.env.DATABASE_URL || '';
   const ledgerUrl = process.env.LEDGER_DATABASE_URL || coreUrl;

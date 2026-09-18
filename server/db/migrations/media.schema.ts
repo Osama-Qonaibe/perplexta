@@ -99,14 +99,14 @@ export const MEDIA_INDEXES: string[] = [
   `CREATE UNIQUE INDEX IF NOT EXISTS media_assets_pkey ON media_assets(id)`,
   `CREATE UNIQUE INDEX IF NOT EXISTS media_assets_stored_path_key ON media_assets(stored_path)`,
   `CREATE UNIQUE INDEX IF NOT EXISTS media_assets_sha256_hash_key ON media_assets(sha256_hash)`,
-  `CREATE INDEX IF NOT EXISTS idx_media_assets_context ON media_assets(context)`,
-  `CREATE INDEX IF NOT EXISTS idx_media_assets_hash ON media_assets(sha256_hash)`,
-  `CREATE INDEX IF NOT EXISTS idx_media_assets_stored_path ON media_assets(stored_path)`,
-  `CREATE INDEX IF NOT EXISTS idx_media_assets_user_id ON media_assets(user_id)`,
+  `CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_media_assets_context ON media_assets(context)`,
+  `CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_media_assets_hash ON media_assets(sha256_hash)`,
+  `CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_media_assets_stored_path ON media_assets(stored_path)`,
+  `CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_media_assets_user_id ON media_assets(user_id)`,
   `CREATE UNIQUE INDEX IF NOT EXISTS canvas_sessions_pkey ON canvas_sessions(id)`,
-  `CREATE INDEX IF NOT EXISTS idx_canvas_sessions_user_id ON canvas_sessions(user_id)`,
+  `CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_canvas_sessions_user_id ON canvas_sessions(user_id)`,
   `CREATE UNIQUE INDEX IF NOT EXISTS canvas_history_pkey ON canvas_history(id)`,
-  `CREATE INDEX IF NOT EXISTS idx_canvas_history_session_id ON canvas_history(session_id)`
+  `CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_canvas_history_session_id ON canvas_history(session_id)`
 ];
 
 export const MEDIA_RELATIONS: ForeignKeyRelation[] = [

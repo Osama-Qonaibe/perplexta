@@ -56,6 +56,14 @@ export * from './versioned.js';
 export * from './integrity.js';
 export * from './maintenance.js';
 
+// ===== PRODUCTION SAFETY: FORBID DROPS =====
+export function assertNoDropInProduction(sql: string) {
+  if (process.env.NODE_ENV === 'production' && /DROP\s+TABLE/i.test(sql)) {
+    throw new Error('[Migrations] DROP TABLE is FORBIDDEN in production migrations');
+  }
+}
+// ===========================================
+
 /**
  * Checks if two pool objects connect to the same physical database.
  */
@@ -254,6 +262,7 @@ export async function runDatabaseMigrations(targetId?: string, type: 'additive' 
   };
 
   const safeQueryClient = async (targetClient: any, fallbackClient: any, queryStr: string, params?: unknown[]) => {
+    assertNoDropInProduction(queryStr);
     const activeClient = targetClient || fallbackClient;
     try {
       return await activeClient.query(queryStr, params);
@@ -297,7 +306,7 @@ export async function runDatabaseMigrations(targetId?: string, type: 'additive' 
       )
     `);
 
-    await client.query(`CREATE INDEX IF NOT EXISTS idx_migration_security_audit_created_at ON migration_security_audit(created_at)`);
+    await client.query(`CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_migration_security_audit_created_at ON migration_security_audit(created_at)`);
 
     try {
       await safeQueryClient(securityClient, client, `

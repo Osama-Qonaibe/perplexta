@@ -1,6 +1,12 @@
 import dotenv from 'dotenv';
 dotenv.config();
 
+// ===== DESTRUCTIVE OPERATION - FORBIDDEN IN PRODUCTION =====
+if (process.env.NODE_ENV === 'production') {
+  throw new Error('[FATAL] destructive_reset_db.ts is FORBIDDEN in production');
+}
+// ============================================================
+
 import { pool, initializePerplextaPools } from '../db/index.js';
 import { runDatabaseMigrations, verifySchemaIntegrity } from '../db/migrations.js';
 import { syncSystemTemplates } from '../services/email.js';
