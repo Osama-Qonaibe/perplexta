@@ -35,6 +35,7 @@ coverage/
 .env
 .env.*
 !.env.example
+!.env.production.example
 !.env.template
 !.env.local.example
 
@@ -60,6 +61,9 @@ design/
 *.md
 !AGENTS.md
 !GEMINI.md
+!DEPLOYMENT.md
+!ROLLBACK.md
+!MONITORING.md
 
 # =============================================================================
 # LOGS, TEMPORARY & SYSTEM FILES
