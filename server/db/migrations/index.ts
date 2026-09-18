@@ -186,34 +186,36 @@ export async function initDb(
   await seedCoreDatabase(targetPool, targetLedgerPool);
   await seedLedgerDatabase(targetLedgerPool);
 
-  // 7. Apply Indexes across all pools (parallelized)
-  await Promise.all([
-    ...CORE_INDEXES.map(idxQuery =>
-      targetPool.query(idxQuery).catch((idxErr: any) => {
-        console.warn('[initDb Core Index] Notice:', idxErr?.message || idxErr);
-      })
-    ),
-    ...LEDGER_INDEXES.map(idxQuery =>
-      targetLedgerPool.query(idxQuery).catch((idxErr: any) => {
-        console.warn('[initDb Ledger Index] Notice:', idxErr?.message || idxErr);
-      })
-    ),
-    ...EXTERNAL_INDEXES.map(idxQuery =>
-      targetExternalPool.query(idxQuery).catch((idxErr: any) => {
-        console.warn('[initDb External Index] Notice:', idxErr?.message || idxErr);
-      })
-    ),
-    ...SECURITY_INDEXES.map(idxQuery =>
-      targetSecurityPool.query(idxQuery).catch((idxErr: any) => {
-        console.warn('[initDb Security Index] Notice:', idxErr?.message || idxErr);
-      })
-    ),
-    ...MEDIA_INDEXES.map(idxQuery =>
-      targetMediaPool.query(idxQuery).catch((idxErr: any) => {
-        console.warn('[initDb Media Index] Notice:', idxErr?.message || idxErr);
-      })
-    )
-  ]);
+  // 7. Apply Indexes across all pools (sequential per pool to prevent deadlocks)
+  for (const idxQuery of CORE_INDEXES) {
+    await targetPool.query(idxQuery).catch((idxErr: any) => {
+      console.warn('[initDb Core Index] Notice:', idxErr?.message || idxErr);
+    });
+  }
+
+  for (const idxQuery of LEDGER_INDEXES) {
+    await targetLedgerPool.query(idxQuery).catch((idxErr: any) => {
+      console.warn('[initDb Ledger Index] Notice:', idxErr?.message || idxErr);
+    });
+  }
+
+  for (const idxQuery of EXTERNAL_INDEXES) {
+    await targetExternalPool.query(idxQuery).catch((idxErr: any) => {
+      console.warn('[initDb External Index] Notice:', idxErr?.message || idxErr);
+    });
+  }
+
+  for (const idxQuery of SECURITY_INDEXES) {
+    await targetSecurityPool.query(idxQuery).catch((idxErr: any) => {
+      console.warn('[initDb Security Index] Notice:', idxErr?.message || idxErr);
+    });
+  }
+
+  for (const idxQuery of MEDIA_INDEXES) {
+    await targetMediaPool.query(idxQuery).catch((idxErr: any) => {
+      console.warn('[initDb Media Index] Notice:', idxErr?.message || idxErr);
+    });
+  }
 
   // 8. Apply Relations
   await applyCoreRelations(targetPool);

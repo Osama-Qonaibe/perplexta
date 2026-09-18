@@ -259,17 +259,6 @@ export async function runVersionedMigrations(
         plan_type: { type: 'VARCHAR(100)', default: `'user'` }
       });
 
-      await ensureColumnsBulk(tx, 'marketplace_items', {
-        download_url: { type: 'TEXT' },
-        preview_url: { type: 'TEXT' },
-        video_url: { type: 'TEXT' },
-        features: { type: 'TEXT' },
-        technologies: { type: 'TEXT' },
-        referral_percent: { type: 'NUMERIC(5,2)' },
-        highlight_tag: { type: 'VARCHAR(50)' },
-        license_type: { type: 'VARCHAR(50)' }
-      });
-
       await ensureColumnsBulk(tx, 'registered_agents', {
         user_id: { type: 'INTEGER' },
         api_key_hash: { type: 'VARCHAR(255)' },
@@ -1439,7 +1428,7 @@ export async function runVersionedMigrations(
       await tx.query(`DROP INDEX IF EXISTS idx_system_settings_seo_image_url`);
       await tx.query(`DROP INDEX IF EXISTS idx_system_settings_favicon_url`);
     });
-    await runVersioned('v79_sync_content_seo_metadata', 'Syncing missing SEO metadata for blog_articles and marketplace_items', async () => {
+    await runVersioned('v79_sync_content_seo_metadata', 'Syncing missing SEO metadata for Bulletin Board', async () => {
       await syncAllContentSeoMetadata().catch((err) => {
         console.warn('[Migrations] Non-fatal SEO metadata sync warning:', err.message || err);
       });
@@ -1534,7 +1523,15 @@ export async function runVersionedMigrations(
 
       // === Core DB Columns ===
       await tx.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS avatar_asset_id UUID`);
-      await tx.query(`ALTER TABLE marketplace_items ADD COLUMN IF NOT EXISTS image_asset_id UUID`);
+      
+      await tx.query(`
+        DO $$
+        BEGIN
+          IF EXISTS (SELECT 1 FROM information_schema.tables WHERE table_name = 'marketplace_items') THEN
+            ALTER TABLE marketplace_items ADD COLUMN IF NOT EXISTS image_asset_id UUID;
+          END IF;
+        END $$;
+      `);
 
       // === External DB Columns ===
       const extTarget = externalClient || tx;
@@ -1560,7 +1557,15 @@ export async function runVersionedMigrations(
       await tx.query(`CREATE INDEX IF NOT EXISTS idx_media_assets_user_id ON media_assets(user_id)`);
       await tx.query(`CREATE INDEX IF NOT EXISTS idx_media_assets_marketplace_item_id ON media_assets(marketplace_item_id)`);
       await tx.query(`CREATE INDEX IF NOT EXISTS idx_users_avatar_asset_id ON users(avatar_asset_id)`);
-      await tx.query(`CREATE INDEX IF NOT EXISTS idx_marketplace_items_image_asset_id ON marketplace_items(image_asset_id)`);
+      
+      await tx.query(`
+        DO $$
+        BEGIN
+          IF EXISTS (SELECT 1 FROM information_schema.tables WHERE table_name = 'marketplace_items') THEN
+            CREATE INDEX IF NOT EXISTS idx_marketplace_items_image_asset_id ON marketplace_items(image_asset_id);
+          END IF;
+        END $$;
+      `);
 
       // External Indexes
       if (blogArticlesExists.rows[0].exists) {
@@ -1569,9 +1574,30 @@ export async function runVersionedMigrations(
 
       // === Foreign Keys (Only within the same database) ===
       await ensureForeignKey(tx, 'users', 'fk_users_avatar_asset_id', 'avatar_asset_id', 'media_assets', 'id', 'SET NULL');
-      await ensureForeignKey(tx, 'marketplace_items', 'fk_marketplace_items_image_asset_id', 'image_asset_id', 'media_assets', 'id', 'SET NULL');
+      
+      await tx.query(`
+        DO $$
+        BEGIN
+          IF EXISTS (SELECT 1 FROM information_schema.tables WHERE table_name = 'marketplace_items') THEN
+            IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'fk_marketplace_items_image_asset_id') THEN
+              ALTER TABLE marketplace_items ADD CONSTRAINT fk_marketplace_items_image_asset_id FOREIGN KEY (image_asset_id) REFERENCES media_assets(id) ON DELETE SET NULL;
+            END IF;
+          END IF;
+        END $$;
+      `);
+
       await ensureForeignKey(tx, 'media_assets', 'fk_media_assets_user_id', 'user_id', 'users', 'id', 'SET NULL');
-      await ensureForeignKey(tx, 'media_assets', 'fk_media_assets_marketplace_item_id', 'marketplace_item_id', 'marketplace_items', 'id', 'SET NULL');
+      
+      await tx.query(`
+        DO $$
+        BEGIN
+          IF EXISTS (SELECT 1 FROM information_schema.tables WHERE table_name = 'marketplace_items') THEN
+            IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'fk_media_assets_marketplace_item_id') THEN
+              ALTER TABLE media_assets ADD CONSTRAINT fk_media_assets_marketplace_item_id FOREIGN KEY (marketplace_item_id) REFERENCES marketplace_items(id) ON DELETE SET NULL;
+            END IF;
+          END IF;
+        END $$;
+      `);
     });
 
     await runVersioned('v84_media_player_mute_defaults', 'Ensure media_muted default columns on users and system_settings', async (tx) => {
