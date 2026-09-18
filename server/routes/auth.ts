@@ -103,9 +103,13 @@ router.post("/signup", authLimiter, async (req, res, next) => {
     }
 
     const { email, password, name, language, theme, ref } = parsed.data;
-
     const lowerEmail = email.toLowerCase();
-    const existingUser = await pool.query('SELECT id FROM users WHERE LOWER(email) = $1::text', [lowerEmail]);
+
+    // Check 1: Email already exists
+    const existingUser = await pool.query(
+      'SELECT id FROM users WHERE LOWER(email) = $1::text',
+      [lowerEmail]
+    );
     if (existingUser.rows.length > 0) {
       throw new AppError(
         'User already exists',
