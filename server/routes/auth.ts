@@ -3,6 +3,8 @@ import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import crypto from 'crypto';
 import { signupSchema, loginSchema } from '../schemas/user.schemas.js';
+import { AppError } from '../middleware/errorHandler.js';
+import { ERROR_CODES } from '../utils/errorCodes.js';
 import { pool, ledgerPool, getSecurityPool } from '../db/index.js';
 import { getCachedSystemSettings } from '../db/queries.js';
 import { sendSmartEmail } from '../services/email.js';
@@ -89,21 +91,28 @@ async function generateUniqueReferralCode(): Promise<string> {
   return code;
 }
 
-router.post("/signup", authLimiter, async (req, res) => {
+router.post("/signup", authLimiter, async (req, res, next) => {
   try {
     const parsed = signupSchema.safeParse(req.body);
     if (!parsed.success) {
-      return res.status(400).json({
-        error: 'Validation failed',
-        details: parsed.error.flatten()
-      });
+      throw new AppError(
+        'Validation failed',
+        ERROR_CODES.VALIDATION_FAILED.status,
+        ERROR_CODES.VALIDATION_FAILED.code
+      );
     }
 
     const { email, password, name, language, theme, ref } = parsed.data;
 
     const lowerEmail = email.toLowerCase();
     const existingUser = await pool.query('SELECT id FROM users WHERE LOWER(email) = $1::text', [lowerEmail]);
-    if (existingUser.rows.length > 0) return res.status(400).json({ error: 'User already exists' });
+    if (existingUser.rows.length > 0) {
+      throw new AppError(
+        'User already exists',
+        ERROR_CODES.DB_UNIQUE_VIOLATION.status,
+        ERROR_CODES.DB_UNIQUE_VIOLATION.code
+      );
+    }
 
     const salt = await bcrypt.genSalt(10);
     const passwordHash = await bcrypt.hash(password, salt);
@@ -234,38 +243,65 @@ router.post("/signup", authLimiter, async (req, res) => {
       broadcastAdminStats().catch(err => console.error('[Socket] Failed to broadcast admin stats on signup:', err));
     }).catch(err => console.error('[Socket] Failed to load admin service on signup:', err));
   } catch (error) {
-    res.status(500).json({ error: 'Signup failed' });
+    next(error);
   }
 });
 
-router.post("/login", authLimiter, async (req, res) => {
+router.post("/login", authLimiter, async (req, res, next) => {
   try {
     const parsed = loginSchema.safeParse(req.body);
     if (!parsed.success) {
-      return res.status(400).json({
-        error: 'Validation failed',
-        details: parsed.error.flatten()
-      });
+      throw new AppError(
+        'Validation failed',
+        ERROR_CODES.VALIDATION_FAILED.status,
+        ERROR_CODES.VALIDATION_FAILED.code
+      );
     }
 
     const { email, password } = parsed.data;
 
     const lowerEmail = email.toLowerCase();
     const result = await pool.query('SELECT * FROM users WHERE LOWER(email) = $1::text', [lowerEmail]);
-    if (result.rows.length === 0) return res.status(401).json({ error: 'Invalid credentials' });
+    if (result.rows.length === 0) {
+      throw new AppError(
+        'Invalid email or password',
+        ERROR_CODES.AUTH_INVALID_CREDENTIALS.status,
+        ERROR_CODES.AUTH_INVALID_CREDENTIALS.code
+      );
+    }
 
     const user = result.rows[0];
-    if (user.status === 'suspended') return res.status(403).json({ error: 'Account suspended' });
+    if (user.status === 'suspended') {
+      throw new AppError(
+        'Account suspended',
+        ERROR_CODES.AUTH_FORBIDDEN.status,
+        ERROR_CODES.AUTH_FORBIDDEN.code
+      );
+    }
 
     if (!user.password_hash) {
       if (user.provider === 'google') {
-        return res.status(401).json({ error: 'Please login using Google' });
+        throw new AppError(
+          'Please login using Google',
+          ERROR_CODES.AUTH_INVALID_CREDENTIALS.status,
+          ERROR_CODES.AUTH_INVALID_CREDENTIALS.code
+        );
       }
-      return res.status(401).json({ error: 'Invalid credentials' });
+      throw new AppError(
+        'Invalid email or password',
+        ERROR_CODES.AUTH_INVALID_CREDENTIALS.status,
+        ERROR_CODES.AUTH_INVALID_CREDENTIALS.code
+      );
     }
 
     const isMatch = await bcrypt.compare(password, user.password_hash);
-    if (!isMatch) return res.status(401).json({ error: 'Invalid credentials' });
+    if (!isMatch) {
+      throw new AppError(
+        'Invalid email or password',
+        ERROR_CODES.AUTH_INVALID_CREDENTIALS.status,
+        ERROR_CODES.AUTH_INVALID_CREDENTIALS.code
+      );
+    }
 
     let userAvatar = user.avatar;
     if (!userAvatar) {
@@ -301,7 +337,7 @@ router.post("/login", authLimiter, async (req, res) => {
     res.json({ token: accessToken, refreshToken, user: userPayload });
     await logSystemActivity(user.id, 'login', 'User logged in', {}, req);
   } catch (error) {
-    res.status(500).json({ error: 'Login failed' });
+    next(error);
   }
 });
 

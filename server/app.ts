@@ -9,6 +9,7 @@ import { Readable, Transform } from 'stream';
 import { globalLimiter, adminLimiter } from './middleware/rateLimit.js';
 import { csrfProtection } from './middleware/csrf.js';
 import { uploadValidator } from './middleware/uploadValidator.js';
+import { errorHandler, notFoundHandler } from './middleware/errorHandler.js';
 import { generateMarkdownForPage, estimateMarkdownTokens } from './utils/markdown-for-agents.js';
 import { getBaseUrl, getPreferredLanguage } from './utils/request.js';
 import { generateAuthMd } from './utils/auth-md.js';
@@ -2459,5 +2460,8 @@ app.use(async (req: express.Request, res: express.Response, next: express.NextFu
     }
   }
 });
+
+app.use(notFoundHandler);
+app.use(errorHandler);
 
 export default app;
