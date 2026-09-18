@@ -1868,9 +1868,9 @@ export const SystemSettingsView: React.FC<SystemSettingsViewProps> = ({
         <div className="mb-6 pt-6 border-t border-[var(--border-subtle)]">
           <div className="mb-4">
             <h3 className="text-sm font-bold text-[var(--text-primary)] flex items-center gap-2">
-              <Smartphone size={16} className="text-cyan-500" />
+              <Smartphone size={16} className="text-[var(--accent)]" />
               <span>{dir === "rtl" ? "2. نموذج التحكم المخصص لنسخة الموبايل والتطبيق (Mobile Version Only)" : "2. Mobile Version Specific Visibility Controls"}</span>
-              <span className="px-2 py-0.5 text-[9px] font-bold rounded bg-cyan-500/10 text-cyan-500 border border-cyan-500/20">
+              <span className="px-2 py-0.5 text-[9px] font-bold rounded-[var(--radius-xs)] bg-[var(--bg-accent-muted)] text-[var(--accent)] border border-[var(--border-accent)]">
                 {dir === "rtl" ? "نسخة الهواتف" : "Mobile Only"}
               </span>
             </h3>
@@ -1888,7 +1888,7 @@ export const SystemSettingsView: React.FC<SystemSettingsViewProps> = ({
                 title: dir === "rtl" ? "شريط تثبيت التطبيق للموبايل" : "Mobile PWA Install Banner",
                 subtitle: dir === "rtl" ? "شريط الحث PWA Banner" : "Mobile Banner PWA",
                 description: dir === "rtl" ? "إخفاء شريط وشاشة تثبيت وحث تنزيل تطبيق PWA على الهواتف الذكية." : "Hide install invitation banner on mobile web browser.",
-                icon: <Smartphone size={18} className="text-cyan-500" />
+                icon: <Smartphone size={18} className="text-[var(--accent)]" />
               },
               {
                 key: "hide_mobile_google_auth",
@@ -1956,7 +1956,7 @@ export const SystemSettingsView: React.FC<SystemSettingsViewProps> = ({
                   <div>
                     <div className="flex items-center justify-between mb-2">
                       <div className="flex items-center gap-2">
-                        <div className="p-2 rounded-md bg-cyan-500/10 shrink-0">
+                        <div className="p-2 rounded-[var(--radius-xs)] bg-[var(--bg-accent-muted)] shrink-0">
                           {item.icon}
                         </div>
                         <div>

@@ -232,13 +232,13 @@ export const MobileNavigation: React.FC = () => {
                     size={32}
                     className="rounded-[var(--radius-sm)] border border-[var(--border-default)] bg-[var(--surface-subtle)]"
                     fallbackIcon={
-                      <div className="w-8 h-8 rounded-[var(--radius-sm)] bg-[var(--bg-accent-muted)] border border-[var(--border-default)] flex items-center justify-center text-accent shadow-2xs">
+                      <div className="w-8 h-8 rounded-[var(--radius-sm)] bg-[var(--bg-accent-muted)] border border-[var(--border-default)] flex items-center justify-center text-[var(--fg-accent)] shadow-2xs">
                         <Sparkles size={16} />
                       </div>
                     }
                   />
                 ) : (
-                  <div className="w-8 h-8 rounded-[var(--radius-sm)] bg-[var(--bg-accent-muted)] border border-[var(--border-default)] flex items-center justify-center text-accent shadow-2xs">
+                  <div className="w-8 h-8 rounded-[var(--radius-sm)] bg-[var(--bg-accent-muted)] border border-[var(--border-default)] flex items-center justify-center text-[var(--fg-accent)] shadow-2xs">
                     <Sparkles size={16} />
                   </div>
                 )}
@@ -327,7 +327,7 @@ export const MobileNavigation: React.FC = () => {
                     }}
                     className="flex items-center justify-center gap-1.5 py-2 px-2.5 rounded-lg bg-[var(--surface-subtle)] border border-[var(--border-default)] text-xs font-bold text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors"
                   >
-                    <Globe size={14} className="text-accent" />
+                    <Globe size={14} className="text-[var(--fg-accent)]" />
                     <span className="text-[11px]">{language === 'ar' ? 'English' : 'العربية'}</span>
                   </button>
                 </div>

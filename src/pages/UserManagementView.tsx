@@ -937,8 +937,8 @@ export const UserManagementView: React.FC<UserManagementProps> = ({
             'bg-[var(--sys-color-surface-container)] border-[var(--sys-color-outline)] text-[var(--sys-color-text-secondary)] transition-theme'
           }`}>
             <span className="relative flex h-2.5 w-2.5">
-              <span className={`animate-ping absolute inline-flex h-full w-full rounded-shape-full ${autoSync ? 'bg-accent opacity-75' : 'bg-indigo-400 opacity-75'}`}></span>
-              <span className={`relative inline-flex rounded-shape-full h-2.5 w-2.5 ${autoSync ? 'bg-accent' : 'bg-indigo-500'}`}></span>
+              <span className={`animate-ping absolute inline-flex h-full w-full rounded-shape-full ${autoSync ? 'bg-accent opacity-75' : 'bg-[var(--text-muted)] opacity-50'}`}></span>
+              <span className={`relative inline-flex rounded-shape-full h-2.5 w-2.5 ${autoSync ? 'bg-accent' : 'bg-[var(--text-muted)]'}`}></span>
             </span>
             <span className="text-[11px]">
               {autoSync 
@@ -1304,7 +1304,7 @@ export const UserManagementView: React.FC<UserManagementProps> = ({
                               user.role === 'admin'
                                 ? 'text-purple-500 border-purple-500/30 bg-purple-500/10'
                                 : user.role === 'elite'
-                                ? 'text-indigo-400 border-indigo-500/30 bg-indigo-500/10'
+                                ? 'text-[var(--accent)] border-[var(--border-accent)] bg-[var(--bg-accent-muted)]'
                                 : user.role === 'support'
                                 ? 'text-accent border-accent/30 bg-accent/10'
                                 : 'text-[var(--sys-color-text-secondary)] border-[var(--sys-color-outline)] bg-[var(--sys-color-surface-container)]'
@@ -1358,7 +1358,7 @@ export const UserManagementView: React.FC<UserManagementProps> = ({
                             user.kyc_status === 'verified'
                               ? 'bg-accent/10 text-accent border-accent/30'
                               : user.kyc_status === 'pending'
-                              ? 'bg-indigo-500/10 text-indigo-400 border-indigo-500/30 animate-pulse'
+                              ? 'bg-amber-500/10 text-amber-500 border-amber-500/30 animate-pulse'
                               : user.kyc_status === 'rejected'
                               ? 'bg-rose-600/10 text-rose-400 border-rose-500/30'
                               : 'bg-[var(--sys-color-surface-variant)] text-[var(--sys-color-text-muted)] border-[var(--sys-color-outline)]'
@@ -1369,7 +1369,7 @@ export const UserManagementView: React.FC<UserManagementProps> = ({
                               user.kyc_status === 'verified'
                                 ? 'bg-accent'
                                 : user.kyc_status === 'pending'
-                                ? 'bg-indigo-500'
+                                ? 'bg-amber-500'
                                 : user.kyc_status === 'rejected'
                                 ? 'bg-rose-600'
                                 : 'bg-[var(--sys-color-surface-variant)]'
@@ -1395,7 +1395,7 @@ export const UserManagementView: React.FC<UserManagementProps> = ({
                           disabled={isUpdating}
                           className={`px-2 py-1 rounded-md text-[10px] font-black uppercase tracking-wider inline-flex items-center gap-1.5 border transition-all cursor-pointer ${
                             isUserActive
-                              ? 'bg-accent/10 text-accent border-accent/30 hover:bg-indigo-500/20 hover:text-indigo-400 hover:border-indigo-500/40'
+                              ? 'bg-accent/10 text-accent border-accent/30 hover:bg-rose-600/20 hover:text-rose-400 hover:border-rose-500/40'
                               : 'bg-rose-600/10 text-rose-400 border-rose-500/30 hover:bg-accent/20 hover:text-accent hover:border-accent/40'
                           }`}
                           title={isRtl ? 'تغيير حالة الحساب' : 'Toggle Account Status'}
@@ -1619,7 +1619,7 @@ export const UserManagementView: React.FC<UserManagementProps> = ({
                         selectedUser.role === 'admin'
                           ? 'text-purple-500 bg-purple-500/10 border-purple-500/30'
                           : selectedUser.role === 'elite'
-                          ? 'text-indigo-400 bg-indigo-500/10 border-indigo-500/30'
+                          ? 'text-[var(--accent)] bg-[var(--bg-accent-muted)] border-[var(--border-accent)]'
                           : 'text-accent bg-accent/10 border-accent/30'
                       }`}>
                         {selectedUser.role}
@@ -1766,7 +1766,7 @@ export const UserManagementView: React.FC<UserManagementProps> = ({
                           selectedUser.kyc_status === 'verified'
                             ? 'bg-accent/10 text-accent border-accent/30'
                             : selectedUser.kyc_status === 'pending'
-                            ? 'bg-indigo-500/10 text-indigo-400 border-indigo-500/30'
+                            ? 'bg-amber-500/10 text-amber-500 border-amber-500/30'
                             : selectedUser.kyc_status === 'rejected'
                             ? 'bg-rose-600/10 text-rose-400 border-rose-500/30'
                             : 'bg-[var(--sys-color-surface-variant)] text-[var(--sys-color-text-secondary)] border-[var(--sys-color-outline)] transition-theme'
@@ -1800,7 +1800,7 @@ export const UserManagementView: React.FC<UserManagementProps> = ({
                       {/* KYC Actions */}
                       <div className="space-y-3 pt-2">
                         {selectedUser.kyc_status === 'pending' && (
-                          <div className="p-3 rounded-lg bg-indigo-500/10 border border-indigo-500/30 text-indigo-400 text-xs flex items-center gap-2">
+                          <div className="p-3 rounded-lg bg-amber-500/10 border border-amber-500/30 text-amber-500 text-xs flex items-center gap-2">
                             <Clock size={16} className="shrink-0" />
                             <span>{isRtl ? 'هذا المستخدم ينتظر مراجعة وتوثيق وثائق الهوية الرسمية' : 'User pending identity verification audit'}</span>
                           </div>
@@ -2066,7 +2066,7 @@ export const UserManagementView: React.FC<UserManagementProps> = ({
                             <span className={`font-black uppercase px-2 py-0.5 rounded text-[10px] inline-block border ${
                               userSubscription.status === 'active'
                                 ? 'bg-accent/10 text-accent border-accent/30'
-                                : 'bg-indigo-500/10 text-indigo-400 border-indigo-500/30'
+                                : 'bg-amber-500/10 text-amber-500 border-amber-500/30'
                             }`}>
                               {userSubscription.status || 'active'}
                             </span>

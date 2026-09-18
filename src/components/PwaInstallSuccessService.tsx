@@ -125,28 +125,28 @@ export const PwaInstallSuccessService: React.FC = () => {
             {/* Header Content */}
             <div className="flex flex-col items-center text-center mt-1">
               <div className="relative mb-2.5">
-                <div className="w-12 h-12 rounded-xl bg-accent/10 border border-accent/30 flex items-center justify-center p-1.5 shadow-sm overflow-hidden">
+                <div className="w-12 h-12 rounded-[var(--radius-sm)] bg-[var(--surface-subtle)] border border-[var(--border-accent)] flex items-center justify-center p-1.5 shadow-sm overflow-hidden">
                   <NotificationIconRenderer
                     src={logoUrl}
                     alt={siteName}
                     size={36}
-                    fallbackIcon={<CheckCircle2 className="w-6 h-6 text-accent" />}
+                    fallbackIcon={<CheckCircle2 className="w-6 h-6 text-[var(--fg-accent)]" />}
                   />
                 </div>
-                <div className="absolute -bottom-1 -right-1 w-4 h-4 rounded-[4px] bg-accent flex items-center justify-center text-black shadow-sm">
+                <div className="absolute -bottom-1 -right-1 w-4 h-4 rounded-[var(--radius-xs)] bg-[var(--surface-card)] border border-[var(--border-accent)] flex items-center justify-center text-[var(--fg-accent)] shadow-sm">
                   <Sparkles size={9} className="fill-current" />
                 </div>
               </div>
 
-              <span className="text-[9px] font-black uppercase tracking-wider px-2 py-0.5 rounded-[4px] bg-accent/15 text-accent border border-accent/30 mb-1.5">
+              <span className="text-[9px] font-black uppercase tracking-wider px-2 py-0.5 rounded-[var(--radius-xs)] bg-[var(--surface-subtle)] text-[var(--fg-accent)] border border-[var(--border-accent)] mb-1.5">
                 {isAr ? 'تم التثبيت بنجاح 🎉' : 'App Installed 🎉'}
               </span>
 
-              <h3 className="text-sm font-extrabold tracking-tight mb-1">
+              <h3 className="text-sm font-extrabold tracking-tight mb-1 text-[var(--text-primary)]">
                 {isAr ? `مرحباً بك في ${siteName}` : `Welcome to ${siteName}`}
               </h3>
 
-              <p className="text-[11px] text-gray-400 leading-relaxed max-w-xs mb-3.5">
+              <p className="text-[11px] text-[var(--text-secondary)] leading-relaxed max-w-xs mb-3.5">
                 {isAr
                   ? 'تم تثبيت التطبيق بنجاح على جهازك! يمكنك الآن استخدامه مباشرة.'
                   : 'The application was installed successfully. Ready for instant use.'}
@@ -154,7 +154,7 @@ export const PwaInstallSuccessService: React.FC = () => {
 
               {/* Countdown badge if auto-redirect is running */}
               {!autoRedirectPaused && (
-                <div className="text-[10px] text-accent/90 font-medium bg-accent/10 border border-accent/20 px-2.5 py-0.5 rounded-lg mb-3 flex items-center gap-1">
+                <div className="text-[10px] text-[var(--fg-accent)] font-medium bg-[var(--surface-subtle)] border border-[var(--border-accent)] px-2.5 py-0.5 rounded-[var(--radius-xs)] mb-3 flex items-center gap-1">
                   <span>
                     {isAr
                       ? `التوجيه للوحة التحكم خلال ${countdown}ث...`

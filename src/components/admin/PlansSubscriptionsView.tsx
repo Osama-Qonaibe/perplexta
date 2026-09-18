@@ -384,9 +384,9 @@ export const PlansSubscriptionsView = ({
         </button>
         <button
           onClick={() => setPlanFilter("developer")}
-          className={`px-4 py-2 rounded-lg text-xs font-bold transition-all flex items-center gap-2 cursor-pointer ${
+          className={`px-4 py-2 rounded-[var(--radius-sm)] text-xs font-bold transition-all flex items-center gap-2 cursor-pointer ${
             planFilter === "developer"
-              ? "bg-indigo-600 text-white shadow-none"
+              ? "bg-[var(--accent)] text-white shadow-none"
               : "bg-[var(--surface-subtle)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--surface-card)] border border-[var(--border-default)]"
           }`}
         >
@@ -425,7 +425,7 @@ export const PlansSubscriptionsView = ({
                 .map((plan, planIdx) => (
                   <div
                     key={`plan-user-${plan.id || planIdx}-${planIdx}`}
-                    className="p-6 rounded-xl border border-[var(--border-default)] bg-[var(--surface-card)] hover:border-accent/40 shadow-sm transition-all relative overflow-hidden flex flex-col"
+                    className="p-6 rounded-[var(--radius-lg)] border border-[var(--border-default)] bg-[var(--surface-card)] hover:border-[var(--border-accent)]/40 shadow-sm transition-all relative overflow-hidden flex flex-col"
                   >
                     {/* Top Color Accent */}
                     <div
@@ -544,15 +544,15 @@ export const PlansSubscriptionsView = ({
         {/* Developer Plans Section */}
         {(planFilter === "all" || planFilter === "developer") && (
           <div className="space-y-4 pt-4 border-t border-[var(--border-default)]">
-            <div className="flex items-center justify-between border-b border-indigo-500/20 pb-3">
+            <div className="flex items-center justify-between border-b border-[var(--border-accent)]/30 pb-3">
               <div className="flex items-center gap-2.5">
-                <div className="w-8 h-8 rounded-lg bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center text-indigo-400">
+                <div className="w-8 h-8 rounded-[var(--radius-sm)] bg-[var(--bg-accent-muted)] border border-[var(--border-accent)]/30 flex items-center justify-center text-[var(--fg-accent)]">
                   <Terminal size={18} />
                 </div>
                 <div>
                   <h3 className="text-base font-bold text-[var(--text-primary)] flex items-center gap-2">
                     {dir === "rtl" ? "خطط المطورين والوكلاء الذكية" : "Developer & Agent API Plans"}
-                    <span className="text-xs px-2 py-0.5 rounded-full bg-indigo-500/10 text-indigo-400 font-mono font-bold">
+                    <span className="text-xs px-2 py-0.5 rounded-[var(--radius-full)] bg-[var(--bg-accent-muted)] text-[var(--fg-accent)] font-mono font-bold">
                       {plans.filter(p => (p.planType || "user") === "developer").length}
                     </span>
                   </h3>
@@ -564,8 +564,8 @@ export const PlansSubscriptionsView = ({
             </div>
 
             {plans.filter(p => (p.planType || "user") === "developer").length === 0 ? (
-              <div className="p-8 rounded-xl border border-dashed border-indigo-500/30 bg-indigo-500/5 text-center">
-                <Terminal className="mx-auto w-8 h-8 text-indigo-400 mb-2 opacity-60" />
+              <div className="p-8 rounded-[var(--radius-lg)] border border-dashed border-[var(--border-accent)]/30 bg-[var(--bg-accent-muted)]/50 text-center">
+                <Terminal className="mx-auto w-8 h-8 text-[var(--fg-accent)] mb-2 opacity-60" />
                 <p className="text-xs text-[var(--text-muted)] font-medium">
                   {dir === "rtl" ? "لا توجد خطط مطورين حالياً. يمكنك إضافة خطة جديدة وتعيين نوعها كـ 'مطورين'." : "No developer plans found. Click 'Add Plan' and set type to 'Developer'."}
                 </p>
@@ -577,20 +577,20 @@ export const PlansSubscriptionsView = ({
                   .map((plan, planIdx) => (
                     <div
                       key={`plan-dev-${plan.id || planIdx}-${planIdx}`}
-                      className="p-6 rounded-xl border border-indigo-500/30 bg-[var(--surface-card)] hover:border-indigo-500/60 shadow-sm transition-all relative overflow-hidden flex flex-col"
+                      className="p-6 rounded-[var(--radius-lg)] border border-[var(--border-accent)]/30 bg-[var(--surface-card)] hover:border-[var(--border-accent)]/60 shadow-sm transition-all relative overflow-hidden flex flex-col"
                     >
                       {/* Top Color Accent */}
                       <div
-                        className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-indigo-500 to-purple-500"
+                        className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-[var(--accent)] to-[var(--accent)]/60"
                       ></div>
 
                       {/* Badge */}
                       <div className="mb-3 flex items-center justify-between">
-                        <span className="text-[10px] font-bold px-2.5 py-1 rounded-md flex items-center gap-1.5 uppercase tracking-wider bg-indigo-500/10 text-indigo-400 border border-indigo-500/20">
+                        <span className="text-[10px] font-bold px-2.5 py-1 rounded-[var(--radius-xs)] flex items-center gap-1.5 uppercase tracking-wider bg-[var(--bg-accent-muted)] text-[var(--fg-accent)] border border-[var(--border-accent)]/30">
                           <Terminal size={12} />
                           {dir === "rtl" ? "مطور / API" : "Developer & API"}
                         </span>
-                        <span className={`text-[9px] px-2 py-0.5 rounded font-bold uppercase ${plan.isActive ? "bg-indigo-500/10 text-indigo-400" : "bg-[var(--surface-subtle)] text-[var(--text-muted)]"}`}>
+                        <span className={`text-[9px] px-2 py-0.5 rounded-[var(--radius-xs)] font-bold uppercase ${plan.isActive ? "bg-[var(--bg-accent-muted)] text-[var(--fg-accent)]" : "bg-[var(--surface-subtle)] text-[var(--text-muted)]"}`}>
                           {plan.isActive ? (dir === "rtl" ? "نشط" : "Active") : (dir === "rtl" ? "متوقف" : "Inactive")}
                         </span>
                       </div>
@@ -599,7 +599,7 @@ export const PlansSubscriptionsView = ({
                         <div>
                           <h3 className="text-xl font-bold text-[var(--text-primary)] flex items-center gap-2">
                             <span
-                              className="w-3 h-3 rounded-full"
+                              className="w-3 h-3 rounded-[var(--radius-full)]"
                               style={{ backgroundColor: plan.color || "#6366f1" }}
                             ></span>
                             {dir === "rtl" ? plan.nameAr : plan.nameEn}
@@ -609,7 +609,7 @@ export const PlansSubscriptionsView = ({
                           </p>
                         </div>
                         <div className="text-right">
-                          <p className="text-2xl font-bold text-indigo-400">
+                          <p className="text-2xl font-bold text-[var(--fg-accent)]">
                             ${plan.monthlyPrice}
                           </p>
                           <p className="text-xs text-[var(--text-muted)]">
@@ -626,7 +626,7 @@ export const PlansSubscriptionsView = ({
                           >
                             <CheckCircle2
                               size={16}
-                              className="text-indigo-400 shrink-0 mt-0.5"
+                              className="text-[var(--fg-accent)] shrink-0 mt-0.5"
                             />
                             <span>{dir === "rtl" ? feature.textAr : feature.textEn}</span>
                           </div>
@@ -639,8 +639,8 @@ export const PlansSubscriptionsView = ({
                       </div>
 
                     {!plan.hideTools && (
-                      <div className="mb-6 pt-4 border-t border-indigo-500/20">
-                        <span className="text-[10px] font-black uppercase text-indigo-400/80 tracking-wider block mb-2">
+                      <div className="mb-6 pt-4 border-t border-[var(--border-accent)]/30">
+                        <span className="text-[10px] font-black uppercase text-[var(--fg-accent)]/80 tracking-wider block mb-2">
                           {dir === "rtl" ? "حصص المطور والوكلاء الذكية" : "Developer & Agent Quotas"}
                         </span>
                         <div className="flex flex-wrap gap-1.5 max-h-[100px] overflow-y-auto custom-scrollbar">
@@ -654,15 +654,15 @@ export const PlansSubscriptionsView = ({
                             return (
                               <div
                                 key={`limit-d-${plan.id}-${key}-${lIdx}`}
-                                className="text-[9px] font-bold px-2 py-0.5 rounded border border-indigo-500/20 bg-indigo-500/5 flex items-center gap-1.5 text-[var(--text-secondary)]"
+                                className="text-[9px] font-bold px-2 py-0.5 rounded-[var(--radius-xs)] border border-[var(--border-accent)]/30 bg-[var(--bg-accent-muted)]/50 flex items-center gap-1.5 text-[var(--text-secondary)]"
                               >
-                                <span className="text-indigo-400 font-extrabold">{t(key)}</span>
+                                <span className="text-[var(--fg-accent)] font-extrabold">{t(key)}</span>
                                 <span className="font-mono text-[8px]">
                                   {daily !== undefined && daily !== null && (
                                     <>D: <strong className="text-[var(--text-primary)]">{formatLimit(daily)}</strong></>
                                   )}
                                   {monthly !== null && monthly !== 0 && monthly !== undefined && (
-                                    <>; M: <strong className="text-indigo-400">{formatLimit(monthly)}</strong></>
+                                    <>; M: <strong className="text-[var(--fg-accent)]">{formatLimit(monthly)}</strong></>
                                   )}
                                 </span>
                               </div>
@@ -675,13 +675,13 @@ export const PlansSubscriptionsView = ({
                       <div className="flex gap-3">
                         <button
                           onClick={() => handleOpenModal(plan)}
-                          className="flex-1 py-2.5 rounded-md border border-indigo-500/30 bg-indigo-500/10 hover:bg-indigo-500/20 text-indigo-400 dark:text-indigo-200 transition-theme font-medium text-sm flex items-center justify-center gap-2 cursor-pointer"
+                          className="flex-1 py-2.5 rounded-[var(--radius-xs)] border border-[var(--border-accent)]/30 bg-[var(--bg-accent-muted)] hover:bg-[var(--bg-accent-muted)]/80 text-[var(--fg-accent)] transition-theme font-medium text-sm flex items-center justify-center gap-2 cursor-pointer"
                         >
                           <Settings2 size={16} /> {t("edit")}
                         </button>
                         <button
                           onClick={() => handleDeletePlan(plan.id)}
-                          className="px-4 py-2.5 rounded-md border border-red-500/20 bg-red-500/10 hover:bg-red-500/20 text-red-500 transition-theme flex items-center justify-center cursor-pointer"
+                          className="px-4 py-2.5 rounded-[var(--radius-xs)] border border-red-500/20 bg-red-500/10 hover:bg-red-500/20 text-red-500 transition-theme flex items-center justify-center cursor-pointer"
                         >
                           <Trash2 size={16} />
                         </button>
@@ -700,7 +700,7 @@ export const PlansSubscriptionsView = ({
         createPortal(
           <div className="fixed inset-0 z-[1000] flex justify-center p-4 bg-black/60 backdrop-blur-sm overflow-y-auto">
             <div
-              className="w-full max-w-4xl mt-[80px] mb-8 overflow-y-auto custom-scrollbar rounded-xl border border-[var(--border-default)] bg-[var(--surface-card)] shadow-2xl"
+              className="w-full max-w-4xl mt-[80px] mb-8 overflow-y-auto custom-scrollbar rounded-[var(--radius-lg)] border border-[var(--border-default)] bg-[var(--surface-card)] shadow-2xl"
             >
               {/* Modal Header */}
               <div

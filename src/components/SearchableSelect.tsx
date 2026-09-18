@@ -118,7 +118,7 @@ export const SearchableSelect: React.FC<SearchableSelectProps> = ({
         tabIndex={0}
         role="button"
         aria-expanded={isOpen}
-        className={`w-full ${heightClass} px-3 rounded-shape-sm border flex items-center justify-between cursor-pointer select-none transition-all duration-150 ${
+        className={`w-full ${heightClass} px-3 rounded-[var(--radius-sm)] border flex items-center justify-between cursor-pointer select-none transition-all duration-150 ${
           disabled ? 'opacity-50 cursor-not-allowed pointer-events-none' : ''
         } ${
           isOpen
@@ -165,7 +165,7 @@ export const SearchableSelect: React.FC<SearchableSelectProps> = ({
             openUpward 
               ? (dir === 'rtl' ? 'bottom-full mb-1.5 right-0 origin-bottom-right' : 'bottom-full mb-1.5 left-0 origin-bottom-left') 
               : (dir === 'rtl' ? 'top-full mt-1.5 right-0 origin-top-right' : 'top-full mt-1.5 left-0 origin-top-left')
-          } bg-[var(--surface-card)] border border-[var(--border-default)] rounded-shape-sm shadow-xl overflow-hidden backdrop-blur-md animate-in fade-in zoom-in-95 duration-100 overscroll-contain`}
+          } bg-[var(--surface-card)] border border-[var(--border-default)] rounded-[var(--radius-sm)] shadow-xl overflow-hidden backdrop-blur-md animate-in fade-in zoom-in-95 duration-100 overscroll-contain`}
         >
           {isSearchEnabled && (
             <div className="p-2 border-b border-[var(--border-default)] flex items-center gap-2 bg-[var(--surface-subtle)]">
@@ -184,7 +184,7 @@ export const SearchableSelect: React.FC<SearchableSelectProps> = ({
           <div className="max-h-60 overflow-y-auto divide-y divide-[var(--border-default)]/30 custom-scrollbar overscroll-contain p-1 space-y-0.5">
             {placeholder && !validOptions.some(o => o.value === '') && (
               <div 
-                className={`group px-3 py-2 text-xs rounded-shape-xs cursor-pointer transition-colors duration-150 flex items-center justify-between ${
+                className={`group px-3 py-2 text-xs rounded-[var(--radius-xs)] cursor-pointer transition-colors duration-150 flex items-center justify-between ${
                   !value 
                     ? 'font-bold bg-[var(--bg-accent-muted)] text-[var(--fg-accent)]' 
                     : 'text-[var(--text-secondary)] hover:bg-[var(--surface-subtle)] hover:text-[var(--text-primary)]'
@@ -200,7 +200,7 @@ export const SearchableSelect: React.FC<SearchableSelectProps> = ({
               return (
                 <div
                   key={option.value}
-                  className={`group px-3 py-2 text-xs rounded-shape-xs font-semibold cursor-pointer transition-colors duration-150 flex items-center justify-between ${
+                  className={`group px-3 py-2 text-xs rounded-[var(--radius-xs)] font-semibold cursor-pointer transition-colors duration-150 flex items-center justify-between ${
                     isSelected 
                       ? 'bg-[var(--bg-accent-muted)] text-[var(--fg-accent)] font-bold' 
                       : 'text-[var(--text-primary)] hover:bg-[var(--surface-subtle)] hover:text-[var(--text-primary)]'

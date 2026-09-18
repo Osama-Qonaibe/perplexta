@@ -275,23 +275,23 @@ export const GoogleChatManager: React.FC<GoogleChatProps> = ({ dir, theme }) => 
   return (
     <div className="space-y-6" dir={dir}>
       {/* Header Banner */}
-      <div className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-gray-500/10 via-gray-900 to-gray-950 border border-accent/20 p-6 shadow-xl">
-        <div className="absolute -right-10 -bottom-10 w-48 h-48 bg-accent/10 rounded-[4px] blur-3xl pointer-events-none" />
+      <div className="relative overflow-hidden rounded-[var(--radius-lg)] bg-[var(--surface-card)] border border-[var(--border-default)] p-6 shadow-xl">
+        <div className="absolute -right-10 -bottom-10 w-48 h-48 bg-[var(--surface-subtle)] rounded-[var(--radius-full)] blur-3xl pointer-events-none" />
         <div className="relative flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
           <div className="flex items-center gap-4">
-            <div className="w-14 h-14 rounded-xl bg-accent/10 border border-accent/30 flex items-center justify-center text-accent shadow-inner">
+            <div className="w-14 h-14 rounded-[var(--radius-sm)] bg-[var(--surface-subtle)] border border-[var(--border-accent)] flex items-center justify-center text-[var(--fg-accent)] shadow-inner">
               <MessageSquare size={28} />
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <h3 className="text-xl font-bold text-white tracking-wide">
+                <h3 className="text-xl font-bold text-[var(--text-primary)] tracking-wide">
                   {isAr ? 'تكامل Google Chat' : 'Google Chat Integration'}
                 </h3>
-                <span className="px-2 py-0.5 rounded-[4px] text-[10px] font-semibold bg-accent/20 text-accent border border-accent/30">
+                <span className="px-2 py-0.5 rounded-[var(--radius-xs)] text-[10px] font-semibold bg-[var(--surface-subtle)] text-[var(--fg-accent)] border border-[var(--border-accent)]">
                   {isAr ? 'نشط' : 'API Active'}
                 </span>
               </div>
-              <p className="text-sm text-gray-400 mt-1 max-w-xl">
+              <p className="text-sm text-[var(--text-secondary)] mt-1 max-w-xl">
                 {isAr 
                   ? 'إدارة محادثات Google Chat ومساحات العمل وإرسال الرسائل مباشرة من منصتك.'
                   : 'Manage Google Chat conversations, spaces, and send messages directly from your platform.'}
@@ -304,22 +304,22 @@ export const GoogleChatManager: React.FC<GoogleChatProps> = ({ dir, theme }) => 
               <button
                 onClick={handleSignIn}
                 disabled={isConnecting}
-                className="flex items-center gap-2 px-5 py-2.5 rounded-lg bg-accent hover:bg-accent text-white font-medium text-sm transition-theme shadow-lg shadow-none disabled:opacity-50"
+                className="flex items-center gap-2 px-5 py-2.5 rounded-[var(--radius-xs)] bg-[var(--surface-subtle)] hover:bg-[var(--surface-page)] text-[var(--fg-accent)] border border-[var(--border-accent)] font-medium text-sm transition-theme shadow-lg shadow-none disabled:opacity-50"
               >
                 {isConnecting ? <Loader2 size={18} className="animate-spin" /> : <LogIn size={18} />}
                 <span>{isAr ? 'ربط حساب Google Chat' : 'Connect Google Chat'}</span>
               </button>
             ) : (
               <div className="flex items-center gap-3">
-                <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-gray-800/80 border border-gray-700">
+                <div className="flex items-center gap-2 px-3 py-1.5 rounded-[var(--radius-xs)] bg-[var(--surface-subtle)] border border-[var(--border-default)]">
                   {googleUser?.photoURL ? (
-                    <img src={googleUser.photoURL} alt="Avatar" className="w-6 h-6 rounded-[4px] object-cover" />
+                    <img src={googleUser.photoURL} alt="Avatar" className="w-6 h-6 rounded-[var(--radius-xs)] object-cover" />
                   ) : (
-                    <div className="w-6 h-6 rounded-[4px] bg-accent/20 text-accent flex items-center justify-center text-xs font-bold">
+                    <div className="w-6 h-6 rounded-[var(--radius-xs)] bg-[var(--surface-subtle)] text-[var(--fg-accent)] flex items-center justify-center text-xs font-bold">
                       {googleUser?.email?.[0]?.toUpperCase() || 'U'}
                     </div>
                   )}
-                  <span className="text-xs font-medium text-gray-200 max-w-[120px] truncate">
+                  <span className="text-xs font-medium text-[var(--text-primary)] max-w-[120px] truncate">
                     {googleUser?.displayName || googleUser?.email}
                   </span>
                 </div>

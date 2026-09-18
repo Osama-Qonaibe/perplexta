@@ -332,7 +332,7 @@ export const About: React.FC = () => {
           <button
             onClick={() => navigate(-1)}
             id="about-back-btn"
-            className="w-8 h-8 rounded-[8px] flex items-center justify-center transition-theme bg-[var(--surface-subtle)] border border-[var(--border-default)] text-[var(--text-secondary)] hover:text-accent hover:border-accent/40 active:scale-95 cursor-pointer"
+            className="w-8 h-8 rounded-[var(--radius-sm)] flex items-center justify-center transition-theme bg-[var(--surface-subtle)] border border-[var(--border-default)] text-[var(--text-secondary)] hover:text-[var(--fg-accent)] hover:border-[var(--border-accent)] active:scale-95 cursor-pointer"
             title={dir === "rtl" ? "رجوع" : "Back"}
           >
             {dir === "rtl" ? (
@@ -344,7 +344,7 @@ export const About: React.FC = () => {
           <div>
             <h1 className="text-xl md:text-2xl font-black text-[var(--text-primary)] uppercase flex items-center gap-2">
               <Info
-                className="text-accent"
+                className="text-[var(--fg-accent)]"
                 size={20}
               />
               {isAr ? "من نحن" : "About Us"}
@@ -359,13 +359,13 @@ export const About: React.FC = () => {
       <div className="space-y-24">
         <section className="text-center space-y-4 pt-4">
           <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-[var(--radius-xs)] bg-[var(--surface-subtle)] border border-[var(--border-subtle)] text-[var(--text-primary)] text-xs font-bold uppercase tracking-widest">
-            <Info size={14} className="text-accent" />
+            <Info size={14} className="text-[var(--fg-accent)]" />
             {isAr ? "من نحن" : "About Us"}
           </div>
           <h1 className="text-4xl md:text-6xl font-black tracking-tighter text-[var(--text-primary)] uppercase">
             {isAr ? "بيربليكستا" : "PERPLEXTA"}
           </h1>
-          <p className="text-lg md:text-2xl font-bold text-accent max-w-2xl mx-auto leading-relaxed">
+          <p className="text-lg md:text-2xl font-bold text-[var(--fg-accent)] max-w-2xl mx-auto leading-relaxed">
             {isAr
               ? "القوة الكامنة خلف القرار الذكي"
               : "The Power Behind Smart Decisions"}
@@ -374,9 +374,9 @@ export const About: React.FC = () => {
 
         <section className="grid grid-cols-1 md:grid-cols-2 gap-10 items-start">
           <div className="space-y-8">
-            <div className="p-6 md:p-8 rounded-[var(--radius)] border border-[var(--border-default)] bg-[var(--surface-card)] backdrop-blur-sm shadow-sm transition-theme hover:border-accent/20 group">
+            <div className="p-6 md:p-8 rounded-[var(--radius)] border border-[var(--border-default)] bg-[var(--surface-card)] backdrop-blur-sm shadow-sm transition-theme hover:border-[var(--border-accent)] group">
               <div className="flex items-center gap-3 text-[var(--text-primary)] mb-4">
-                <Target className="w-6 h-6 text-[var(--text-muted)] group-hover:text-accent transition-theme" />
+                <Target className="w-6 h-6 text-[var(--text-muted)] group-hover:text-[var(--fg-accent)] transition-theme" />
                 <h2 className="text-xl md:text-2xl font-black">
                   {isAr ? "الرؤية" : "Vision"}
                 </h2>
@@ -388,9 +388,9 @@ export const About: React.FC = () => {
               </p>
             </div>
 
-            <div className="p-6 md:p-8 rounded-[var(--radius)] border border-[var(--border-default)] bg-[var(--surface-card)] backdrop-blur-sm shadow-sm transition-theme hover:border-accent/20 group">
+            <div className="p-6 md:p-8 rounded-[var(--radius)] border border-[var(--border-default)] bg-[var(--surface-card)] backdrop-blur-sm shadow-sm transition-theme hover:border-[var(--border-accent)] group">
               <div className="flex items-center gap-3 text-[var(--text-primary)] mb-4">
-                <Zap className="w-6 h-6 text-[var(--text-muted)] group-hover:text-accent transition-theme" />
+                <Zap className="w-6 h-6 text-[var(--text-muted)] group-hover:text-[var(--fg-accent)] transition-theme" />
                 <h2 className="text-xl md:text-2xl font-black">
                   {isAr ? "الرسالة" : "Mission"}
                 </h2>
@@ -406,7 +406,7 @@ export const About: React.FC = () => {
           <div className="relative aspect-square rounded-[var(--radius-xl)] overflow-hidden bg-[var(--surface-subtle)] border border-[var(--border-default)] flex items-center justify-center p-8 shadow-inner">
             <div className="relative z-10 flex flex-col items-center gap-8 w-full">
               <div className="flex items-center justify-center p-6 rounded-[var(--radius-xs)] bg-[var(--surface-card)] border border-[var(--border-default)] shadow-lg hover:shadow-none transition-theme group">
-                <Layers className="w-24 h-24 text-[var(--text-muted)] group-hover:text-accent transition-theme" />
+                <Layers className="w-24 h-24 text-[var(--text-muted)] group-hover:text-[var(--fg-accent)] transition-theme" />
               </div>
 
               <div className="grid grid-cols-3 gap-3 w-full">
@@ -423,10 +423,10 @@ export const About: React.FC = () => {
                 ].map((item, idx) => (
                   <div
                     key={`about-pillar-${idx}-${item.label}`}
-                    className="p-3 rounded-[var(--radius-md)] bg-[var(--surface-card)] border border-[var(--border-subtle)] flex flex-col items-center gap-2 transition-theme hover:border-accent/10 hover:-translate-y-1 group"
+                    className="p-3 rounded-[var(--radius-md)] bg-[var(--surface-card)] border border-[var(--border-subtle)] flex flex-col items-center gap-2 transition-theme hover:border-[var(--border-accent)] hover:-translate-y-1 group"
                   >
                     <div className="w-8 h-8 rounded-[var(--radius-sm)] bg-[var(--surface-subtle)] flex items-center justify-center border border-[var(--border-subtle)]">
-                      <item.icon className="w-4 h-4 text-[var(--text-muted)] group-hover:text-accent transition-theme" />
+                      <item.icon className="w-4 h-4 text-[var(--text-muted)] group-hover:text-[var(--fg-accent)] transition-theme" />
                     </div>
                     <span className="text-[9px] uppercase font-black tracking-wider text-center leading-tight text-[var(--text-primary)]">
                       {item.label}
@@ -453,9 +453,9 @@ export const About: React.FC = () => {
             {features.map((feature, i) => (
               <div
                 key={`about-feature-${i}-${feature.title}`}
-                className="p-6 rounded-[var(--radius)] border border-[var(--border-default)] bg-[var(--surface-card)] hover:bg-[var(--surface-subtle)] hover:border-accent/20 transition-theme group"
+                className="p-6 rounded-[var(--radius)] border border-[var(--border-default)] bg-[var(--surface-card)] hover:bg-[var(--surface-subtle)] hover:border-[var(--border-accent)] transition-theme group"
               >
-                <div className="w-10 h-10 rounded-[var(--radius-xs)] bg-[var(--surface-card)] border border-[var(--border-default)] flex items-center justify-center text-[var(--text-muted)] group-hover:text-accent group-hover:border-accent/10 mb-4 transition-theme">
+                <div className="w-10 h-10 rounded-[var(--radius-xs)] bg-[var(--surface-card)] border border-[var(--border-default)] flex items-center justify-center text-[var(--text-muted)] group-hover:text-[var(--fg-accent)] group-hover:border-[var(--border-accent)] mb-4 transition-theme">
                   <feature.icon className="w-5 h-5" />
                 </div>
                 <h3 className="text-lg font-bold text-[var(--text-primary)] mb-2">
@@ -469,9 +469,9 @@ export const About: React.FC = () => {
           </div>
         </section>
 
-        <section className="p-8 md:p-10 rounded-[var(--radius)] border border-accent/20 bg-accent/[0.03] shadow-[0_4px_24px_rgba(156,163,175,0.03)] space-y-6 relative overflow-hidden group">
-          <div className="absolute top-0 right-0 w-32 h-32 bg-accent/5 rounded-[var(--radius-xs)] blur-3xl group-hover:bg-accent/10 transition-theme" />
-          <h2 className="text-2xl font-black text-accent">
+        <section className="p-8 md:p-10 rounded-[var(--radius)] border border-[var(--border-accent)]/20 bg-[var(--surface-subtle)] shadow-[0_4px_24px_rgba(156,163,175,0.03)] space-y-6 relative overflow-hidden group">
+          <div className="absolute top-0 right-0 w-32 h-32 bg-[var(--surface-inset)] rounded-[var(--radius-xs)] blur-3xl group-hover:opacity-80 transition-theme" />
+          <h2 className="text-2xl font-black text-[var(--fg-accent)]">
             {isAr ? "لماذا بيربليكستا؟" : "Why PERPLEXTA?"}
           </h2>
           <p className="text-sm md:text-base leading-relaxed text-[var(--text-primary)] font-semibold font-sans">
@@ -483,7 +483,7 @@ export const About: React.FC = () => {
 
         <section className="grid grid-cols-1 md:grid-cols-2 gap-8 items-center border border-[var(--border-default)] rounded-[var(--radius)] p-6 md:p-8 bg-[var(--surface-card)]">
           <div className="space-y-4 text-center md:text-right animate-pulse">
-            <CheckCircle2 className="w-12 h-12 text-accent mx-auto md:mx-0 md:mr-0 inline-block md:block" />
+            <CheckCircle2 className="w-12 h-12 text-[var(--fg-accent)] mx-auto md:mx-0 md:mr-0 inline-block md:block" />
             <h3 className="text-2xl font-black text-[var(--text-primary)]">
               {isAr ? "أمان وموثوقية عالمية" : "Global Security & Reliability"}
             </h3>
@@ -507,7 +507,7 @@ export const About: React.FC = () => {
 
         <section className="p-6 md:p-8 rounded-[var(--radius)] border border-[var(--border-default)] bg-[var(--surface-card)] space-y-8">
           <div className="flex items-center gap-3 text-[var(--text-primary)]">
-            <Shield className="w-5 h-5 text-accent" />
+            <Shield className="w-5 h-5 text-[var(--fg-accent)]" />
             <h2 className="text-xl md:text-2xl font-black">
               {isAr
                 ? "الهوية المؤسسية والشفافية"
@@ -533,7 +533,7 @@ export const About: React.FC = () => {
                 </p>
               </div>
               <div>
-                <span className="inline-block px-3 py-1 text-xs font-bold text-accent bg-accent/10 rounded-[var(--radius-xs)] border border-accent/20 shadow-[0_0_8px_rgba(156,163,175,0.2)]">
+                <span className="inline-block px-3 py-1 text-xs font-bold text-[var(--fg-accent)] bg-[var(--surface-subtle)] rounded-[var(--radius-xs)] border border-[var(--border-accent)] shadow-[0_0_8px_rgba(156,163,175,0.2)]">
                   {isAr ? "نشطة" : "ACTIVE"}
                 </span>
               </div>
@@ -542,8 +542,8 @@ export const About: React.FC = () => {
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-4 border-t border-[var(--border-subtle)]">
             <div className="space-y-4">
-              <div className="flex items-center gap-4 p-4 rounded-[var(--radius-md)] bg-[var(--surface-subtle)] border border-[var(--border-subtle)] hover:border-accent/10 transition-theme group shadow-sm">
-                <Globe className="w-5 h-5 text-[var(--text-muted)] group-hover:text-accent transition-theme" />
+              <div className="flex items-center gap-4 p-4 rounded-[var(--radius-md)] bg-[var(--surface-subtle)] border border-[var(--border-subtle)] hover:border-[var(--border-accent)] transition-theme group shadow-sm">
+                <Globe className="w-5 h-5 text-[var(--text-muted)] group-hover:text-[var(--fg-accent)] transition-theme" />
                 <div>
                   <p className="text-[10px] uppercase font-bold text-[var(--text-muted)]">
                     {isAr ? "رقم التسجيل" : "Registration Number"}
@@ -553,8 +553,8 @@ export const About: React.FC = () => {
                   </p>
                 </div>
               </div>
-              <div className="flex items-center gap-4 p-4 rounded-[var(--radius-md)] bg-[var(--surface-subtle)] border border-[var(--border-subtle)] hover:border-accent/10 transition-theme group shadow-sm">
-                <Building2 className="w-5 h-5 text-[var(--text-muted)] group-hover:text-accent transition-theme" />
+              <div className="flex items-center gap-4 p-4 rounded-[var(--radius-md)] bg-[var(--surface-subtle)] border border-[var(--border-subtle)] hover:border-[var(--border-accent)] transition-theme group shadow-sm">
+                <Building2 className="w-5 h-5 text-[var(--text-muted)] group-hover:text-[var(--fg-accent)] transition-theme" />
                 <div>
                   <p className="text-[10px] uppercase font-bold text-[var(--text-muted)]">
                     {isAr ? "المقر المسجل" : "Registered Office"}
@@ -572,7 +572,7 @@ export const About: React.FC = () => {
               </p>
               <ul className="space-y-2 text-xs font-semibold text-[var(--text-secondary)]">
                 <li className="flex items-center gap-2">
-                  <span className="text-accent font-mono font-bold">
+                  <span className="text-[var(--fg-accent)] font-mono font-bold">
                     58190
                   </span>
                   <span>
@@ -582,7 +582,7 @@ export const About: React.FC = () => {
                   </span>
                 </li>
                 <li className="flex items-center gap-2">
-                  <span className="text-accent font-mono font-bold">
+                  <span className="text-[var(--fg-accent)] font-mono font-bold">
                     62012
                   </span>
                   <span>
@@ -592,7 +592,7 @@ export const About: React.FC = () => {
                   </span>
                 </li>
                 <li className="flex items-center gap-2">
-                  <span className="text-accent font-mono font-bold">
+                  <span className="text-[var(--fg-accent)] font-mono font-bold">
                     63110
                   </span>
                   <span>
@@ -602,7 +602,7 @@ export const About: React.FC = () => {
                   </span>
                 </li>
                 <li className="flex items-center gap-2">
-                  <span className="text-accent font-mono font-bold">
+                  <span className="text-[var(--fg-accent)] font-mono font-bold">
                     70229
                   </span>
                   <span>
@@ -635,13 +635,13 @@ export const About: React.FC = () => {
                 target="_blank"
                 rel="noopener noreferrer"
                 id={`ecosystem-link-${i}`}
-                className="p-5 rounded-[var(--radius-lg)] bg-[var(--surface-card)] border border-[var(--border-default)] hover:border-accent/20 hover:bg-[var(--surface-subtle)] transition-theme group block relative overflow-hidden shadow-sm hover:shadow-md"
+                className="p-5 rounded-[var(--radius-lg)] bg-[var(--surface-card)] border border-[var(--border-default)] hover:border-[var(--border-accent)] hover:bg-[var(--surface-subtle)] transition-theme group block relative overflow-hidden shadow-sm hover:shadow-md"
               >
                 <div className="flex items-center justify-between mb-3">
-                  <h3 className="text-lg font-black text-[var(--text-primary)] group-hover:text-accent transition-colors">
+                  <h3 className="text-lg font-black text-[var(--text-primary)] group-hover:text-[var(--fg-accent)] transition-colors">
                     {item.name}
                   </h3>
-                  <ExternalLink className="w-4 h-4 text-[var(--text-muted)] group-hover:text-accent transition-theme" />
+                  <ExternalLink className="w-4 h-4 text-[var(--text-muted)] group-hover:text-[var(--fg-accent)] transition-theme" />
                 </div>
                 <p className="text-xs text-[var(--text-secondary)] leading-relaxed font-semibold">
                   {item.desc}
@@ -660,7 +660,7 @@ export const About: React.FC = () => {
           <div className="text-center space-y-2">
             <h2 className="text-2xl md:text-3xl font-black text-[var(--text-primary)] uppercase flex items-center justify-center gap-2">
               <Boxes
-                className="text-accent"
+                className="text-[var(--fg-accent)]"
                 size={24}
               />
               {isAr ? "الميزات والأدوات" : "Features & Tools"}
@@ -676,19 +676,19 @@ export const About: React.FC = () => {
             {featuresToolsList.map((tool, i) => (
               <div
                 key={`about-tool-${i}-${tool.title}`}
-                className="p-6 rounded-[var(--radius)] border border-[var(--border-default)] bg-[var(--surface-card)] hover:bg-[var(--surface-subtle)] hover:border-accent/20 transition-theme group flex flex-col justify-between gap-4 cursor-pointer relative overflow-hidden shadow-sm hover:shadow-md h-fit"
+                className="p-6 rounded-[var(--radius)] border border-[var(--border-default)] bg-[var(--surface-card)] hover:bg-[var(--surface-subtle)] hover:border-[var(--border-accent)] transition-theme group flex flex-col justify-between gap-4 cursor-pointer relative overflow-hidden shadow-sm hover:shadow-md h-fit"
               >
                 <div className="space-y-4">
                   <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-[var(--radius-xs)] bg-accent/10 border border-accent/20 flex items-center justify-center text-accent group-hover:bg-accent/20 group-hover:scale-105 transition-theme">
+                    <div className="w-10 h-10 rounded-[var(--radius-xs)] bg-[var(--surface-subtle)] border border-[var(--border-accent)] flex items-center justify-center text-[var(--fg-accent)] group-hover:scale-105 transition-theme">
                       {tool.icon}
                     </div>
-                    <h3 className="text-lg font-black text-[var(--text-primary)] group-hover:text-accent transition-colors duration-300">
+                    <h3 className="text-lg font-black text-[var(--text-primary)] group-hover:text-[var(--fg-accent)] transition-colors duration-300">
                       {tool.title}
                     </h3>
                   </div>
 
-                  <div className="relative w-full aspect-[16/10] rounded-[var(--radius-sm)] overflow-hidden border border-[var(--border-subtle)] shadow-sm bg-[var(--surface-inset)] group-hover:border-accent/30 transition-colors duration-300">
+                  <div className="relative w-full aspect-[16/10] rounded-[var(--radius-sm)] overflow-hidden border border-[var(--border-subtle)] shadow-sm bg-[var(--surface-inset)] group-hover:border-[var(--border-accent)] transition-colors duration-300">
                     <img
                       src={tool.imageUrl}
                       alt={tool.title}
@@ -710,7 +710,7 @@ export const About: React.FC = () => {
         <section className="space-y-10">
           <div className="text-center space-y-2">
             <h2 className="text-2xl md:text-3xl font-black text-[var(--text-primary)] uppercase flex items-center justify-center gap-2">
-              <Wallet className="text-accent" size={24} />
+              <Wallet className="text-[var(--fg-accent)]" size={24} />
               {isAr ? "اقتصاد المنصة والمكافآت" : "Platform Economy & Rewards"}
             </h2>
             <p className="text-sm text-[var(--text-secondary)] max-w-2xl mx-auto font-medium">
@@ -724,19 +724,19 @@ export const About: React.FC = () => {
             {economyList.map((item, i) => (
               <div
                 key={`about-economy-${i}-${item.title}`}
-                className="p-6 rounded-[var(--radius)] border border-[var(--border-default)] bg-[var(--surface-card)] hover:bg-[var(--surface-subtle)] hover:border-accent/20 transition-theme group flex flex-col justify-between gap-4 cursor-pointer relative overflow-hidden shadow-sm hover:shadow-md h-fit"
+                className="p-6 rounded-[var(--radius)] border border-[var(--border-default)] bg-[var(--surface-card)] hover:bg-[var(--surface-subtle)] hover:border-[var(--border-accent)] transition-theme group flex flex-col justify-between gap-4 cursor-pointer relative overflow-hidden shadow-sm hover:shadow-md h-fit"
               >
                 <div className="space-y-4">
                   <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-[var(--radius-xs)] bg-accent/10 border border-accent/20 flex items-center justify-center text-accent group-hover:bg-accent/20 group-hover:scale-105 transition-theme">
+                    <div className="w-10 h-10 rounded-[var(--radius-xs)] bg-[var(--surface-subtle)] border border-[var(--border-accent)] flex items-center justify-center text-[var(--fg-accent)] group-hover:scale-105 transition-theme">
                       {item.icon}
                     </div>
-                    <h3 className="text-lg font-black text-[var(--text-primary)] group-hover:text-accent transition-colors duration-300">
+                    <h3 className="text-lg font-black text-[var(--text-primary)] group-hover:text-[var(--fg-accent)] transition-colors duration-300">
                       {item.title}
                     </h3>
                   </div>
 
-                  <div className="relative w-full aspect-[16/10] rounded-[var(--radius-sm)] overflow-hidden border border-[var(--border-subtle)] shadow-sm bg-[var(--surface-inset)] group-hover:border-accent/30 transition-colors duration-300">
+                  <div className="relative w-full aspect-[16/10] rounded-[var(--radius-sm)] overflow-hidden border border-[var(--border-subtle)] shadow-sm bg-[var(--surface-inset)] group-hover:border-[var(--border-accent)] transition-colors duration-300">
                     <img 
                       src={item.imageUrl} 
                       alt={item.title}
@@ -759,7 +759,7 @@ export const About: React.FC = () => {
           <div className="text-center space-y-2">
             <h2 className="text-2xl md:text-3xl font-black text-[var(--text-primary)] uppercase flex items-center justify-center gap-2">
               <Newspaper
-                className="text-accent"
+                className="text-[var(--fg-accent)]"
                 size={24}
               />
               {isAr ? "أحدث الأخبار وتحديثات النظام" : "Latest News & Releases"}
@@ -778,29 +778,29 @@ export const About: React.FC = () => {
                 <div
                   key={`about-news-${i}-${item.title}`}
                   id={`news-card-${i}`}
-                  className="news-card p-6 rounded-[var(--radius)] border border-[var(--border-default)] bg-[var(--surface-card)] hover:bg-[var(--surface-subtle)] hover:border-accent/20 transition-theme group flex flex-col justify-between gap-4 cursor-pointer relative overflow-hidden shadow-sm hover:shadow-md h-fit"
+                  className="news-card p-6 rounded-[var(--radius)] border border-[var(--border-default)] bg-[var(--surface-card)] hover:bg-[var(--surface-subtle)] hover:border-[var(--border-accent)] transition-theme group flex flex-col justify-between gap-4 cursor-pointer relative overflow-hidden shadow-sm hover:shadow-md h-fit"
                   onClick={() => toggleCard(i)}
                 >
                   <div className="space-y-3">
                     <div className="flex items-center justify-between">
-                      <span className="text-[10px] font-mono font-black tracking-widest text-accent bg-accent/5 px-2.5 py-1 rounded-[var(--radius-xs)] border border-accent/15">
+                      <span className="text-[10px] font-mono font-black tracking-widest text-[var(--fg-accent)] bg-[var(--surface-subtle)] px-2.5 py-1 rounded-[var(--radius-xs)] border border-[var(--border-accent)]">
                         {item.date}
                       </span>
                       <motion.div
                         animate={{ rotate: isExpanded ? 180 : 0 }}
                         transition={{ duration: 0.15, ease: [0.22, 1, 0.36, 1] }}
-                        className="text-[var(--text-muted)] group-hover:text-accent transition-theme"
+                        className="text-[var(--text-muted)] group-hover:text-[var(--fg-accent)] transition-theme"
                       >
                         <ChevronDown size={14} />
                       </motion.div>
                     </div>
 
-                    <h3 className="text-base font-black text-[var(--text-primary)] group-hover:text-accent transition-colors duration-300 leading-snug">
+                    <h3 className="text-base font-black text-[var(--text-primary)] group-hover:text-[var(--fg-accent)] transition-colors duration-300 leading-snug">
                       {item.title}
                     </h3>
 
                     {item.imageUrl && (
-                      <div className="relative w-full aspect-[16/9] rounded-[var(--radius-sm)] overflow-hidden border border-[var(--border-subtle)] shadow-sm bg-[var(--surface-inset)] group-hover:border-accent/30 transition-colors duration-300">
+                      <div className="relative w-full aspect-[16/9] rounded-[var(--radius-sm)] overflow-hidden border border-[var(--border-subtle)] shadow-sm bg-[var(--surface-inset)] group-hover:border-[var(--border-accent)] transition-colors duration-300">
                         <img
                           src={item.imageUrl}
                           alt={item.title}
@@ -832,7 +832,7 @@ export const About: React.FC = () => {
                               e.stopPropagation();
                               toggleCard(i);
                             }}
-                            className="flex items-center gap-1.5 px-3 py-1.5 rounded-[var(--radius-xs)] bg-[var(--surface-subtle)] hover:bg-accent/10 border border-[var(--border-default)] hover:border-accent/30 text-[var(--text-primary)] hover:text-accent text-[10px] font-black uppercase tracking-wider transition-theme cursor-pointer shadow-sm hover:shadow-[0_0_12px_rgba(156,163,175,0.2)] select-none"
+                            className="flex items-center gap-1.5 px-3 py-1.5 rounded-[var(--radius-xs)] bg-[var(--surface-subtle)] hover:border-[var(--border-accent)] border border-[var(--border-default)] text-[var(--text-primary)] hover:text-[var(--fg-accent)] text-[10px] font-black uppercase tracking-wider transition-theme cursor-pointer shadow-sm select-none"
                           >
                             <span>{isAr ? "▲ عرض أقل" : "▲ Show Less"}</span>
                           </button>
@@ -841,7 +841,7 @@ export const About: React.FC = () => {
                     </motion.div>
                   </div>
 
-                  <div className="pt-2 flex items-center justify-start text-[10px] font-black uppercase tracking-wider text-accent transition-theme select-none">
+                  <div className="pt-2 flex items-center justify-start text-[10px] font-black uppercase tracking-wider text-[var(--fg-accent)] transition-theme select-none">
                     <span>
                       {isExpanded
                         ? isAr
@@ -869,7 +869,7 @@ export const About: React.FC = () => {
 
           <div className="p-6 md:p-8 rounded-[var(--radius)] border border-[var(--border-default)] bg-[var(--surface-card)] space-y-4 max-w-4xl mx-auto shadow-inner">
             <div className="flex items-center gap-3 text-[var(--text-primary)]">
-              <Shield className="w-5 h-5 text-accent" />
+              <Shield className="w-5 h-5 text-[var(--fg-accent)]" />
               <h3 className="text-base md:text-lg font-black">
                 {isAr ? "حقوق الملكية الفكرية" : "Intellectual Property Rights"}
               </h3>

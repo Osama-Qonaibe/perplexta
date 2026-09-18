@@ -19,15 +19,15 @@ export const StudioMixerPanel = ({
   uploadedGainNodeRef
 }: any) => {
   return (
-    <div className="w-full px-5 py-4 rounded-md border border-[var(--border-default)] bg-[var(--surface-card)] shadow-sm flex flex-col gap-4 transition-theme">
+    <div className="w-full px-5 py-4 rounded-[var(--radius-sm)] border border-[var(--border-default)] bg-[var(--surface-card)] shadow-sm flex flex-col gap-4 transition-theme">
         <div className="flex items-center justify-between border-b border-[var(--border-default)] pb-3">
           <div className="flex items-center gap-2">
             <div className="relative">
-              <span className="absolute inset-0 bg-accent rounded-[4px] blur-[6px] opacity-15 animate-pulse" />
-              <Sliders size={16} className="text-accent relative " />
+              <span className="absolute inset-0 bg-[var(--surface-subtle)] rounded-[var(--radius-xs)] blur-[6px] opacity-15 animate-pulse" />
+              <Sliders size={16} className="text-[var(--fg-accent)] relative " />
             </div>
             <div className="flex flex-col">
-              <span className="text-[10px] font-black text-accent uppercase tracking-widest leading-none mb-1">
+              <span className="text-[10px] font-black text-[var(--fg-accent)] uppercase tracking-widest leading-none mb-1">
                 {dir === 'rtl' ? 'مستودع هندسة وتوليف الصوت' : 'STUDIO PRODUCTION MIXER'}
               </span>
               <h5 className="text-[12px] font-bold text-[var(--text-primary)] leading-none">
@@ -39,7 +39,7 @@ export const StudioMixerPanel = ({
           <button 
             type="button"
             onClick={() => setIsMixerExpanded(!isMixerExpanded)}
-            className="text-[10px] font-black text-[var(--text-muted)] hover:text-accent uppercase tracking-wider transition-colors pt-1"
+            className="text-[10px] font-black text-[var(--text-muted)] hover:text-[var(--fg-accent)] uppercase tracking-wider transition-colors pt-1"
           >
             {isMixerExpanded 
               ? (dir === 'rtl' ? 'طي اللوحة' : 'COLLAPSE PANEL') 
@@ -58,10 +58,10 @@ export const StudioMixerPanel = ({
                 <div
                   onDragOver={(e: any) => { e.preventDefault(); }}
                   onClick={() => fileInputRef.current?.click()}
-                  className={`border-2 border-dashed rounded-md p-4 flex flex-col items-center justify-center text-center cursor-pointer transition-theme ${
+                  className={`border-2 border-dashed rounded-[var(--radius-sm)] p-4 flex flex-col items-center justify-center text-center cursor-pointer transition-theme ${
                     uploadedFile 
-                      ? 'border-accent/30 bg-accent/[0.02]' 
-                      : 'border-[var(--border-default)] hover:border-accent/40 hover:bg-accent/[0.01]'
+                      ? 'border-[var(--border-accent)] bg-[var(--surface-subtle)]' 
+                      : 'border-[var(--border-default)] hover:border-[var(--border-accent)] hover:bg-[var(--surface-subtle)]'
                   }`}
                 >
                   {/* ... contents of the uploader ... */}
@@ -73,8 +73,8 @@ export const StudioMixerPanel = ({
               </div>
             </div>
 
-            <div className="flex items-center gap-2 px-3 py-2 rounded bg-[var(--surface-inset)] border border-[var(--border-default)] text-[10px] text-[var(--text-muted)] font-medium leading-normal">
-              <div className="w-1.5 h-1.5 rounded-[4px] bg-accent animate-pulse shrink-0" />
+            <div className="flex items-center gap-2 px-3 py-2 rounded-[var(--radius-xs)] bg-[var(--surface-inset)] border border-[var(--border-default)] text-[10px] text-[var(--text-muted)] font-medium leading-normal">
+              <div className="w-1.5 h-1.5 rounded-[var(--radius-full)] bg-[var(--fg-accent)] animate-pulse shrink-0" />
               <span>
                 {dir === 'rtl' 
                   ? 'بروتوكول ويب أوديو (Web Audio API) يقوم بدمج المسارين في بث واحد فائق الدقة ٢٤ بت بالوقت الفعلي.' 

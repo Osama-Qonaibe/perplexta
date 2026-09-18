@@ -643,7 +643,7 @@ export const PostOptionsMenu: React.FC<PostOptionsMenuProps> = ({
               onClick={(e) => e.stopPropagation()}
               onMouseDown={(e) => e.stopPropagation()}
               onTouchStart={(e) => e.stopPropagation()}
-              className={`absolute top-full mt-1.5 ${alignClass} ${alignClass === 'right-0' ? 'origin-top-right' : 'origin-top-left'} w-max min-w-[210px] sm:min-w-[230px] max-w-[calc(100vw-32px)] rounded-[14px] border border-[var(--border-default)] bg-[var(--surface-card)] text-[var(--text-primary)] shadow-2xl p-1.5 z-50 text-xs font-medium flex flex-col gap-0.5 backdrop-blur-2xl ring-1 ring-black/5 dark:ring-white/10 transition-colors duration-150 max-h-[85vh] overflow-y-auto overscroll-contain custom-scrollbar ${className}`}
+              className={`absolute top-full mt-1.5 ${alignClass} ${alignClass === 'right-0' ? 'origin-top-right' : 'origin-top-left'} w-max min-w-[210px] sm:min-w-[230px] max-w-[calc(100vw-32px)] rounded-[var(--radius-md)] border border-[var(--border-default)] bg-[var(--surface-card)] text-[var(--text-primary)] shadow-2xl p-1.5 z-50 text-xs font-medium flex flex-col gap-0.5 backdrop-blur-2xl ring-1 ring-black/5 dark:ring-white/10 transition-colors duration-150 max-h-[85vh] overflow-y-auto overscroll-contain custom-scrollbar ${className}`}
               dir={isRtl ? 'rtl' : 'ltr'}
             >
               {/* Hierarchically Sorted Main Actions */}
@@ -654,7 +654,7 @@ export const PostOptionsMenu: React.FC<PostOptionsMenuProps> = ({
                     key={item.id}
                     type="button"
                     onClick={item.action}
-                    className="group w-full h-[36px] min-h-[36px] flex items-center gap-2.5 px-3 py-2 rounded-[8px] border border-transparent bg-transparent hover:bg-[var(--surface-subtle)] transition-all duration-150 cursor-pointer select-none text-start"
+                    className="group w-full h-[36px] min-h-[36px] flex items-center gap-2.5 px-3 py-2 rounded-[var(--radius-xs)] border border-transparent bg-transparent hover:bg-[var(--surface-subtle)] transition-all duration-150 cursor-pointer select-none text-start"
                   >
                     <Icon size={14} className={`${item.iconColor || 'text-[var(--text-muted)]'} group-hover:text-[var(--fg-accent)] shrink-0 transition-colors duration-150`} />
                     <span className="truncate min-w-0 flex-1 text-xs font-medium text-[var(--text-secondary)] group-hover:text-[var(--text-primary)] transition-colors duration-150">
@@ -674,7 +674,7 @@ export const PostOptionsMenu: React.FC<PostOptionsMenuProps> = ({
                     key={item.id}
                     type="button"
                     onClick={item.action}
-                    className={`group w-full h-[36px] min-h-[36px] flex items-center gap-2.5 px-3 py-2 rounded-[8px] border border-transparent transition-all duration-150 cursor-pointer select-none text-start ${
+                    className={`group w-full h-[36px] min-h-[36px] flex items-center gap-2.5 px-3 py-2 rounded-[var(--radius-xs)] border border-transparent transition-all duration-150 cursor-pointer select-none text-start ${
                       item.isDestructive
                         ? 'bg-transparent hover:bg-rose-500/10 text-rose-500'
                         : 'bg-transparent hover:bg-[var(--surface-subtle)]'

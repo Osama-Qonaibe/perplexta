@@ -307,7 +307,7 @@ export function SelectDropdown<T extends string | number = string>({
                       setFocusedIndex(0);
                     }}
                     placeholder={searchPlaceholder || (dir === 'rtl' ? 'بحث...' : 'Search...')}
-                    className="w-full bg-[var(--surface-subtle)] border border-[var(--border-subtle)] rounded-shape-xs ps-7 pe-2 py-1 text-[11px] font-sans text-[var(--text-primary)] placeholder-[var(--text-muted)] focus:outline-none focus:border-[var(--border-accent)]/40"
+                    className="w-full bg-[var(--surface-subtle)] border border-[var(--border-subtle)] rounded-[var(--radius-xs)] ps-7 pe-2 py-1 text-[11px] font-sans text-[var(--text-primary)] placeholder-[var(--text-muted)] focus:outline-none focus:border-[var(--border-accent)]/40"
                     onClick={(e) => e.stopPropagation()}
                   />
                 </div>
@@ -342,7 +342,7 @@ export function SelectDropdown<T extends string | number = string>({
                         transition-all duration-150 text-[11.5px] font-sans font-medium text-start select-none
                         ${opt.disabled || opt.isLocked ? 'opacity-40 cursor-not-allowed pointer-events-none' : 'cursor-pointer'}
                         ${isSelected 
-                          ? 'bg-cyan-500/15 border border-cyan-500/30 text-[var(--fg-accent)] font-bold' 
+                          ? 'bg-[var(--bg-accent-muted)] border border-[var(--border-accent)] text-[var(--fg-accent)] font-bold' 
                           : isFocused
                             ? 'bg-[var(--surface-subtle)] text-[var(--text-primary)] border border-transparent'
                             : 'bg-transparent text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--surface-subtle)] border border-transparent'
@@ -375,7 +375,7 @@ export function SelectDropdown<T extends string | number = string>({
                         )}
 
                         {opt.isNew && !opt.isLocked && (
-                          <span className="px-1.5 py-[1px] rounded-[4px] bg-slate-200 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-[8px] font-mono font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300">
+                          <span className="px-1.5 py-[1px] rounded-[var(--radius-xs)] bg-[var(--surface-subtle)] border border-[var(--border-default)] text-[8px] font-mono font-bold uppercase tracking-wider text-[var(--text-secondary)]">
                             NEW
                           </span>
                         )}

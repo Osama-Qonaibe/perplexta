@@ -355,19 +355,19 @@ export const ReferralDashboardView = ({
       {/* Dynamic Toast Notification */}
       {notification && (
         <div 
-          className={`p-3 rounded-[4px] border flex items-center justify-between animate-fade-in text-xs font-semibold ${
+          className={`p-3 rounded-[var(--radius-xs)] border flex items-center justify-between animate-fade-in text-xs font-semibold ${
             notification.type === 'success'
-              ? 'bg-accent/10 border-accent/20 text-accent'
+              ? 'bg-[var(--surface-subtle)] border-[var(--border-accent)] text-[var(--fg-accent)]'
               : 'bg-red-500/10 border-red-500/20 text-red-500'
           }`}
         >
           <div className="flex items-center gap-2">
-            <CheckCircle size={14} className={notification.type === 'success' ? 'text-accent' : 'text-red-500'} />
+            <CheckCircle size={14} className={notification.type === 'success' ? 'text-[var(--fg-accent)]' : 'text-red-500'} />
             <span>{notification.message}</span>
           </div>
           <button 
             onClick={() => setNotification(null)}
-            className="text-[10px] uppercase font-bold tracking-widest px-1.5 py-0.5 rounded-sm hover:bg-[var(--surface-inset)] text-[var(--text-muted)] cursor-pointer"
+            className="text-[10px] uppercase font-bold tracking-widest px-1.5 py-0.5 rounded-[var(--radius-xs)] hover:bg-[var(--surface-inset)] text-[var(--text-muted)] cursor-pointer"
           >
             {isRtl ? "إغلاق" : "CLOSE"}
           </button>
@@ -376,11 +376,11 @@ export const ReferralDashboardView = ({
 
       {/* View Header with Action Button */}
       <div 
-        className="p-5 rounded-sm border border-[var(--border-default)] bg-[var(--surface-card)] shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-4 transition-theme"
+        className="p-5 rounded-[var(--radius-sm)] border border-[var(--border-default)] bg-[var(--surface-card)] shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-4 transition-theme"
       >
         <div>
           <h1 className="text-xl font-black uppercase text-[var(--text-primary)] flex items-center gap-2 tracking-tight">
-            <Users size={22} className="text-accent " />
+            <Users size={22} className="text-[var(--fg-accent)]" />
             {isRtl ? "إدارة الإحالة والتبشير" : "REFERRAL ADOCACY MANAGEMENT"}
           </h1>
           <p className="text-xs text-[var(--text-muted)] mt-1.5 font-medium max-w-2xl leading-relaxed">
@@ -393,7 +393,7 @@ export const ReferralDashboardView = ({
           <button
             disabled={downloading}
             onClick={handleDownloadCSV}
-            className={`flex items-center gap-2 px-4 py-2.5 text-xs font-bold uppercase tracking-wider text-accent bg-accent/5 hover:bg-accent/10 active:scale-95 disabled:opacity-50 disabled:pointer-events-none rounded-[4px] border border-accent/20 transition-theme cursor-pointer shadow-[0_0_12px_rgba(156,163,175,0.05)]`}
+            className="flex items-center gap-2 px-4 py-2.5 text-xs font-bold uppercase tracking-wider text-[var(--fg-accent)] bg-[var(--surface-subtle)] hover:bg-[var(--surface-page)] active:scale-95 disabled:opacity-50 disabled:pointer-events-none rounded-[var(--radius-xs)] border border-[var(--border-accent)] transition-theme cursor-pointer"
           >
             <Download size={14} className={downloading ? "animate-pulse" : ""} />
             <span>
@@ -614,13 +614,13 @@ export const ReferralDashboardView = ({
             <div className="flex items-center gap-1">
               <button
                 onClick={() => setRankingTab("active")}
-                className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold uppercase tracking-wider transition-theme rounded-[4px] cursor-pointer ${
+                className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold uppercase tracking-wider transition-theme rounded-[var(--radius-xs)] cursor-pointer ${
                   rankingTab === "active"
-                    ? "text-accent bg-accent/5 border border-accent/10"
+                    ? "text-[var(--fg-accent)] bg-[var(--surface-subtle)] border border-[var(--border-accent)]"
                     : "text-[var(--text-muted)] hover:text-[var(--text-primary)] border border-transparent bg-transparent"
                 }`}
               >
-                <Award size={14} className={rankingTab === "active" ? "text-accent" : "text-[var(--text-muted)]"} />
+                <Award size={14} className={rankingTab === "active" ? "text-[var(--fg-accent)]" : "text-[var(--text-muted)]"} />
                 <span>{isRtl ? "الأكثر نشاطاً" : "Most Active"}</span>
               </button>
 
@@ -628,13 +628,13 @@ export const ReferralDashboardView = ({
 
               <button
                 onClick={() => setRankingTab("top_conversions")}
-                className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold uppercase tracking-wider transition-theme rounded-[4px] cursor-pointer ${
+                className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold uppercase tracking-wider transition-theme rounded-[var(--radius-xs)] cursor-pointer ${
                   rankingTab === "top_conversions"
-                    ? "text-accent bg-accent/5 border border-accent/10"
+                    ? "text-[var(--fg-accent)] bg-[var(--surface-subtle)] border border-[var(--border-accent)]"
                     : "text-[var(--text-muted)] hover:text-[var(--text-primary)] border border-transparent bg-transparent"
                 }`}
               >
-                <TrendingUp size={14} className={rankingTab === "top_conversions" ? "text-accent" : "text-[var(--text-muted)]"} />
+                <TrendingUp size={14} className={rankingTab === "top_conversions" ? "text-[var(--fg-accent)]" : "text-[var(--text-muted)]"} />
                 <span>{isRtl ? "كبار المنجزين" : "Top Performers"}</span>
               </button>
             </div>
@@ -650,10 +650,10 @@ export const ReferralDashboardView = ({
                   placeholder={isRtl ? "البحث بالاسم، المعرّف أو البريد..." : "Search by ID, Name or Email..."}
                   value={referrerSearch}
                   onChange={(e) => setReferrerSearch(e.target.value)}
-                  className="w-full text-xs pl-8 pr-3 py-1.5 rounded-[4px] border border-[var(--border-default)] bg-[var(--surface-subtle)] text-[var(--text-primary)] focus:border-accent focus:outline-none transition-theme"
+                  className="w-full text-xs pl-8 pr-3 py-1.5 rounded-[var(--radius-xs)] border border-[var(--border-default)] bg-[var(--surface-subtle)] text-[var(--text-primary)] focus:border-[var(--border-accent)] focus:outline-none transition-theme"
                 />
               </div>
-              <span className="text-[10px] whitespace-nowrap font-mono font-bold bg-accent/10 text-accent px-2.5 py-1.5 rounded-[4px]">
+              <span className="text-[10px] whitespace-nowrap font-mono font-bold bg-[var(--surface-subtle)] text-[var(--fg-accent)] px-2.5 py-1.5 rounded-[var(--radius-xs)] border border-[var(--border-accent)]">
                 {isRtl 
                   ? `العدد: ${(rankingTab === "active" ? filteredReferrers : filteredTopPerformers).length}` 
                   : `TOTAL: ${(rankingTab === "active" ? filteredReferrers : filteredTopPerformers).length}`}
@@ -816,7 +816,7 @@ export const ReferralDashboardView = ({
                       setSelectedIds(newSelected);
                     }
                   }}
-                  className="rounded-[4px] border-[var(--border-default)] text-accent focus:ring-accent-500 w-3.5 h-3.5 cursor-pointer accent-accent"
+                  className="rounded-[var(--radius-xs)] border-[var(--border-default)] text-[var(--fg-accent)] focus:ring-[var(--border-accent)] w-3.5 h-3.5 cursor-pointer accent-[var(--fg-accent)]"
                 />
                 <span className="text-[10px] font-bold text-[var(--text-secondary)] uppercase">
                   {isRtl ? `تحديد الكل معلق (${remindableInvitationsInView.length})` : `Select All Pending (${remindableInvitationsInView.length})`}
@@ -827,9 +827,9 @@ export const ReferralDashboardView = ({
                 <button
                   disabled={sendingBulkReminder}
                   onClick={handleSendBulkReminder}
-                  className="flex items-center gap-1.5 px-3 py-1.5 text-[9px] font-black uppercase tracking-wider text-accent bg-accent/10 hover:bg-accent/15 active:scale-95 disabled:opacity-50 disabled:pointer-events-none rounded-[4px] border border-accent/30 transition-theme cursor-pointer animate-fade-in"
+                  className="flex items-center gap-1.5 px-3 py-1.5 text-[9px] font-black uppercase tracking-wider text-[var(--fg-accent)] bg-[var(--surface-subtle)] hover:bg-[var(--surface-page)] active:scale-95 disabled:opacity-50 disabled:pointer-events-none rounded-[var(--radius-xs)] border border-[var(--border-accent)] transition-theme cursor-pointer animate-fade-in"
                 >
-                  <Send size={10} className={sendingBulkReminder ? "animate-spin text-accent" : "text-accent"} />
+                  <Send size={10} className={sendingBulkReminder ? "animate-spin text-[var(--fg-accent)]" : "text-[var(--fg-accent)]"} />
                   <span>
                     {sendingBulkReminder
                       ? (isRtl ? "جاري الإرسال..." : "SENDING CHECKED...")
@@ -857,7 +857,7 @@ export const ReferralDashboardView = ({
               {filteredInvitations.map((invite, invIdx) => {
                 const badgeStyle = 
                   invite.status === "accepted" 
-                    ? "bg-accent/10 text-accent border-accent/20" 
+                    ? "bg-[var(--surface-subtle)] text-[var(--fg-accent)] border-[var(--border-accent)]" 
                     : invite.status === "reminded" 
                     ? "bg-amber-500/10 text-amber-500 border-amber-500/20" 
                     : "bg-blue-500/10 text-blue-500 border-blue-500/20";
@@ -877,10 +877,10 @@ export const ReferralDashboardView = ({
                 return (
                   <div 
                     key={`invite-card-${invite.id || invIdx}-${invIdx}`}
-                    className={`p-3 rounded-sm bg-[var(--surface-subtle)] border transition-theme flex flex-col gap-2 animate-fade-in ${
+                    className={`p-3 rounded-[var(--radius-xs)] bg-[var(--surface-subtle)] border transition-theme flex flex-col gap-2 animate-fade-in ${
                       selectedIds[invite.id] 
-                        ? "border-accent/50 bg-accent/[0.01]" 
-                        : "border-[var(--border-default)] hover:border-accent/30"
+                        ? "border-[var(--border-accent)] bg-[var(--surface-card)]" 
+                        : "border-[var(--border-default)] hover:border-[var(--border-accent)]"
                     }`}
                   >
                     <div className="flex items-center justify-between">
@@ -900,14 +900,14 @@ export const ReferralDashboardView = ({
                                 return copy;
                               });
                             }}
-                            className="rounded-[4px] border-[var(--border-default)] text-accent focus:ring-accent-500 w-3.5 h-3.5 cursor-pointer accent-accent"
+                            className="rounded-[var(--radius-xs)] border-[var(--border-default)] text-[var(--fg-accent)] focus:ring-[var(--border-accent)] w-3.5 h-3.5 cursor-pointer accent-[var(--fg-accent)]"
                           />
                         )}
                         <span className="text-[11px] font-bold text-[var(--text-primary)] font-mono break-all truncate">
                           {invite.referred_email}
                         </span>
                       </div>
-                      <span className={`text-[8px] font-black tracking-wider uppercase px-2 py-0.5 rounded-sm border ${badgeStyle}`}>
+                      <span className={`text-[8px] font-black tracking-wider uppercase px-2 py-0.5 rounded-[var(--radius-xs)] border ${badgeStyle}`}>
                         {statusLabel}
                       </span>
                     </div>
@@ -927,9 +927,9 @@ export const ReferralDashboardView = ({
                         <button
                           disabled={sendingReminder[invite.id]}
                           onClick={() => handleSendReminder(invite.id)}
-                          className="flex items-center gap-1 px-2.5 py-1 text-[9px] font-bold uppercase tracking-wider text-accent bg-accent/5 hover:bg-accent/10 active:scale-95 disabled:opacity-50 disabled:pointer-events-none rounded-[4px] border border-accent/20 transition-theme cursor-pointer"
+                          className="flex items-center gap-1 px-2.5 py-1 text-[9px] font-bold uppercase tracking-wider text-[var(--fg-accent)] bg-[var(--surface-subtle)] hover:bg-[var(--surface-page)] active:scale-95 disabled:opacity-50 disabled:pointer-events-none rounded-[var(--radius-xs)] border border-[var(--border-accent)] transition-theme cursor-pointer"
                         >
-                          <Send size={10} className={sendingReminder[invite.id] ? "animate-spin text-accent" : "text-accent"} />
+                          <Send size={10} className={sendingReminder[invite.id] ? "animate-spin text-[var(--fg-accent)]" : "text-[var(--fg-accent)]"} />
                           <span>
                             {sendingReminder[invite.id] 
                               ? (isRtl ? "جاري الإرسال..." : "SENDING...") 

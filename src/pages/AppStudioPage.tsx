@@ -499,7 +499,7 @@ echo json_encode($products);
 
           {/* Download ZIP Button */}
           <Button variant="secondary" onClick={handleDownloadZip}>
-            <Download size={15} className="text-indigo-500" />
+            <Download size={15} className="text-[var(--accent)]" />
             <span>{language === 'ar' ? 'تنزيل ZIP' : 'Download ZIP'}</span>
           </Button>
 

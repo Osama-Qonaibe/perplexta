@@ -15,7 +15,7 @@ export const AudioVisualizer = ({ status, isPlaying, currentTime, dir }: { statu
             <div 
               key={`audio-vis-bar-${i}`}
               style={{ height: `${scaleVal}px` }}
-              className="w-1 bg-accent/70 rounded-[4px] transition-theme shadow-[0_0_8px_rgba(156,163,175,0.4)]"
+              className="w-1 bg-[var(--fg-accent)]/70 rounded-[var(--radius-xs)] transition-theme shadow-[0_0_8px_rgba(156,163,175,0.4)]"
             />
           );
         } else if (status === 'rendering' || status === 'idle') {
@@ -31,7 +31,7 @@ export const AudioVisualizer = ({ status, isPlaying, currentTime, dir }: { statu
                 ease: "easeInOut",
                 delay: i * 0.05 
               }}
-              className="w-1 bg-accent/60 rounded-[4px] shadow-[0_0_8px_rgba(156,163,175,0.3)]"
+              className="w-1 bg-[var(--fg-accent)]/60 rounded-[var(--radius-xs)] shadow-[0_0_8px_rgba(156,163,175,0.3)]"
             />
           );
         } else {
@@ -40,7 +40,7 @@ export const AudioVisualizer = ({ status, isPlaying, currentTime, dir }: { statu
             <div 
               key={`audio-vis-idle-${i}`}
               style={{ height: `${scaleVal}px` }}
-              className="w-1 bg-accent/40 rounded-[4px] transition-theme shadow-[0_0_4px_rgba(156,163,175,0.1)]"
+              className="w-1 bg-[var(--fg-accent)]/40 rounded-[var(--radius-xs)] transition-theme shadow-[0_0_4px_rgba(156,163,175,0.1)]"
             />
           );
         }

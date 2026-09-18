@@ -56,7 +56,7 @@ export const ResponsiveSheet: React.FC<ResponsiveSheetProps> = ({
             exit="exit"
             onClick={(e) => e.stopPropagation()}
             className={`
-              w-full sm:max-w-lg max-h-[85dvh] flex flex-col rounded-t-2xl sm:rounded-xl
+              w-full sm:max-w-lg max-h-[85dvh] flex flex-col rounded-t-[var(--radius-lg)] sm:rounded-[var(--radius-md)]
               bg-[var(--surface-card)] border border-[var(--border-default)] shadow-2xl backdrop-blur-xl
               text-[var(--text-primary)] overflow-hidden transform-gpu
               ${className}

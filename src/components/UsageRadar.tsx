@@ -225,12 +225,12 @@ export const UsageRadar: React.FC = () => {
                         {isStorage ? `${Math.round(item.usage.daily)} MB` : item.usage.daily} / {isDailyUnlimited ? '∞' : (isStorage ? `${item.limits.daily} MB` : item.limits.daily)}
                       </span>
                     </div>
-                    <div className="h-2 w-full bg-[var(--surface-subtle)] rounded-full overflow-hidden p-0.5 border border-[var(--border-default)]">
+                    <div className="h-2 w-full bg-[var(--surface-subtle)] rounded-[var(--radius-full)] overflow-hidden p-0.5 border border-[var(--border-default)]">
                       <div 
                         style={{ 
                           width: isDailyUnlimited ? '0%' : `${Math.max(2, dailyPercent)}%`
                         }}
-                        className={`h-full rounded-full transition-all duration-300 ${dailyPercent > 90 ? 'bg-rose-500' : 'bg-[var(--accent)]'}`}
+                        className={`h-full rounded-[var(--radius-full)] transition-all duration-300 ${dailyPercent > 90 ? 'bg-rose-500' : 'bg-[var(--accent)]'}`}
                       />
                     </div>
                   </div>
@@ -253,12 +253,12 @@ export const UsageRadar: React.FC = () => {
                                 {item.usage.monthly} / {isMonthlyUnlimited ? '∞' : item.limits.monthly}
                               </span>
                             </div>
-                            <div className="h-2 w-full bg-[var(--surface-subtle)] rounded-full overflow-hidden p-0.5 border border-[var(--border-default)]">
+                            <div className="h-2 w-full bg-[var(--surface-subtle)] rounded-[var(--radius-full)] overflow-hidden p-0.5 border border-[var(--border-default)]">
                               <div 
                                 style={{ 
                                   width: isMonthlyUnlimited ? '100%' : `${Math.max(2, monthlyPercent)}%`
                                 }}
-                                className={`h-full rounded-full transition-all duration-300 ${monthlyPercent > 90 ? 'bg-rose-500' : 'bg-[var(--accent)] opacity-80'}`}
+                                className={`h-full rounded-[var(--radius-full)] transition-all duration-300 ${monthlyPercent > 90 ? 'bg-rose-500' : 'bg-[var(--accent)] opacity-80'}`}
                               />
                             </div>
                           </div>

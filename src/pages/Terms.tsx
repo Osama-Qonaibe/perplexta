@@ -165,14 +165,14 @@ export const Terms: React.FC = () => {
           <button 
             onClick={() => navigate(-1)}
             id="terms-back-btn"
-            className="w-8 h-8 rounded-[8px] flex items-center justify-center transition-theme bg-[var(--surface-subtle)] border border-[var(--border-default)] text-[var(--text-secondary)] hover:text-accent hover:border-accent/40 active:scale-95 cursor-pointer"
+            className="w-8 h-8 rounded-[var(--radius-sm)] flex items-center justify-center transition-theme bg-[var(--surface-subtle)] border border-[var(--border-default)] text-[var(--text-secondary)] hover:text-[var(--fg-accent)] hover:border-[var(--border-accent)] active:scale-95 cursor-pointer"
             title={dir === 'rtl' ? 'رجوع' : 'Back'}
           >
             {dir === 'rtl' ? <ChevronRight size={16} /> : <ChevronLeft size={16} />}
           </button>
           <div>
             <h1 className="text-xl md:text-2xl font-black text-[var(--text-primary)] uppercase flex items-center gap-2">
-              <Scale className="text-accent" size={20} />
+              <Scale className="text-[var(--fg-accent)]" size={20} />
               {isAr ? 'الشروط والأحكام' : 'Terms & Conditions'}
             </h1>
             <p className="text-[10px] text-[var(--text-muted)] font-bold uppercase tracking-widest font-mono">
@@ -185,22 +185,22 @@ export const Terms: React.FC = () => {
       <div className="space-y-24">
         <section className="text-center space-y-4 pt-4">
           <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-[var(--radius-xs)] bg-[var(--surface-subtle)] border border-[var(--border-subtle)] text-[var(--text-primary)] text-xs font-bold uppercase tracking-widest">
-            <Scale size={14} className="text-accent" />
+            <Scale size={14} className="text-[var(--fg-accent)]" />
             {isAr ? "الشروط والأحكام" : "Terms & Conditions"}
           </div>
           <h1 className="text-4xl md:text-6xl font-black tracking-tighter text-[var(--text-primary)] uppercase">
             {isAr ? "بيربليكستا" : "PERPLEXTA"}
           </h1>
-          <p className="text-lg md:text-2xl font-bold text-accent max-w-2xl mx-auto leading-relaxed">
+          <p className="text-lg md:text-2xl font-bold text-[var(--fg-accent)] max-w-2xl mx-auto leading-relaxed">
             {isAr ? "الشروط والأحكام والسياسات العامة" : "Terms, Conditions & Operational Policies"}
           </p>
         </section>
 
         <section className="grid grid-cols-1 md:grid-cols-2 gap-10 items-start">
           <div className="space-y-8">
-            <div className="p-6 md:p-8 rounded-[var(--radius)] border border-[var(--border-default)] bg-[var(--surface-card)] backdrop-blur-sm shadow-sm transition-theme hover:border-accent/20 group">
+            <div className="p-6 md:p-8 rounded-[var(--radius)] border border-[var(--border-default)] bg-[var(--surface-card)] backdrop-blur-sm shadow-sm transition-theme hover:border-[var(--border-accent)] group">
               <div className="flex items-center gap-3 text-[var(--text-primary)] mb-4">
-                <FileText className="w-6 h-6 text-[var(--text-muted)] group-hover:text-accent transition-theme" />
+                <FileText className="w-6 h-6 text-[var(--text-muted)] group-hover:text-[var(--fg-accent)] transition-theme" />
                 <h2 className="text-xl md:text-2xl font-black">{isAr ? "الموافقة والالتزام" : "Agreement & Compliance"}</h2>
               </div>
               <p className="text-sm md:text-base leading-relaxed text-[var(--text-secondary)] font-medium">
@@ -208,7 +208,7 @@ export const Terms: React.FC = () => {
                   ? "باستخدامك لمنصة بيربليكستا، فأنت تقر بموافقتك الكاملة وغير المشروطة على الالتزام بهذه الشروط والأحكام. إذا كنت لا توافق على أي جزء منها، يجب عليك التوقف فوراً عن استخدام المنصة."
                   : "By using the PERPLEXTA platform, you acknowledge your full and unconditional agreement to abide by these Terms and Conditions. If you do not agree with any part of them, you must immediately cease using the platform."}
               </p>
-              <p className="text-xs font-bold uppercase tracking-wider text-accent font-mono mt-4">
+              <p className="text-xs font-bold uppercase tracking-wider text-[var(--fg-accent)] font-mono mt-4">
                 {isAr ? "تاريخ السريان: مارس 25, 2026" : "Effective Date: March 25, 2026"}
               </p>
             </div>
@@ -217,7 +217,7 @@ export const Terms: React.FC = () => {
           <div className="relative aspect-square rounded-[var(--radius-xl)] overflow-hidden bg-[var(--surface-subtle)] border border-[var(--border-default)] flex items-center justify-center p-8 shadow-inner">
             <div className="relative z-10 flex flex-col items-center gap-8 w-full">
               <div className="flex items-center justify-center p-6 rounded-[var(--radius-xs)] bg-[var(--surface-card)] border border-[var(--border-default)] shadow-lg hover:shadow-none transition-theme group animate-pulse">
-                <Scale className="w-24 h-24 text-[var(--text-muted)] group-hover:text-accent transition-theme" />
+                <Scale className="w-24 h-24 text-[var(--text-muted)] group-hover:text-[var(--fg-accent)] transition-theme" />
               </div>
 
               <div className="grid grid-cols-3 gap-3 w-full">
@@ -228,10 +228,10 @@ export const Terms: React.FC = () => {
                 ].map((item, idx) => (
                   <div 
                     key={`terms-pillar-${idx}-${item.label}`}
-                    className="p-3 rounded-[var(--radius-md)] bg-[var(--surface-card)] border border-[var(--border-subtle)] flex flex-col items-center gap-2 transition-theme hover:border-accent/10 hover:-translate-y-1 group hover:shadow-sm"
+                    className="p-3 rounded-[var(--radius-md)] bg-[var(--surface-card)] border border-[var(--border-subtle)] flex flex-col items-center gap-2 transition-theme hover:border-[var(--border-accent)] hover:-translate-y-1 group hover:shadow-sm"
                   >
                     <div className="w-8 h-8 rounded-[var(--radius-sm)] bg-[var(--surface-subtle)] flex items-center justify-center border border-[var(--border-subtle)]">
-                      <item.icon className="w-4 h-4 text-[var(--text-muted)] group-hover:text-accent transition-theme" />
+                      <item.icon className="w-4 h-4 text-[var(--text-muted)] group-hover:text-[var(--fg-accent)] transition-theme" />
                     </div>
                     <span className="text-[9px] uppercase font-black tracking-wider text-center leading-tight text-[var(--text-primary)]">
                       {item.label}
@@ -257,13 +257,13 @@ export const Terms: React.FC = () => {
             {sections.map((section, i) => (
               <div 
                 key={`terms-sec-${i}-${section.title}`} 
-                className="p-6 md:p-8 rounded-[var(--radius)] border border-[var(--border-default)] bg-[var(--surface-card)] hover:bg-[var(--surface-subtle)] hover:border-accent/20 transition-theme group shadow-sm"
+                className="p-6 md:p-8 rounded-[var(--radius)] border border-[var(--border-default)] bg-[var(--surface-card)] hover:bg-[var(--surface-subtle)] hover:border-[var(--border-accent)] transition-theme group shadow-sm"
               >
                 <div className="flex items-center gap-4 mb-6">
-                  <div className="w-12 h-12 rounded-[var(--radius-xs)] bg-[var(--surface-card)] border border-[var(--border-default)] flex items-center justify-center text-[var(--text-muted)] group-hover:text-accent transition-theme">
+                  <div className="w-12 h-12 rounded-[var(--radius-xs)] bg-[var(--surface-card)] border border-[var(--border-default)] flex items-center justify-center text-[var(--text-muted)] group-hover:text-[var(--fg-accent)] transition-theme">
                     <section.icon className="w-6 h-6" />
                   </div>
-                  <h3 className="text-lg md:text-xl font-bold text-[var(--text-primary)] group-hover:text-accent transition-colors duration-300">{section.title}</h3>
+                  <h3 className="text-lg md:text-xl font-bold text-[var(--text-primary)] group-hover:text-[var(--fg-accent)] transition-colors duration-300">{section.title}</h3>
                 </div>
 
                 <p className="text-sm text-[var(--text-secondary)] leading-relaxed font-semibold mb-6">
@@ -273,7 +273,7 @@ export const Terms: React.FC = () => {
                 <div className="space-y-4 pt-6 border-t border-[var(--border-subtle)]">
                   {section.subItems.map((sub, sIdx) => (
                     <div key={`terms-sub-${i}-${sIdx}-${sub.label}`} className="space-y-1">
-                      <h4 className="text-xs font-black uppercase tracking-wider text-accent">{sub.label}</h4>
+                      <h4 className="text-xs font-black uppercase tracking-wider text-[var(--fg-accent)]">{sub.label}</h4>
                       <p className="text-xs text-[var(--text-muted)] leading-relaxed font-sans">{sub.desc}</p>
                     </div>
                   ))}
@@ -283,9 +283,9 @@ export const Terms: React.FC = () => {
           </div>
         </section>
 
-        <section className="p-8 md:p-10 rounded-[var(--radius)] border border-accent/20 bg-accent/[0.03] shadow-[0_4px_24px_rgba(156,163,175,0.03)] space-y-6 relative overflow-hidden group">
-          <div className="absolute top-0 right-0 w-32 h-32 bg-accent/5 rounded-[var(--radius-xs)] blur-3xl group-hover:bg-accent/10 transition-theme" />
-          <h2 className="text-2xl font-black text-accent">{isAr ? "إقرار قانوني بموافقة المعرفة الصفرية" : "Legal Zero-Knowledge Acknowledgment"}</h2>
+        <section className="p-8 md:p-10 rounded-[var(--radius)] border border-[var(--border-accent)]/20 bg-[var(--surface-subtle)] shadow-[0_4px_24px_rgba(156,163,175,0.03)] space-y-6 relative overflow-hidden group">
+          <div className="absolute top-0 right-0 w-32 h-32 bg-[var(--surface-inset)] rounded-[var(--radius-xs)] blur-3xl group-hover:opacity-80 transition-theme" />
+          <h2 className="text-2xl font-black text-[var(--fg-accent)]">{isAr ? "إقرار قانوني بموافقة المعرفة الصفرية" : "Legal Zero-Knowledge Acknowledgment"}</h2>
           <p className="text-sm md:text-base leading-relaxed text-[var(--text-primary)] font-semibold font-sans">
             {isAr 
               ? "استخدامك للمنصة يعني أنك قرأت وفهمت أن بيربليكستا تعمل بنظام المعرفة الصفرية فيما يخص بياناتك، وأنه يتعين عليك الالتزام بكافة الضوابط الصارمة المذكورة أعلاه لحماية استقرار المنصة الاستراتيجية وحقوق الملكية الفكرية."
@@ -295,7 +295,7 @@ export const Terms: React.FC = () => {
 
         <section className="p-6 md:p-8 rounded-[var(--radius)] border border-[var(--border-default)] bg-[var(--surface-card)] space-y-8">
           <div className="flex items-center gap-3 text-[var(--text-primary)]">
-            <Shield className="w-5 h-5 text-accent" />
+            <Shield className="w-5 h-5 text-[var(--fg-accent)]" />
             <h2 className="text-xl md:text-2xl font-black">{isAr ? "الهوية المؤسسية والشفافية" : "Corporate Identity & Transparency"}</h2>
           </div>
           
@@ -317,7 +317,7 @@ export const Terms: React.FC = () => {
 
           <div className="p-6 md:p-8 rounded-[var(--radius)] border border-[var(--border-default)] bg-[var(--surface-card)] space-y-4 max-w-4xl mx-auto shadow-inner">
             <div className="flex items-center gap-3 text-[var(--text-primary)]">
-              <Shield className="w-5 h-5 text-accent" />
+              <Shield className="w-5 h-5 text-[var(--fg-accent)]" />
               <h3 className="text-base md:text-lg font-black">{isAr ? "حقوق الملكية الفكرية" : "Intellectual Property Rights"}</h3>
             </div>
             <p className="text-xs md:text-sm leading-relaxed text-[var(--text-secondary)] font-semibold font-sans">

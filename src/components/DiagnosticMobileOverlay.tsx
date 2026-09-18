@@ -167,13 +167,13 @@ export const DiagnosticMobileOverlay: React.FC = () => {
               const colorClass = isFooter
                 ? 'border-amber-500 bg-amber-500/10 text-amber-300'
                 : isHeader
-                ? 'border-cyan-500 bg-cyan-500/10 text-cyan-300'
+                ? 'border-[var(--border-accent)] bg-[var(--bg-accent-muted)] text-[var(--fg-accent)]'
                 : 'border-[var(--fg-success)] bg-[var(--status-success-subtle)] text-[var(--fg-success)]';
 
               const badgeColor = isFooter
                 ? 'bg-amber-600'
                 : isHeader
-                ? 'bg-cyan-600'
+                ? 'bg-[var(--accent)]'
                 : 'bg-[var(--fg-success)]';
 
               return (
@@ -202,7 +202,7 @@ export const DiagnosticMobileOverlay: React.FC = () => {
               initial={{ opacity: 0, scale: 0.9, y: -10 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.9 }}
-              className="fixed top-3 left-3 right-3 sm:left-auto sm:right-3 sm:w-80 z-[99999] pointer-events-auto bg-slate-950/95 text-slate-100 border border-slate-800 rounded-2xl shadow-2xl backdrop-blur-xl p-3 font-mono text-xs overflow-hidden"
+              className="fixed top-3 left-3 right-3 sm:left-auto sm:right-3 sm:w-80 z-[99999] pointer-events-auto bg-slate-950/95 text-slate-100 border border-slate-800 rounded-[var(--radius-lg)] shadow-2xl backdrop-blur-xl p-3 font-mono text-xs overflow-hidden"
             >
               {/* Header */}
               <div className="flex items-center justify-between pb-2 border-b border-slate-800/80 mb-2">
@@ -233,7 +233,7 @@ export const DiagnosticMobileOverlay: React.FC = () => {
               {!isMinimized && (
                 <div className="space-y-2">
                   {/* Status Banner */}
-                  <div className="flex items-center justify-between p-2 rounded-xl bg-[var(--status-success-subtle)] border border-[var(--fg-success)]/30 text-[11px]">
+                  <div className="flex items-center justify-between p-2 rounded-[var(--radius-md)] bg-[var(--status-success-subtle)] border border-[var(--fg-success)]/30 text-[11px]">
                     <div className="flex items-center gap-1 text-[var(--fg-success)] font-bold">
                       <CheckCircle2 size={13} className="text-[var(--fg-success)] flex-shrink-0" />
                       <span>Mobile Design System Active</span>
@@ -244,10 +244,10 @@ export const DiagnosticMobileOverlay: React.FC = () => {
                   </div>
 
                   {/* Metrics Table */}
-                  <div className="space-y-1 text-[10.5px] text-slate-300 bg-slate-900/60 p-2 rounded-xl border border-slate-800/60">
+                  <div className="space-y-1 text-[10.5px] text-slate-300 bg-slate-900/60 p-2 rounded-[var(--radius-md)] border border-slate-800/60">
                     <div className="flex justify-between py-0.5 border-b border-slate-800/40">
                       <span className="text-slate-400">Viewport Dimensions:</span>
-                      <span className="text-cyan-300 font-bold">{viewportMetrics.width}px × {viewportMetrics.height}px</span>
+                      <span className="text-[var(--fg-accent)] font-bold">{viewportMetrics.width}px × {viewportMetrics.height}px</span>
                     </div>
                     <div className="flex justify-between py-0.5 border-b border-slate-800/40">
                       <span className="text-slate-400">Target Platform:</span>
@@ -266,7 +266,7 @@ export const DiagnosticMobileOverlay: React.FC = () => {
                       <Layers size={11} className="text-slate-500" />
                     </div>
                     {metrics.length === 0 ? (
-                      <div className="text-[10px] text-slate-500 italic p-1.5 text-center bg-slate-900/40 rounded-lg">
+                      <div className="text-[10px] text-slate-500 italic p-1.5 text-center bg-slate-900/40 rounded-[var(--radius-sm)]">
                         No fixed headers or footers in current view
                       </div>
                     ) : (
@@ -276,7 +276,7 @@ export const DiagnosticMobileOverlay: React.FC = () => {
                             key={`metric-item-${i}`}
                             className="flex items-center justify-between text-[10px] p-1.5 rounded bg-slate-900/80 border border-slate-800"
                           >
-                            <span className={`font-bold ${m.type === 'footer' ? 'text-amber-400' : m.type === 'header' ? 'text-cyan-400' : 'text-[var(--fg-success)]'}`}>
+                            <span className={`font-bold ${m.type === 'footer' ? 'text-amber-400' : m.type === 'header' ? 'text-[var(--fg-accent)]' : 'text-[var(--fg-success)]'}`}>
                               {m.selector}
                             </span>
                             <span className="text-slate-300">
@@ -307,7 +307,7 @@ export const DiagnosticMobileOverlay: React.FC = () => {
                       onClick={() => setShowElementOutlines(!showElementOutlines)}
                       className={`px-2 py-1 rounded border transition-all cursor-pointer ${
                         showElementOutlines
-                          ? 'bg-cyan-950/50 border-cyan-500/50 text-cyan-300 font-bold'
+                          ? 'bg-[var(--bg-accent-muted)] border-[var(--border-accent)] text-[var(--fg-accent)] font-bold'
                           : 'bg-slate-900 border-slate-800 text-slate-500'
                       }`}
                     >

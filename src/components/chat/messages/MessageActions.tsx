@@ -341,7 +341,7 @@ export const MessageActions: React.FC<MessageActionsProps> = ({
                     exit={{ opacity: 0, scale: 0.98 }}
                     transition={{ duration: 0.10, ease: [0.16, 1, 0.3, 1] }}
                     style={{ transformOrigin: dir === 'rtl' ? 'bottom left' : 'bottom right' }}
-                    className={`absolute bottom-full mb-2 w-max min-w-[190px] p-1.5 font-sans bg-[var(--surface-card)] border border-[var(--border-default)] rounded-[14px] shadow-2xl z-50 backdrop-blur-2xl ring-1 ring-black/5 dark:ring-white/10 flex flex-col gap-0.5 ${
+                    className={`absolute bottom-full mb-2 w-max min-w-[190px] p-1.5 font-sans bg-[var(--surface-card)] border border-[var(--border-default)] rounded-[var(--radius-md)] shadow-2xl z-50 backdrop-blur-2xl ring-1 ring-black/5 dark:ring-white/10 flex flex-col gap-0.5 ${
                       dir === 'rtl' ? 'left-0' : 'right-0'
                     }`}
                     dir={dir}
@@ -354,7 +354,7 @@ export const MessageActions: React.FC<MessageActionsProps> = ({
                         setLocalMenuOpen(false);
                         if (setOpenMenuId) setOpenMenuId(null);
                       }}
-                      className="group w-full h-[36px] min-h-[36px] flex items-center gap-2.5 px-3 py-2 rounded-[8px] border border-transparent bg-transparent hover:bg-rose-500/10 text-rose-500 transition-all duration-150 cursor-pointer select-none text-start text-xs"
+                      className="group w-full h-[36px] min-h-[36px] flex items-center gap-2.5 px-3 py-2 rounded-[var(--radius-xs)] border border-transparent bg-transparent hover:bg-rose-500/10 text-rose-500 transition-all duration-150 cursor-pointer select-none text-start text-xs"
                     >
                       <ShieldAlert size={14} className="text-rose-500 group-hover:text-rose-400 shrink-0 transition-colors duration-150" />
                       <span className="truncate min-w-0 flex-1 text-xs font-semibold text-rose-500 group-hover:text-rose-400 transition-colors duration-150">
@@ -372,7 +372,7 @@ export const MessageActions: React.FC<MessageActionsProps> = ({
                           key={item.id}
                           type="button"
                           onClick={item.action}
-                          className="group w-full h-[36px] min-h-[36px] flex items-center gap-2.5 px-3 py-2 rounded-[8px] border border-transparent bg-transparent hover:bg-[var(--surface-subtle)] transition-all duration-150 cursor-pointer select-none text-start text-xs font-medium text-[var(--text-secondary)] hover:text-[var(--text-primary)]"
+                          className="group w-full h-[36px] min-h-[36px] flex items-center gap-2.5 px-3 py-2 rounded-[var(--radius-xs)] border border-transparent bg-transparent hover:bg-[var(--surface-subtle)] transition-all duration-150 cursor-pointer select-none text-start text-xs font-medium text-[var(--text-secondary)] hover:text-[var(--text-primary)]"
                         >
                           <Icon size={14} className={`${item.iconColor} group-hover:text-[var(--fg-accent)] shrink-0 transition-colors duration-150`} />
                           <span className="truncate min-w-0 flex-1 text-xs font-medium text-[var(--text-secondary)] group-hover:text-[var(--text-primary)] transition-colors duration-150">

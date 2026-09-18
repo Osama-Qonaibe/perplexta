@@ -212,7 +212,7 @@ export const AudioStudioPage: React.FC = () => {
               <span>{isAr ? 'الرجوع' : 'Back'}</span>
             </button>
             <div className="flex items-center gap-2.5">
-              <div className="w-8 h-8 rounded-[8px] bg-accent/10 border border-accent/20 flex items-center justify-center text-accent">
+              <div className="w-8 h-8 rounded-[var(--radius-sm)] bg-[var(--surface-subtle)] border border-[var(--border-accent)] flex items-center justify-center text-[var(--fg-accent)]">
                 <Music className="w-4 h-4 animate-pulse" />
               </div>
               <div className="flex items-center">
@@ -225,10 +225,10 @@ export const AudioStudioPage: React.FC = () => {
 
           <div className="flex items-center gap-2">
             {logo ? (
-              <img src={resolveImageUrl(logo, 'general')} alt={siteName} className="w-7 h-7 rounded-[6px] object-cover" />
+              <img src={resolveImageUrl(logo, 'general')} alt={siteName} className="w-7 h-7 rounded-[var(--radius-xs)] object-cover" />
             ) : (
-              <div className="w-7 h-7 rounded-[6px] bg-[var(--surface-subtle)] border border-[var(--border-default)] flex items-center justify-center">
-                <Cpu className="w-3.5 h-3.5 text-accent" />
+              <div className="w-7 h-7 rounded-[var(--radius-xs)] bg-[var(--surface-subtle)] border border-[var(--border-default)] flex items-center justify-center">
+                <Cpu className="w-3.5 h-3.5 text-[var(--fg-accent)]" />
               </div>
             )}
           </div>

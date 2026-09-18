@@ -439,10 +439,8 @@ export const GoogleContacts: React.FC<GoogleContactsProps> = ({ dir, theme }) =>
       
       {/* 1. DISCONNECTED BANNER / INTRO */}
       {!isConnected ? (
-        <div className="p-8 md:p-12 rounded-[var(--radius)] border bg-[var(--surface-subtle)]/60 border-[var(--border-default)]/40 shadow-2xl relative overflow-hidden flex flex-col items-center text-center">
-          <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-gray-500/10 via-transparent to-transparent pointer-events-none" />
-          
-          <div className="w-16 h-16 rounded-[4px] bg-accent/10 flex items-center justify-center text-accent mb-6 shadow-[0_0_20px_rgba(156,163,175,0.15)] animate-pulse">
+        <div className="p-8 md:p-12 rounded-[var(--radius)] border bg-[var(--surface-subtle)] border-[var(--border-default)] shadow-2xl relative overflow-hidden flex flex-col items-center text-center">
+          <div className="w-16 h-16 rounded-[var(--radius-sm)] bg-[var(--surface-subtle)] border border-[var(--border-accent)] flex items-center justify-center text-[var(--fg-accent)] mb-6 animate-pulse">
             <Users size={32} />
           </div>
 
@@ -466,7 +464,7 @@ export const GoogleContacts: React.FC<GoogleContactsProps> = ({ dir, theme }) =>
             <div className="gsi-material-button-content-wrapper">
               <div className="gsi-material-button-icon">
                 {isConnecting ? (
-                  <Loader2 className="w-5 h-5 animate-spin text-accent" />
+                  <Loader2 className="w-5 h-5 animate-spin text-[var(--fg-accent)]" />
                 ) : (
                   <svg version="1.1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" style={{ display: "block" }}>
                     <path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"></path>
@@ -486,7 +484,7 @@ export const GoogleContacts: React.FC<GoogleContactsProps> = ({ dir, theme }) =>
           </button>
 
           <div className="mt-8 flex items-center gap-2 text-gray-500">
-            <ShieldCheck size={14} className="text-accent" />
+            <ShieldCheck size={14} className="text-[var(--fg-accent)]" />
             <span className="text-[10px] font-bold uppercase tracking-wider">
               {isAr ? 'أمان وسرية تامة لمزودي الخدمة الطرف الثالث' : 'OAuth 2.0 Secure Sandbox Pipeline'}
             </span>
@@ -498,22 +496,22 @@ export const GoogleContacts: React.FC<GoogleContactsProps> = ({ dir, theme }) =>
         <div className="space-y-6">
           
           {/* Active Account Status Bar */}
-          <div className="flex flex-col sm:flex-row items-center justify-between p-4 rounded-xl border bg-[var(--surface-subtle)] border-[var(--border-default)] gap-4">
+          <div className="flex flex-col sm:flex-row items-center justify-between p-4 rounded-[var(--radius-lg)] border bg-[var(--surface-subtle)] border-[var(--border-default)] gap-4">
             <div className="flex items-center gap-3">
               {googleUser?.photoURL ? (
                 <img 
                   src={googleUser.photoURL} 
                   alt="Avatar" 
-                  className="w-10 h-10 rounded-[4px] border border-accent/20 shadow-md"
+                  className="w-10 h-10 rounded-[var(--radius-xs)] border border-[var(--border-accent)] shadow-md"
                   referrerPolicy="no-referrer"
                 />
               ) : (
-                <div className="w-10 h-10 rounded-[4px] bg-accent/10 flex items-center justify-center text-accent border border-accent/20">
+                <div className="w-10 h-10 rounded-[var(--radius-xs)] bg-[var(--surface-subtle)] flex items-center justify-center text-[var(--fg-accent)] border border-[var(--border-accent)]">
                   <UserCheck size={18} />
                 </div>
               )}
               <div className="flex flex-col text-start">
-                <span className="text-xs font-bold text-accent flex items-center gap-1">
+                <span className="text-xs font-bold text-[var(--fg-accent)] flex items-center gap-1">
                   <UserCheck2 size={12} />
                   {isAr ? 'حساب متصل بنجاح' : 'Google Account Sync Active'}
                 </span>
@@ -650,20 +648,20 @@ export const GoogleContacts: React.FC<GoogleContactsProps> = ({ dir, theme }) =>
                             <img 
                               src={contact.photoUrl} 
                               alt="Profile" 
-                              className="w-8 h-8 rounded-[4px] border border-gray-200 dark:border-gray-800"
+                              className="w-8 h-8 rounded-[var(--radius-xs)] border border-[var(--border-default)]"
                               referrerPolicy="no-referrer"
                             />
                           ) : (
-                            <div className="w-8 h-8 rounded-[4px] bg-gray-100 dark:bg-gray-800 flex items-center justify-center shrink-0">
+                            <div className="w-8 h-8 rounded-[var(--radius-xs)] bg-[var(--surface-subtle)] flex items-center justify-center shrink-0">
                               <span className="text-xs font-bold uppercase">{contact.name.substring(0, 2)}</span>
                             </div>
                           )}
                           <div className="flex flex-col text-start min-w-0">
-                            <span className={`text-xs font-bold truncate ${isSelected ? 'text-accent font-extrabold' : 'text-gray-200'}`}>
+                            <span className={`text-xs font-bold truncate ${isSelected ? 'text-[var(--fg-accent)] font-extrabold' : 'text-[var(--text-primary)]'}`}>
                               <HighlightText text={contact.name} query={searchQuery} />
                             </span>
                             {contact.organization && (
-                              <span className="text-[9.5px] text-gray-500 truncate mt-0.5 font-sans flex items-center gap-1">
+                              <span className="text-[9.5px] text-[var(--text-muted)] truncate mt-0.5 font-sans flex items-center gap-1">
                                 <Briefcase size={9} />
                                 <HighlightText text={contact.organization} query={searchQuery} /> {contact.jobTitle ? `- ` : ''} <HighlightText text={contact.jobTitle} query={searchQuery} />
                               </span>
@@ -673,13 +671,13 @@ export const GoogleContacts: React.FC<GoogleContactsProps> = ({ dir, theme }) =>
 
                         {/* Badges for Directory vs Connection */}
                         {contact.isDirectoryContact ? (
-                          <span className="text-[8px] font-black px-1.5 py-0.5 rounded bg-accent/10 text-accent uppercase tracking-widest">
+                          <span className="text-[8px] font-black px-1.5 py-0.5 rounded-[var(--radius-xs)] bg-[var(--surface-subtle)] text-[var(--fg-accent)] uppercase tracking-widest border border-[var(--border-accent)]">
                             {isAr ? 'مؤسسي' : 'Domain'}
                           </span>
                         ) : null}
 
                         {isSelected && (
-                          <div className={`absolute top-1/2 -translate-y-1/2 w-[3px] h-4 bg-accent ${
+                          <div className={`absolute top-1/2 -translate-y-1/2 w-[3px] h-4 bg-[var(--fg-accent)] ${
                             dir === 'rtl' ? 'right-0 rounded-l-[1.5px]' : 'left-0 rounded-r-[1.5px]'
                           }`} />
                         )}
@@ -687,8 +685,8 @@ export const GoogleContacts: React.FC<GoogleContactsProps> = ({ dir, theme }) =>
                     );
                   })
                 ) : (
-                  <div className="p-12 text-center flex flex-col items-center justify-center text-gray-500">
-                    <Users size={24} className="mb-2 opacity-50 text-gray-400" />
+                  <div className="p-12 text-center flex flex-col items-center justify-center text-[var(--text-muted)]">
+                    <Users size={24} className="mb-2 opacity-50 text-[var(--text-muted)]" />
                     <span className="text-xs font-bold">
                       {activeSource === 'directory' 
                         ? (isAr ? 'ابحث في دليل المؤسسة أعلاه.' : 'Search the enterprise directory above.')
@@ -701,7 +699,7 @@ export const GoogleContacts: React.FC<GoogleContactsProps> = ({ dir, theme }) =>
             </div>
 
             {/* Right Column: Details & Actions Area */}
-            <div className="lg:col-span-7 flex flex-col rounded-xl border bg-[var(--surface-subtle)] border-[var(--border-default)] overflow-hidden min-h-[500px]">
+            <div className="lg:col-span-7 flex flex-col rounded-[var(--radius-lg)] border bg-[var(--surface-subtle)] border-[var(--border-default)] overflow-hidden min-h-[500px]">
               
               {/* Selected Contact View */}
               {selectedContact && !isEditing && !isCreating && (
@@ -709,17 +707,17 @@ export const GoogleContacts: React.FC<GoogleContactsProps> = ({ dir, theme }) =>
                   <div className="space-y-6">
                     
                     {/* Header profile info */}
-                    <div className="flex flex-col sm:flex-row items-center sm:items-start justify-between gap-4 pb-6 border-b border-[var(--border-default)]/50">
+                    <div className="flex flex-col sm:flex-row items-center sm:items-start justify-between gap-4 pb-6 border-b border-[var(--border-default)]">
                       <div className="flex flex-col sm:flex-row items-center sm:items-start gap-4">
                         {selectedContact.photoUrl ? (
                           <img 
                             src={selectedContact.photoUrl} 
                             alt="Contact Profile" 
-                            className="w-16 h-16 rounded-[4px] border-2 border-accent/20 shadow-lg object-cover"
+                            className="w-16 h-16 rounded-[var(--radius-xs)] border-2 border-[var(--border-accent)] shadow-lg object-cover"
                             referrerPolicy="no-referrer"
                           />
                         ) : (
-                          <div className="w-16 h-16 rounded-[4px] bg-accent/10 border-2 border-accent/20 text-accent flex items-center justify-center text-xl font-bold shadow-md uppercase">
+                          <div className="w-16 h-16 rounded-[var(--radius-xs)] bg-[var(--surface-subtle)] border-2 border-[var(--border-accent)] text-[var(--fg-accent)] flex items-center justify-center text-xl font-bold shadow-md uppercase">
                             {selectedContact.name.substring(0, 2)}
                           </div>
                         )}
@@ -989,8 +987,8 @@ export const GoogleContacts: React.FC<GoogleContactsProps> = ({ dir, theme }) =>
                 onClick={() => setShowSaveModal(false)}
               />
               
-              <div className="relative max-w-sm w-full p-6 rounded-xl border border-[var(--border-default)] bg-[var(--surface-card)] text-[var(--text-primary)] shadow-2xl transition-theme z-10">
-                <div className="w-10 h-10 rounded-[4px] bg-accent/10 flex items-center justify-center text-accent mb-4">
+              <div className="relative max-w-sm w-full p-6 rounded-[var(--radius-lg)] border border-[var(--border-default)] bg-[var(--surface-card)] text-[var(--text-primary)] shadow-2xl transition-theme z-10">
+                <div className="w-10 h-10 rounded-[var(--radius-xs)] bg-[var(--surface-subtle)] border border-[var(--border-accent)] flex items-center justify-center text-[var(--fg-accent)] mb-4">
                   <ShieldCheck size={20} />
                 </div>
 
@@ -1009,7 +1007,7 @@ export const GoogleContacts: React.FC<GoogleContactsProps> = ({ dir, theme }) =>
                   <button
                     type="button"
                     onClick={() => setShowSaveModal(false)}
-                    className="px-4 py-2 text-xs font-semibold rounded-[4px] font-sans transition-theme text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--surface-subtle)]"
+                    className="px-4 py-2 text-xs font-semibold rounded-[var(--radius-xs)] font-sans transition-theme text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--surface-subtle)]"
                   >
                     {isAr ? 'إلغاء' : 'Cancel'}
                   </button>
@@ -1018,7 +1016,7 @@ export const GoogleContacts: React.FC<GoogleContactsProps> = ({ dir, theme }) =>
                     type="button"
                     onClick={handleSaveConfirm}
                     disabled={isSaving}
-                    className="px-4 py-2 text-xs font-bold bg-accent hover:bg-accent text-white rounded-[4px] font-sans transition-theme flex items-center gap-1 shadow-[0_0_12px_rgba(156,163,175,0.25)]"
+                    className="px-4 py-2 text-xs font-bold bg-[var(--surface-subtle)] hover:bg-[var(--surface-page)] text-[var(--fg-accent)] border border-[var(--border-accent)] rounded-[var(--radius-xs)] font-sans transition-theme flex items-center gap-1 shadow-sm"
                   >
                     {isSaving && <Loader2 size={12} className="animate-spin" />}
                     <span>{isAr ? 'تأكيد الحفظ' : 'Confirm & Save'}</span>
@@ -1036,8 +1034,8 @@ export const GoogleContacts: React.FC<GoogleContactsProps> = ({ dir, theme }) =>
                 onClick={() => setShowDeleteModal(false)}
               />
               
-              <div className="relative max-w-sm w-full p-6 rounded-xl border border-[var(--border-default)] bg-[var(--surface-card)] text-[var(--text-primary)] shadow-2xl transition-theme z-10">
-                <div className="w-10 h-10 rounded-[4px] bg-red-500/10 flex items-center justify-center text-red-500 mb-4">
+              <div className="relative max-w-sm w-full p-6 rounded-[var(--radius-lg)] border border-[var(--border-default)] bg-[var(--surface-card)] text-[var(--text-primary)] shadow-2xl transition-theme z-10">
+                <div className="w-10 h-10 rounded-[var(--radius-xs)] bg-red-500/10 flex items-center justify-center text-red-500 mb-4">
                   <AlertCircle size={20} />
                 </div>
 
@@ -1052,7 +1050,7 @@ export const GoogleContacts: React.FC<GoogleContactsProps> = ({ dir, theme }) =>
                   }
                 </p>
 
-                <div className="mt-3 p-3 rounded-lg text-xs font-bold leading-relaxed break-all text-start border border-[var(--border-default)] bg-[var(--surface-subtle)] text-[var(--text-primary)]">
+                <div className="mt-3 p-3 rounded-[var(--radius-sm)] text-xs font-bold leading-relaxed break-all text-start border border-[var(--border-default)] bg-[var(--surface-subtle)] text-[var(--text-primary)]">
                   {contactToDelete?.name} ({contactToDelete?.email || (isAr ? 'بلا بريد' : 'No Email')})
                 </div>
                 
@@ -1063,7 +1061,7 @@ export const GoogleContacts: React.FC<GoogleContactsProps> = ({ dir, theme }) =>
                       setShowDeleteModal(false);
                       setContactToDelete(null);
                     }}
-                    className="px-4 py-2 text-xs font-semibold rounded-[4px] font-sans transition-theme text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--surface-subtle)]"
+                    className="px-4 py-2 text-xs font-semibold rounded-[var(--radius-xs)] font-sans transition-theme text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--surface-subtle)]"
                   >
                     {isAr ? 'إلغاء' : 'Cancel'}
                   </button>
@@ -1072,7 +1070,7 @@ export const GoogleContacts: React.FC<GoogleContactsProps> = ({ dir, theme }) =>
                     type="button"
                     onClick={handleDeleteConfirm}
                     disabled={isDeleting}
-                    className="px-4 py-2 text-xs font-bold bg-red-600 hover:bg-red-700 text-white rounded-[4px] font-sans transition-theme flex items-center gap-1 shadow-[0_0_12px_rgba(239,68,68,0.25)]"
+                    className="px-4 py-2 text-xs font-bold bg-red-600 hover:bg-red-700 text-white rounded-[var(--radius-xs)] font-sans transition-theme flex items-center gap-1 shadow-[0_0_12px_rgba(239,68,68,0.25)]"
                   >
                     {isDeleting && <Loader2 size={12} className="animate-spin" />}
                     <span>{isAr ? 'تأكيد الحذف' : 'Confirm & Delete'}</span>

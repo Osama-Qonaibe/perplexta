@@ -92,14 +92,14 @@ export const ActionItem = forwardRef<HTMLButtonElement, ActionItemProps>(({
       {icon && (
         <span className={`w-4 h-4 flex-shrink-0 flex items-center justify-center transition-colors duration-150 ${
           isActive 
-            ? 'text-[var(--github-blue)]' 
+            ? 'text-[var(--accent)]' 
             : isDanger 
-              ? 'text-[var(--destructive)] group-hover:text-[var(--destructive)]' 
+              ? 'text-[var(--fg-danger)] group-hover:text-[var(--fg-danger)]' 
               : variant === 'admin'
-                ? 'text-[var(--github-purple)]'
+                ? 'text-purple-500'
                 : variant === 'success'
-                  ? 'text-[var(--github-green)]'
-                  : 'text-[var(--muted-foreground)] group-hover:text-[var(--foreground)]'
+                  ? 'text-[var(--fg-success)]'
+                  : 'text-[var(--text-muted)] group-hover:text-[var(--text-primary)]'
         }`}>
           {icon}
         </span>
@@ -111,7 +111,7 @@ export const ActionItem = forwardRef<HTMLButtonElement, ActionItemProps>(({
           {label}
         </span>
         {description && (
-          <span className="text-[10px] text-[var(--muted-foreground)] group-hover:text-[var(--foreground)] truncate">
+          <span className="text-[10px] text-[var(--text-muted)] group-hover:text-[var(--text-primary)] truncate">
             {description}
           </span>
         )}
@@ -120,7 +120,7 @@ export const ActionItem = forwardRef<HTMLButtonElement, ActionItemProps>(({
       {/* Trailing Extras pushed to far opposite side via mr-auto in RTL / ml-auto in LTR */}
       <div className={`shrink-0 flex items-center gap-1 ${isRtl ? 'mr-auto' : 'ml-auto'}`}>
         {isLocked && (
-          <span className="text-[10px] flex items-center gap-1 text-[var(--github-orange)] bg-[color-mix(in_oklab,var(--github-orange)_12%,transparent)] px-1.5 py-0.5 rounded-md font-mono">
+          <span className="text-[10px] flex items-center gap-1 text-[var(--fg-warning)] bg-[var(--surface-subtle)] px-1.5 py-0.5 rounded-[var(--radius-xs)] font-mono border border-[var(--border-subtle)]">
             <Lock className="w-2.5 h-2.5" />
             <span>PRO</span>
           </span>
@@ -131,14 +131,14 @@ export const ActionItem = forwardRef<HTMLButtonElement, ActionItemProps>(({
         )}
 
         {shortcut && !isLocked && (
-          <kbd className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-[var(--muted)] text-[var(--muted-foreground)] border border-[var(--border)]">
+          <kbd className="text-[10px] font-mono px-1.5 py-0.5 rounded-[var(--radius-xs)] bg-[var(--surface-subtle)] text-[var(--text-muted)] border border-[var(--border-default)]">
             {shortcut}
           </kbd>
         )}
 
         {/* Submenu Indicator Chevron */}
         {hasSubmenu && !isLocked && (
-          <span className={`transition-transform duration-150 ${isSubmenuOpen ? (isRtl ? '-translate-x-0.5 text-[var(--github-blue)]' : 'translate-x-0.5 text-[var(--github-blue)]') : 'text-[var(--muted-foreground)] group-hover:text-[var(--github-blue)]'}`}>
+          <span className={`transition-transform duration-150 ${isSubmenuOpen ? (isRtl ? '-translate-x-0.5 text-[var(--accent)]' : 'translate-x-0.5 text-[var(--accent)]') : 'text-[var(--text-muted)] group-hover:text-[var(--accent)]'}`}>
             {isRtl ? <ChevronLeft className="w-3.5 h-3.5" /> : <ChevronRight className="w-3.5 h-3.5" />}
           </span>
         )}

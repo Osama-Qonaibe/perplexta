@@ -639,7 +639,7 @@ export const UniversalMediaPlayer: React.FC<UniversalMediaPlayerProps> = ({
         aspectRatio={detectedRatio}
         fitMode={fitMode}
         maxHeight={maxHeight}
-        className={`rounded-2xl border border-gray-200/40 dark:border-gray-800 ${className}`}
+        className={`rounded-[var(--radius-lg)] border border-[var(--border-default)] ${className}`}
       >
         <iframe
           src={videoInfo.embedUrl}
@@ -647,7 +647,7 @@ export const UniversalMediaPlayer: React.FC<UniversalMediaPlayerProps> = ({
           allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
           allowFullScreen
         />
-        <div className="absolute top-3 left-3 z-10 px-2.5 py-1 rounded-lg bg-black/75 backdrop-blur-md text-accent text-[11px] font-bold border border-accent/20 flex items-center gap-1 pointer-events-none">
+        <div className="absolute top-3 left-3 z-10 px-2.5 py-1 rounded-[var(--radius-sm)] bg-black/75 backdrop-blur-md text-[var(--fg-accent)] text-[11px] font-bold border border-[var(--border-accent)]/20 flex items-center gap-1 pointer-events-none">
           <Film size={12} />
           <span>{videoInfo.type.toUpperCase()}</span>
         </div>
@@ -706,8 +706,8 @@ export const UniversalMediaPlayer: React.FC<UniversalMediaPlayerProps> = ({
                     }}
                     className="absolute bottom-full mb-2.5 z-30 pointer-events-none flex flex-col items-center animate-in fade-in zoom-in-95 duration-150"
                   >
-                    <div className="px-2.5 py-1.5 rounded-xl bg-zinc-900/95 backdrop-blur-md border border-white/20 shadow-2xl text-white text-[11px] font-mono flex items-center gap-2 whitespace-nowrap">
-                      <span className="font-bold text-accent">
+                    <div className="px-2.5 py-1.5 rounded-[var(--radius-md)] bg-neutral-900/95 backdrop-blur-md border border-white/20 shadow-2xl text-white text-[11px] font-mono flex items-center gap-2 whitespace-nowrap">
+                      <span className="font-bold text-[var(--fg-accent)]">
                         {formatTime(hoverPosition.time)}
                       </span>
                       <span className="text-gray-400 text-[10px]">
@@ -715,7 +715,7 @@ export const UniversalMediaPlayer: React.FC<UniversalMediaPlayerProps> = ({
                       </span>
                       {videoResolution && (
                         <div className="flex items-center gap-1 ps-1.5 border-s border-white/20">
-                          <span className="px-1.5 py-0.5 rounded-md bg-accent/20 text-accent font-bold text-[9px] uppercase tracking-wider">
+                          <span className="px-1.5 py-0.5 rounded-[var(--radius-xs)] bg-[var(--bg-accent-muted)] text-[var(--fg-accent)] font-bold text-[9px] uppercase tracking-wider">
                             {videoResolution.qualityLabel}
                           </span>
                           <span className="text-gray-400 text-[9px]">
@@ -725,7 +725,7 @@ export const UniversalMediaPlayer: React.FC<UniversalMediaPlayerProps> = ({
                       )}
                     </div>
                     {/* Tiny triangle caret */}
-                    <div className="w-2 h-2 rotate-45 bg-zinc-900 border-r border-b border-white/20 -mt-1" />
+                    <div className="w-2 h-2 rotate-45 bg-neutral-900 border-r border-b border-white/20 -mt-1" />
                   </div>
                 )}
 
@@ -739,7 +739,7 @@ export const UniversalMediaPlayer: React.FC<UniversalMediaPlayerProps> = ({
                     seekSession(val, videoRef.current);
                     lastPlaybackTimeRef.current = val;
                   }}
-                  className="w-full h-1 bg-white/30 hover:h-1.5 rounded-lg appearance-none cursor-pointer accent-accent transition-all duration-150"
+                  className="w-full h-1 bg-white/30 hover:h-1.5 rounded-[var(--radius-sm)] appearance-none cursor-pointer accent-[var(--accent)] transition-all duration-150"
                 />
               </div>
 
@@ -748,7 +748,7 @@ export const UniversalMediaPlayer: React.FC<UniversalMediaPlayerProps> = ({
                 <div className="flex items-center gap-1 sm:gap-2">
                   <button
                     onClick={togglePlay}
-                    className="p-2 sm:p-1.5 rounded-lg hover:bg-white/20 text-white transition-colors cursor-pointer min-w-[38px] min-h-[38px] flex items-center justify-center"
+                    className="p-2 sm:p-1.5 rounded-[var(--radius-sm)] hover:bg-white/20 text-white transition-colors cursor-pointer min-w-[44px] min-h-[44px] sm:min-w-[36px] sm:min-h-[36px] flex items-center justify-center"
                     title={isPlaying ? (isRtl ? 'إيقاف مؤقت' : 'Pause') : (isRtl ? 'تشغيل' : 'Play')}
                   >
                     {isPlaying ? <Pause size={18} /> : <Play size={18} />}
@@ -758,7 +758,7 @@ export const UniversalMediaPlayer: React.FC<UniversalMediaPlayerProps> = ({
                   <div className="relative flex items-center group/volume">
                     <button
                       onClick={toggleMute}
-                      className="p-2 sm:p-1.5 rounded-lg hover:bg-white/20 text-white transition-colors cursor-pointer min-w-[38px] min-h-[38px] flex items-center justify-center"
+                      className="p-2 sm:p-1.5 rounded-[var(--radius-sm)] hover:bg-white/20 text-white transition-colors cursor-pointer min-w-[44px] min-h-[44px] sm:min-w-[36px] sm:min-h-[36px] flex items-center justify-center"
                       title={isMuted ? (isRtl ? 'تشغيل الصوت' : 'Unmute') : (isRtl ? 'كتم الصوت' : 'Mute')}
                     >
                       {isMuted || volume === 0 ? <VolumeX size={18} className="text-red-400" /> : <Volume2 size={18} />}
@@ -771,7 +771,7 @@ export const UniversalMediaPlayer: React.FC<UniversalMediaPlayerProps> = ({
                         step={0.05}
                         value={isMuted ? 0 : volume}
                         onChange={(e) => handleVolumeChange(parseFloat(e.target.value))}
-                        className="w-14 h-1 bg-white/30 hover:h-1.5 rounded-lg appearance-none cursor-pointer accent-accent"
+                        className="w-14 h-1 bg-white/30 hover:h-1.5 rounded-[var(--radius-sm)] appearance-none cursor-pointer accent-[var(--accent)]"
                         title={isRtl ? `مستوى الصوت: ${Math.round(volume * 100)}%` : `Volume: ${Math.round(volume * 100)}%`}
                       />
                     </div>
@@ -789,7 +789,7 @@ export const UniversalMediaPlayer: React.FC<UniversalMediaPlayerProps> = ({
                       e.stopPropagation();
                       setShowDiagnostics(prev => !prev);
                     }}
-                    className={`p-2 sm:p-1.5 rounded-lg hover:bg-white/20 transition-colors cursor-pointer min-w-[38px] min-h-[38px] flex items-center justify-center ${showDiagnostics ? 'text-[var(--fg-success)] bg-white/10' : 'text-white'}`}
+                    className={`p-2 sm:p-1.5 rounded-[var(--radius-sm)] hover:bg-white/20 transition-colors cursor-pointer min-w-[44px] min-h-[44px] sm:min-w-[36px] sm:min-h-[36px] flex items-center justify-center ${showDiagnostics ? 'text-[var(--fg-success)] bg-white/10' : 'text-white'}`}
                     title={isRtl ? 'لوحة الفحص والتشخيص' : 'Diagnostics HUD'}
                   >
                     <Activity size={18} />
@@ -813,7 +813,7 @@ export const UniversalMediaPlayer: React.FC<UniversalMediaPlayerProps> = ({
                         detail: { adId, url, title }
                       }));
                     }}
-                    className="p-2 sm:p-1.5 rounded-lg hover:bg-white/20 text-white transition-colors cursor-pointer min-w-[38px] min-h-[38px] flex items-center justify-center"
+                    className="p-2 sm:p-1.5 rounded-[var(--radius-sm)] hover:bg-white/20 text-white transition-colors cursor-pointer min-w-[44px] min-h-[44px] sm:min-w-[36px] sm:min-h-[36px] flex items-center justify-center"
                     title={isRtl ? 'عرض ريلز بملء الشاشة' : 'Open Reels Fullscreen'}
                   >
                     <Maximize2 size={18} />
@@ -958,8 +958,8 @@ export const UniversalMediaPlayer: React.FC<UniversalMediaPlayerProps> = ({
         {/* Soft Buffering Spinner Overlay (No flash / No stream abort) */}
         {isBuffering && isPlaying && !hasFatalError && (
           <div className="absolute inset-0 z-25 flex items-center justify-center pointer-events-none">
-            <div className="w-12 h-12 rounded-shape-sm bg-black/50 backdrop-blur-md flex items-center justify-center shadow-xl">
-              <Loader2 size={24} className="animate-spin text-accent" />
+            <div className="w-12 h-12 rounded-[var(--radius-sm)] bg-black/50 backdrop-blur-md flex items-center justify-center shadow-xl">
+              <Loader2 size={24} className="animate-spin text-[var(--fg-accent)]" />
             </div>
           </div>
         )}
@@ -986,7 +986,7 @@ export const UniversalMediaPlayer: React.FC<UniversalMediaPlayerProps> = ({
                   } catch (_) {}
                 }
               }}
-              className="px-3.5 py-1.5 rounded-lg bg-accent text-white text-xs font-bold flex items-center gap-1 hover:opacity-90 shadow-lg cursor-pointer"
+              className="px-3.5 py-1.5 rounded-[var(--radius-sm)] bg-[var(--accent)] text-white text-xs font-bold flex items-center gap-1 hover:opacity-90 shadow-lg cursor-pointer"
             >
               <RotateCcw size={14} />
               <span>{isRtl ? 'إعادة المحاولة' : 'Retry'}</span>
@@ -998,7 +998,7 @@ export const UniversalMediaPlayer: React.FC<UniversalMediaPlayerProps> = ({
         {!isPlaying && !isBuffering && !hasFatalError && directVideoUrl && (
           <button
             onClick={togglePlay}
-            className="absolute inset-0 z-20 m-auto w-16 h-16 sm:w-18 sm:h-18 rounded-shape-md bg-black/25 hover:bg-black/40 text-[var(--fg-accent)] border border-white/20 hover:border-[var(--border-accent)]/60 flex items-center justify-center shadow-lg backdrop-blur-xs transition-all duration-200 hover:scale-110 active:scale-90 cursor-pointer group"
+            className="absolute inset-0 z-20 m-auto w-16 h-16 sm:w-18 sm:h-18 rounded-[var(--radius-md)] bg-black/25 hover:bg-black/40 text-[var(--fg-accent)] border border-white/20 hover:border-[var(--border-accent)]/60 flex items-center justify-center shadow-lg backdrop-blur-xs transition-all duration-200 hover:scale-110 active:scale-90 cursor-pointer group"
             title={isRtl ? 'تشغيل الفيديو' : 'Play Video'}
           >
             <Play size={30} className="translate-x-0.5 fill-[var(--accent)] text-[var(--accent)]  group-hover:scale-110 transition-transform" />
@@ -1013,14 +1013,14 @@ export const UniversalMediaPlayer: React.FC<UniversalMediaPlayerProps> = ({
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.7, opacity: 0 }}
               transition={{ type: 'spring', damping: 25, stiffness: 350 }}
-              className="absolute inset-0 m-auto w-fit h-fit z-35 pointer-events-none flex items-center gap-2 px-4 py-2.5 rounded-2xl bg-black/85 backdrop-blur-md border border-white/20 text-white shadow-2xl"
+              className="absolute inset-0 m-auto w-fit h-fit z-35 pointer-events-none flex items-center gap-2 px-4 py-2.5 rounded-[var(--radius-lg)] bg-black/85 backdrop-blur-md border border-white/20 text-white shadow-2xl"
             >
               {muteFeedback.isMuted ? (
-                <div className="w-7 h-7 rounded-shape-xs bg-red-500/20 text-red-400 flex items-center justify-center">
+                <div className="w-7 h-7 rounded-[var(--radius-xs)] bg-red-500/20 text-red-400 flex items-center justify-center">
                   <VolumeX size={16} />
                 </div>
               ) : (
-                <div className="w-7 h-7 rounded-shape-xs bg-[var(--fg-success)]/20 text-[var(--fg-success)] flex items-center justify-center">
+                <div className="w-7 h-7 rounded-[var(--radius-xs)] bg-[var(--fg-success)]/20 text-[var(--fg-success)] flex items-center justify-center">
                   <Volume2 size={16} />
                 </div>
               )}

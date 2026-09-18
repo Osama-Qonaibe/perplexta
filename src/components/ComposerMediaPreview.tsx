@@ -48,11 +48,11 @@ export const ComposerMediaPreview: React.FC<ComposerMediaPreviewProps> = ({
             />
             {/* Play Badge Overlay */}
             <div className="absolute inset-0 flex items-center justify-center bg-black/20 pointer-events-none">
-              <div className="w-10 h-10 rounded-[4px] bg-black/60 text-white flex items-center justify-center backdrop-blur-xs border border-white/20 shadow-md">
+              <div className="w-10 h-10 rounded-[var(--radius-xs)] bg-black/60 text-white flex items-center justify-center backdrop-blur-xs border border-white/20 shadow-md">
                 <Play size={18} className="fill-white translate-x-0.5" />
               </div>
             </div>
-            <span className="absolute bottom-2 start-2 px-1.5 py-0.5 rounded bg-black/70 text-white text-[10px] font-medium flex items-center gap-1">
+            <span className="absolute bottom-2 start-2 px-1.5 py-0.5 rounded-[var(--radius-xs)] bg-black/70 text-white text-[10px] font-medium flex items-center gap-1">
               <Film size={10} />
               <span>{isRtl ? 'فيديو' : 'Video'}</span>
             </span>
