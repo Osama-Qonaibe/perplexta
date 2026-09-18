@@ -92,7 +92,7 @@ export async function runMemoryContextMigration(): Promise<MemoryMigrationResult
   // Step 3: Scan `chats.context_summary` for active structured facts
   try {
     const chatsRes = await pool.query(
-      `SELECT user_id, chat_id, context_summary FROM chats WHERE context_summary IS NOT NULL AND trim(context_summary) != ''`
+      `SELECT user_id, id as chat_id, context_summary FROM chats WHERE context_summary IS NOT NULL AND trim(context_summary) != ''`
     );
 
     for (const chatRow of chatsRes.rows) {
@@ -145,8 +145,8 @@ async function main() {
   process.exit(0);
 }
 
-// Only execute directly if invoked via CLI/node
-if (typeof require !== 'undefined' && require.main === module) {
+// Only execute directly if invoked via CLI/tsx
+if (import.meta.url.endsWith(process.argv[1]) || process.argv[1]?.endsWith('migrate_memory_context.ts')) {
   main().catch((err) => {
     console.error('[Script] ❌ Unhandled error during memory context migration:', err);
     process.exit(1);

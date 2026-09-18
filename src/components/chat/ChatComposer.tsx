@@ -8,7 +8,7 @@ import {
 import { getMatchingSuggestions } from '../../constants/contextualSuggestions';
 import { useArtifact } from '../../context/ArtifactContext';
 import { useAppContext } from '../../context/AppContext';
-import { SCROLL_STYLES } from '../../styles/scrollStyles';
+import { SCROLL_STYLES, HOVER_STYLES } from '../../styles/scrollStyles';
 
 interface ChatComposerProps {
   query: string;
@@ -605,7 +605,7 @@ export const ChatComposer: React.FC<ChatComposerProps> = ({
                                           ? 'opacity-40 cursor-not-allowed text-[var(--text-disabled)]'
                                           : isSelected
                                             ? 'bg-[var(--bg-accent-muted)] text-[var(--fg-accent)] font-semibold border border-[var(--border-accent)]/30'
-                                            : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--surface-subtle)] border border-transparent'
+                                            : HOVER_STYLES.dropdownItem + ' border border-transparent'
                                       }`}
                                     >
                                       <div className="flex items-center gap-2 flex-nowrap">
@@ -714,7 +714,7 @@ export const ChatComposer: React.FC<ChatComposerProps> = ({
                                             ? 'opacity-40 cursor-not-allowed text-[var(--text-disabled)]'
                                             : isSelected 
                                               ? 'bg-[var(--bg-accent-muted)] text-[var(--fg-accent)] font-semibold border border-[var(--border-accent)]/30'
-                                              : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--surface-subtle)] border border-transparent'
+                                              : HOVER_STYLES.dropdownItem + ' border border-transparent'
                                         }`}
                                       >
                                         {/* Tool Label & Icon */}

@@ -20,13 +20,13 @@ export const SCROLL_STYLES = {
     `max-h-[${maxHeight}] overflow-y-auto custom-scrollbar scroll-smooth`,
 };
 
-// Hover styles موحدة
+// Hover styles موحدة - Quiet & Professional Pattern (بدون خلفيات صاخبة)
 export const HOVER_STYLES = {
-  // Sidebar items
-  sidebarItem: 'text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--surface-subtle)] hover:border-[var(--border-default)] border-transparent transition-all duration-150',
+  // Sidebar items: Quiet hover (Text color shift only, no aggressive background)
+  sidebarItem: 'text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-all duration-150 border-transparent hover:border-[var(--border-subtle)] bg-transparent',
   
-  // Dropdown items
-  dropdownItem: 'text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--surface-subtle)] transition-colors',
+  // Dropdown items: Subtle highlight
+  dropdownItem: 'text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--surface-subtle)]/40 transition-colors',
   
   // Icon buttons
   iconButton: 'text-[var(--text-muted)] hover:text-[var(--text-primary)] hover:bg-[var(--surface-subtle)] transition-colors p-1.5 rounded-[var(--radius-sm)]',

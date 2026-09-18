@@ -1491,9 +1491,45 @@ body.layout-locked {
   -ms-overflow-style: none !important;
 }
 
-*::-webkit-scrollbar,
-*::-webkit-scrollbar-track,
-*::-webkit-scrollbar-thumb {
+/* ==========================================================================
+   LAYER 4: UNIFIED PROFESSIONAL SCROLLBAR (Perplexta Quiet Pattern)
+   ========================================================================== */
+.custom-scrollbar {
+  scrollbar-width: thin;
+  scrollbar-color: var(--ref-neutral-400) transparent;
+}
+
+.custom-scrollbar::-webkit-scrollbar {
+  width: 5px;
+  height: 5px;
+  background: transparent;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: color-mix(in oklab, var(--ref-neutral-400) 25%, transparent);
+  border-radius: 9999px;
+  border: 1px solid transparent;
+  background-clip: padding-box;
+  transition: background 0.2s ease;
+}
+
+.custom-scrollbar:hover::-webkit-scrollbar-thumb {
+  background: color-mix(in oklab, var(--ref-neutral-400) 45%, transparent);
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: var(--ref-neutral-500);
+}
+
+/* Chrome, Edge, Safari WebKit Global Hidden Scrollbars */
+.no-scrollbar::-webkit-scrollbar,
+.scrollbar-none::-webkit-scrollbar,
+.hide-scrollbar::-webkit-scrollbar,
+.scrollbar-hidden::-webkit-scrollbar {
   display: none !important;
   width: 0 !important;
   height: 0 !important;
@@ -1501,8 +1537,17 @@ body.layout-locked {
   -webkit-appearance: none !important;
 }
 
+.no-scrollbar,
+.scrollbar-none,
+.hide-scrollbar,
+.scrollbar-hidden {
+  -ms-overflow-style: none !important;
+  scrollbar-width: none !important;
+}
+
 html,
-body {
+body,
+#root {
   scroll-behavior: smooth;
   overflow-x: hidden;
   overscroll-behavior-y: none;
@@ -1512,13 +1557,8 @@ body {
 }
 
 /* Universal Firefox & WebKit High-Precision Smooth Scroll Engine */
-html,
-body,
-#root,
 .main-scroll-container,
 .chat-scroll-viewport,
-.custom-scrollbar,
-.custom-scrollbar-thin,
 .chat-thread-scrollbar,
 .ide-scroll-container,
 .overflow-y-auto,
@@ -1527,43 +1567,6 @@ body,
   -webkit-overflow-scrolling: touch !important; /* Smooth momentum scrolling on iOS Safari */
   overscroll-behavior-y: contain; /* Prevents outer window rubber-banding and background scrolling */
   scroll-behavior: smooth;
-  scrollbar-width: none !important;
-  -ms-overflow-style: none !important;
-}
-
-/* Chrome, Edge, Safari WebKit Global Hidden Scrollbars */
-.custom-scrollbar::-webkit-scrollbar,
-.custom-scrollbar-thin::-webkit-scrollbar,
-.chat-scroll-viewport::-webkit-scrollbar,
-.chat-thread-scrollbar::-webkit-scrollbar,
-.ide-scroll-container::-webkit-scrollbar,
-.main-scroll-container::-webkit-scrollbar,
-.overflow-y-auto::-webkit-scrollbar,
-.overflow-x-auto::-webkit-scrollbar,
-.overflow-auto::-webkit-scrollbar {
-  display: none !important;
-  width: 0 !important;
-  height: 0 !important;
-  background: transparent !important;
-  -webkit-appearance: none !important;
-}
-
-/* Completely hidden scrollbar utility classes for pristine zero-shift layouts */
-.no-scrollbar,
-.scrollbar-none,
-.hide-scrollbar {
-  -ms-overflow-style: none !important;
-  scrollbar-width: none !important;
-}
-
-.no-scrollbar::-webkit-scrollbar,
-.scrollbar-none::-webkit-scrollbar,
-.hide-scrollbar::-webkit-scrollbar {
-  display: none !important;
-  width: 0 !important;
-  height: 0 !important;
-  background: transparent !important;
-  -webkit-appearance: none !important;
 }
 
 /* ==========================================================================

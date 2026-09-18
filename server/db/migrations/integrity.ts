@@ -155,11 +155,21 @@ export async function migrateMediaAssetsData() {
   }
 }
 
-export async function verifySchemaIntegrity() {
+let lastIntegrityCheck = 0;
+const INTEGRITY_COOLDOWN = 1000 * 60 * 5; // 5 minutes
+
+export async function verifySchemaIntegrity(force = false) {
   if (!pool) {
     console.warn('[Schema Integrity] Skipping validation: No core pool initialized.');
     return;
   }
+
+  const now = Date.now();
+  if (!force && (now - lastIntegrityCheck < INTEGRITY_COOLDOWN)) {
+    console.log('[Schema Integrity] Skipping comprehensive audit (recently verified).');
+    return;
+  }
+  
   console.log('[Schema Integrity] Starting comprehensive database schema audit...');
 
   const report: {
@@ -179,6 +189,7 @@ export async function verifySchemaIntegrity() {
   };
 
   const queryColumns = async (p: any, schemaName = 'public'): Promise<Record<string, Set<string>>> => {
+    if (!p) return {};
     try {
       const res = await p.query(`
         SELECT table_name, column_name 
@@ -195,8 +206,26 @@ export async function verifySchemaIntegrity() {
       }
       return tables;
     } catch (error) {
-      throw new Error(`Failed to query information_schema: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      console.warn(`[Schema Integrity] Failed to query information_schema for a secondary pool, skipping that pool.`);
+      return {};
     }
+  };
+
+  // Parallelize pool queries
+  const [coreTables, ledgerTables, externalTables, securityTables, mediaTables] = await Promise.all([
+    queryColumns(pool),
+    queryColumns(ledgerPool),
+    queryColumns(externalPool),
+    queryColumns(securityPool),
+    queryColumns(mediaPool)
+  ]);
+
+  const dbTables: Record<string, Record<string, Set<string>>> = {
+    core: coreTables,
+    ledger: ledgerTables,
+    external: externalTables,
+    security: securityTables,
+    media: mediaTables
   };
 
   const expectedSchema: Record<string, Record<string, { columns: string[]; repairCols?: Record<string, string | { type: string; default?: any }> }>> = {
@@ -761,10 +790,10 @@ export async function verifySchemaIntegrity() {
     media: MEDIA_INDEXES
   };
 
-  const verifyDbGroup = async (groupName: 'core' | 'ledger' | 'external' | 'security' | 'media', targetPoolObj: any) => {
+  const verifyDbGroup = async (groupName: 'core' | 'ledger' | 'external' | 'security' | 'media', targetPoolObj: any, initialActiveTables: Record<string, Set<string>>) => {
     if (!targetPoolObj) return;
     try {
-      let activeTables = await queryColumns(targetPoolObj);
+      let activeTables = initialActiveTables;
       const expectedTables = expectedSchema[groupName];
       let repairedSomething = false;
 
@@ -836,16 +865,17 @@ export async function verifySchemaIntegrity() {
     }
   };
 
-  await verifyDbGroup('core', pool);
-  await verifyDbGroup('ledger', ledgerPool || pool);
-  await verifyDbGroup('external', externalPool || pool);
-  await verifyDbGroup('security', securityPool || pool);
-  await verifyDbGroup('media', mediaPool || pool);
+  await verifyDbGroup('core', pool, coreTables);
+  await verifyDbGroup('ledger', ledgerPool || pool, ledgerTables);
+  await verifyDbGroup('external', externalPool || pool, externalTables);
+  await verifyDbGroup('security', securityPool || pool, securityTables);
+  await verifyDbGroup('media', mediaPool || pool, mediaTables);
 
   // Transfer any legacy media_assets data if running separate media database
   await migrateMediaAssetsData();
 
   if (report.passed) {
+    lastIntegrityCheck = Date.now();
     console.log('[Schema Integrity] All expected tables and columns verified successfully across all active pools!');
   } else {
     console.warn(`[Schema Integrity] Schema verification detected deviations:`, {

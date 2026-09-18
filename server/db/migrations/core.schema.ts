@@ -1671,12 +1671,13 @@ export async function seedCoreDatabase(targetPool: QueryClient, targetLedgerPool
   ].filter(Boolean))) as string[];
 
   const defaultPassword = process.env.ADMIN_PASSWORD || 'Admin@123456';
-  const sharedHash = await bcrypt.hash(defaultPassword, 10);
+  let sharedHash: string | null = null;
 
   for (const email of adminEmails) {
     const adminCheck = await targetPool.query('SELECT * FROM users WHERE email = $1', [email]);
 
     if (adminCheck.rows.length === 0) {
+      if (!sharedHash) sharedHash = await bcrypt.hash(defaultPassword, 10);
       const newAdmin = await targetPool.query(
         `INSERT INTO users (email, name, password_hash, role, status) VALUES ($1, $2, $3, 'admin', 'active') RETURNING id`,
         [email, 'Master Admin', sharedHash]
@@ -1691,10 +1692,14 @@ export async function seedCoreDatabase(targetPool: QueryClient, targetLedgerPool
       console.log(`[Seed] Seeded default admin account: ${email}`);
     } else {
       const user = adminCheck.rows[0];
-      await targetPool.query(`UPDATE users SET role = 'admin', status = 'active' WHERE email = $1`, [email]);
+      if (user.role !== 'admin' || user.status !== 'active') {
+        await targetPool.query(`UPDATE users SET role = 'admin', status = 'active' WHERE email = $1`, [email]);
+      }
+      
       if (process.env.ADMIN_PASSWORD) {
         const isMatch = await bcrypt.compare(process.env.ADMIN_PASSWORD, user.password_hash);
         if (!isMatch) {
+          if (!sharedHash) sharedHash = await bcrypt.hash(defaultPassword, 10);
           console.log(`[Migrations] Force updating admin password for: ${email} to match environment configuration`);
           await targetPool.query(
             'UPDATE users SET password_hash = $1, role = $2, status = $3, updated_at = CURRENT_TIMESTAMP WHERE id = $4',

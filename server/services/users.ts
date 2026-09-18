@@ -97,15 +97,29 @@ const ABSOLUTE_TOOLS = new Set(['storage_mb']);
 export async function getUserUsage(userId: string | number) {
   if (!pool) throw new Error('Database initializing');
 
-  const planRes = await pool.query(`
-    SELECT u.role, p.id, p.name_en, p.name_ar, p.limits, p.color, s.status, s.billing_period, s.current_period_end, s.created_at as subscription_start
-    FROM users u
-    LEFT JOIN subscriptions s ON u.id = s.user_id
-    LEFT JOIN plans p ON p.id = s.plan_id
-    WHERE u.id = $1
-    ORDER BY CASE WHEN s.status = 'active' THEN 0 ELSE 1 END, s.current_period_end DESC NULLS LAST
-    LIMIT 1
-  `, [userId]);
+  const [planRes, dailyUsageRes, monthlyUsageRes, storageUsageMB] = await Promise.all([
+    pool.query(`
+      SELECT u.role, p.id, p.name_en, p.name_ar, p.limits, p.color, s.status, s.billing_period, s.current_period_end, s.created_at as subscription_start
+      FROM users u
+      LEFT JOIN subscriptions s ON u.id = s.user_id
+      LEFT JOIN plans p ON p.id = s.plan_id
+      WHERE u.id = $1
+      ORDER BY CASE WHEN s.status = 'active' THEN 0 ELSE 1 END, s.current_period_end DESC NULLS LAST
+      LIMIT 1
+    `, [userId]),
+    pool.query(`
+      SELECT tool_id, usage_count
+      FROM user_usage
+      WHERE user_id = $1 AND usage_date = CURRENT_DATE
+    `, [userId]),
+    pool.query(`
+      SELECT tool_id, SUM(usage_count) as total
+      FROM user_usage
+      WHERE user_id = $1 AND usage_date >= date_trunc('month', CURRENT_DATE)
+      GROUP BY tool_id
+    `, [userId]),
+    getUserStorageUsage(userId.toString())
+  ]);
 
   if (planRes.rows.length === 0) throw new Error('User profile not found');
   
@@ -142,30 +156,15 @@ export async function getUserUsage(userId: string | number) {
     };
   }
 
-  const dailyUsageRes = await pool.query(`
-    SELECT tool_id, usage_count
-    FROM user_usage
-    WHERE user_id = $1 AND usage_date = CURRENT_DATE
-  `, [userId]);
-
   const dailyUsageMap = dailyUsageRes.rows.reduce((acc: any, row: any) => {
     acc[row.tool_id] = parseInt(row.usage_count);
     return acc;
   }, {});
 
-  const monthlyUsageRes = await pool.query(`
-    SELECT tool_id, SUM(usage_count) as total
-    FROM user_usage
-    WHERE user_id = $1 AND usage_date >= date_trunc('month', CURRENT_DATE)
-    GROUP BY tool_id
-  `, [userId]);
-
   const monthlyUsageMap = monthlyUsageRes.rows.reduce((acc: any, row: any) => {
     acc[row.tool_id] = parseInt(row.total);
     return acc;
   }, {});
-
-  const storageUsageMB = await getUserStorageUsage(userId.toString());
 
   const ALLOWED_VISIBLE_TOOLS = [
     'chat_fast',
@@ -289,21 +288,23 @@ export async function getUserUsage(userId: string | number) {
 export async function getUserProfile(userId: string) {
   if (!pool) throw new Error('Database initializing');
   
-  const result = await pool.query(`
-    SELECT u.id, u.name, u.email, u.role, u.avatar, u.status, u.language, u.theme, u.custom_instructions, u.kyc_status, u.created_at, u.referral_code, u.media_muted, u.data_saver,
-           s.plan_id, s.status as sub_status, s.current_period_end, p.name_en as plan_name_en, p.name_ar as plan_name_ar, p.color as plan_color, p.limits
-    FROM users u
-    LEFT JOIN subscriptions s ON u.id = s.user_id
-    LEFT JOIN plans p ON s.plan_id = p.id
-    WHERE u.id = $1
-    ORDER BY CASE WHEN s.status = 'active' THEN 0 ELSE 1 END, s.current_period_end DESC NULLS LAST
-    LIMIT 1
-  `, [userId]);
+  const [result, wallet] = await Promise.all([
+    pool.query(`
+      SELECT u.id, u.name, u.email, u.role, u.avatar, u.status, u.language, u.theme, u.custom_instructions, u.kyc_status, u.created_at, u.referral_code, u.media_muted, u.data_saver,
+             s.plan_id, s.status as sub_status, s.current_period_end, p.name_en as plan_name_en, p.name_ar as plan_name_ar, p.color as plan_color, p.limits
+      FROM users u
+      LEFT JOIN subscriptions s ON u.id = s.user_id
+      LEFT JOIN plans p ON s.plan_id = p.id
+      WHERE u.id = $1
+      ORDER BY CASE WHEN s.status = 'active' THEN 0 ELSE 1 END, s.current_period_end DESC NULLS LAST
+      LIMIT 1
+    `, [userId]),
+    walletLoader.load(userId)
+  ]);
   
   if (result.rows.length === 0) return null;
   const row = result.rows[0];
-  
-  const wallet = await walletLoader.load(userId) || { balance: 0.0, points: 0, referral_activated: false };
+  const activeWallet = wallet || { balance: 0.0, points: 0, referral_activated: false };
   
   let subscription = null;
 
@@ -337,9 +338,9 @@ export async function getUserProfile(userId: string) {
     data_saver: row.data_saver !== undefined && row.data_saver !== null ? !!row.data_saver : false,
     custom_limits: {},
     subscription,
-    balance: wallet.balance,
-    points: parseInt(wallet.points),
-    referral_activated: !!wallet.referral_activated
+    balance: activeWallet.balance,
+    points: parseInt(activeWallet.points),
+    referral_activated: !!activeWallet.referral_activated
   };
 }
 

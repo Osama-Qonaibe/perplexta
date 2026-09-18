@@ -120,12 +120,14 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({
                 }}
                 className={`group relative flex items-center gap-2 px-2.5 py-1.5 min-h-[36px] rounded-shape-sm transition-all duration-150 border cursor-pointer select-none active:scale-[0.98] ${
                   isItemActive
-                    ? `bg-[var(--surface-card)] text-[var(--accent)] border-[var(--border-default)] font-bold shadow-2xs before:absolute before:inset-y-1.5 before:w-1 before:rounded-full before:bg-[var(--accent)] ${
-                        dir === 'rtl' ? 'before:right-1' : 'before:left-1'
-                      }`
+                    ? 'text-[var(--accent)] border-[var(--border-subtle)] font-bold shadow-none bg-transparent'
                     : HOVER_STYLES.sidebarItem
                 }`}
               >
+                {/* Active Side Indicator */}
+                {isItemActive && (
+                  <div className={`absolute inset-y-1.5 w-1 rounded-full bg-[var(--accent)] ${dir === 'rtl' ? 'right-1' : 'left-1'}`} />
+                )}
                 <div className={`w-5 h-5 flex-shrink-0 flex items-center justify-center transition-colors duration-150 ${
                   isItemActive 
                     ? 'text-[var(--accent)]' 

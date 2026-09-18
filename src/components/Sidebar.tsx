@@ -492,11 +492,18 @@ export const Sidebar: React.FC<{ activeLanguage?: string }> = ({ activeLanguage 
                         <div 
                           className={`${(item as any).className || 'flex'} items-center transition-all duration-150 w-full h-[34px] overflow-hidden flex-shrink-0 group relative rounded-[var(--radius-sm)] border cursor-pointer ${
                             active 
-                              ? 'bg-[color-mix(in_oklab,var(--accent)_12%,transparent)] text-[var(--accent)] border-[color-mix(in_oklab,var(--accent)_30%,var(--border-default))] font-bold shadow-2xs'
+                              ? 'text-[var(--accent)] border-[var(--border-subtle)] font-bold shadow-none bg-transparent'
                               : HOVER_STYLES.sidebarItem
                           }`}
                           style={{ paddingInlineStart: '10px', paddingInlineEnd: '8px' }}
                         >
+                          {/* Active Side Indicator */}
+                          {active && (
+                            <motion.div 
+                              layoutId="active-nav-indicator"
+                              className={`absolute inset-y-1.5 w-1 rounded-full bg-[var(--accent)] ${dir === 'rtl' ? 'right-1' : 'left-1'}`}
+                            />
+                          )}
                           <div className={`w-7 h-7 flex-shrink-0 flex items-center justify-center transition-colors duration-150 ${
                             active 
                               ? 'text-[var(--accent)]' 
@@ -607,11 +614,15 @@ export const Sidebar: React.FC<{ activeLanguage?: string }> = ({ activeLanguage 
                                   }}
                                   className={`flex items-center w-full h-[32px] ${isMenuOpen ? 'overflow-visible z-30' : 'overflow-hidden'} flex-shrink-0 transition-all duration-150 group relative border rounded-[var(--radius-sm)] cursor-pointer ${
                                     isActive 
-                                      ? 'bg-[color-mix(in_oklab,var(--accent)_12%,transparent)] text-[var(--accent)] border-[color-mix(in_oklab,var(--accent)_30%,var(--border-default))] font-bold shadow-2xs' 
+                                      ? 'text-[var(--accent)] border-[var(--border-subtle)] font-bold shadow-none bg-transparent' 
                                       : HOVER_STYLES.sidebarItem
                                   }`}
                                   style={{ paddingInlineStart: '10px', paddingInlineEnd: '6px' }}
                                 >
+                                  {/* Active Side Indicator */}
+                                  {isActive && (
+                                    <div className={`absolute inset-y-1.5 w-0.5 rounded-full bg-[var(--accent)] ${dir === 'rtl' ? 'right-1' : 'left-1'}`} />
+                                  )}
                                   <div
                                     onClick={() => {
                                       navigate(`/chat/${chat.id}`);
