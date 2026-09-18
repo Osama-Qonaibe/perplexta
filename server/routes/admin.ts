@@ -15,7 +15,7 @@ import { invalidateFirebaseApp } from '../firebase-admin.js';
 import { sendEmail } from '../services/email.js';
 import { createNotification, logSystemActivity } from '../services/notifications.js';
 import { consolidateAllUserMemories } from '../services/memory.js';
-import { runMemoryContextMigration } from '../scripts/migrate_memory_context.js';
+import { runMemoryContextMigration } from '../services/memoryMigrationService.js';
 import { reconcileAllWallets } from '../services/wallet.js';
 import { getSystemSettings, updateSystemSettings, checkSystemAssetsDiagnostic, repairSystemAssetsDiagnostic, getMissingAssetReport } from '../services/system.js';
 import { syncAllContentSeoMetadata, auditContentSeoItems, syncSingleContentSeoItem, getSmartSeoSuggestion, applySmartSeoSuggestion } from '../services/seoSync.js';
