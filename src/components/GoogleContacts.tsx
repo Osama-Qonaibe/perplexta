@@ -524,13 +524,13 @@ export const GoogleContacts: React.FC<GoogleContactsProps> = ({ dir, theme }) =>
               <button
                 onClick={() => fetchContacts()}
                 disabled={isLoading}
-                className="w-10 h-10 flex items-center justify-center rounded-[var(--radius-md)] border border-transparent hover:bg-gray-50 dark:hover:bg-gray-800 text-gray-400 hover:text-accent transition-theme"
+                className="w-10 h-10 flex items-center justify-center rounded-[var(--radius-md)] border border-transparent hover:bg-[var(--surface-subtle)] text-[var(--text-muted)] hover:text-accent transition-theme"
                 title={isAr ? 'تحديث جهات الاتصال' : 'Refresh contacts'}
               >
                 <RefreshCw size={16} className={isLoading ? 'animate-spin text-accent' : ''} />
               </button>
               
-              <div className="w-px h-5 bg-gray-200 dark:bg-gray-800/80" />
+              <div className="w-px h-5 bg-[var(--border-default)]" />
 
               <button
                 onClick={handleDisconnect}
@@ -578,7 +578,7 @@ export const GoogleContacts: React.FC<GoogleContactsProps> = ({ dir, theme }) =>
 
                 {/* Scope Toggles & Add Button */}
                 <div className="flex items-center justify-between">
-                  <div className="flex items-center bg-gray-100 dark:bg-gray-800/80 p-1 rounded-lg gap-1">
+                  <div className="flex items-center bg-[var(--surface-inset)] p-1 rounded-lg gap-1 border border-[var(--border-default)]/40">
                     <button
                       onClick={() => {
                         setActiveSource('connections');
@@ -586,8 +586,8 @@ export const GoogleContacts: React.FC<GoogleContactsProps> = ({ dir, theme }) =>
                       }}
                       className={`px-2.5 py-1 text-[11px] font-bold rounded-md transition-theme ${
                         activeSource === 'connections' 
-                          ? 'bg-white dark:bg-gray-700 text-accent shadow-sm' 
-                          : 'text-gray-400 hover:text-accent'
+                          ? 'bg-[var(--surface-card)] text-accent shadow-sm' 
+                          : 'text-[var(--text-muted)] hover:text-accent'
                       }`}
                     >
                       {isAr ? 'جهات اتصالي' : 'Connections'}
@@ -599,8 +599,8 @@ export const GoogleContacts: React.FC<GoogleContactsProps> = ({ dir, theme }) =>
                       }}
                       className={`px-2.5 py-1 text-[11px] font-bold rounded-md transition-theme ${
                         activeSource === 'directory' 
-                          ? 'bg-white dark:bg-gray-700 text-accent shadow-sm' 
-                          : 'text-gray-400 hover:text-accent'
+                          ? 'bg-[var(--surface-card)] text-accent shadow-sm' 
+                          : 'text-[var(--text-muted)] hover:text-accent'
                       }`}
                     >
                       {isAr ? 'دليل المؤسسة' : 'Directory'}
@@ -640,7 +640,7 @@ export const GoogleContacts: React.FC<GoogleContactsProps> = ({ dir, theme }) =>
                         className={`p-3 rounded-lg flex items-center justify-between cursor-pointer border transition-theme relative ${
                           isSelected 
                             ? 'bg-accent/5 border-accent/20 text-accent' 
-                            : 'border-transparent hover:bg-gray-50/50 dark:hover:bg-gray-800/10 text-gray-400'
+                            : 'border-transparent hover:bg-[var(--surface-card)] text-[var(--text-muted)]'
                         }`}
                       >
                         <div className="flex items-center gap-3 min-w-0">
@@ -723,14 +723,14 @@ export const GoogleContacts: React.FC<GoogleContactsProps> = ({ dir, theme }) =>
                         )}
 
                         <div className="flex flex-col text-center sm:text-start gap-1">
-                          <h3 className="text-lg font-black text-gray-100">{selectedContact.name}</h3>
+                          <h3 className="text-lg font-black text-[var(--text-primary)]">{selectedContact.name}</h3>
                           {selectedContact.jobTitle || selectedContact.organization ? (
                             <span className="text-xs font-semibold text-accent flex items-center justify-center sm:justify-start gap-1">
                               <Briefcase size={12} />
                               {selectedContact.jobTitle} {selectedContact.jobTitle && selectedContact.organization ? 'at' : ''} {selectedContact.organization}
                             </span>
                           ) : (
-                            <span className="text-xs text-gray-500 italic">{isAr ? 'عضو Google الموثق' : 'Verified Google connection'}</span>
+                            <span className="text-xs text-[var(--text-muted)] italic">{isAr ? 'عضو Google الموثق' : 'Verified Google connection'}</span>
                           )}
                         </div>
                       </div>
@@ -740,14 +740,14 @@ export const GoogleContacts: React.FC<GoogleContactsProps> = ({ dir, theme }) =>
                         <div className="flex items-center gap-2 shrink-0">
                           <button
                             onClick={() => handleStartEdit(selectedContact)}
-                            className="w-10 h-10 flex items-center justify-center rounded-lg border border-[var(--border-default)] hover:bg-gray-50 dark:hover:bg-gray-800 text-gray-400 hover:text-accent transition-theme"
+                            className="w-10 h-10 flex items-center justify-center rounded-lg border border-[var(--border-default)] hover:bg-[var(--surface-subtle)] text-[var(--text-muted)] hover:text-accent transition-theme"
                             title={isAr ? 'تعديل جهة الاتصال' : 'Edit details'}
                           >
                             <Edit2 size={14} />
                           </button>
                           <button
                             onClick={() => handleDeleteTrigger(selectedContact)}
-                            className="w-10 h-10 flex items-center justify-center rounded-lg border border-red-500/10 hover:bg-red-500/10 text-gray-400 hover:text-red-500 transition-theme"
+                            className="w-10 h-10 flex items-center justify-center rounded-lg border border-red-500/10 hover:bg-red-500/10 text-[var(--text-muted)] hover:text-red-500 transition-theme"
                             title={isAr ? 'حذف جهة الاتصال' : 'Delete Contact'}
                           >
                             <Trash2 size={14} />
@@ -761,45 +761,45 @@ export const GoogleContacts: React.FC<GoogleContactsProps> = ({ dir, theme }) =>
                       
                       {/* Email Card */}
                       <div className="p-4 rounded-lg bg-[var(--surface-page)] border border-[var(--border-default)]/50 space-y-1">
-                        <span className="text-[10px] font-bold text-gray-500 uppercase tracking-widest flex items-center gap-1">
+                        <span className="text-[10px] font-bold text-[var(--text-muted)] uppercase tracking-widest flex items-center gap-1">
                           <Mail size={11} className="text-accent" />
                           {isAr ? 'البريد الإلكتروني' : 'Email Address'}
                         </span>
-                        <p className="text-xs font-semibold truncate font-mono text-gray-200">
-                          {selectedContact.email || <span className="text-gray-500 italic">{isAr ? 'غير محدد' : 'Not specified'}</span>}
+                        <p className="text-xs font-semibold truncate font-mono text-[var(--text-primary)]">
+                          {selectedContact.email || <span className="text-[var(--text-muted)] italic">{isAr ? 'غير محدد' : 'Not specified'}</span>}
                         </p>
                       </div>
 
                       {/* Phone Card */}
                       <div className="p-4 rounded-lg bg-[var(--surface-page)] border border-[var(--border-default)]/50 space-y-1">
-                        <span className="text-[10px] font-bold text-gray-500 uppercase tracking-widest flex items-center gap-1">
+                        <span className="text-[10px] font-bold text-[var(--text-muted)] uppercase tracking-widest flex items-center gap-1">
                           <Phone size={11} className="text-accent" />
                           {isAr ? 'الهاتف المحمول' : 'Phone Number'}
                         </span>
-                        <p className="text-xs font-semibold truncate font-mono text-gray-200">
-                          {selectedContact.phone || <span className="text-gray-500 italic">{isAr ? 'غير محدد' : 'Not specified'}</span>}
+                        <p className="text-xs font-semibold truncate font-mono text-[var(--text-primary)]">
+                          {selectedContact.phone || <span className="text-[var(--text-muted)] italic">{isAr ? 'غير محدد' : 'Not specified'}</span>}
                         </p>
                       </div>
 
                       {/* Birthday Card */}
                       <div className="p-4 rounded-lg bg-[var(--surface-page)] border border-[var(--border-default)]/50 space-y-1">
-                        <span className="text-[10px] font-bold text-gray-500 uppercase tracking-widest flex items-center gap-1">
+                        <span className="text-[10px] font-bold text-[var(--text-muted)] uppercase tracking-widest flex items-center gap-1">
                           <Cake size={11} className="text-accent" />
                           {isAr ? 'تاريخ الميلاد' : 'Birthday'}
                         </span>
-                        <p className="text-xs font-semibold text-gray-200">
-                          {selectedContact.birthday || <span className="text-gray-500 italic">{isAr ? 'غير محدد' : 'Not specified'}</span>}
+                        <p className="text-xs font-semibold text-[var(--text-primary)]">
+                          {selectedContact.birthday || <span className="text-[var(--text-muted)] italic">{isAr ? 'غير محدد' : 'Not specified'}</span>}
                         </p>
                       </div>
 
                       {/* Address Card */}
                       <div className="p-4 rounded-lg bg-[var(--surface-page)] border border-[var(--border-default)]/50 space-y-1">
-                        <span className="text-[10px] font-bold text-gray-500 uppercase tracking-widest flex items-center gap-1">
+                        <span className="text-[10px] font-bold text-[var(--text-muted)] uppercase tracking-widest flex items-center gap-1">
                           <MapPin size={11} className="text-accent" />
                           {isAr ? 'الموقع والعنوان' : 'Location Address'}
                         </span>
-                        <p className="text-xs font-semibold text-gray-200">
-                          {selectedContact.address || <span className="text-gray-500 italic">{isAr ? 'غير محدد' : 'Not specified'}</span>}
+                        <p className="text-xs font-semibold text-[var(--text-primary)]">
+                          {selectedContact.address || <span className="text-[var(--text-muted)] italic">{isAr ? 'غير محدد' : 'Not specified'}</span>}
                         </p>
                       </div>
 
@@ -807,12 +807,12 @@ export const GoogleContacts: React.FC<GoogleContactsProps> = ({ dir, theme }) =>
 
                     {/* Biography / Notes */}
                     <div className="p-4 rounded-lg bg-[var(--surface-page)] border border-[var(--border-default)]/50 space-y-2">
-                      <span className="text-[10px] font-bold text-gray-500 uppercase tracking-widest flex items-center gap-1">
+                      <span className="text-[10px] font-bold text-[var(--text-muted)] uppercase tracking-widest flex items-center gap-1">
                         <FileText size={11} className="text-accent" />
                         {isAr ? 'ملاحظات وسياق المهنة' : 'Biography & Professional Context'}
                       </span>
-                      <p className="text-xs leading-relaxed text-gray-300">
-                        {selectedContact.notes || <span className="text-gray-500 italic">{isAr ? 'لا توجد ملاحظات إضافية مسجلة.' : 'No descriptive notes logged.'}</span>}
+                      <p className="text-xs leading-relaxed text-[var(--text-secondary)]">
+                        {selectedContact.notes || <span className="text-[var(--text-muted)] italic">{isAr ? 'لا توجد ملاحظات إضافية مسجلة.' : 'No descriptive notes logged.'}</span>}
                       </p>
                     </div>
 
@@ -944,7 +944,7 @@ export const GoogleContacts: React.FC<GoogleContactsProps> = ({ dir, theme }) =>
                     <button
                       type="button"
                       onClick={handleCancelForm}
-                      className="px-4 py-2 text-xs font-semibold rounded-[var(--radius-md)] border border-transparent hover:bg-gray-150 dark:hover:bg-gray-800 text-gray-400 hover:text-gray-200 transition-theme"
+                      className="px-4 py-2 text-xs font-semibold rounded-[var(--radius-md)] border border-transparent hover:bg-[var(--surface-subtle)] text-[var(--text-muted)] hover:text-[var(--text-primary)] transition-theme"
                     >
                       {isAr ? 'إلغاء' : 'Cancel'}
                     </button>

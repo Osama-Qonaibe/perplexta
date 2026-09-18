@@ -406,6 +406,8 @@
 
   --fg-info: #58a6ff;
   --bg-info-muted: rgba(88, 166, 255, 0.15);
+  --status-info: #58a6ff;
+  --status-info-subtle: rgba(88, 166, 255, 0.15);
 
   --text-primary: #e6edf3;
   --text-secondary: #8b949e;

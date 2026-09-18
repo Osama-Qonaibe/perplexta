@@ -544,7 +544,7 @@ export const ComplianceAuditLogsView = ({
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.95, y: 15 }}
               transition={{ duration: 0.15, ease: "easeOut" }}
-              className="relative max-w-2xl w-full rounded-[var(--radius-lg)] border border-[var(--border-default)] p-6 z-10 shadow-lg bg-[var(--surface-raised)] text-[var(--fg-primary)]"
+              className="relative max-w-2xl w-full rounded-[var(--radius-lg)] border border-[var(--border-default)] p-6 z-10 shadow-lg bg-[var(--surface-card)] text-[var(--text-primary)]"
             >
               {/* Header */}
               <div className="flex items-center justify-between pb-3.5 border-b border-[var(--border-default)] mb-4">
