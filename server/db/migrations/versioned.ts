@@ -2,7 +2,7 @@ import bcrypt from "bcryptjs";
 import crypto from "crypto";
 import type { QueryClient, WrappedClient, MigrationMetrics } from "./types.js";
 import { TABLE_POOL_REGISTRY, hashStringToAdvisoryLockKey } from "./types.js";
-import { ensureColumnsBulk, ensureForeignKey, sanitizeForLogging, isValidIdentifier, safeQueryClient } from "./helpers.js";
+import { ensureColumnsBulk, ensureForeignKey, tableExists, columnExists, sanitizeForLogging, isValidIdentifier, safeQueryClient } from "./helpers.js";
 import { encrypt, decrypt } from "../../utils/crypto.js";
 import { syncAllContentSeoMetadata } from "../../services/seoSync.js";
 
@@ -855,19 +855,14 @@ export async function runVersionedMigrations(
       console.log('[Migrations] token_blacklist cleared for SHA-256 migration.');
     });
 
-    await runVersioned('v42_missing_indexes', 'Adding critical performance indexes', async (tx) => {
+    await runVersioned('v42_performance_audit_additive', 'Adding critical performance indexes and blog tables', async (tx) => {
       await tx.query(`CREATE INDEX IF NOT EXISTS idx_password_resets_email ON password_resets(email)`);
       await tx.query(`CREATE INDEX IF NOT EXISTS idx_password_resets_token ON password_resets(token)`);
 
-      await tx.query(`
-        DO $$
-        BEGIN
-          IF EXISTS (SELECT 1 FROM information_schema.tables WHERE table_name = 'marketplace_items') THEN
-            CREATE INDEX IF NOT EXISTS idx_marketplace_items_status ON marketplace_items(status);
-            CREATE INDEX IF NOT EXISTS idx_marketplace_items_user_id ON marketplace_items(user_id);
-          END IF;
-        END $$;
-      `);
+      if (await tableExists(tx, 'marketplace_items')) {
+        await tx.query(`CREATE INDEX IF NOT EXISTS idx_marketplace_items_status ON marketplace_items(status)`);
+        await tx.query(`CREATE INDEX IF NOT EXISTS idx_marketplace_items_user_id ON marketplace_items(user_id)`);
+      }
 
       const extTarget = externalClient || client;
       try {

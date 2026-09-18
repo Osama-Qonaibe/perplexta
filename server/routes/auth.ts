@@ -7,6 +7,7 @@ import { AppError } from '../middleware/errorHandler.js';
 import { ERROR_CODES } from '../utils/errorCodes.js';
 import { pool, ledgerPool, getSecurityPool } from '../db/index.js';
 import { getCachedSystemSettings } from '../db/queries.js';
+import { decrypt } from '../utils/crypto.js';
 import { sendSmartEmail } from '../services/email.js';
 import { logSystemActivity, createNotification } from '../services/notifications.js';
 import { authLimiter, forgotPasswordLimiter, refreshLimiter } from '../middleware/rateLimit.js';
@@ -581,7 +582,7 @@ router.get("/google/callback", async (req, res) => {
 
     const settings = await getCachedSystemSettings().catch(() => null);
     const googleClientId = settings?.google_client_id || process.env.GOOGLE_CLIENT_ID || '';
-    const googleClientSecret = settings?.google_client_secret || process.env.GOOGLE_CLIENT_SECRET || '';
+    const googleClientSecret = decrypt(settings?.google_client_secret || process.env.GOOGLE_CLIENT_SECRET || '');
 
     const tokenResponse = await fetch('https://oauth2.googleapis.com/token', {
       method: 'POST',

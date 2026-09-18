@@ -43,7 +43,7 @@ import {
 } from "../../utils/sectionVisibility";
 import { resolveImageUrl } from "../../utils/imageResolver";
 import { updateDocumentHeadIcons } from "../../utils/assetManager";
-import { toast as globalToast, useConfirm } from '@/design-system';
+import { toast, useConfirm } from '@/design-system';
 
 export const SystemSettingsView: React.FC<SystemSettingsViewProps> = ({
   theme,
@@ -77,6 +77,9 @@ export const SystemSettingsView: React.FC<SystemSettingsViewProps> = ({
   const [blockedPaths, setBlockedPaths] = useState(
     siteSettings.blocked_paths || "",
   );
+  const [googleClientId, setGoogleClientId] = useState("");
+  const [googleClientSecret, setGoogleClientSecret] = useState("");
+  const [isSavingGoogleOauth, setIsSavingGoogleOauth] = useState(false);
 
   const handleToggleSection = (key: string) => {
     const currentList = (blockedPaths || "").split(',').map(p => p.trim()).filter(Boolean);
@@ -542,9 +545,9 @@ export const SystemSettingsView: React.FC<SystemSettingsViewProps> = ({
 
   const showToast = (message: string, type: "success" | "error" = "success") => {
     if (type === "success") {
-      globalToast.success(message, dir === "rtl" ? "تم بنجاح" : "Success");
+      toast.success(message, dir === "rtl" ? "تم بنجاح" : "Success");
     } else {
-      globalToast.error(message, dir === "rtl" ? "حدث خطأ" : "Error");
+      toast.error(message, dir === "rtl" ? "حدث خطأ" : "Error");
     }
   };
 
@@ -575,6 +578,8 @@ export const SystemSettingsView: React.FC<SystemSettingsViewProps> = ({
         setKeywordsAr(kwsArVal);
         setGoogleAnalyticsId(data.google_analytics_id || "");
         setGoogleSiteVerification(data.google_site_verification || "");
+        setGoogleClientId(data.google_client_id || "");
+        setGoogleClientSecret(data.google_client_secret ? "********" : "");
         setBlockedPaths(data.blocked_paths || "");
         setLogoBase64(data.logo_url || null);
         setLogoLightBase64(data.logo_light_url || null);
@@ -720,6 +725,37 @@ export const SystemSettingsView: React.FC<SystemSettingsViewProps> = ({
         setIsOperationPending(false);
         if (type === "seo") setIsSeoUploading(false);
       }
+    }
+  };
+
+  const handleSaveGoogleOauth = async () => {
+    if (!googleClientId) {
+      toast.error(language === "ar" ? "يرجى إدخال Client ID" : "Please enter Client ID");
+      return;
+    }
+    setIsSavingGoogleOauth(true);
+    try {
+      const res = await fetch("/api/admin/settings/google-oauth", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          googleClientId: googleClientId.trim(),
+          googleClientSecret: googleClientSecret === "********" ? undefined : googleClientSecret.trim(),
+        }),
+      });
+
+      if (res.ok) {
+        toast.success(language === "ar" ? "تم حفظ إعدادات Google OAuth بنجاح" : "Google OAuth settings saved successfully");
+      } else {
+        toast.error(language === "ar" ? "فشل حفظ الإعدادات" : "Failed to save settings");
+      }
+    } catch (error) {
+      toast.error(language === "ar" ? "خطأ في الاتصال بالسيرفر" : "Server connection error");
+    } finally {
+      setIsSavingGoogleOauth(false);
     }
   };
 
@@ -1162,6 +1198,75 @@ export const SystemSettingsView: React.FC<SystemSettingsViewProps> = ({
               <Save size={18} />
             )}
             {t("saveSettings") || "Save"}
+          </button>
+        </div>
+      </div>
+
+      {/* Google OAuth Configuration */}
+      <div
+        className="p-6 md:p-8 rounded-[var(--radius-lg)] border bg-[var(--surface-card)] border-[var(--border-default)]"
+      >
+        <div className="flex items-center gap-3 mb-6">
+          <div className="p-3 rounded-[var(--radius-sm)] bg-red-500/10 text-red-500">
+            <ShieldCheck size={24} />
+          </div>
+          <div>
+            <h2 className="text-xl font-bold">
+              {language === "ar" ? "إعدادات Google OAuth" : "Google OAuth Configuration"}
+            </h2>
+            <p className="text-xs text-[var(--text-muted)] mt-1">
+              {language === "ar" 
+                ? "قم بضبط بيانات Google OAuth لتمكين تسجيل الدخول بواسطة قوقل."
+                : "Configure Google OAuth credentials to enable Google Sign-In."}
+            </p>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div>
+            <label className="block text-sm font-medium text-[var(--text-secondary)] mb-1.5">
+              Google Client ID
+            </label>
+            <input
+              type="text"
+              value={googleClientId}
+              dir="ltr"
+              onChange={(e) => setGoogleClientId(e.target.value)}
+              placeholder="e.g. 123456789-abc.apps.googleusercontent.com"
+              className="w-full px-4 py-3 rounded-[var(--radius-sm)] border focus:outline-none focus:ring-2 focus:ring-accent/50 transition-theme bg-[var(--surface-subtle)] border-[var(--border-default)] text-[var(--text-primary)]"
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-[var(--text-secondary)] mb-1.5">
+              Google Client Secret
+            </label>
+            <input
+              type="password"
+              value={googleClientSecret}
+              dir="ltr"
+              onChange={(e) => setGoogleClientSecret(e.target.value)}
+              placeholder={googleClientSecret === "********" ? "••••••••" : "Enter client secret"}
+              className="w-full px-4 py-3 rounded-[var(--radius-sm)] border focus:outline-none focus:ring-2 focus:ring-accent/50 transition-theme bg-[var(--surface-subtle)] border-[var(--border-default)] text-[var(--text-primary)]"
+            />
+            {googleClientSecret === "********" && (
+              <p className="text-[10px] text-amber-500 mt-1">
+                {language === "ar" ? "المفتاح محفوظ ومشفر. اتركه كما هو إذا لم ترغب بتغييره." : "Secret is saved and encrypted. Leave as is if you don't want to change it."}
+              </p>
+            )}
+          </div>
+        </div>
+        <div className="flex justify-end mt-6">
+          <button
+            onClick={handleSaveGoogleOauth}
+            disabled={isSavingGoogleOauth}
+            className="flex items-center gap-2 bg-[var(--bg-accent-emphasis)] hover:opacity-90 text-[var(--fg-on-emphasis)] px-6 py-2.5 rounded-[var(--radius-sm)] transition-theme font-bold text-sm shadow-xs disabled:opacity-50 min-h-[44px] cursor-pointer"
+          >
+            {isSavingGoogleOauth ? (
+              <RefreshCw className="animate-spin" size={18} />
+            ) : (
+              <Save size={18} />
+            )}
+            {language === "ar" ? "حفظ إعدادات المصادقة" : "Save Auth Settings"}
           </button>
         </div>
       </div>

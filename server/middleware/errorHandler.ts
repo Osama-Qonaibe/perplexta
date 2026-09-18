@@ -42,6 +42,36 @@ export function errorHandler(
     if (err.stack) console.error(err.stack);
   }
 
+  // If it's a navigation request for HTML, return a friendly HTML error page instead of JSON
+  const acceptHeader = req.headers['accept'] || '';
+  const isHtmlRequest = req.method === 'GET' && acceptHeader.includes('text/html');
+
+  if (isHtmlRequest) {
+    const isAr = (req.headers['accept-language'] || '').toLowerCase().startsWith('ar');
+    return res.status(statusCode).send(`
+      <html>
+        <head>
+          <title>${isAr ? 'عذراً، حدث خطأ ما' : 'Sorry, something went wrong'}</title>
+          <meta name="viewport" content="width=device-width, initial-scale=1">
+          <style>
+            body { font-family: sans-serif; display: flex; align-items: center; justify-content: center; height: 100vh; margin: 0; background: #faf9f5; color: #181715; text-align: center; padding: 20px; }
+            .container { max-width: 500px; }
+            h1 { font-size: 24px; margin-bottom: 10px; }
+            p { color: #555; line-height: 1.5; }
+            button { margin-top: 20px; padding: 12px 24px; background: #181715; color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; }
+          </style>
+        </head>
+        <body>
+          <div class="container">
+            <h1>${isAr ? 'الموقع غير متوفر مؤقتاً' : 'Platform Temporarily Unavailable'}</h1>
+            <p>${isAr ? 'نحن نقوم بتحديث النظام أو هناك ضغط مؤقت على السيرفر. يرجى المحاولة مرة أخرى بعد لحظات.' : 'We are updating the system or there is temporary server load. Please try again in a few moments.'}</p>
+            <button onclick="window.location.reload()">${isAr ? 'إعادة التحميل' : 'Reload Page'}</button>
+          </div>
+        </body>
+      </html>
+    `);
+  }
+
   res.status(statusCode).json({
     error: err.message,
     code,

@@ -355,6 +355,17 @@ export async function getCachedSystemSettings(): Promise<any> {
       settings.firebase_private_key = safeDecrypt(settings.firebase_private_key, '');
     }
 
+    // Add environment variable fallbacks for Google OAuth to provide visibility in Admin Panel if DB is empty
+    if (!settings.google_client_id && process.env.GOOGLE_CLIENT_ID) {
+      settings.google_client_id = process.env.GOOGLE_CLIENT_ID;
+    }
+    if (!settings.google_client_secret && process.env.GOOGLE_CLIENT_SECRET) {
+      // We provide a hint that it's set in env without revealing the full secret here 
+      // if it's already masked in the UI logic. Actually, returning the value is fine 
+      // as it's an admin-only endpoint.
+      settings.google_client_secret = process.env.GOOGLE_CLIENT_SECRET;
+    }
+
     systemSettingsCache.set('global', { data: settings, timestamp: now });
     return settings;
   } catch (err: any) {

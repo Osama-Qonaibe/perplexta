@@ -471,7 +471,14 @@ app.use(uploadValidator);
 
 const publicPath = path.join(process.cwd(), 'public');
 const uploadsPath = path.join(process.cwd(), 'uploads');
-const distPath = path.join(process.cwd(), 'dist');
+// Robust distPath resolution supporting both local development and bundled production execution
+const distPath = fs.existsSync(path.join(process.cwd(), 'dist'))
+  ? path.join(process.cwd(), 'dist')
+  : (typeof __dirname !== 'undefined' ? __dirname : path.join(process.cwd()));
+
+const isProduction = process.env.NODE_ENV === 'production';
+const indexPath = path.join(distPath, 'index.html');
+const fallbackPath = path.join(process.cwd(), 'index.html');
 
 const serveStaticResource = (fileName: string, fallbackFileName?: string) => {
   return (req: express.Request, res: express.Response) => {
@@ -2327,17 +2334,23 @@ app.use(async (req: express.Request, res: express.Response, next: express.NextFu
     const isProduction = process.env.NODE_ENV === 'production';
 
     if (isProduction) {
-      baseHtml = cachedIndexHtml || fs.readFileSync(path.join(distPath, 'index.html'), 'utf8');
+      baseHtml = cachedIndexHtml || (fs.existsSync(indexPath) ? fs.readFileSync(indexPath, 'utf8') : '');
+      if (!baseHtml && fs.existsSync(fallbackPath)) {
+        baseHtml = fs.readFileSync(fallbackPath, 'utf8');
+      }
+      if (!baseHtml) {
+        throw new Error('Production index.html not found in dist or root');
+      }
     } else {
-      const indexPath = path.join(process.cwd(), 'index.html');
-      if (fs.existsSync(indexPath)) {
-        baseHtml = fs.readFileSync(indexPath, 'utf8');
+      const devIndexPath = fs.existsSync(fallbackPath) ? fallbackPath : path.join(process.cwd(), 'index.html');
+      if (fs.existsSync(devIndexPath)) {
+        baseHtml = fs.readFileSync(devIndexPath, 'utf8');
         const viteInstance = req.app.locals.vite;
         if (viteInstance) {
           baseHtml = await viteInstance.transformIndexHtml('/', baseHtml);
         }
       } else {
-        throw new Error('Root index.html not found');
+        throw new Error('Development index.html not found at ' + devIndexPath);
       }
     }
 
@@ -2351,12 +2364,23 @@ app.use(async (req: express.Request, res: express.Response, next: express.NextFu
 
     let finalHtml = processedHtml;
     try {
-      const settings = await getSystemSettings().catch(err => {
+      const settingsPromise = getSystemSettings().catch(err => {
         console.warn('[Server] System settings unavailable, using defaults for SEO:', err.message);
         return {} as any;
       });
-      finalHtml = await injectSEOTags(processedHtml, settings, req, baseUrl).catch(err => {
-        console.warn('[Server] SEO injection failed, serving base HTML:', err.message);
+
+      // Wrap SEO injection in a race with a timeout to prevent hanging the request if DB is slow
+      const timeoutPromise = new Promise<string>((resolve) => 
+        setTimeout(() => resolve(processedHtml), 2500)
+      );
+
+      const seoPromise = (async () => {
+        const settings = await settingsPromise;
+        return await injectSEOTags(processedHtml, settings, req, baseUrl);
+      })();
+
+      finalHtml = await Promise.race([seoPromise, timeoutPromise]).catch(err => {
+        console.warn('[Server] SEO injection failed or timed out, serving base HTML:', err.message);
         return processedHtml;
       });
     } catch (settingsError) {
@@ -2368,18 +2392,24 @@ app.use(async (req: express.Request, res: express.Response, next: express.NextFu
     res.setHeader('Expires', '0');
     res.setHeader('Surrogate-Control', 'no-store');
     res.setHeader('Vary', 'Accept-Encoding, Accept-Language, Cookie');
-    res.type('html').send(finalHtml);
+    return res.type('html').send(finalHtml);
   } catch (err) {
     console.error('[SEO] Wildcard serve error, falling back to basic noncing:', err);
     try {
       const isProduction = process.env.NODE_ENV === 'production';
-      const indexPath = isProduction ? path.join(distPath, 'index.html') : path.join(process.cwd(), 'index.html');
+      const rootPath = process.cwd();
+      const indexPath = isProduction ? path.join(distPath, 'index.html') : path.join(rootPath, 'index.html');
+      
+      if (!fs.existsSync(indexPath)) {
+        console.error('[SEO] Critical: index.html not found at', indexPath);
+        return res.status(503).send('<html><body style="font-family: sans-serif; display: flex; align-items: center; justify-content: center; height: 100vh; background: #faf9f5; color: #181715; text-align: center; padding: 20px;"><div><h1 style="font-size: 24px;">Perplexta — System Initializing</h1><p>The platform is synchronizing its secure workspace. This usually takes a few seconds.</p><button onclick="window.location.reload()" style="margin-top: 20px; padding: 10px 20px; background: #181715; color: white; border: none; border-radius: 4px; cursor: pointer;">Refresh Now</button></div></body></html>');
+      }
+
       const baseHtml = fs.readFileSync(indexPath, 'utf8');
       const nonce = res.locals.nonce || '';
       res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate');
       res.setHeader('Pragma', 'no-cache');
       res.setHeader('Expires', '0');
-      res.setHeader('Surrogate-Control', 'no-store');
       res.type('html').send(baseHtml.replace(/<script\b/g, `<script nonce="${nonce}"`) );
     } catch (readErr) {
       console.error('[SEO] Critical: Could not read index.html fallback:', readErr);

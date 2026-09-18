@@ -1,4 +1,4 @@
-// Version 1.0.3 - Resilient Routing & Navigation Bypass
+// Version 1.0.4 - Absolute Navigation Bypass & Resilience
 self.addEventListener('install', (event) => {
   self.skipWaiting();
 });
@@ -15,15 +15,23 @@ self.addEventListener('activate', (event) => {
 });
 
 self.addEventListener('fetch', (event) => {
-  // 1. Bypass all navigation requests (F5 / deep-link refreshes)
-  // This ensures the server always handles the initial HTML delivery,
-  // providing fresh CSP nonces and server-side SEO metadata.
-  if (event.request.mode === 'navigate') {
+  const isHtmlRequest = 
+    event.request.mode === 'navigate' || 
+    (event.request.method === 'GET' && event.request.headers.get('accept')?.includes('text/html'));
+
+  // 1. Absolute bypass for all navigation and HTML requests (F5 / deep-link refreshes)
+  // This ensures the server always handles the initial HTML delivery directly.
+  if (isHtmlRequest) {
     return;
   }
 
   // 2. Bypass API calls and Uploads - never cache these in SW
-  if (event.request.url.includes('/api/') || event.request.url.includes('/uploads/')) {
+  const isApiOrUploads = 
+    event.request.url.includes('/api/') || 
+    event.request.url.includes('/uploads/') ||
+    event.request.url.includes('/.well-known/');
+
+  if (isApiOrUploads) {
     return;
   }
 
