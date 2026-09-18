@@ -98,13 +98,7 @@ import { PwaInstallSuccessService } from './components/PwaInstallSuccessService'
 import { CriticalResourcePreloader } from './utils/criticalResourcePreloader';
 import { DiagnosticMobileOverlay } from './components/DiagnosticMobileOverlay';
 import { useThemeCustomizations } from './hooks/useThemeCustomizations';
-import {
-  resolveThemeMode,
-  getCachedBootstrapPayload,
-  persistBootstrapPayload,
-  mergeTokens
-} from './utils/ThemeSync';
-import { DEFAULT_LIGHT_TOKENS, DEFAULT_DARK_TOKENS } from './components/admin/theme/tokens/defaultTokens';
+import { ThemeSync } from './utils/ThemeSync';
 
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   const { user, isAuthReady } = useAppContext();
@@ -138,54 +132,11 @@ const PWAWrapper = ({ children }: { children: React.ReactNode }) => {
   
   useThemeCustomizations(theme);
 
-  // Monitor theme context changes and immediately update CSS custom property variables on document.documentElement with zero flicker
+  // Monitor theme context changes and delegate to single authoritative writer ThemeSync
   useEffect(() => {
     if (typeof window === 'undefined') return;
 
-    const root = document.documentElement;
-    const resolvedMode = resolveThemeMode(theme);
-    const isDark = resolvedMode === 'dark';
-
-    // Zero-flicker lock: suppress transitions temporarily to achieve seamless mode switching
-    root.classList.add('theme-booting');
-
-    // Synchronously apply theme attributes, classes, and color scheme
-    root.dataset.theme = resolvedMode;
-    root.classList.toggle('dark', isDark);
-    root.classList.toggle('light', !isDark);
-    root.style.colorScheme = resolvedMode;
-
-    // Update browser chrome / theme-color meta tag
-    const metaThemeColor =
-      document.getElementById('theme-color-meta') ||
-      document.querySelector('meta[name="theme-color"]');
-    if (metaThemeColor) {
-      metaThemeColor.setAttribute('content', isDark ? '#0d1117' : '#ffffff');
-    }
-
-    // Resolve and immediately inject custom property variables directly onto document.documentElement
-    const cached = getCachedBootstrapPayload();
-    const effectiveTokens = isDark
-      ? mergeTokens(DEFAULT_DARK_TOKENS, cached?.tokens?.dark)
-      : mergeTokens(DEFAULT_LIGHT_TOKENS, cached?.tokens?.light);
-
-    for (const [property, value] of Object.entries(effectiveTokens)) {
-      if (typeof property === 'string' && property.startsWith('--') && typeof value === 'string') {
-        root.style.setProperty(property, value);
-      }
-    }
-
-    // Persist updated bootstrap state for instant subsequent initializations
-    persistBootstrapPayload({
-      version: 4,
-      mode: theme,
-      resolvedMode,
-      tokens: {
-        light: mergeTokens(DEFAULT_LIGHT_TOKENS, cached?.tokens?.light),
-        dark: mergeTokens(DEFAULT_DARK_TOKENS, cached?.tokens?.dark)
-      },
-      updatedAt: Date.now()
-    });
+    ThemeSync.apply(theme);
 
     let mediaQueryList: MediaQueryList | null = null;
     let handleSystemChange: (() => void) | null = null;
@@ -193,35 +144,7 @@ const PWAWrapper = ({ children }: { children: React.ReactNode }) => {
     if (theme === 'system' && window.matchMedia) {
       mediaQueryList = window.matchMedia('(prefers-color-scheme: dark)');
       handleSystemChange = () => {
-        const sysDark = mediaQueryList?.matches ?? false;
-        const sysMode = sysDark ? 'dark' : 'light';
-
-        root.classList.add('theme-booting');
-        root.dataset.theme = sysMode;
-        root.classList.toggle('dark', sysDark);
-        root.classList.toggle('light', !sysDark);
-        root.style.colorScheme = sysMode;
-
-        if (metaThemeColor) {
-          metaThemeColor.setAttribute('content', sysDark ? '#0d1117' : '#ffffff');
-        }
-
-        const freshCache = getCachedBootstrapPayload();
-        const sysTokens = sysDark
-          ? mergeTokens(DEFAULT_DARK_TOKENS, freshCache?.tokens?.dark)
-          : mergeTokens(DEFAULT_LIGHT_TOKENS, freshCache?.tokens?.light);
-
-        for (const [k, v] of Object.entries(sysTokens)) {
-          if (typeof k === 'string' && k.startsWith('--') && typeof v === 'string') {
-            root.style.setProperty(k, v);
-          }
-        }
-
-        requestAnimationFrame(() => {
-          requestAnimationFrame(() => {
-            root.classList.remove('theme-booting');
-          });
-        });
+        ThemeSync.apply('system');
       };
 
       if (mediaQueryList.addEventListener) {
@@ -231,15 +154,7 @@ const PWAWrapper = ({ children }: { children: React.ReactNode }) => {
       }
     }
 
-    // Remove anti-flash lock smoothly after style updates are committed
-    const rafId = requestAnimationFrame(() => {
-      requestAnimationFrame(() => {
-        root.classList.remove('theme-booting');
-      });
-    });
-
     return () => {
-      cancelAnimationFrame(rafId);
       if (mediaQueryList && handleSystemChange) {
         if (mediaQueryList.removeEventListener) {
           mediaQueryList.removeEventListener('change', handleSystemChange);

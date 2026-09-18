@@ -1,11 +1,10 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { User, Mail, Lock, Camera, Edit2, ShieldCheck, CreditCard, Check, X, Loader2, Languages, Monitor, Archive, Trash2, AlertTriangle, Palette, Zap } from 'lucide-react';
+import { User, Mail, Lock, Camera, Edit2, ShieldCheck, CreditCard, Check, X, Loader2, Languages, Monitor, Archive, Trash2, AlertTriangle, Zap } from 'lucide-react';
 import { useAppContext } from '../context/AppContext';
 import { motion, AnimatePresence } from 'motion/react';
 import { resolveImageUrl } from '../utils/imageResolver';
 import { ThemeToggleButton } from './ThemeToggleButton';
 import { StoryArchive } from './StoryArchive';
-import { SOVEREIGN_TEMPLATES, applySovereignTemplate, getSavedSovereignTemplate } from '../constants/templates';
 import { toast } from '@/design-system';
 
 interface AccountSettingsProps {
@@ -23,7 +22,6 @@ export const AccountSettings: React.FC<AccountSettingsProps> = ({ user, onUpdate
   const [avatarLoadError, setAvatarLoadError] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [isDeletingAccount, setIsDeletingAccount] = useState(false);
-  const [currentTemplate, setCurrentTemplate] = useState<string>(getSavedSovereignTemplate);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { t, token, setIsOperationPending, language, setLanguage, logout } = useAppContext();
 
@@ -389,66 +387,6 @@ export const AccountSettings: React.FC<AccountSettingsProps> = ({ user, onUpdate
            </div>
            <div className="shrink-0 scale-90 sm:scale-100">
              <ThemeToggleButton variant="segmented" />
-           </div>
-        </div>
-
-        {/* Aesthetic Template Engine Selector */}
-        <div className="py-3 sm:py-4 border-b border-[var(--border-default)] space-y-2 sm:space-y-3">
-           <div className="flex items-center gap-3 sm:gap-4">
-              <div className="p-2 sm:p-2.5 rounded-[var(--radius-sm)] bg-[var(--surface-subtle)] text-[var(--text-muted)] shrink-0 border border-transparent">
-                <Palette size={16} />
-              </div>
-              <div className="min-w-0">
-                <div className="flex items-center gap-2">
-                  <p className="text-[10px] font-bold text-[var(--text-muted)] uppercase tracking-wider">{dir === 'rtl' ? 'القالب اللوني المعتمد' : 'System Color Palette'}</p>
-                </div>
-                <p className="font-bold text-xs sm:text-sm text-[var(--text-primary)] truncate">
-                  {SOVEREIGN_TEMPLATES.find(t => t.id === currentTemplate)?.[dir === 'rtl' ? 'nameAr' : 'name'] || 'Claude Classic Dark'}
-                </p>
-              </div>
-           </div>
-
-           {/* Template Cards Grid - Compact Tiles on Mobile */}
-           <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-4 gap-2 pt-1">
-             {SOVEREIGN_TEMPLATES.map((tmpl) => {
-               const isSelected = currentTemplate === tmpl.id;
-               return (
-                 <button
-                   key={tmpl.id}
-                   type="button"
-                   onClick={() => {
-                     applySovereignTemplate(tmpl.id);
-                     setCurrentTemplate(tmpl.id);
-                     notify(dir === 'rtl' ? `تم تفعيل قالب ${tmpl.nameAr}` : `Activated ${tmpl.name} template`);
-                   }}
-                   className={`p-2.5 sm:p-3 rounded-[var(--radius-sm)] border text-start transition-all duration-150 cursor-pointer relative overflow-hidden group/tmpl ${
-                     isSelected
-                       ? 'border-[var(--border-accent)]/40 bg-[var(--bg-accent-muted)] shadow-xs ring-1 ring-[var(--border-accent)]/30'
-                       : 'border-[var(--border-default)] bg-[var(--surface-subtle)] hover:bg-[var(--surface-card)] hover:border-[var(--border-accent)]/20'
-                   }`}
-                 >
-                   <div className="flex items-center justify-between mb-1 sm:mb-1.5">
-                     <div className="flex items-center gap-1 sm:gap-2 min-w-0">
-                       <div 
-                         className="w-2.5 h-2.5 sm:w-3 sm:h-3 rounded-full border border-black/30 shadow-2xs shrink-0"
-                         style={{ backgroundColor: tmpl.accentColor }} 
-                       />
-                       <span className="text-[11px] sm:text-xs font-bold text-[var(--text-primary)] truncate">
-                         {dir === 'rtl' ? tmpl.nameAr : tmpl.name}
-                       </span>
-                     </div>
-                     {isSelected && (
-                       <span className="w-3.5 h-3.5 rounded-full bg-[var(--accent)] text-[var(--fg-on-emphasis)] flex items-center justify-center text-[9px] shrink-0 font-black">
-                         <Check size={9} className="stroke-[3]" />
-                       </span>
-                     )}
-                   </div>
-                   <p className="hidden sm:block text-[10px] text-[var(--text-muted)] font-medium line-clamp-2 leading-tight">
-                     {dir === 'rtl' ? tmpl.descriptionAr : tmpl.description}
-                   </p>
-                 </button>
-               );
-             })}
            </div>
         </div>
 

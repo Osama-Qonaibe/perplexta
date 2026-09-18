@@ -13,6 +13,7 @@ import {
 } from 'recharts';
 import { Activity, Clock, Cpu, RefreshCw, Server, Users, Zap } from 'lucide-react';
 import { toast, SelectDropdown } from '@/design-system';
+import { resolveToken } from '@/utils/tokenResolver';
 
 interface RenderMetricItem {
   id: string;
@@ -25,11 +26,14 @@ interface RenderMetricItem {
 }
 
 export const AdminRenderMetricsView: React.FC = () => {
-  const { token, theme } = useAppContext();
+  const { token } = useAppContext();
   const [metrics, setMetrics] = useState<RenderMetricItem[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [selectedComponent, setSelectedComponent] = useState<string>('all');
   const [selectedSession, setSelectedSession] = useState<string>('all');
+
+  const chartGridStroke = resolveToken('--border-default', '#27272a');
+  const chartAxisStroke = resolveToken('--text-muted', '#71717a');
 
   const fetchMetrics = async () => {
     setLoading(true);
@@ -73,8 +77,6 @@ export const AdminRenderMetricsView: React.FC = () => {
       document.removeEventListener('visibilitychange', handleVisibility);
     };
   }, [token]);
-
-  const isDark = theme === 'dark';
 
   const componentsList = Array.from(new Set(metrics.map(m => m.componentName)));
   const sessionsList = Array.from(new Set(metrics.map(m => m.sessionId || 'unknown')));
@@ -221,9 +223,9 @@ export const AdminRenderMetricsView: React.FC = () => {
           <div className="h-72 w-full">
             <ResponsiveContainer width="100%" height="100%">
               <AreaChart data={chartData}>
-                <CartesianGrid strokeDasharray="3 3" stroke={isDark ? '#27272a' : '#e5e7eb'} />
-                <XAxis dataKey="name" stroke={isDark ? '#71717a' : '#9ca3af'} fontSize={11} />
-                <YAxis stroke={isDark ? '#71717a' : '#9ca3af'} fontSize={11} unit="ms" />
+                <CartesianGrid strokeDasharray="3 3" stroke={chartGridStroke} />
+                <XAxis dataKey="name" stroke={chartAxisStroke} fontSize={11} />
+                <YAxis stroke={chartAxisStroke} fontSize={11} unit="ms" />
                 <Tooltip 
                   contentStyle={{ 
                     backgroundColor: 'var(--surface-card)', 
@@ -247,9 +249,9 @@ export const AdminRenderMetricsView: React.FC = () => {
           <div className="h-72 w-full">
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={barChartData}>
-                <CartesianGrid strokeDasharray="3 3" stroke={isDark ? '#27272a' : '#e5e7eb'} />
-                <XAxis dataKey="componentName" stroke={isDark ? '#71717a' : '#9ca3af'} fontSize={10} angle={-15} textAnchor="end" />
-                <YAxis stroke={isDark ? '#71717a' : '#9ca3af'} fontSize={11} unit="ms" />
+                <CartesianGrid strokeDasharray="3 3" stroke={chartGridStroke} />
+                <XAxis dataKey="componentName" stroke={chartAxisStroke} fontSize={10} angle={-15} textAnchor="end" />
+                <YAxis stroke={chartAxisStroke} fontSize={11} unit="ms" />
                 <Tooltip 
                   contentStyle={{ 
                     backgroundColor: 'var(--surface-card)', 

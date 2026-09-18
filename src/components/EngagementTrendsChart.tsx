@@ -3,6 +3,7 @@ import * as d3 from 'd3';
 import { motion } from 'motion/react';
 import { TrendingUp, Activity, BarChart2, Sparkles, Zap, ChevronDown } from 'lucide-react';
 import { useAppContext } from '../context/AppContext';
+import { resolveToken } from '@/utils/tokenResolver';
 
 export interface TrendDataPoint {
   date: Date;
@@ -22,7 +23,7 @@ interface EngagementTrendsChartProps {
 export const EngagementTrendsChart: React.FC<EngagementTrendsChartProps> = ({
   initialTimeframe = '30d',
 }) => {
-  const { language, resolvedTheme } = useAppContext();
+  const { language } = useAppContext();
   const isRtl = language === 'ar';
   const containerRef = useRef<HTMLDivElement>(null);
   const svgRef = useRef<SVGSVGElement>(null);
@@ -91,10 +92,10 @@ export const EngagementTrendsChart: React.FC<EngagementTrendsChartProps> = ({
 
     const g = svg.append('g').attr('transform', `translate(${margin.left},${margin.top})`);
 
-    const isDark = resolvedTheme === 'dark';
-    const strokeColor = '#06b6d4'; // Cyan 500
-    const gridColor = isDark ? 'rgba(255, 255, 255, 0.07)' : 'rgba(0, 0, 0, 0.06)';
-    const textColor = isDark ? '#94a3b8' : '#64748b';
+    const strokeColor = resolveToken('--accent', '#06b6d4');
+    const gridColor = resolveToken('--border-default', 'rgba(255, 255, 255, 0.07)');
+    const textColor = resolveToken('--text-secondary', '#94a3b8');
+    const dotStrokeColor = resolveToken('--surface-page', '#0f172a');
 
     const defs = svg.append('defs');
 
@@ -109,13 +110,13 @@ export const EngagementTrendsChart: React.FC<EngagementTrendsChartProps> = ({
     gradient
       .append('stop')
       .attr('offset', '0%')
-      .attr('stop-color', '#06b6d4')
-      .attr('stop-opacity', isDark ? 0.35 : 0.20);
+      .attr('stop-color', strokeColor)
+      .attr('stop-opacity', 0.35);
 
     gradient
       .append('stop')
       .attr('offset', '100%')
-      .attr('stop-color', '#06b6d4')
+      .attr('stop-color', strokeColor)
       .attr('stop-opacity', 0.0);
 
     const filter = defs.append('filter').attr('id', 'accent-glow').attr('height', '130%');
@@ -221,8 +222,8 @@ export const EngagementTrendsChart: React.FC<EngagementTrendsChartProps> = ({
     const focusDot = g
       .append('circle')
       .attr('r', 5)
-      .attr('fill', '#06b6d4')
-      .attr('stroke', isDark ? '#0f172a' : '#ffffff')
+      .attr('fill', strokeColor)
+      .attr('stroke', dotStrokeColor)
       .attr('stroke-width', 2.5)
       .style('opacity', 0);
 
@@ -259,7 +260,7 @@ export const EngagementTrendsChart: React.FC<EngagementTrendsChartProps> = ({
         setHoveredPoint(null);
         setTooltipPos(null);
       });
-  }, [data, activeMetric, resolvedTheme, language, isMobileChartExpanded]);
+  }, [data, activeMetric, language, isMobileChartExpanded]);
 
   const totalClicks = data.reduce((acc, curr) => acc + curr.clicks, 0);
   const avgMatch = data.length ? (data.reduce((acc, curr) => acc + curr.matchScore, 0) / data.length).toFixed(1) : '94.5';

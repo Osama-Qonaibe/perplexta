@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { useArtifact } from '../../../context/ArtifactContext';
 import { useAppContext } from '../../../context/AppContext';
+import { useResolvedTheme } from '../../../hooks/useResolvedTheme';
 import { useResizeObserver } from '../../../hooks/useResizeObserver';
 import { ArtifactCode } from './ArtifactCode';
 import { ArtifactPreview } from './ArtifactPreview';
@@ -61,7 +62,8 @@ export function ArtifactCanvas() {
     setShowCodeSearch,
     showFileTree
   } = useArtifact();
-  const { dir, language, resolvedTheme } = useAppContext();
+  const { dir, language } = useAppContext();
+  const { isDark } = useResolvedTheme();
   const [copied, setCopied] = useState(false);
   const [isRefreshing, setIsRefreshing] = useState(false);
 
@@ -83,7 +85,6 @@ export function ArtifactCanvas() {
   if (!activeArtifact) return null;
 
   const isAr = language === 'ar' || dir === 'rtl';
-  const isDark = resolvedTheme === 'dark';
   const extension = activeArtifact.type === 'react'
     ? 'tsx'
     : activeArtifact.type === 'html'

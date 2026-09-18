@@ -24,6 +24,7 @@ import {
   Info
 } from 'lucide-react';
 import { toast } from '@/design-system';
+import { resolveToken } from '@/utils/tokenResolver';
 import {
   ResponsiveContainer,
   BarChart,
@@ -54,7 +55,7 @@ const DEFAULT_DATASET = [
 const CHART_COLORS = ['#0891b2', '#06b6d4', '#3b82f6', '#10b981', '#f59e0b'];
 
 export function ArtifactAIAnalysis({ artifact }: ArtifactAIAnalysisProps) {
-  const { language, resolvedTheme } = useAppContext();
+  const { language } = useAppContext();
   const { updateArtifactContent, setActiveTab } = useArtifact();
   const [selectedChartType, setSelectedChartType] = useState<'bar' | 'line' | 'pie'>('bar');
   const [snapshotUrl, setSnapshotUrl] = useState<string | null>(null);
@@ -62,7 +63,12 @@ export function ArtifactAIAnalysis({ artifact }: ArtifactAIAnalysisProps) {
   const [copiedAnalysis, setCopiedAnalysis] = useState(false);
 
   const isAr = language === 'ar';
-  const isDark = resolvedTheme === 'dark';
+
+  const chartGridColor = resolveToken('--border-default', '#334155');
+  const chartTextColor = resolveToken('--text-secondary', '#94a3b8');
+  const chartTooltipBg = resolveToken('--surface-card', '#0f172a');
+  const chartTooltipBorder = resolveToken('--border-default', '#334155');
+  const snapshotBg = resolveToken('--surface-page', '#0b101b');
 
   // Structural inspection metrics
   const inspection = useMemo(() => {
@@ -108,7 +114,7 @@ export function ArtifactAIAnalysis({ artifact }: ArtifactAIAnalysisProps) {
       const dataUrl = await toPng(iframe.contentDocument.body, {
         cacheBust: true,
         quality: 0.95,
-        backgroundColor: isDark ? '#0b101b' : '#ffffff'
+        backgroundColor: snapshotBg
       });
 
       setSnapshotUrl(dataUrl);
@@ -353,15 +359,16 @@ const dataMetrics = [
           <ResponsiveContainer width="100%" height="100%">
             {selectedChartType === 'bar' ? (
               <BarChart data={DEFAULT_DATASET} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
-                <CartesianGrid strokeDasharray="3 3" stroke={isDark ? '#334155' : '#e2e8f0'} opacity={0.6} />
-                <XAxis dataKey="name" stroke={isDark ? '#94a3b8' : '#64748b'} fontSize={11} tickLine={false} />
-                <YAxis stroke={isDark ? '#94a3b8' : '#64748b'} fontSize={11} tickLine={false} />
+                <CartesianGrid strokeDasharray="3 3" stroke={chartGridColor} opacity={0.6} />
+                <XAxis dataKey="name" stroke={chartTextColor} fontSize={11} tickLine={false} />
+                <YAxis stroke={chartTextColor} fontSize={11} tickLine={false} />
                 <Tooltip
                   contentStyle={{
-                    backgroundColor: isDark ? '#0f172a' : '#ffffff',
-                    borderColor: isDark ? '#334155' : '#e2e8f0',
+                    backgroundColor: chartTooltipBg,
+                    borderColor: chartTooltipBorder,
                     borderRadius: '8px',
-                    fontSize: '11px'
+                    fontSize: '11px',
+                    color: resolveToken('--text-primary', '#e6edf3')
                   }}
                 />
                 <Bar dataKey="value" fill="#0891b2" radius={[4, 4, 0, 0]} />
@@ -369,15 +376,16 @@ const dataMetrics = [
               </BarChart>
             ) : selectedChartType === 'line' ? (
               <LineChart data={DEFAULT_DATASET} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
-                <CartesianGrid strokeDasharray="3 3" stroke={isDark ? '#334155' : '#e2e8f0'} opacity={0.6} />
-                <XAxis dataKey="name" stroke={isDark ? '#94a3b8' : '#64748b'} fontSize={11} tickLine={false} />
-                <YAxis stroke={isDark ? '#94a3b8' : '#64748b'} fontSize={11} tickLine={false} />
+                <CartesianGrid strokeDasharray="3 3" stroke={chartGridColor} opacity={0.6} />
+                <XAxis dataKey="name" stroke={chartTextColor} fontSize={11} tickLine={false} />
+                <YAxis stroke={chartTextColor} fontSize={11} tickLine={false} />
                 <Tooltip
                   contentStyle={{
-                    backgroundColor: isDark ? '#0f172a' : '#ffffff',
-                    borderColor: isDark ? '#334155' : '#e2e8f0',
+                    backgroundColor: chartTooltipBg,
+                    borderColor: chartTooltipBorder,
                     borderRadius: '8px',
-                    fontSize: '11px'
+                    fontSize: '11px',
+                    color: resolveToken('--text-primary', '#e6edf3')
                   }}
                 />
                 <Line type="monotone" dataKey="value" stroke="#0891b2" strokeWidth={2.5} dot={{ r: 4 }} />
@@ -387,10 +395,11 @@ const dataMetrics = [
               <PieChart>
                 <Tooltip
                   contentStyle={{
-                    backgroundColor: isDark ? '#0f172a' : '#ffffff',
-                    borderColor: isDark ? '#334155' : '#e2e8f0',
+                    backgroundColor: chartTooltipBg,
+                    borderColor: chartTooltipBorder,
                     borderRadius: '8px',
-                    fontSize: '11px'
+                    fontSize: '11px',
+                    color: resolveToken('--text-primary', '#e6edf3')
                   }}
                 />
                 <Pie

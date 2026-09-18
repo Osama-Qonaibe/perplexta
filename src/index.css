@@ -406,6 +406,12 @@
 
   --fg-info: #58a6ff;
   --bg-info-muted: rgba(88, 166, 255, 0.15);
+  --status-success: #238636;
+  --status-success-subtle: rgba(35, 134, 54, 0.15);
+  --status-warning: #db6d28;
+  --status-warning-subtle: rgba(219, 109, 40, 0.12);
+  --status-danger: #f85149;
+  --status-danger-subtle: rgba(248, 81, 73, 0.15);
   --status-info: #58a6ff;
   --status-info-subtle: rgba(88, 166, 255, 0.15);
 
