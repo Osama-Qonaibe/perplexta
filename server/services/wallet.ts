@@ -3,6 +3,8 @@ import { encrypt, decrypt } from '../utils/crypto.js';
 import { createNotification } from './notifications.js';
 import { io } from '../config/socket.js';
 import { logFinancialAudit } from './auditLogger.js';
+import { AppError } from '../middleware/errorHandler.js';
+import { ERROR_CODES } from '../utils/errorCodes.js';
 
 // ─── Constants ───────────────────────────────────────────────────────────────
 
@@ -423,8 +425,15 @@ export async function deductFromWallet(userId: string | number, amount: number, 
     const { rows } = await client.query(
       'SELECT id, balance FROM wallets WHERE user_id = $1 FOR UPDATE', [userIdNum]
     );
-    if (!rows.length)                       throw new Error('Wallet not found');
-    if (Number(rows[0].balance) < amount)   throw new Error('Insufficient balance');
+    if (!rows.length) throw new AppError('Wallet not found', ERROR_CODES.RESOURCE_NOT_FOUND.status, ERROR_CODES.RESOURCE_NOT_FOUND.code);
+    const wallet = rows[0];
+    if (Number(wallet.balance) < amount || wallet.balance < amount) {
+      throw new AppError(
+        'Insufficient balance',
+        ERROR_CODES.AUTH_FORBIDDEN.status,
+        ERROR_CODES.AUTH_FORBIDDEN.code
+      );
+    }
 
     const result = await client.query(
       'UPDATE wallets SET balance = balance - $1, updated_at = CURRENT_TIMESTAMP WHERE id = $2 RETURNING balance',
