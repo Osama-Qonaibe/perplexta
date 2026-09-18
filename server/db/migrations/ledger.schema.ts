@@ -7,9 +7,9 @@ export const LEDGER_SCHEMA_TABLES: { name: string; query: string }[] = [
     query: `CREATE TABLE IF NOT EXISTS wallets (
   id SERIAL PRIMARY KEY,
   user_id INTEGER UNIQUE NOT NULL,
-  balance DECIMAL(20,4) DEFAULT 0.00,
-  usd_balance DECIMAL(20,4) DEFAULT 0.00,
-  points INTEGER DEFAULT 0,
+  balance DECIMAL(20,4) DEFAULT 0.00 CHECK (balance >= 0),
+  usd_balance DECIMAL(20,4) DEFAULT 0.00 CHECK (usd_balance >= 0),
+  points INTEGER DEFAULT 0 CHECK (points >= 0),
   total_deposited DECIMAL(20,4) DEFAULT 0.00,
   total_withdrawn DECIMAL(20,4) DEFAULT 0.00,
   total_earned_referral DECIMAL(20,4) DEFAULT 0.00,

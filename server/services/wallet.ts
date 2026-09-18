@@ -2,6 +2,7 @@ import { ledgerPool, pool } from '../db/index.js';
 import { encrypt, decrypt } from '../utils/crypto.js';
 import { createNotification } from './notifications.js';
 import { io } from '../config/socket.js';
+import { logFinancialAudit } from './auditLogger.js';
 
 // ─── Constants ───────────────────────────────────────────────────────────────
 
@@ -306,6 +307,12 @@ export async function requestWithdrawal(userId: string, amountUSD: number, metho
     );
     await enforceTransactionLimit(userId, client);
     await client.query('COMMIT');
+
+    await logFinancialAudit(parseInt(userId as string, 10), 'withdrawal', amountUSD, {
+      method: cleanedMethod,
+      details: sanitizedDetails
+    });
+
     return { success: true };
   } catch (err) {
     await client.query('ROLLBACK');
@@ -423,12 +430,18 @@ export async function deductFromWallet(userId: string | number, amount: number, 
       'UPDATE wallets SET balance = balance - $1, updated_at = CURRENT_TIMESTAMP WHERE id = $2 RETURNING balance',
       [amount, rows[0].id]
     );
-    await client.query(
-      'INSERT INTO ledger_transactions (user_id, wallet_id, amount, transaction_type, description) VALUES ($1,$2,$3,$4,$5)',
+    const txResult = await client.query(
+      'INSERT INTO ledger_transactions (user_id, wallet_id, amount, transaction_type, description) VALUES ($1,$2,$3,$4,$5) RETURNING id',
       [userIdNum, rows[0].id, -amount, transactionType, description]
     );
     await enforceTransactionLimit(userIdNum, client);
     await client.query('COMMIT');
+
+    await logFinancialAudit(userIdNum, 'purchase', amount, {
+      transactionId: txResult.rows[0]?.id,
+      balance: result.rows[0].balance
+    });
+
     return result.rows[0].balance;
   } catch (err) {
     await client.query('ROLLBACK');
@@ -544,6 +557,12 @@ export async function depositToWallet(userId: string | number, amount: number, m
     );
     await enforceTransactionLimit(userIdNum, client);
     await client.query('COMMIT');
+
+    await logFinancialAudit(userIdNum, 'deposit', amount, {
+      method,
+      description,
+      newBalance: result.rows[0].balance
+    });
 
     try { await checkReferralActivation(userIdNum); }
     catch (refErr) { console.warn('[Wallet] Referral activation check failed:', refErr); }

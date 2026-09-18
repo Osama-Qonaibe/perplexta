@@ -123,6 +123,7 @@ router.post("/signup", authLimiter, async (req, res, next) => {
       const parentUser = await pool.query('SELECT id FROM users WHERE UPPER(referral_code) = $1', [ref.trim().toUpperCase()]);
       if (parentUser.rows.length > 0) {
         referredBy = parentUser.rows[0].id;
+        (req as any).referrerId = parentUser.rows[0].id;
       }
     }
 
@@ -136,6 +137,15 @@ router.post("/signup", authLimiter, async (req, res, next) => {
     );
 
     const user = result.rows[0];
+
+    // Verify referral fraud (self-referral prevention)
+    if ((req as any).referrerId && (req as any).referrerId === user.id) {
+      throw new AppError(
+        'Cannot refer yourself',
+        ERROR_CODES.AUTH_FORBIDDEN.status,
+        ERROR_CODES.AUTH_FORBIDDEN.code
+      );
+    }
     
     let welcomeBonusPoints = 600;
     try {

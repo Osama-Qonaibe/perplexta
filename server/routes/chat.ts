@@ -105,6 +105,26 @@ router.get("/:id", authenticateToken, async (req: any, res) => {
 
 router.post("/:id/messages", authenticateToken, chatLimiter, async (req: any, res) => {
   try {
+    const userId = req.user.id;
+    const limits = (req as any).subscriptionLimits || { messagesPerDay: 10, activeChats: 1 };
+    
+    // Check daily message limit
+    const today = new Date().toISOString().split('T')[0];
+    const msgCountResult = await pool.query(
+      `SELECT COUNT(*) as count FROM messages m
+       JOIN chats c ON m.chat_id = c.id
+       WHERE c.user_id = $1 AND DATE(m.created_at) = $2`,
+      [userId, today]
+    );
+    
+    const msgCount = parseInt(msgCountResult.rows[0]?.count || '0');
+    if (limits && limits.messagesPerDay && msgCount >= limits.messagesPerDay) {
+      return res.status(403).json({
+        error: 'daily_limit_exceeded',
+        message: `Daily message limit exceeded (${limits.messagesPerDay} messages/day). Upgrade your plan for more.`
+      });
+    }
+
     const hasActiveSub = await checkActiveSubscription(req.user.id);
     if (!hasActiveSub) {
       return res.status(403).json({ error: 'subscription_required', message: 'An active subscription is required to send messages.' });

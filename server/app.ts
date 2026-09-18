@@ -1333,6 +1333,7 @@ app.get('/api/docs/openapi.json', (req, res) => {
   });
 });
 
+import { checkSubscriptionLimits } from './middleware/subscriptionLimits.js';
 import mcpRoutes from './routes/mcp.js';
 import authRoutes from './routes/auth.js';
 import chatRoutes from './routes/chat.js';
@@ -1368,8 +1369,8 @@ import studioRoutes from './routes/studio.js';
 
 app.use('/api/mcp', mcpRoutes);
 app.use('/api/auth', authLimiter, authRoutes);
-app.use('/api/chats', chatRoutes);
-app.use('/api/messages', messageRoutes);
+app.use('/api/chats', checkSubscriptionLimits, chatRoutes);
+app.use('/api/messages', checkSubscriptionLimits, messageRoutes);
 app.use('/api/admin', adminLimiter, adminRoutes);
 app.use('/api/admin/gpu-providers', adminLimiter, gpuProvidersRoutes);
 app.use('/api/files', fileRoutes);
