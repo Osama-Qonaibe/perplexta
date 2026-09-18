@@ -3,10 +3,12 @@ import { pool } from '../db/index.js';
 import { authenticateAdmin } from '../middleware/auth.js';
 import { syncSystemTemplates, verifySmtpConnection } from '../services/email.js';
 import { emailConfigSchema, verifyEmailConfigSchema, emailTemplateSchema } from '../schemas/email.schemas.js';
+import { AppError } from '../middleware/errorHandler.js';
+import { ERROR_CODES } from '../utils/errorCodes.js';
 
 const router = express.Router();
 
-router.get('/config', authenticateAdmin, async (req, res) => {
+router.get('/config', authenticateAdmin, async (req, res, next) => {
   try {
     const check = await pool.query('SELECT * FROM email_settings LIMIT 1');
     if (check.rows.length === 0) {
@@ -25,19 +27,19 @@ router.get('/config', authenticateAdmin, async (req, res) => {
     }
     res.json(check.rows[0]);
   } catch (error: any) {
-    console.error('[EmailConfig] Failed to fetch config:', error);
-    res.status(500).json({ error: error.message || 'Internal Server Error' });
+    next(error);
   }
 });
 
-router.put('/config', authenticateAdmin, async (req, res) => {
+router.put('/config', authenticateAdmin, async (req, res, next) => {
   try {
     const parsed = emailConfigSchema.safeParse(req.body);
     if (!parsed.success) {
-      return res.status(400).json({
-        error: 'Validation failed',
-        details: parsed.error.flatten()
-      });
+      throw new AppError(
+        'Validation failed',
+        ERROR_CODES.VALIDATION_FAILED.status,
+        ERROR_CODES.VALIDATION_FAILED.code
+      );
     }
 
     const {
@@ -79,23 +81,27 @@ router.put('/config', authenticateAdmin, async (req, res) => {
       sender_email || ''
     ]);
     if (upsertRes.rows.length === 0) {
-      return res.status(500).json({ error: 'Failed to record secure configurations in database registry due to an empty response.' });
+      throw new AppError(
+        'Failed to record secure configurations in database registry due to an empty response.',
+        ERROR_CODES.DB_QUERY_ERROR.status,
+        ERROR_CODES.DB_QUERY_ERROR.code
+      );
     }
     res.json(upsertRes.rows[0]);
   } catch (error: any) {
-    console.error('[EmailConfig] Failed to save config:', error);
-    res.status(500).json({ error: error.message || 'Internal Server Error' });
+    next(error);
   }
 });
 
-router.post('/verify', authenticateAdmin, async (req, res) => {
+router.post('/verify', authenticateAdmin, async (req, res, next) => {
   try {
     const parsed = verifyEmailConfigSchema.safeParse(req.body);
     if (!parsed.success) {
-      return res.status(400).json({
-        error: 'Validation failed',
-        details: parsed.error.flatten()
-      });
+      throw new AppError(
+        'Validation failed',
+        ERROR_CODES.VALIDATION_FAILED.status,
+        ERROR_CODES.VALIDATION_FAILED.code
+      );
     }
 
     const {
@@ -118,8 +124,11 @@ router.post('/verify', authenticateAdmin, async (req, res) => {
         smtp_password
       });
     } catch (verifyErr: any) {
-      console.error('[EmailConfig] Verification failed:', verifyErr);
-      return res.status(400).json({ error: `Connection failed: ${verifyErr.message}` });
+      throw new AppError(
+        `Connection failed: ${verifyErr.message}`,
+        ERROR_CODES.SERVICE_UNAVAILABLE.status,
+        ERROR_CODES.SERVICE_UNAVAILABLE.code
+      );
     }
 
     const upsertRes = await pool.query(`
@@ -153,35 +162,38 @@ router.post('/verify', authenticateAdmin, async (req, res) => {
       sender_email || ''
     ]);
     if (upsertRes.rows.length === 0) {
-      return res.status(500).json({ error: 'Failed to record verified secure configurations in the database.' });
+      throw new AppError(
+        'Failed to record verified secure configurations in the database.',
+        ERROR_CODES.DB_QUERY_ERROR.status,
+        ERROR_CODES.DB_QUERY_ERROR.code
+      );
     }
     const savedRow = upsertRes.rows[0];
 
     res.json({ success: true, config: savedRow });
   } catch (error: any) {
-    console.error('[EmailConfig] Verify failed:', error);
-    res.status(500).json({ error: error.message || 'Internal Server Error' });
+    next(error);
   }
 });
 
-router.get('/templates', authenticateAdmin, async (req, res) => {
+router.get('/templates', authenticateAdmin, async (req, res, next) => {
   try {
     const result = await pool.query('SELECT * FROM email_templates ORDER BY name ASC');
     res.json(result.rows);
   } catch (error: any) {
-    console.error('[EmailTemplates] Failed to fetch templates:', error);
-    res.status(500).json({ error: error.message || 'Internal Server Error' });
+    next(error);
   }
 });
 
-router.post('/templates', authenticateAdmin, async (req, res) => {
+router.post('/templates', authenticateAdmin, async (req, res, next) => {
   try {
     const parsed = emailTemplateSchema.safeParse(req.body);
     if (!parsed.success) {
-      return res.status(400).json({
-        error: 'Validation failed',
-        details: parsed.error.flatten()
-      });
+      throw new AppError(
+        'Validation failed',
+        ERROR_CODES.VALIDATION_FAILED.status,
+        ERROR_CODES.VALIDATION_FAILED.code
+      );
     }
 
     const {
@@ -238,33 +250,30 @@ router.post('/templates', authenticateAdmin, async (req, res) => {
 
     res.json(savedTemplate);
   } catch (error: any) {
-    console.error('[EmailTemplates] Failed to save template:', error);
-    res.status(500).json({ error: error.message || 'Internal Server Error' });
+    next(error);
   }
 });
 
-router.delete('/templates/:id', authenticateAdmin, async (req, res) => {
+router.delete('/templates/:id', authenticateAdmin, async (req, res, next) => {
   try {
     const { id } = req.params;
     await pool.query('DELETE FROM email_templates WHERE id = $1', [id]);
     res.json({ success: true, message: 'Template deleted successfully.' });
   } catch (error: any) {
-    console.error('[EmailTemplates] Failed to delete template:', error);
-    res.status(500).json({ error: error.message || 'Internal Server Error' });
+    next(error);
   }
 });
 
-router.post('/sync', authenticateAdmin, async (req, res) => {
+router.post('/sync', authenticateAdmin, async (req, res, next) => {
   try {
     await syncSystemTemplates();
     res.json({ success: true, message: 'System templates synchronized successfully.' });
   } catch (error: any) {
-    console.error('[EmailTemplates] Failed to sync templates:', error);
-    res.status(500).json({ error: error.message || 'Internal Server Error' });
+    next(error);
   }
 });
 
-router.get('/feedback-logs', authenticateAdmin, async (req, res) => {
+router.get('/feedback-logs', authenticateAdmin, async (req, res, next) => {
   try {
     const { type, search, limit = 50, offset = 0 } = req.query as any;
     
@@ -328,17 +337,17 @@ router.get('/feedback-logs', authenticateAdmin, async (req, res) => {
       stats: countRes.rows[0] || { total: 0, likes_count: 0, dislikes_count: 0, avg_rating: 5 }
     });
   } catch (error: any) {
-    res.status(500).json({ error: error.message });
+    next(error);
   }
 });
 
-router.delete('/feedback-logs/:id', authenticateAdmin, async (req, res) => {
+router.delete('/feedback-logs/:id', authenticateAdmin, async (req, res, next) => {
   try {
     const { id } = req.params;
     await pool.query('DELETE FROM ai_feedback_logs WHERE id = $1', [id]);
     res.json({ success: true });
   } catch (error: any) {
-    res.status(500).json({ error: error.message });
+    next(error);
   }
 });
 

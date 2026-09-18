@@ -2,6 +2,8 @@ import express from 'express';
 import fs from 'fs/promises';
 import path from 'path';
 import { createUserSchema } from '../schemas/user.schemas.js';
+import { AppError } from '../middleware/errorHandler.js';
+import { ERROR_CODES } from '../utils/errorCodes.js';
 import { pool, ledgerPool, getSecurityPool, mediaPool } from '../db/index.js';
 import { authenticateAdmin, invalidateUserCache } from '../middleware/auth.js';
 import { syncProviderModelsInternal, checkProviderStatus, invalidateVaultCache } from '../services/ai.js';
@@ -1681,20 +1683,27 @@ router.get("/activity-stream", authenticateAdmin, async (req, res) => {
   }
 });
 
-router.post("/users", authenticateAdmin, async (req, res) => {
+router.post("/users", authenticateAdmin, async (req, res, next) => {
   try {
     const parsed = createUserSchema.safeParse(req.body);
     if (!parsed.success) {
-      return res.status(400).json({ 
-        error: 'Validation failed',
-        details: parsed.error.flatten()
-      });
+      throw new AppError(
+        'Validation failed',
+        ERROR_CODES.VALIDATION_FAILED.status,
+        ERROR_CODES.VALIDATION_FAILED.code
+      );
     }
 
     const { name, email, password, role, balance, points } = parsed.data;
 
     const check = await pool.query('SELECT id FROM users WHERE email = $1', [email]);
-    if (check.rows.length > 0) return res.status(400).json({ error: 'Email already exists' });
+    if (check.rows.length > 0) {
+      throw new AppError(
+        'Email already exists',
+        ERROR_CODES.DB_UNIQUE_VIOLATION.status,
+        ERROR_CODES.DB_UNIQUE_VIOLATION.code
+      );
+    }
 
     const bcrypt = await import('bcryptjs');
     const hash = await bcrypt.default.hash(password, 10);
@@ -1737,8 +1746,7 @@ router.post("/users", authenticateAdmin, async (req, res) => {
       client.release();
     }
   } catch (error) {
-    console.error('[Admin] Create user failed:', error);
-    res.status(500).json({ error: 'Failed to create user' });
+    next(error);
   }
 });
 
