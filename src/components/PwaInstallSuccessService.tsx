@@ -94,7 +94,7 @@ export const PwaInstallSuccessService: React.FC = () => {
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.94, y: 15 }}
             transition={{ type: 'spring', damping: 25, stiffness: 320 }}
-            className="w-full max-w-xs sm:max-w-sm rounded-2xl border border-accent/30 p-4 sm:p-5 shadow-2xl relative overflow-hidden bg-[var(--surface-card)] text-[var(--text-primary)]"
+            className="w-full max-w-xs sm:max-w-sm rounded-[var(--radius-lg)] border border-accent/30 p-4 sm:p-5 shadow-2xl relative overflow-hidden bg-[var(--surface-card)] text-[var(--text-primary)]"
           >
             {/* Top decorative glow bar */}
             <div className="absolute top-0 left-0 right-0 h-0.5 bg-gradient-to-r from-gray-500/10 via-teal-400 to-gray-500/5" />
@@ -115,7 +115,7 @@ export const PwaInstallSuccessService: React.FC = () => {
             <button
               type="button"
               onClick={handleClose}
-              className={`absolute top-3 ltr:right-3 rtl:left-3 p-1 rounded-lg transition-colors ${
+              className={`absolute top-3 ltr:right-3 rtl:left-3 p-1 rounded-[var(--radius-sm)] transition-colors ${
                 isDark ? 'text-gray-400 hover:text-white hover:bg-gray-800' : 'text-gray-400 hover:text-gray-700 hover:bg-gray-100'
               }`}
             >
@@ -175,7 +175,7 @@ export const PwaInstallSuccessService: React.FC = () => {
                 <button
                   type="button"
                   onClick={handleGoToDashboard}
-                  className="w-full py-2 px-3 rounded-xl bg-accent hover:opacity-90 active:scale-95 text-black font-extrabold text-xs flex items-center justify-center gap-1 transition-all shadow-sm cursor-pointer"
+                  className="w-full py-2 px-3 rounded-[var(--radius-md)] bg-accent hover:opacity-90 active:scale-95 text-black font-extrabold text-xs flex items-center justify-center gap-1 transition-all shadow-sm cursor-pointer"
                 >
                   <LayoutDashboard size={14} />
                   <span>{isAr ? 'الانتقال إلى لوحة التحكم' : 'Go to Dashboard'}</span>
@@ -185,7 +185,7 @@ export const PwaInstallSuccessService: React.FC = () => {
                 <button
                   type="button"
                   onClick={handleOpenStandalone}
-                  className={`w-full py-2 px-3 rounded-xl border text-xs font-semibold flex items-center justify-center gap-1 transition-all active:scale-95 cursor-pointer ${
+                  className={`w-full py-2 px-3 rounded-[var(--radius-md)] border text-xs font-semibold flex items-center justify-center gap-1 transition-all active:scale-95 cursor-pointer ${
                     isDark
                       ? 'bg-gray-800/80 border-gray-700/80 text-gray-200 hover:bg-gray-700'
                       : 'bg-gray-100 border-gray-200 text-gray-800 hover:bg-gray-200'

@@ -325,7 +325,7 @@ export const GoogleChatManager: React.FC<GoogleChatProps> = ({ dir, theme }) => 
                 </div>
                 <button
                   onClick={handleSignOut}
-                  className="flex items-center gap-1 px-3 py-1.5 rounded-lg bg-red-500/10 hover:bg-red-500/20 text-red-400 border border-red-500/20 text-xs font-medium transition-theme"
+                  className="flex items-center gap-1 px-3 py-1.5 rounded-[var(--radius-sm)] bg-red-500/10 hover:bg-red-500/20 text-red-400 border border-red-500/20 text-xs font-medium transition-theme"
                   title={isAr ? 'قطع الاتصال' : 'Disconnect'}
                 >
                   <LogOut size={14} />
@@ -338,8 +338,8 @@ export const GoogleChatManager: React.FC<GoogleChatProps> = ({ dir, theme }) => 
       </div>
 
       {!isConnected ? (
-        <div className="rounded-2xl bg-gray-900/60 border border-gray-800 p-12 text-center space-y-4">
-          <div className="w-16 h-16 rounded-2xl bg-accent/10 border border-accent/20 flex items-center justify-center text-accent mx-auto">
+        <div className="rounded-[var(--radius-lg)] bg-gray-900/60 border border-gray-800 p-12 text-center space-y-4">
+          <div className="w-16 h-16 rounded-[var(--radius-lg)] bg-accent/10 border border-accent/20 flex items-center justify-center text-accent mx-auto">
             <ShieldCheck size={32} />
           </div>
           <h4 className="text-lg font-bold text-white">
@@ -354,7 +354,7 @@ export const GoogleChatManager: React.FC<GoogleChatProps> = ({ dir, theme }) => 
       ) : (
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
           {/* Spaces Sidebar */}
-          <div className="lg:col-span-4 rounded-2xl bg-gray-900/80 border border-gray-800 p-4 flex flex-col h-[600px]">
+          <div className="lg:col-span-4 rounded-[var(--radius-lg)] bg-gray-900/80 border border-gray-800 p-4 flex flex-col h-[600px]">
             <div className="flex items-center justify-between pb-3 border-b border-gray-800 mb-3">
               <div className="flex items-center gap-2">
                 <Users size={18} className="text-accent" />
@@ -365,14 +365,14 @@ export const GoogleChatManager: React.FC<GoogleChatProps> = ({ dir, theme }) => 
               <div className="flex items-center gap-1">
                 <button
                   onClick={() => cachedChatToken && fetchSpaces(cachedChatToken)}
-                  className="p-1.5 rounded-lg hover:bg-gray-800 text-gray-400 hover:text-white transition-theme"
+                  className="p-1.5 rounded-[var(--radius-sm)] hover:bg-gray-800 text-gray-400 hover:text-white transition-theme"
                   title={isAr ? 'تحديث' : 'Refresh'}
                 >
                   <RefreshCw size={14} className={isLoadingSpaces ? 'animate-spin' : ''} />
                 </button>
                 <button
                   onClick={() => setShowCreateSpaceModal(true)}
-                  className="flex items-center gap-1 px-2.5 py-1 rounded-lg bg-accent/20 hover:bg-accent/30 text-accent border border-accent/30 text-xs font-semibold transition-theme"
+                  className="flex items-center gap-1 px-2.5 py-1 rounded-[var(--radius-sm)] bg-accent/20 hover:bg-accent/30 text-accent border border-accent/30 text-xs font-semibold transition-theme"
                 >
                   <Plus size={14} />
                   <span>{isAr ? 'مساحة جديدة' : 'New Space'}</span>
@@ -399,13 +399,13 @@ export const GoogleChatManager: React.FC<GoogleChatProps> = ({ dir, theme }) => 
                         setSelectedSpace(space);
                         fetchMessages(space.name);
                       }}
-                      className={`w-full text-left p-3 rounded-xl border transition-theme flex items-center gap-3 ${
+                      className={`w-full text-left p-3 rounded-[var(--radius-md)] border transition-theme flex items-center gap-3 ${
                         isSelected 
                           ? 'bg-accent/10 border-accent/40 text-white' 
                           : 'bg-gray-900/40 border-gray-800/80 hover:bg-gray-800/60 text-gray-300'
                       }`}
                     >
-                      <div className={`w-9 h-9 rounded-lg flex items-center justify-center ${isSelected ? 'bg-accent text-black font-bold' : 'bg-gray-800 text-accent'}`}>
+                      <div className={`w-9 h-9 rounded-[var(--radius-sm)] flex items-center justify-center ${isSelected ? 'bg-accent text-black font-bold' : 'bg-gray-800 text-accent'}`}>
                         {space.spaceType === 'DM' ? <Users size={16} /> : <Hash size={16} />}
                       </div>
                       <div className="flex-1 min-w-0">
@@ -424,13 +424,13 @@ export const GoogleChatManager: React.FC<GoogleChatProps> = ({ dir, theme }) => 
           </div>
 
           {/* Chat Messages Area */}
-          <div className="lg:col-span-8 rounded-2xl bg-gray-900/80 border border-gray-800 p-4 flex flex-col h-[600px]">
+          <div className="lg:col-span-8 rounded-[var(--radius-lg)] bg-gray-900/80 border border-gray-800 p-4 flex flex-col h-[600px]">
             {selectedSpace ? (
               <>
                 {/* Space Header */}
                 <div className="flex items-center justify-between pb-3 border-b border-gray-800 mb-4">
                   <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-xl bg-accent/10 border border-accent/20 flex items-center justify-center text-accent">
+                    <div className="w-10 h-10 rounded-[var(--radius-md)] bg-accent/10 border border-accent/20 flex items-center justify-center text-accent">
                       <Hash size={20} />
                     </div>
                     <div>
@@ -444,7 +444,7 @@ export const GoogleChatManager: React.FC<GoogleChatProps> = ({ dir, theme }) => 
                   </div>
                   <button
                     onClick={() => fetchMessages(selectedSpace.name)}
-                    className="p-2 rounded-lg hover:bg-gray-800 text-gray-400 hover:text-white transition-theme"
+                    className="p-2 rounded-[var(--radius-sm)] hover:bg-gray-800 text-gray-400 hover:text-white transition-theme"
                   >
                     <RefreshCw size={16} className={isLoadingMessages ? 'animate-spin' : ''} />
                   </button>
@@ -465,7 +465,7 @@ export const GoogleChatManager: React.FC<GoogleChatProps> = ({ dir, theme }) => 
                     </div>
                   ) : (
                     messages.map(msg => (
-                      <div key={msg.name} className="p-3 rounded-xl bg-gray-900/50 border border-gray-800/80 space-y-1">
+                      <div key={msg.name} className="p-3 rounded-[var(--radius-md)] bg-gray-900/50 border border-gray-800/80 space-y-1">
                         <div className="flex items-center justify-between text-[11px]">
                           <span className="font-bold text-accent">
                             {msg.sender?.displayName || (isAr ? 'مستخدم' : 'User')}
@@ -489,12 +489,12 @@ export const GoogleChatManager: React.FC<GoogleChatProps> = ({ dir, theme }) => 
                     value={messageText}
                     onChange={(e) => setMessageText(e.target.value)}
                     placeholder={isAr ? 'اكتب رسالة إلى Google Chat...' : 'Type a message to Google Chat...'}
-                    className="flex-1 bg-gray-950 border border-gray-800 rounded-xl px-4 py-2.5 text-sm text-white placeholder-gray-500 focus:outline-none focus:border-accent"
+                    className="flex-1 bg-gray-950 border border-gray-800 rounded-[var(--radius-md)] px-4 py-2.5 text-sm text-white placeholder-gray-500 focus:outline-none focus:border-accent"
                   />
                   <button
                     type="submit"
                     disabled={!messageText.trim()}
-                    className="px-4 py-2.5 rounded-xl bg-accent hover:bg-accent text-white font-medium text-sm transition-theme disabled:opacity-50 flex items-center gap-2 shadow-lg shadow-none"
+                    className="px-4 py-2.5 rounded-[var(--radius-md)] bg-accent hover:bg-accent text-white font-medium text-sm transition-theme disabled:opacity-50 flex items-center gap-2 shadow-lg shadow-none"
                   >
                     <Send size={16} />
                     <span className="hidden sm:inline">{isAr ? 'إرسال' : 'Send'}</span>
@@ -516,9 +516,9 @@ export const GoogleChatManager: React.FC<GoogleChatProps> = ({ dir, theme }) => 
       {/* Confirmation Modal for Sending Message (MANDATORY per Workspace guidelines) */}
       {showSendModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4">
-          <div className="w-full max-w-md rounded-2xl bg-gray-900 border border-gray-800 p-6 space-y-4 shadow-2xl animate-in fade-in zoom-in duration-200">
+          <div className="w-full max-w-md rounded-[var(--radius-lg)] bg-gray-900 border border-gray-800 p-6 space-y-4 shadow-2xl animate-in fade-in zoom-in duration-200">
             <div className="flex items-center gap-3">
-              <div className="w-12 h-12 rounded-xl bg-accent/20 border border-accent/30 flex items-center justify-center text-accent">
+              <div className="w-12 h-12 rounded-[var(--radius-md)] bg-accent/20 border border-accent/30 flex items-center justify-center text-accent">
                 <Send size={22} />
               </div>
               <div>
@@ -531,7 +531,7 @@ export const GoogleChatManager: React.FC<GoogleChatProps> = ({ dir, theme }) => 
               </div>
             </div>
 
-            <div className="p-3.5 rounded-xl bg-gray-950 border border-gray-800 text-sm text-gray-200">
+            <div className="p-3.5 rounded-[var(--radius-md)] bg-gray-950 border border-gray-800 text-sm text-gray-200">
               <p className="text-[11px] text-gray-500 uppercase tracking-wider mb-1">
                 {isAr ? 'نص الرسالة:' : 'Message Text:'}
               </p>
@@ -547,7 +547,7 @@ export const GoogleChatManager: React.FC<GoogleChatProps> = ({ dir, theme }) => 
               <button
                 type="button"
                 onClick={() => setShowSendModal(false)}
-                className="px-4 py-2 rounded-xl bg-gray-800 hover:bg-gray-700 text-gray-300 font-medium text-xs transition-theme"
+                className="px-4 py-2 rounded-[var(--radius-md)] bg-gray-800 hover:bg-gray-700 text-gray-300 font-medium text-xs transition-theme"
               >
                 {isAr ? 'إلغاء' : 'Cancel'}
               </button>
@@ -555,7 +555,7 @@ export const GoogleChatManager: React.FC<GoogleChatProps> = ({ dir, theme }) => 
                 type="button"
                 onClick={executeSendMessage}
                 disabled={isSending}
-                className="flex items-center gap-2 px-5 py-2 rounded-xl bg-accent hover:bg-accent text-white font-medium text-xs transition-theme shadow-lg shadow-none disabled:opacity-50"
+                className="flex items-center gap-2 px-5 py-2 rounded-[var(--radius-md)] bg-accent hover:bg-accent text-white font-medium text-xs transition-theme shadow-lg shadow-none disabled:opacity-50"
               >
                 {isSending ? <Loader2 size={14} className="animate-spin" /> : <CheckCircle2 size={14} />}
                 <span>{isAr ? 'تأكيد الإرسال' : 'Confirm & Send'}</span>
@@ -568,9 +568,9 @@ export const GoogleChatManager: React.FC<GoogleChatProps> = ({ dir, theme }) => 
       {/* Create Space Modal */}
       {showCreateSpaceModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4">
-          <div className="w-full max-w-md rounded-2xl bg-gray-900 border border-gray-800 p-6 space-y-4 shadow-2xl animate-in fade-in zoom-in duration-200">
+          <div className="w-full max-w-md rounded-[var(--radius-lg)] bg-gray-900 border border-gray-800 p-6 space-y-4 shadow-2xl animate-in fade-in zoom-in duration-200">
             <div className="flex items-center gap-3">
-              <div className="w-12 h-12 rounded-xl bg-accent/20 border border-accent/30 flex items-center justify-center text-accent">
+              <div className="w-12 h-12 rounded-[var(--radius-md)] bg-accent/20 border border-accent/30 flex items-center justify-center text-accent">
                 <Plus size={22} />
               </div>
               <div>
@@ -593,7 +593,7 @@ export const GoogleChatManager: React.FC<GoogleChatProps> = ({ dir, theme }) => 
                   value={newSpaceName}
                   onChange={(e) => setNewSpaceName(e.target.value)}
                   placeholder={isAr ? 'مثال: فريق التطوير' : 'e.g. Engineering Team'}
-                  className="w-full bg-gray-950 border border-gray-800 rounded-xl px-4 py-3 text-sm text-white placeholder-gray-600 focus:outline-none focus:border-accent"
+                  className="w-full bg-gray-950 border border-gray-800 rounded-[var(--radius-md)] px-4 py-3 text-sm text-white placeholder-gray-600 focus:outline-none focus:border-accent"
                   autoFocus
                 />
               </div>
@@ -602,14 +602,14 @@ export const GoogleChatManager: React.FC<GoogleChatProps> = ({ dir, theme }) => 
                 <button
                   type="button"
                   onClick={() => setShowCreateSpaceModal(false)}
-                  className="px-4 py-2.5 rounded-xl bg-gray-800 hover:bg-gray-700 text-gray-300 font-medium text-xs transition-theme"
+                  className="px-4 py-2.5 rounded-[var(--radius-md)] bg-gray-800 hover:bg-gray-700 text-gray-300 font-medium text-xs transition-theme"
                 >
                   {isAr ? 'إلغاء' : 'Cancel'}
                 </button>
                 <button
                   type="submit"
                   disabled={!newSpaceName.trim() || isCreatingSpace}
-                  className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-accent hover:bg-accent text-white font-medium text-xs transition-theme shadow-lg shadow-none disabled:opacity-50"
+                  className="flex items-center gap-2 px-5 py-2.5 rounded-[var(--radius-md)] bg-accent hover:bg-accent text-white font-medium text-xs transition-theme shadow-lg shadow-none disabled:opacity-50"
                 >
                   {isCreatingSpace ? <Loader2 size={14} className="animate-spin" /> : <CheckCircle2 size={14} />}
                   <span>{isAr ? 'إنشاء المساحة' : 'Create Space'}</span>

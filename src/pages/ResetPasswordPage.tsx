@@ -124,7 +124,7 @@ export const ResetPasswordPage: React.FC = () => {
               key="form"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
-              className="p-8 rounded-lg shadow-2xl border bg-[var(--surface-subtle)] border-[var(--border-default)] relative overflow-hidden group"
+              className="p-8 rounded-[var(--radius-sm)] shadow-2xl border bg-[var(--surface-subtle)] border-[var(--border-default)] relative overflow-hidden group"
             >
               <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-gray-500/10 to-transparent"></div>
               

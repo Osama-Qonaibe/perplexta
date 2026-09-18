@@ -44,7 +44,7 @@ const lazyRetry = (componentImport: () => Promise<any>, name?: string) =>
     return {
       default: () => (
         <div className="flex flex-col items-center justify-center min-h-[50vh] p-8 text-center">
-          <div className="p-4 rounded-2xl bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-900/50 max-w-md">
+          <div className="p-4 rounded-[var(--radius-lg)] bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-900/50 max-w-md">
             <h2 className="text-lg font-bold text-red-700 dark:text-red-400 mb-2">عذراً، تعذر تحميل الصفحة</h2>
             <p className="text-sm text-gray-600 dark:text-gray-300 mb-4">
               تعذر تحميل مكون {name || 'الصفحة'}. يرجى التحقق من اتصالك بالإنترنت أو إعادة تحميل الصفحة.
@@ -54,7 +54,7 @@ const lazyRetry = (componentImport: () => Promise<any>, name?: string) =>
                 sessionStorage.removeItem('page_reloaded_for_chunk');
                 window.location.reload();
               }}
-              className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-xl text-xs font-bold transition-all shadow-sm cursor-pointer"
+              className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-[var(--radius-md)] text-xs font-bold transition-all shadow-sm cursor-pointer"
             >
               إعادة تحميل الصفحة
             </button>

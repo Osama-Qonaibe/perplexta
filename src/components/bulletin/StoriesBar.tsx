@@ -41,7 +41,7 @@ export const StoriesBar: React.FC<StoriesBarProps> = ({
   getMediaUrl,
 }) => {
   return (
-    <div className="p-3 sm:p-3.5 rounded-xl bg-[var(--surface-card)] border border-[var(--border-default)] shadow-xs space-y-2.5">
+    <div className="p-3 sm:p-3.5 rounded-[var(--radius-md)] bg-[var(--surface-card)] border border-[var(--border-default)] shadow-xs space-y-2.5">
       <div className="flex items-center gap-2 px-1 border-b border-[var(--border-default)] pb-2">
         <button
           type="button"
@@ -67,7 +67,7 @@ export const StoriesBar: React.FC<StoriesBarProps> = ({
 
       <div className="flex items-center gap-2 sm:gap-2.5 overflow-x-auto scrollbar-none pb-1 pt-0.5 px-0.5 touch-pan-x snap-x snap-mandatory">
         {/* Partitioned Primary Create Card (Top: Story + Reel, Bottom: Text Story) */}
-        <div className="relative w-28 h-44 sm:w-32 sm:h-52 rounded-xl overflow-hidden bg-[var(--surface-card)] border border-[var(--border-default)] hover:border-accent/50 shrink-0 snap-start flex flex-col shadow-2xs transition-all duration-200 ease-out hover:shadow-md hover:-translate-y-0.5 select-none">
+        <div className="relative w-28 h-44 sm:w-32 sm:h-52 rounded-[var(--radius-md)] overflow-hidden bg-[var(--surface-card)] border border-[var(--border-default)] hover:border-accent/50 shrink-0 snap-start flex flex-col shadow-2xs transition-all duration-200 ease-out hover:shadow-md hover:-translate-y-0.5 select-none">
           {/* Upper Section: Split into 2 equal columns (Story with + button & Reel) */}
           <div className="flex-1 flex border-b border-[var(--border-default)] divide-x rtl:divide-x-reverse divide-[var(--border-default)]">
             {/* Button 1: رفع قصة (Story upload with plus icon) */}
@@ -164,7 +164,7 @@ export const StoriesBar: React.FC<StoriesBarProps> = ({
                 setSelectedStoryIndex(viewerStartIndex >= 0 ? viewerStartIndex : 0);
                 setIsStoryViewerOpen(true);
               }}
-              className="relative w-28 h-44 sm:w-32 sm:h-52 rounded-xl overflow-hidden bg-[var(--surface-subtle)] border border-[var(--border-default)] hover:border-accent/50 shrink-0 snap-start cursor-pointer group transition-all duration-200 ease-out hover:shadow-md hover:-translate-y-0.5 flex flex-col justify-center items-center shadow-2xs"
+              className="relative w-28 h-44 sm:w-32 sm:h-52 rounded-[var(--radius-md)] overflow-hidden bg-[var(--surface-subtle)] border border-[var(--border-default)] hover:border-accent/50 shrink-0 snap-start cursor-pointer group transition-all duration-200 ease-out hover:shadow-md hover:-translate-y-0.5 flex flex-col justify-center items-center shadow-2xs"
             >
               <div className="relative w-full h-full overflow-hidden bg-[var(--surface-inset)] flex flex-col justify-center items-center">
                 {/* Ambient Blurred Background */}

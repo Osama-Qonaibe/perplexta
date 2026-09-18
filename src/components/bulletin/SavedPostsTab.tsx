@@ -75,7 +75,7 @@ export const SavedPostsTab: React.FC<SavedPostsTabProps> = ({
   return (
     <div className="space-y-4 w-full max-w-2xl mx-auto">
       {/* Header card with Sovereign design tokens */}
-      <div className="rounded-xl bg-[var(--surface-card)] border border-[var(--border-default)] p-3 shadow-xs flex items-center justify-between transition-theme">
+      <div className="rounded-[var(--radius-md)] bg-[var(--surface-card)] border border-[var(--border-default)] p-3 shadow-xs flex items-center justify-between transition-theme">
         <div className="flex items-center gap-2.5">
           <div className="w-8 h-8 rounded-shape-sm bg-accent/10 text-accent flex items-center justify-center border border-accent/20">
             <Bookmark size={16} />
@@ -100,7 +100,7 @@ export const SavedPostsTab: React.FC<SavedPostsTabProps> = ({
 
       {/* Empty State */}
       {!loadingSaved && savedAds.length === 0 ? (
-        <div className="flex flex-col items-center justify-center py-16 px-4 rounded-xl bg-[var(--surface-card)] border border-[var(--border-default)] shadow-xs space-y-3 text-center transition-theme">
+        <div className="flex flex-col items-center justify-center py-16 px-4 rounded-[var(--radius-md)] bg-[var(--surface-card)] border border-[var(--border-default)] shadow-xs space-y-3 text-center transition-theme">
           <div className="w-12 h-12 rounded-shape-md bg-[var(--surface-subtle)] border border-[var(--border-default)] flex items-center justify-center text-[var(--text-muted)]">
             <Bookmark size={22} />
           </div>

@@ -36,10 +36,10 @@ export const SkeletonLoader: React.FC<SkeletonLoaderProps> = ({
         {[...Array(count)].map((_, i) => (
           <div 
             key={`skel-history-${i}`} 
-            className={`flex items-center w-full ${isMobile ? 'h-[33px] px-2' : 'h-11'} rounded-[4px] bg-[var(--surface-subtle)]/40 border border-transparent animate-shimmer overflow-hidden`}
+            className={`flex items-center w-full ${isMobile ? 'h-[33px] px-2' : 'h-11'} rounded-[var(--radius-xs)] bg-[var(--surface-subtle)]/40 border border-transparent animate-shimmer overflow-hidden`}
           >
             <div className={`${isMobile ? 'w-7' : 'w-[56px]'} h-full flex-shrink-0 flex items-center justify-center`}>
-              <div className={`${isMobile ? 'w-7 h-7' : 'w-10 h-10'} rounded-[4px] bg-[var(--border-subtle)]/60 shrink-0`} />
+              <div className={`${isMobile ? 'w-7 h-7' : 'w-10 h-10'} rounded-[var(--radius-xs)] bg-[var(--border-subtle)]/60 shrink-0`} />
             </div>
             {isSidebarOpen && (
               <div className={`flex-1 min-w-0 ${isRtl ? 'mr-1' : 'ml-1'} pr-3 space-y-1`}>
@@ -60,7 +60,7 @@ export const SkeletonLoader: React.FC<SkeletonLoaderProps> = ({
     return (
       <div className={`flex items-center w-full ${isMobile ? 'h-[36px] px-2' : 'h-[44px]'} overflow-hidden flex-shrink-0 ${className}`}>
         <div className={`${isMobile ? 'w-7' : 'w-[56px]'} ${isMobile ? 'h-[36px]' : 'h-[44px]'} flex-shrink-0 flex items-center justify-center`}>
-          <div className={`${isMobile ? 'w-7 h-7' : 'w-10 h-10'} rounded-[4px] bg-[var(--border-subtle)]/70 animate-shimmer`} />
+          <div className={`${isMobile ? 'w-7 h-7' : 'w-10 h-10'} rounded-[var(--radius-xs)] bg-[var(--border-subtle)]/70 animate-shimmer`} />
         </div>
         {isSidebarOpen && (
           <div className={`flex flex-col min-w-0 flex-1 ${isRtl ? 'pr-1.5' : 'pl-1.5'} space-y-1`}>
@@ -79,9 +79,9 @@ export const SkeletonLoader: React.FC<SkeletonLoaderProps> = ({
         {[...Array(count)].map((_, i) => (
           <div 
             key={`skel-nav-${i}`}
-            className={`flex items-center w-full ${isMobile ? 'h-10 px-3' : 'h-11 px-3'} rounded-[4px] bg-[var(--surface-subtle)]/30 animate-shimmer`}
+            className={`flex items-center w-full ${isMobile ? 'h-10 px-3' : 'h-11 px-3'} rounded-[var(--radius-xs)] bg-[var(--surface-subtle)]/30 animate-shimmer`}
           >
-            <div className="w-5 h-5 rounded-[4px] bg-[var(--border-subtle)]/60 shrink-0" />
+            <div className="w-5 h-5 rounded-[var(--radius-xs)] bg-[var(--border-subtle)]/60 shrink-0" />
             {isSidebarOpen && (
               <div className={`flex-1 ${isRtl ? 'mr-3' : 'ml-3'}`}>
                 <div className="h-3 bg-[var(--border-subtle)]/70 rounded w-1/2" />
@@ -153,9 +153,9 @@ export const SkeletonLoader: React.FC<SkeletonLoaderProps> = ({
 
         {/* Action Buttons Row Skeleton */}
         <div className="px-2 py-1.5 flex items-center gap-2 border-y border-[var(--border-default)]">
-          <div className="flex-1 h-9 rounded-xl bg-[var(--surface-subtle)] animate-shimmer" />
-          <div className="flex-1 h-9 rounded-xl bg-[var(--surface-subtle)] animate-shimmer" />
-          <div className="flex-1 h-9 rounded-xl bg-[var(--surface-subtle)] animate-shimmer" />
+          <div className="flex-1 h-9 rounded-[var(--radius-md)] bg-[var(--surface-subtle)] animate-shimmer" />
+          <div className="flex-1 h-9 rounded-[var(--radius-md)] bg-[var(--surface-subtle)] animate-shimmer" />
+          <div className="flex-1 h-9 rounded-[var(--radius-md)] bg-[var(--surface-subtle)] animate-shimmer" />
         </div>
       </div>
     );
@@ -169,7 +169,7 @@ export const SkeletonLoader: React.FC<SkeletonLoaderProps> = ({
           <div key={`skel-comment-${i}`} className="flex gap-2 items-start animate-shimmer">
             <div className="w-8 h-8 rounded-full bg-[var(--border-subtle)]/80 shrink-0 mt-0.5" />
             <div className="flex-1 min-w-0 space-y-1">
-              <div className="bg-[var(--surface-subtle)] rounded-2xl p-3 border border-[var(--border-default)] space-y-2">
+              <div className="bg-[var(--surface-subtle)] rounded-[var(--radius-lg)] p-3 border border-[var(--border-default)] space-y-2">
                 <div className="h-3 bg-[var(--border-subtle)]/90 rounded w-1/3" />
                 <div className="h-2.5 bg-[var(--border-subtle)]/60 rounded w-4/5" />
                 {i % 2 === 0 && <div className="h-2.5 bg-[var(--border-subtle)]/40 rounded w-3/5" />}
@@ -192,8 +192,8 @@ export const SkeletonLoader: React.FC<SkeletonLoaderProps> = ({
       <div className={`grid grid-cols-2 sm:grid-cols-3 gap-3 w-full ${className}`}>
         {[...Array(6)].map((_, i) => (
           <div 
-            key={`skel-insight-${i}`}
-            className="p-3.5 rounded-xl bg-[var(--surface-subtle)] border border-[var(--border-default)] flex flex-col items-center text-center space-y-2 animate-shimmer"
+            key={`skel-insight-${i}`} 
+            className="p-3.5 rounded-[var(--radius-md)] bg-[var(--surface-subtle)] border border-[var(--border-default)] flex flex-col items-center text-center space-y-2 animate-shimmer"
           >
             <div className="w-5 h-5 rounded-full bg-[var(--border-subtle)]" />
             <div className="h-5 bg-[var(--border-subtle)]/90 rounded w-12" />
@@ -236,14 +236,14 @@ export const SkeletonLoader: React.FC<SkeletonLoaderProps> = ({
   // 10. Main Content Page Skeleton
   if (type === 'main-content') {
     return (
-      <div className={`max-w-4xl mx-auto p-6 space-y-6 animate-shimmer rounded-xl bg-[var(--surface-page)] border border-[var(--border-subtle)] ${className}`}>
+      <div className={`max-w-4xl mx-auto p-6 space-y-6 animate-shimmer rounded-[var(--radius-md)] bg-[var(--surface-page)] border border-[var(--border-subtle)] ${className}`}>
         <div className="space-y-3">
           <div className="h-7 bg-[var(--border-subtle)] rounded-md w-1/3" />
           <div className="h-4 bg-[var(--border-subtle)] rounded w-2/3" />
         </div>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 pt-4">
           {[...Array(3)].map((_, i) => (
-            <div key={`skel-card-${i}`} className="h-32 rounded-lg bg-[var(--surface-subtle)] border border-[var(--border-subtle)] p-4 space-y-3 animate-shimmer">
+            <div key={`skel-card-${i}`} className="h-32 rounded-[var(--radius-sm)] bg-[var(--surface-subtle)] border border-[var(--border-subtle)] p-4 space-y-3 animate-shimmer">
               <div className="w-8 h-8 rounded bg-[var(--border-subtle)]" />
               <div className="h-3 bg-[var(--border-subtle)] rounded w-1/2" />
               <div className="h-2 bg-[var(--border-subtle)] rounded w-3/4" />
@@ -257,7 +257,7 @@ export const SkeletonLoader: React.FC<SkeletonLoaderProps> = ({
   // 11. Generic Card Skeleton
   if (type === 'card') {
     return (
-      <div className={`p-4 rounded-xl bg-[var(--surface-subtle)] border border-[var(--border-default)] space-y-3 animate-shimmer ${className}`}>
+      <div className={`p-4 rounded-[var(--radius-md)] bg-[var(--surface-subtle)] border border-[var(--border-default)] space-y-3 animate-shimmer ${className}`}>
         <div className="h-4 bg-[var(--border-subtle)] rounded w-1/3" />
         <div className="h-3 bg-[var(--border-subtle)]/70 rounded w-full" />
         <div className="h-3 bg-[var(--border-subtle)]/50 rounded w-2/3" />

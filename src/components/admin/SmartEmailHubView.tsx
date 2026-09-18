@@ -1121,13 +1121,13 @@ const SmartEmailHubView = ({
                     onChange={(e) => setFeedbackSearch(e.target.value)}
                     onKeyDown={(e) => e.key === 'Enter' && fetchFeedbackLogs()}
                     placeholder={dir === "rtl" ? "بحث في التقييمات، البريد، أو الملاحظات..." : "Search feedback, email, or comments..."}
-                    className={`w-full py-2 text-xs rounded-xl bg-[var(--surface-subtle)] border border-[var(--border-default)] text-[var(--text-primary)] focus:outline-none focus:border-accent transition-theme ${dir === 'rtl' ? 'pr-9 pl-3' : 'pl-9 pr-3'}`}
+                    className={`w-full py-2 text-xs rounded-[var(--radius-md)] bg-[var(--surface-subtle)] border border-[var(--border-default)] text-[var(--text-primary)] focus:outline-none focus:border-accent transition-theme ${dir === 'rtl' ? 'pr-9 pl-3' : 'pl-9 pr-3'}`}
                   />
                 </div>
                 <button
                   type="button"
                   onClick={fetchFeedbackLogs}
-                  className="px-3 py-2 rounded-xl text-xs font-bold bg-[var(--surface-subtle)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] border border-[var(--border-default)] transition-colors cursor-pointer flex items-center gap-1.5 shrink-0"
+                  className="px-3 py-2 rounded-[var(--radius-md)] text-xs font-bold bg-[var(--surface-subtle)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] border border-[var(--border-default)] transition-colors cursor-pointer flex items-center gap-1.5 shrink-0"
                 >
                   <RefreshCw size={13} className={isLoadingFeedback ? "animate-spin" : ""} />
                   <span className="hidden sm:inline">{dir === "rtl" ? "تحديث" : "Refresh"}</span>
@@ -1144,7 +1144,7 @@ const SmartEmailHubView = ({
                     key={flt.key}
                     type="button"
                     onClick={() => setFeedbackFilter(flt.key as any)}
-                    className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all whitespace-nowrap border shrink-0 cursor-pointer flex items-center gap-1.5 ${
+                    className={`px-3 py-1.5 rounded-[var(--radius-md)] text-xs font-bold transition-all whitespace-nowrap border shrink-0 cursor-pointer flex items-center gap-1.5 ${
                       feedbackFilter === flt.key
                         ? "bg-[var(--bg-accent-emphasis)] text-[var(--fg-on-emphasis)] border-[var(--border-accent)]"
                         : "bg-[var(--surface-subtle)] text-[var(--text-secondary)] border-[var(--border-default)] hover:text-[var(--text-primary)]"
@@ -1198,7 +1198,7 @@ const SmartEmailHubView = ({
                       <div className="flex flex-wrap items-center justify-between gap-3 border-b border-[var(--border-default)] pb-3">
                         <div className="flex items-center gap-3">
                           <div
-                            className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0 border ${
+                            className={`w-9 h-9 rounded-[var(--radius-md)] flex items-center justify-center shrink-0 border ${
                               isLike
                                 ? 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20'
                                 : 'bg-rose-500/10 text-rose-500 border-rose-500/20'
@@ -1254,7 +1254,7 @@ const SmartEmailHubView = ({
                                 showToast('Error', 'error');
                               }
                             }}
-                            className="w-7 h-7 rounded-lg flex items-center justify-center text-[var(--text-muted)] hover:text-rose-500 hover:bg-rose-500/10 transition-colors cursor-pointer"
+                            className="w-7 h-7 rounded-[var(--radius-sm)] flex items-center justify-center text-[var(--text-muted)] hover:text-rose-500 hover:bg-rose-500/10 transition-colors cursor-pointer"
                             title={dir === 'rtl' ? 'حذف السجل' : 'Delete Log'}
                           >
                             <Trash2 size={14} />
@@ -1264,7 +1264,7 @@ const SmartEmailHubView = ({
 
                       {/* Content / Comment */}
                       {item.comment && (
-                        <div className="p-3.5 rounded-xl bg-[var(--surface-subtle)] border border-[var(--border-default)] text-xs text-[var(--text-primary)] leading-relaxed">
+                        <div className="p-3.5 rounded-[var(--radius-md)] bg-[var(--surface-subtle)] border border-[var(--border-default)] text-xs text-[var(--text-primary)] leading-relaxed">
                           <span className="font-bold text-[var(--text-secondary)] block mb-1">
                             {isLike ? (dir === 'rtl' ? '💬 ملاحظة وإشادة المستخدم:' : '💬 User praise / comment:') : (dir === 'rtl' ? '🎯 توجيه التصحيح والتعليم:' : '🎯 Correction & Guidance:')}
                           </span>
@@ -1290,7 +1290,7 @@ const SmartEmailHubView = ({
                       {(item.user_prompt || item.assistant_response) && (
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-3 pt-1">
                           {item.user_prompt && (
-                            <div className="p-2.5 rounded-lg bg-[var(--surface-subtle)] border border-[var(--border-default)] text-[11px]">
+                            <div className="p-2.5 rounded-[var(--radius-sm)] bg-[var(--surface-subtle)] border border-[var(--border-default)] text-[11px]">
                               <span className="font-bold text-[var(--text-muted)] block mb-0.5">
                                 {dir === 'rtl' ? 'سؤال المستخدم:' : 'User Query:'}
                               </span>
@@ -1300,7 +1300,7 @@ const SmartEmailHubView = ({
                             </div>
                           )}
                           {item.assistant_response && (
-                            <div className="p-2.5 rounded-lg bg-[var(--surface-subtle)] border border-[var(--border-default)] text-[11px]">
+                            <div className="p-2.5 rounded-[var(--radius-sm)] bg-[var(--surface-subtle)] border border-[var(--border-default)] text-[11px]">
                               <span className="font-bold text-[var(--text-muted)] block mb-0.5">
                                 {dir === 'rtl' ? 'رد المساعد الذكي:' : 'Assistant Response:'}
                               </span>

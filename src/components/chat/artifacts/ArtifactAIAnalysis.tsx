@@ -136,7 +136,7 @@ export function ArtifactAIAnalysis({ artifact }: ArtifactAIAnalysisProps) {
 <!-- ==============================================
      PERPLEXTA INTERACTIVE DATA CHART COMPONENT
      ============================================== -->
-<div class="my-6 p-6 bg-[var(--surface-card)] rounded-xl border border-[var(--border-default)] shadow-sm font-sans">
+<div class="my-6 p-6 bg-[var(--surface-card)] rounded-[var(--radius-md)] border border-[var(--border-default)] shadow-sm font-sans">
   <div class="flex items-center justify-between mb-4">
     <div>
       <h3 class="text-base font-bold text-[var(--text-primary)]">مؤشرات الأداء والتحليل البياني</h3>

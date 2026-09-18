@@ -519,7 +519,7 @@ export const PostFeed: React.FC<PostFeedProps> = ({
             id={`bulletin-ad-${ad.id}`}
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
-            className={`w-full rounded-xl bg-[var(--surface-card)] border border-[var(--border-default)] shadow-xs flex flex-col touch-pan-y transition-theme ${
+            className={`w-full rounded-[var(--radius-md)] bg-[var(--surface-card)] border border-[var(--border-default)] shadow-xs flex flex-col touch-pan-y transition-theme ${
               activeMoreMenuId === ad.id || reactionBarAdId === ad.id ? 'relative z-30 overflow-visible' : 'overflow-hidden'
             }`}
           >

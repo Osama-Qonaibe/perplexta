@@ -135,7 +135,7 @@ export const VideoFrameCapture: React.FC<VideoFrameCaptureProps> = ({
   };
 
   return (
-    <div className="bg-[var(--surface-subtle)] rounded-xl p-2 sm:p-2.5 border border-[var(--border-default)] space-y-1 sm:space-y-2">
+    <div className="bg-[var(--surface-subtle)] rounded-[var(--radius-md)] p-2 sm:p-2.5 border border-[var(--border-default)] space-y-1 sm:space-y-2">
       {/* Hidden elements for processing */}
       <video
         ref={hiddenVideoRef}
@@ -172,7 +172,7 @@ export const VideoFrameCapture: React.FC<VideoFrameCaptureProps> = ({
         <button
           type="button"
           onClick={() => fileInputRef.current?.click()}
-          className="px-2 py-0.5 sm:px-2.5 sm:py-1 text-[10px] sm:text-[11px] font-bold rounded-lg bg-[var(--surface-card)] hover:bg-[var(--surface-subtle)] text-[var(--text-primary)] border border-[var(--border-default)] flex items-center gap-1 sm:gap-1 transition-all shadow-xs cursor-pointer shrink-0 min-h-[36px]"
+          className="px-2 py-0.5 sm:px-2.5 sm:py-1 text-[10px] sm:text-[11px] font-bold rounded-[var(--radius-sm)] bg-[var(--surface-card)] hover:bg-[var(--surface-subtle)] text-[var(--text-primary)] border border-[var(--border-default)] flex items-center gap-1 sm:gap-1 transition-all shadow-xs cursor-pointer shrink-0 min-h-[36px]"
         >
           <ImageIcon size={11} className="text-accent sm:size-[12px]" />
           <span>{isRtl ? 'رفع صورة غلاف' : 'Upload Cover'}</span>
@@ -192,7 +192,7 @@ export const VideoFrameCapture: React.FC<VideoFrameCaptureProps> = ({
                 onSelectCover(kf.dataUrl);
                 toast.success(isRtl ? `تم اختيار الغلاف (${formatTime(kf.time)})` : `Selected cover (${formatTime(kf.time)})`);
               }}
-              className={`relative group shrink-0 w-14 sm:w-20 h-9 sm:h-13 rounded-lg overflow-hidden border-2 transition-all cursor-pointer ${
+              className={`relative group shrink-0 w-14 sm:w-20 h-9 sm:h-13 rounded-[var(--radius-sm)] overflow-hidden border-2 transition-all cursor-pointer ${
                 isSelected
                   ? 'border-accent ring-2 ring-accent/30 scale-105 shadow-sm'
                   : 'border-[var(--border-default)] hover:border-accent/60 opacity-80 hover:opacity-100'

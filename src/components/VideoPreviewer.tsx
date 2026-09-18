@@ -123,10 +123,10 @@ export const VideoPreviewer: React.FC<VideoPreviewerProps> = ({
   const isProcessing = processingStage !== 'done' && processingStage !== 'idle';
 
   return (
-    <div className="relative group bg-gradient-to-br from-[#141416]/90 to-[#1e1e24]/90 border border-accent/30 rounded-2xl p-4 shadow-xl backdrop-blur-md flex flex-col gap-4 transition-theme hover:border-accent/60">
+    <div className="relative group bg-gradient-to-br from-[#141416]/90 to-[#1e1e24]/90 border border-accent/30 rounded-[var(--radius-lg)] p-4 shadow-xl backdrop-blur-md flex flex-col gap-4 transition-theme hover:border-accent/60">
       <div className="flex flex-col sm:flex-row items-center gap-4 w-full">
         {/* Main Thumbnail or Video Preview */}
-        <div className="relative w-full sm:w-36 h-24 bg-black rounded-xl overflow-hidden border border-gray-800 flex items-center justify-center shrink-0 shadow-inner">
+        <div className="relative w-full sm:w-36 h-24 bg-black rounded-[var(--radius-md)] overflow-hidden border border-gray-800 flex items-center justify-center shrink-0 shadow-inner">
           {isProcessing ? (
             <div className="flex flex-col items-center justify-center text-accent/70 gap-2">
               <Loader2 size={24} className="animate-spin" />
@@ -234,7 +234,7 @@ export const VideoPreviewer: React.FC<VideoPreviewerProps> = ({
                   <button
                     type="button"
                     onClick={onTrim}
-                    className="px-2.5 py-1 rounded-lg bg-accent/20 hover:bg-accent text-accent hover:text-white text-[11px] font-bold flex items-center gap-1 transition-colors border border-accent/30 cursor-pointer"
+                    className="px-2.5 py-1 rounded-[var(--radius-sm)] bg-accent/20 hover:bg-accent text-accent hover:text-white text-[11px] font-bold flex items-center gap-1 transition-colors border border-accent/30 cursor-pointer"
                   >
                     <Scissors size={12} />
                     <span>{isRtl ? 'قص المقطع' : 'Trim'}</span>
@@ -244,7 +244,7 @@ export const VideoPreviewer: React.FC<VideoPreviewerProps> = ({
                   <button
                     type="button"
                     onClick={onEditFilters}
-                    className="px-2.5 py-1 rounded-lg bg-gray-800 hover:bg-gray-700 text-gray-300 hover:text-white text-[11px] font-bold flex items-center gap-1 transition-colors border border-gray-700 cursor-pointer"
+                    className="px-2.5 py-1 rounded-[var(--radius-sm)] bg-gray-800 hover:bg-gray-700 text-gray-300 hover:text-white text-[11px] font-bold flex items-center gap-1 transition-colors border border-gray-700 cursor-pointer"
                   >
                     <Sliders size={12} />
                     <span>{isRtl ? 'الفلاتر' : 'Filters'}</span>
@@ -291,7 +291,7 @@ export const VideoPreviewer: React.FC<VideoPreviewerProps> = ({
                     setSelectedThumb(thumb);
                     if (onSelectThumbnail) onSelectThumbnail(thumb);
                   }}
-                  className={`relative rounded-xl overflow-hidden border transition-theme aspect-video group/thumb cursor-pointer ${
+                  className={`relative rounded-[var(--radius-md)] overflow-hidden border transition-theme aspect-video group/thumb cursor-pointer ${
                     selectedThumb === thumb
                       ? 'border-accent ring-2 ring-accent-500/30 shadow-lg shadow-none'
                       : 'border-gray-800 hover:border-gray-600 opacity-70 hover:opacity-100'
@@ -310,7 +310,7 @@ export const VideoPreviewer: React.FC<VideoPreviewerProps> = ({
               Array.from({ length: 4 }).map((_, idx) => (
                 <div
                   key={`thumb-skel-${idx}`}
-                  className="rounded-xl bg-gray-900 border border-gray-800 aspect-video animate-pulse flex items-center justify-center text-gray-600 text-[10px]"
+                  className="rounded-[var(--radius-md)] bg-gray-900 border border-gray-800 aspect-video animate-pulse flex items-center justify-center text-gray-600 text-[10px]"
                 >
                   ...
                 </div>

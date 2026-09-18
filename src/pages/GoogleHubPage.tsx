@@ -387,7 +387,7 @@ const GoogleHubPage: React.FC = () => {
           <div className="flex items-center gap-3 shrink-0">
             <button 
               onClick={() => activeTab !== 'overview' ? setActiveTab('overview') : window.history.back()}
-              className="p-2 rounded-lg hover:bg-[var(--surface-subtle)] transition-colors cursor-pointer"
+              className="p-2 rounded-[var(--radius-sm)] hover:bg-[var(--surface-subtle)] transition-colors cursor-pointer"
               title={isRtl ? 'رجوع' : 'Back'}
             >
               {isRtl ? <ArrowRight size={20} /> : <ArrowLeft size={20} />}
@@ -424,7 +424,7 @@ const GoogleHubPage: React.FC = () => {
                 placeholder={isRtl ? 'بحث في الأدوات...' : 'Search tools...'}
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className={`w-full bg-[var(--surface-subtle)] border border-[var(--border-default)] rounded-xl py-2 ${
+                className={`w-full bg-[var(--surface-subtle)] border border-[var(--border-default)] rounded-[var(--radius-md)] py-2 ${
                   isRtl ? 'pr-10 pl-8 text-right' : 'pl-10 pr-8 text-left'
                 } text-xs font-bold outline-none focus:border-accent/50 focus:ring-4 focus:ring-accent-500/5 transition-theme`}
                 dir={effectiveDir}
@@ -625,7 +625,7 @@ const GoogleHubPage: React.FC = () => {
               )}
 
               {/* Recent Activity / Integration Status */}
-              <div className="bg-[var(--surface-subtle)] rounded-2xl border border-[var(--border-default)] p-6 transition-theme hover:shadow-[0_10px_30px_rgba(0,0,0,0.05)]">
+              <div className="bg-[var(--surface-subtle)] rounded-[var(--radius-lg)] border border-[var(--border-default)] p-6 transition-theme hover:shadow-[0_10px_30px_rgba(0,0,0,0.05)]">
                 <h3 className="text-sm font-bold mb-4 flex items-center gap-2 text-start">
                   <Info size={16} className="text-accent animate-pulse shrink-0" />
                   <span>{isRtl ? 'حالة التكامل والاتصال' : 'Integration & Connection Status'}</span>
@@ -633,7 +633,7 @@ const GoogleHubPage: React.FC = () => {
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 text-start">
                   <motion.div 
                     whileHover={{ scale: 1.01 }}
-                    className="p-4 rounded-xl border border-[var(--border-default)] bg-[var(--surface-page)] transition-colors hover:border-accent/20"
+                    className="p-4 rounded-[var(--radius-md)] border border-[var(--border-default)] bg-[var(--surface-page)] transition-colors hover:border-accent/20"
                   >
                     <p className="text-[10px] text-gray-500 mb-1">{isRtl ? 'المساحة المستخدمة' : 'Storage Used'}</p>
                     <div className="flex items-end justify-between">
@@ -652,7 +652,7 @@ const GoogleHubPage: React.FC = () => {
 
                   <motion.div 
                     whileHover={{ scale: 1.01 }}
-                    className="p-4 rounded-xl border border-[var(--border-default)] bg-[var(--surface-page)] transition-colors hover:border-accent/20"
+                    className="p-4 rounded-[var(--radius-md)] border border-[var(--border-default)] bg-[var(--surface-page)] transition-colors hover:border-accent/20"
                   >
                     <p className="text-[10px] text-gray-500 mb-1">{isRtl ? 'أمان الواجهة' : 'API Security'}</p>
                     <div className="flex items-center gap-3">
@@ -664,7 +664,7 @@ const GoogleHubPage: React.FC = () => {
 
                   <motion.div 
                     whileHover={{ scale: 1.01 }}
-                    className="p-4 rounded-xl border border-[var(--border-default)] bg-[var(--surface-page)] transition-colors hover:border-accent/20"
+                    className="p-4 rounded-[var(--radius-md)] border border-[var(--border-default)] bg-[var(--surface-page)] transition-colors hover:border-accent/20"
                   >
                     <p className="text-[10px] text-gray-500 mb-1">{isRtl ? 'المزامنة الأخيرة' : 'Last Sync'}</p>
                     <span className="text-sm font-bold">{isRtl ? 'منذ دقيقتين' : '2 minutes ago'}</span>
@@ -750,7 +750,7 @@ const GoogleHubPage: React.FC = () => {
             >
               <div className="p-6 border-b border-[var(--border-default)] flex items-center justify-between bg-gradient-to-r from-gray-500/10 to-transparent">
                 <div className="flex items-center gap-4 text-start">
-                  <div className={`w-12 h-12 rounded-2xl bg-${selectedTool.color}-500/10 flex items-center justify-center shrink-0`}>
+                  <div className={`w-12 h-12 rounded-[var(--radius-lg)] bg-${selectedTool.color}-500/10 flex items-center justify-center shrink-0`}>
                     {selectedTool.icon}
                   </div>
                   <div>
@@ -768,7 +768,7 @@ const GoogleHubPage: React.FC = () => {
               <div className="p-6 space-y-6 text-start">
                 {selectedTool.status === 'connected' ? (
                   <div className="space-y-4">
-                    <div className="p-4 rounded-2xl bg-accent/5 border border-accent/10">
+                    <div className="p-4 rounded-[var(--radius-lg)] bg-accent/5 border border-accent/10">
                       <div className="flex items-center gap-3 mb-2">
                         <Shield size={16} className="text-accent" />
                         <h4 className="text-xs font-black">{isRtl ? 'الحالة نشطة' : 'Status: Active'}</h4>
@@ -780,7 +780,7 @@ const GoogleHubPage: React.FC = () => {
                     
                     <div className="space-y-2">
                       <label className="text-[10px] font-black uppercase text-gray-400 px-1">{isRtl ? 'الإعدادات' : 'Settings'}</label>
-                      <button className="w-full p-4 rounded-xl border border-[var(--border-default)] flex items-center justify-between hover:border-accent/30 transition-theme group cursor-pointer">
+                      <button className="w-full p-4 rounded-[var(--radius-md)] border border-[var(--border-default)] flex items-center justify-between hover:border-accent/30 transition-theme group cursor-pointer">
                         <div className="flex items-center gap-3">
                           <Settings size={18} className="text-gray-400 group-hover:text-accent" />
                           <span className="text-xs font-bold">{isRtl ? 'تخصيص المزامنة' : 'Sync Preferences'}</span>
@@ -789,7 +789,7 @@ const GoogleHubPage: React.FC = () => {
                       </button>
                       <button 
                         onClick={() => handleDisconnectTool(selectedTool.id)}
-                        className="w-full p-4 rounded-xl border border-red-500/20 bg-red-500/5 flex items-center justify-between hover:bg-red-500/10 transition-theme group cursor-pointer"
+                        className="w-full p-4 rounded-[var(--radius-md)] border border-red-500/20 bg-red-500/5 flex items-center justify-between hover:bg-red-500/10 transition-theme group cursor-pointer"
                       >
                         <div className="flex items-center gap-3">
                           <LogOut size={18} className="text-red-500" />
@@ -800,7 +800,7 @@ const GoogleHubPage: React.FC = () => {
                   </div>
                 ) : (
                   <div className="space-y-4">
-                    <div className="p-6 rounded-2xl border-2 border-dashed border-[var(--border-default)] flex flex-col items-center text-center">
+                    <div className="p-6 rounded-[var(--radius-lg)] border-2 border-dashed border-[var(--border-default)] flex flex-col items-center text-center">
                       <div className="w-16 h-16 rounded-shape-md bg-[var(--surface-subtle)] flex items-center justify-center mb-4">
                         <Link2 size={32} className="text-gray-400" />
                       </div>
@@ -815,11 +815,11 @@ const GoogleHubPage: React.FC = () => {
                     <div className="space-y-3">
                       <h5 className="text-[10px] font-black uppercase text-gray-400 px-1">{isRtl ? 'المطلوب' : 'Requirements'}</h5>
                       <div className="grid grid-cols-2 gap-2">
-                        <div className="p-3 rounded-xl bg-[var(--surface-subtle)] border border-[var(--border-default)]">
+                        <div className="p-3 rounded-[var(--radius-md)] bg-[var(--surface-subtle)] border border-[var(--border-default)]">
                           <Shield size={14} className="text-accent mb-2" />
                           <p className="text-[10px] font-bold">{isRtl ? 'صلاحية الوصول' : 'OAuth Access'}</p>
                         </div>
-                        <div className="p-3 rounded-xl bg-[var(--surface-subtle)] border border-[var(--border-default)]">
+                        <div className="p-3 rounded-[var(--radius-md)] bg-[var(--surface-subtle)] border border-[var(--border-default)]">
                           <RefreshCw size={14} className="text-blue-500 mb-2" />
                           <p className="text-[10px] font-bold">{isRtl ? 'مزامنة البيانات' : 'Data Sync'}</p>
                         </div>
@@ -834,7 +834,7 @@ const GoogleHubPage: React.FC = () => {
                 {selectedTool.status !== 'connected' && (
                   <button 
                     onClick={() => handleConnectTool(selectedTool.id)}
-                    className="px-6 py-2 text-xs font-black bg-accent text-white rounded-xl shadow-lg shadow-none hover:bg-accent transition-theme active:scale-95 cursor-pointer"
+                    className="px-6 py-2 text-xs font-black bg-accent text-white rounded-[var(--radius-md)] shadow-lg shadow-none hover:bg-accent transition-theme active:scale-95 cursor-pointer"
                   >
                     {isRtl ? 'تفعيل الاتصال' : 'Activate Connection'}
                   </button>
@@ -845,7 +845,7 @@ const GoogleHubPage: React.FC = () => {
         )}
       </AnimatePresence>
 
-      {/* Help/Guide Modal */}
+      {/* Integration Guide Modal */}
       <AnimatePresence>
         {guideTool && (
           <div 
@@ -868,7 +868,7 @@ const GoogleHubPage: React.FC = () => {
               {/* Modal Header */}
               <div className="p-6 border-b border-[var(--border-default)] flex items-center justify-between bg-gradient-to-r from-gray-500/10 to-transparent">
                 <div className="flex items-center gap-4 text-start">
-                  <div className={`w-12 h-12 rounded-2xl bg-${guideTool.color}-500/10 flex items-center justify-center shrink-0`}>
+                  <div className={`w-12 h-12 rounded-[var(--radius-lg)] bg-${guideTool.color}-500/10 flex items-center justify-center shrink-0`}>
                     {guideTool.icon}
                   </div>
                   <div>
@@ -887,7 +887,7 @@ const GoogleHubPage: React.FC = () => {
               {/* Modal Content */}
               <div className="p-6 space-y-6 max-h-[60vh] overflow-y-auto text-start">
                 <div className="grid grid-cols-1 gap-4">
-                  <div className="p-4 rounded-2xl bg-accent/5 border border-accent/10">
+                  <div className="p-4 rounded-[var(--radius-lg)] bg-accent/5 border border-accent/10">
                     <h4 className="text-xs font-black mb-3 flex items-center gap-2">
                       <Key size={14} className="text-accent shrink-0" />
                       <span>{isRtl ? 'متطلبات الوصول' : 'Access Requirements'}</span>
@@ -916,7 +916,7 @@ const GoogleHubPage: React.FC = () => {
                     </div>
                   </div>
 
-                  <div className="p-4 rounded-2xl bg-blue-500/5 border border-blue-500/10">
+                  <div className="p-4 rounded-[var(--radius-lg)] bg-blue-500/5 border border-blue-500/10">
                     <h4 className="text-xs font-black mb-3 flex items-center gap-2">
                       <Lock size={14} className="text-blue-500 shrink-0" />
                       <span>{isRtl ? 'الخصوصية والأمان' : 'Privacy & Security'}</span>
@@ -939,7 +939,7 @@ const GoogleHubPage: React.FC = () => {
                   {isRtl ? 'إغلاق' : 'Close'}
                 </button>
                 <button 
-                  className="px-5 py-2 text-xs font-black bg-accent text-white rounded-xl shadow-lg shadow-none hover:bg-accent transition-theme active:scale-95 cursor-pointer"
+                  className="px-5 py-2 text-xs font-black bg-accent text-white rounded-[var(--radius-md)] shadow-lg shadow-none hover:bg-accent transition-theme active:scale-95 cursor-pointer"
                   onClick={() => {
                     if (guideTool.available) {
                       setActiveTab(guideTool.id as 'overview' | 'chat' | 'contacts' | 'drive' | 'gmail');
@@ -980,7 +980,7 @@ const GoogleHubPage: React.FC = () => {
           en: 'Cancel'
         }}
         extraContent={
-          <div className="p-4 rounded-xl bg-amber-500/5 border border-amber-500/10 flex items-start gap-3 text-start">
+          <div className="p-4 rounded-[var(--radius-md)] bg-amber-500/5 border border-amber-500/10 flex items-start gap-3 text-start">
             <Info size={16} className="text-amber-500 shrink-0 mt-0.5" />
             <p className="text-[10px] text-amber-600 font-bold leading-tight">
               {isRtl 

@@ -130,7 +130,7 @@ export const ActionConfirmationModal: React.FC<ActionConfirmationModalProps> = (
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.94, y: 15 }}
             transition={{ duration: 0.2, ease: [0.16, 1, 0.3, 1] }}
-            className="relative max-w-md w-full p-6 sm:p-7 rounded-2xl border border-[var(--border-default)] bg-[var(--surface-card)] text-[var(--fg-primary)] shadow-2xl transition-theme z-10 font-sans"
+            className="relative max-w-md w-full p-6 sm:p-7 rounded-[var(--radius-lg)] border border-[var(--border-default)] bg-[var(--surface-card)] text-[var(--fg-primary)] shadow-2xl transition-theme z-10 font-sans"
             style={{ direction: dir }}
           >
             {/* Header / Title */}
@@ -160,7 +160,7 @@ export const ActionConfirmationModal: React.FC<ActionConfirmationModalProps> = (
                   }}
                   placeholder={currentPlaceholder}
                   autoFocus
-                  className="w-full bg-[var(--surface-subtle)] border border-[var(--border-default)] focus:border-[var(--border-accent-emphasis)] focus:ring-2 focus:ring-[var(--border-accent-emphasis)]/20 text-[var(--fg-primary)] placeholder-[var(--fg-muted)] rounded-xl px-4 py-3 text-sm transition-all outline-none font-sans"
+                  className="w-full bg-[var(--surface-subtle)] border border-[var(--border-default)] focus:border-[var(--border-accent-emphasis)] focus:ring-2 focus:ring-[var(--border-accent-emphasis)]/20 text-[var(--fg-primary)] placeholder-[var(--fg-muted)] rounded-[var(--radius-md)] px-4 py-3 text-sm transition-all outline-none font-sans"
                 />
               </div>
             )}
@@ -178,7 +178,7 @@ export const ActionConfirmationModal: React.FC<ActionConfirmationModalProps> = (
                 type="button"
                 disabled={isSubmitting}
                 onClick={onClose}
-                className="px-4.5 py-2.5 text-sm font-semibold rounded-xl text-[var(--fg-muted)] hover:text-[var(--fg-primary)] hover:bg-[var(--surface-subtle)] active:scale-95 transition-all font-sans disabled:opacity-50"
+                className="px-4.5 py-2.5 text-sm font-semibold rounded-[var(--radius-md)] text-[var(--fg-muted)] hover:text-[var(--fg-primary)] hover:bg-[var(--surface-subtle)] active:scale-95 transition-all font-sans disabled:opacity-50"
               >
                 {currentCancelLabel}
               </button>
@@ -187,7 +187,7 @@ export const ActionConfirmationModal: React.FC<ActionConfirmationModalProps> = (
                 type="button"
                 disabled={isSubmitting || (requiredInput && !inputValue.trim())}
                 onClick={handleConfirm}
-                className={`px-5 py-2.5 text-sm font-bold rounded-xl font-sans flex items-center justify-center gap-2 transition-all disabled:opacity-50 min-w-[95px] ${colorConfigs.btnClass}`}
+                className={`px-5 py-2.5 text-sm font-bold rounded-[var(--radius-md)] font-sans flex items-center justify-center gap-2 transition-all disabled:opacity-50 min-w-[95px] ${colorConfigs.btnClass}`}
               >
                 {isSubmitting ? (
                   <Loader2 size={16} className="animate-spin" />

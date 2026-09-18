@@ -6053,7 +6053,7 @@ export const BulletinBoardPage: React.FC = () => {
                       <button
                         type="button"
                         onClick={() => setComposerView('main')}
-                        className="flex-1 py-2.5 bg-accent hover:bg-accent text-[var(--text-primary)] rounded-xl text-xs font-extrabold transition-theme shadow-md shadow-none flex items-center justify-center gap-1.5 active:scale-95"
+                        className="flex-1 py-2.5 bg-accent hover:bg-accent text-[var(--text-primary)] rounded-[var(--radius-md)] text-xs font-extrabold transition-theme shadow-md shadow-none flex items-center justify-center gap-1.5 active:scale-95"
                       >
                         <Check size={15} />
                         <span>{isRtl ? 'تأكيد وحفظ الموقع' : 'Apply Location'}</span>
@@ -6098,7 +6098,7 @@ export const BulletinBoardPage: React.FC = () => {
                             setAdFormData(prev => ({ ...prev, description: prev.description + emoji }));
                             setComposerView('main');
                           }}
-                          className="h-10 text-xl flex items-center justify-center rounded-xl hover:bg-[var(--surface-subtle)] transition-theme"
+                          className="h-10 text-xl flex items-center justify-center rounded-[var(--radius-md)] hover:bg-[var(--surface-subtle)] transition-theme"
                         >
                           {emoji}
                         </button>
@@ -6254,7 +6254,7 @@ export const BulletinBoardPage: React.FC = () => {
                 <button
                   type="button"
                   onClick={() => setIsAudienceModalOpen(false)}
-                  className="px-5 py-2 rounded-xl bg-accent hover:bg-accent text-[var(--text-primary)] text-xs font-black transition-theme shadow-md shadow-none"
+                  className="px-5 py-2 rounded-[var(--radius-md)] bg-accent hover:bg-accent text-[var(--text-primary)] text-xs font-black transition-theme shadow-md shadow-none"
                 >
                   {isRtl ? 'تم التحديد' : 'Done'}
                 </button>
@@ -6285,7 +6285,7 @@ export const BulletinBoardPage: React.FC = () => {
 
               <div className="grid grid-cols-2 gap-2 py-2">
                 {}
-                <label className="flex items-center gap-3 p-3 rounded-xl hover:bg-[var(--surface-subtle)] cursor-pointer transition-theme group">
+                <label className="flex items-center gap-3 p-3 rounded-[var(--radius-md)] hover:bg-[var(--surface-subtle)] cursor-pointer transition-theme group">
                   <div className="w-10 h-10 rounded-shape-sm bg-accent/10 flex items-center justify-center text-accent transition-theme">
                     <ImageIcon size={22} />
                   </div>
@@ -6307,7 +6307,7 @@ export const BulletinBoardPage: React.FC = () => {
                     setComposerView('feelings');
                     setIsAddToPostModalOpen(false);
                   }}
-                  className="flex items-center gap-3 p-3 rounded-xl hover:bg-[var(--surface-subtle)] text-left rtl:text-right transition-theme group"
+                  className="flex items-center gap-3 p-3 rounded-[var(--radius-md)] hover:bg-[var(--surface-subtle)] text-left rtl:text-right transition-theme group"
                 >
                   <div className="w-10 h-10 rounded-shape-sm bg-orange-500/10 flex items-center justify-center text-orange-500 transition-theme">
                     <Smile size={22} />
@@ -6325,7 +6325,7 @@ export const BulletinBoardPage: React.FC = () => {
                     setComposerView('tagging');
                     setIsAddToPostModalOpen(false);
                   }}
-                  className="flex items-center gap-3 p-3 rounded-xl hover:bg-[var(--surface-subtle)] text-left rtl:text-right transition-theme group"
+                  className="flex items-center gap-3 p-3 rounded-[var(--radius-md)] hover:bg-[var(--surface-subtle)] text-left rtl:text-right transition-theme group"
                 >
                   <div className="w-10 h-10 rounded-shape-sm bg-accent/10 flex items-center justify-center text-accent transition-theme">
                     <Users size={22} />
@@ -6343,7 +6343,7 @@ export const BulletinBoardPage: React.FC = () => {
                     setComposerView('location');
                     setIsAddToPostModalOpen(false);
                   }}
-                  className="flex items-center gap-3 p-3 rounded-xl hover:bg-[var(--surface-subtle)] text-left rtl:text-right transition-theme group"
+                  className="flex items-center gap-3 p-3 rounded-[var(--radius-md)] hover:bg-[var(--surface-subtle)] text-left rtl:text-right transition-theme group"
                 >
                   <div className="w-10 h-10 rounded-shape-sm bg-red-500/10 flex items-center justify-center text-red-500 transition-theme">
                     <MapPin size={22} />
@@ -6362,7 +6362,7 @@ export const BulletinBoardPage: React.FC = () => {
                     setIsAddToPostModalOpen(false);
                     toast.success(isRtl ? 'تم تفعيل زر تلقي المكالمات/واتساب' : 'Call/WhatsApp button activated');
                   }}
-                  className="flex items-center gap-3 p-3 rounded-xl hover:bg-[var(--surface-subtle)] text-left rtl:text-right transition-theme group"
+                  className="flex items-center gap-3 p-3 rounded-[var(--radius-md)] hover:bg-[var(--surface-subtle)] text-left rtl:text-right transition-theme group"
                 >
                   <div className="w-10 h-10 rounded-shape-sm bg-accent/10 flex items-center justify-center text-accent transition-theme">
                     <Phone size={22} />
@@ -6392,7 +6392,7 @@ export const BulletinBoardPage: React.FC = () => {
                     }
                     setIsAddToPostModalOpen(false);
                   }}
-                  className="flex items-center gap-3 p-3 rounded-xl hover:bg-[var(--surface-subtle)] text-left rtl:text-right transition-theme group"
+                  className="flex items-center gap-3 p-3 rounded-[var(--radius-md)] hover:bg-[var(--surface-subtle)] text-left rtl:text-right transition-theme group"
                 >
                   <div className="w-10 h-10 rounded-shape-sm bg-accent/10 flex items-center justify-center text-accent font-extrabold text-xs transition-theme">
                     GIF
@@ -6411,7 +6411,7 @@ export const BulletinBoardPage: React.FC = () => {
                     setIsAddToPostModalOpen(false);
                     toast.success(isRtl ? 'تمت إضافة علامة البث المباشر' : 'Live video badge added');
                   }}
-                  className="flex items-center gap-3 p-3 rounded-xl hover:bg-[var(--surface-subtle)] text-left rtl:text-right transition-theme group"
+                  className="flex items-center gap-3 p-3 rounded-[var(--radius-md)] hover:bg-[var(--surface-subtle)] text-left rtl:text-right transition-theme group"
                 >
                   <div className="w-10 h-10 rounded-shape-sm bg-red-600/10 flex items-center justify-center text-red-500 transition-theme">
                     <Radio size={22} className="animate-pulse" />
@@ -6430,7 +6430,7 @@ export const BulletinBoardPage: React.FC = () => {
                     setIsAddToPostModalOpen(false);
                     toast.success(isRtl ? 'تمت إضافة علامة الحدث الشخصي' : 'Life event badge added');
                   }}
-                  className="flex items-center gap-3 p-3 rounded-xl hover:bg-[var(--surface-subtle)] text-left rtl:text-right transition-theme group"
+                  className="flex items-center gap-3 p-3 rounded-[var(--radius-md)] hover:bg-[var(--surface-subtle)] text-left rtl:text-right transition-theme group"
                 >
                   <div className="w-10 h-10 rounded-shape-sm bg-accent/10 flex items-center justify-center text-accent transition-theme">
                     <Bookmark size={22} />
@@ -6445,7 +6445,7 @@ export const BulletinBoardPage: React.FC = () => {
               <button
                 type="button"
                 onClick={() => setIsAddToPostModalOpen(false)}
-                className="w-full py-2.5 rounded-xl bg-[var(--surface-subtle)] hover:bg-[var(--border-default)] text-[var(--text-primary)] font-bold text-xs transition-theme"
+                className="w-full py-2.5 rounded-[var(--radius-md)] bg-[var(--surface-subtle)] hover:bg-[var(--border-default)] text-[var(--text-primary)] font-bold text-xs transition-theme"
               >
                 {isRtl ? 'إغلاق' : 'Close'}
               </button>
@@ -6481,7 +6481,7 @@ export const BulletinBoardPage: React.FC = () => {
                       value={pageFormData.name}
                       onChange={(e) => setPageFormData({ ...pageFormData, name: e.target.value })}
                       placeholder={isRtl ? 'شركة القدس للتكنولوجيا' : 'Name...'}
-                      className="w-full px-3 py-2 text-xs rounded-xl bg-[var(--surface-subtle)] border border-[var(--border-default)] text-[var(--text-primary)]"
+                      className="w-full px-3 py-2 text-xs rounded-[var(--radius-md)] bg-[var(--surface-subtle)] border border-[var(--border-default)] text-[var(--text-primary)]"
                     />
                   </div>
 
@@ -6510,7 +6510,7 @@ export const BulletinBoardPage: React.FC = () => {
                     value={pageFormData.description}
                     onChange={(e) => setPageFormData({ ...pageFormData, description: e.target.value })}
                     placeholder={isRtl ? 'صف خدماتك ومنتجاتك وساعات العمل بالتفصيل...' : 'Description...'}
-                    className="w-full px-3 py-2 text-xs rounded-xl bg-[var(--surface-subtle)] border border-[var(--border-default)] text-[var(--text-primary)] resize-none"
+                    className="w-full px-3 py-2 text-xs rounded-[var(--radius-md)] bg-[var(--surface-subtle)] border border-[var(--border-default)] text-[var(--text-primary)] resize-none"
                   />
                 </div>
 
@@ -6546,7 +6546,7 @@ export const BulletinBoardPage: React.FC = () => {
                       value={pageFormData.whatsapp_number}
                       onChange={(e) => setPageFormData({ ...pageFormData, whatsapp_number: e.target.value })}
                       placeholder="+970599000000"
-                      className="w-full px-3 py-2 text-xs rounded-xl bg-[var(--surface-subtle)] border border-[var(--border-default)] text-[var(--text-primary)]"
+                      className="w-full px-3 py-2 text-xs rounded-[var(--radius-md)] bg-[var(--surface-subtle)] border border-[var(--border-default)] text-[var(--text-primary)]"
                     />
                   </div>
 
@@ -6557,7 +6557,7 @@ export const BulletinBoardPage: React.FC = () => {
                       value={pageFormData.address}
                       onChange={(e) => setPageFormData({ ...pageFormData, address: e.target.value })}
                       placeholder={isRtl ? 'شارع عمر المختار - حي الرمال' : 'Address...'}
-                      className="w-full px-3 py-2 text-xs rounded-xl bg-[var(--surface-subtle)] border border-[var(--border-default)] text-[var(--text-primary)]"
+                      className="w-full px-3 py-2 text-xs rounded-[var(--radius-md)] bg-[var(--surface-subtle)] border border-[var(--border-default)] text-[var(--text-primary)]"
                     />
                   </div>
                 </div>
@@ -6566,7 +6566,7 @@ export const BulletinBoardPage: React.FC = () => {
                   <button
                     type="submit"
                     disabled={isSubmittingPage}
-                    className="px-6 py-2.5 rounded-xl bg-accent hover:bg-accent text-[var(--text-primary)] font-bold text-xs shadow-lg shadow-none transition-theme"
+                    className="px-6 py-2.5 rounded-[var(--radius-md)] bg-accent hover:bg-accent text-[var(--text-primary)] font-bold text-xs shadow-lg shadow-none transition-theme"
                   >
                     {isSubmittingPage ? (isRtl ? 'جاري الإنشاء...' : 'Creating...') : (isRtl ? 'تفعيل الصفحة التجارية' : 'Create Page')}
                   </button>
@@ -6584,7 +6584,7 @@ export const BulletinBoardPage: React.FC = () => {
               initial={{ scale: 0.95, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.95, opacity: 0 }}
-              className="relative w-full max-w-md rounded-xl bg-[var(--surface-card)] border border-[var(--border-default)] p-5 shadow-2xl space-y-4"
+              className="relative w-full max-w-md rounded-[var(--radius-md)] bg-[var(--surface-card)] border border-[var(--border-default)] p-5 shadow-2xl space-y-4"
             >
               <div className="flex items-center justify-between border-b border-[var(--border-default)] pb-2.5">
                 <div className="flex items-center gap-2">
@@ -6596,8 +6596,8 @@ export const BulletinBoardPage: React.FC = () => {
                 </button>
               </div>
 
-              <div className="p-2.5 rounded-xl bg-[var(--surface-subtle)] flex items-center gap-2.5 border border-[var(--border-default)]">
-                <img src={getMediaUrl(inquireAd.image_url)} alt={inquireAd.title} className="w-12 h-12 rounded-lg object-cover" />
+              <div className="p-2.5 rounded-[var(--radius-md)] bg-[var(--surface-subtle)] flex items-center gap-2.5 border border-[var(--border-default)]">
+                <img src={getMediaUrl(inquireAd.image_url)} alt={inquireAd.title} className="w-12 h-12 rounded-[var(--radius-sm)] object-cover" />
                 <div className="min-w-0 flex-1">
                   <h4 className="text-xs font-bold truncate text-[var(--text-primary)]">{inquireAd.title}</h4>
                   <p className="text-[10px] text-[var(--text-muted)]">{inquireAd.author_name}</p>
@@ -6613,7 +6613,7 @@ export const BulletinBoardPage: React.FC = () => {
                     value={inquiryText}
                     onChange={(e) => setInquiryText(e.target.value)}
                     placeholder={isRtl ? 'مرحباً، أود معرفة أسعار ومكونات هذا المنتج...' : 'Message...'}
-                    className="w-full px-3 py-2 text-xs rounded-xl bg-[var(--surface-subtle)] border border-[var(--border-default)] text-[var(--text-primary)] resize-none"
+                    className="w-full px-3 py-2 text-xs rounded-[var(--radius-md)] bg-[var(--surface-subtle)] border border-[var(--border-default)] text-[var(--text-primary)] resize-none"
                   />
                 </div>
 
@@ -6624,7 +6624,7 @@ export const BulletinBoardPage: React.FC = () => {
                     value={inquiryPhone}
                     onChange={(e) => setInquiryPhone(e.target.value)}
                     placeholder="+970599111222"
-                    className="w-full px-3 py-2 text-xs rounded-xl bg-[var(--surface-subtle)] border border-[var(--border-default)] text-[var(--text-primary)]"
+                    className="w-full px-3 py-2 text-xs rounded-[var(--radius-md)] bg-[var(--surface-subtle)] border border-[var(--border-default)] text-[var(--text-primary)]"
                   />
                 </div>
 
@@ -6633,7 +6633,7 @@ export const BulletinBoardPage: React.FC = () => {
                     type="button"
                     onClick={() => handleMessageAdvertiser(inquireAd, inquiryText)}
                     disabled={messagingAdId === inquireAd.id}
-                    className="w-full py-2.5 rounded-xl bg-accent text-[var(--text-primary)] font-bold text-xs flex items-center justify-center gap-2 transition-theme hover:opacity-90 disabled:opacity-50"
+                    className="w-full py-2.5 rounded-[var(--radius-md)] bg-accent text-[var(--text-primary)] font-bold text-xs flex items-center justify-center gap-2 transition-theme hover:opacity-90 disabled:opacity-50"
                   >
                     {messagingAdId === inquireAd.id ? (
                       <Loader2 size={14} className="animate-spin" />
@@ -6646,7 +6646,7 @@ export const BulletinBoardPage: React.FC = () => {
                   <button
                     type="submit"
                     disabled={isSendingInquiry}
-                    className="w-full py-2 rounded-xl bg-[var(--surface-subtle)] hover:bg-[var(--surface-inset)] text-[var(--text-secondary)] font-bold text-xs flex items-center justify-center gap-2 transition-theme"
+                    className="w-full py-2 rounded-[var(--radius-md)] bg-[var(--surface-subtle)] hover:bg-[var(--surface-inset)] text-[var(--text-secondary)] font-bold text-xs flex items-center justify-center gap-2 transition-theme"
                   >
                     <Send size={13} />
                     <span>{isSendingInquiry ? (isRtl ? 'جاري الإرسال...' : 'Sending...') : (isRtl ? 'إرسال كاستفسار سريع فقط' : 'Send Quick Inquiry Only')}</span>
@@ -6682,10 +6682,10 @@ export const BulletinBoardPage: React.FC = () => {
               initial={{ scale: 0.9, opacity: 0, y: 20 }}
               animate={{ scale: 1, opacity: 1, y: 0 }}
               exit={{ scale: 0.9, opacity: 0, y: 20 }}
-              className="relative w-full max-w-sm rounded-xl bg-[var(--surface-card)] border border-[var(--border-default)] p-6 shadow-xl space-y-6 text-[var(--text-primary)]"
+              className="relative w-full max-w-sm rounded-[var(--radius-md)] bg-[var(--surface-card)] border border-[var(--border-default)] p-6 shadow-xl space-y-6 text-[var(--text-primary)]"
             >
               <div className="text-center space-y-2">
-                <div className="w-14 h-14 rounded-lg bg-red-500/10 flex items-center justify-center mx-auto mb-4 border border-red-500/20 shadow-xs">
+                <div className="w-14 h-14 rounded-[var(--radius-sm)] bg-red-500/10 flex items-center justify-center mx-auto mb-4 border border-red-500/20 shadow-xs">
                   <Radio size={28} className="text-red-500 animate-pulse" />
                 </div>
                 <h3 className="text-xl font-black tracking-tight">{isRtl ? 'إعداد البث المباشر' : 'Live Stream Setup'}</h3>
@@ -6701,7 +6701,7 @@ export const BulletinBoardPage: React.FC = () => {
                     value={streamTitleInput}
                     onChange={(e) => setStreamTitleInput(e.target.value)}
                     placeholder={isRtl ? 'مثلاً: جولة في مكتبي الجديد...' : 'e.g., Tour of my new office...'}
-                    className="w-full bg-[var(--surface-subtle)] border border-[var(--border-default)] rounded-lg px-4 py-3 text-sm text-[var(--text-primary)] focus:outline-none focus:ring-2 focus:ring-red-500/20 focus:border-red-500/50 transition-theme font-bold"
+                    className="w-full bg-[var(--surface-subtle)] border border-[var(--border-default)] rounded-[var(--radius-sm)] px-4 py-3 text-sm text-[var(--text-primary)] focus:outline-none focus:ring-2 focus:ring-red-500/20 focus:border-red-500/50 transition-theme font-bold"
                     autoFocus
                   />
                   <div className="absolute right-4 top-1/2 -translate-y-1/2 text-[var(--text-muted)] pointer-events-none transition-colors group-focus-within:text-red-500/50">
@@ -6715,7 +6715,7 @@ export const BulletinBoardPage: React.FC = () => {
                       setIsStreamSetupOpen(false);
                       setStreamTitleInput('');
                     }}
-                    className="flex-1 py-3 rounded-lg bg-[var(--surface-subtle)] hover:bg-[var(--surface-inset)] text-[var(--text-secondary)] font-bold text-xs transition-theme active:scale-95 border border-[var(--border-default)]"
+                    className="flex-1 py-3 rounded-[var(--radius-sm)] bg-[var(--surface-subtle)] hover:bg-[var(--surface-inset)] text-[var(--text-secondary)] font-bold text-xs transition-theme active:scale-95 border border-[var(--border-default)]"
                   >
                     {isRtl ? 'إلغاء' : 'Cancel'}
                   </button>
@@ -6728,7 +6728,7 @@ export const BulletinBoardPage: React.FC = () => {
                       setIsStreamSetupOpen(false);
                       setIsLiveStreamOpen(true);
                     }}
-                    className="flex-[2] py-3 rounded-lg bg-red-600 hover:bg-red-700 text-white font-bold text-xs shadow-sm transition-theme active:scale-95 flex items-center justify-center gap-2 cursor-pointer"
+                    className="flex-[2] py-3 rounded-[var(--radius-sm)] bg-red-600 hover:bg-red-700 text-white font-bold text-xs shadow-sm transition-theme active:scale-95 flex items-center justify-center gap-2 cursor-pointer"
                   >
                     <span>{isRtl ? 'بدء البث المباشر 🚀' : 'Start Streaming 🚀'}</span>
                   </button>
@@ -6754,12 +6754,12 @@ export const BulletinBoardPage: React.FC = () => {
               exit={{ scale: 0.97, opacity: 0, y: -10 }}
               transition={{ duration: 0.15, ease: "easeOut" }}
               onClick={(e) => e.stopPropagation()}
-              className="relative w-full max-w-sm sm:max-w-md rounded-xl bg-[var(--surface-card)] border border-[var(--border-default)] shadow-2xl p-4 space-y-3.5 my-auto max-h-[88vh] overflow-y-auto custom-scrollbar backdrop-blur-md text-[var(--text-primary)] transform-gpu no-flicker"
+              className="relative w-full max-w-sm sm:max-w-md rounded-[var(--radius-md)] bg-[var(--surface-card)] border border-[var(--border-default)] shadow-2xl p-4 space-y-3.5 my-auto max-h-[88vh] overflow-y-auto custom-scrollbar backdrop-blur-md text-[var(--text-primary)] transform-gpu no-flicker"
             >
               {}
               <div className="flex items-center justify-between border-b border-[var(--border-default)] pb-2.5">
                 <div className="flex items-center gap-2">
-                  <div className="w-8 h-8 rounded-xl bg-accent/10 flex items-center justify-center text-accent border border-accent/20">
+                  <div className="w-8 h-8 rounded-[var(--radius-md)] bg-accent/10 flex items-center justify-center text-accent border border-accent/20">
                     <MapPin size={16} className="animate-bounce shrink-0" />
                   </div>
                   <div>
@@ -6785,7 +6785,7 @@ export const BulletinBoardPage: React.FC = () => {
               </div>
 
               {}
-              <div className="flex items-center justify-between px-3 py-2 rounded-xl bg-gradient-to-r from-gray-500/10 via-gray-500/10 to-gray-500/5 border border-accent/25 text-accent shadow-2xs">
+              <div className="flex items-center justify-between px-3 py-2 rounded-[var(--radius-md)] bg-gradient-to-r from-gray-500/10 via-gray-500/10 to-gray-500/5 border border-accent/25 text-accent shadow-2xs">
                 <div className="flex items-center gap-2 text-[11px] font-bold truncate">
                   <Navigation size={13} className="text-accent shrink-0" />
                   <span className="truncate">
@@ -6875,7 +6875,7 @@ export const BulletinBoardPage: React.FC = () => {
                     value={locationSearchQuery}
                     onChange={(e) => setLocationSearchQuery(e.target.value)}
                     placeholder={isRtl ? 'ابحث عن أي مدينة أو دولة أو منطقة بالوقت الفعلي...' : 'Search any city, country or landmark in real time...'}
-                    className="w-full ps-8 pe-8 py-2 text-xs rounded-xl bg-[var(--surface-inset)] border border-[var(--border-default)] text-[var(--text-primary)] focus:outline-none focus:border-accent transition-theme shadow-inner font-medium"
+                    className="w-full ps-8 pe-8 py-2 text-xs rounded-[var(--radius-md)] bg-[var(--surface-inset)] border border-[var(--border-default)] text-[var(--text-primary)] focus:outline-none focus:border-accent transition-theme shadow-inner font-medium"
                   />
                   <Search size={14} className="absolute start-2.5 top-1/2 -translate-y-1/2 text-[var(--text-muted)]" />
                   {isSearchingGeoLocation ? (
@@ -6896,7 +6896,7 @@ export const BulletinBoardPage: React.FC = () => {
 
                 {}
                 {autocompleteResults.length > 0 && (
-                  <div className="space-y-1 mt-1 max-h-48 overflow-y-auto custom-scrollbar border border-accent/30 rounded-xl bg-[var(--surface-card)] p-1.5 shadow-xl">
+                  <div className="space-y-1 mt-1 max-h-48 overflow-y-auto custom-scrollbar border border-accent/30 rounded-[var(--radius-md)] bg-[var(--surface-card)] p-1.5 shadow-xl">
                     <div className="text-[10px] font-bold text-accent px-2 py-1 flex items-center justify-between border-b border-[var(--border-default)]">
                       <span className="flex items-center gap-1">
                         <Sparkles size={11} />
@@ -6913,7 +6913,7 @@ export const BulletinBoardPage: React.FC = () => {
                           key={`${item.city}-${item.lat}-${idx}`}
                           type="button"
                           onClick={() => handleSelectAutocompleteResult(item)}
-                          className="w-full text-start p-2 rounded-lg hover:bg-accent/10 transition-theme flex items-center justify-between group border border-transparent hover:border-accent/20"
+                          className="w-full text-start p-2 rounded-[var(--radius-sm)] hover:bg-accent/10 transition-theme flex items-center justify-between group border border-transparent hover:border-accent/20"
                         >
                           <div className="flex items-center gap-2 truncate me-2">
                             <span className="text-sm shrink-0">{flag}</span>
@@ -6942,7 +6942,7 @@ export const BulletinBoardPage: React.FC = () => {
                   <button
                     type="button"
                     onClick={() => handleSelectCity('all')}
-                    className={`px-2.5 py-1.5 rounded-xl text-[11px] font-bold flex items-center gap-1.5 transition-theme border ${
+                    className={`px-2.5 py-1.5 rounded-[var(--radius-md)] text-[11px] font-bold flex items-center gap-1.5 transition-theme border ${
                       selectedCity === 'all'
                         ? 'bg-accent text-[var(--text-primary)] border-accent shadow-2xs'
                         : 'bg-[var(--surface-inset)] text-[var(--text-primary)] border-[var(--border-default)] hover:bg-accent/10'
@@ -6957,7 +6957,7 @@ export const BulletinBoardPage: React.FC = () => {
                       key={`bulletin-avail-city-${c}-${cIdx}`}
                       type="button"
                       onClick={() => handleSelectCity(c)}
-                      className={`px-2.5 py-1.5 rounded-xl text-[11px] font-bold flex items-center gap-1.5 transition-theme border ${
+                      className={`px-2.5 py-1.5 rounded-[var(--radius-md)] text-[11px] font-bold flex items-center gap-1.5 transition-theme border ${
                         selectedCity === c
                           ? 'bg-accent text-[var(--text-primary)] border-accent shadow-2xs'
                           : 'bg-[var(--surface-inset)] text-[var(--text-primary)] border-[var(--border-default)] hover:bg-accent/10'
@@ -6976,20 +6976,20 @@ export const BulletinBoardPage: React.FC = () => {
                   type="button"
                   onClick={handleDetectGpsLocation}
                   disabled={isDetectingGps}
-                  className="w-full py-1.5 px-3 rounded-xl bg-accent/10 hover:bg-accent/20 border border-accent/30 text-accent font-extrabold text-[11px] flex items-center justify-center gap-1.5 transition-theme active:scale-95 disabled:opacity-50"
+                  className="w-full py-1.5 px-3 rounded-[var(--radius-md)] bg-accent/10 hover:bg-accent/20 border border-accent/30 text-accent font-extrabold text-[11px] flex items-center justify-center gap-1.5 transition-theme active:scale-95 disabled:opacity-50"
                 >
                   {isDetectingGps ? <Loader2 size={13} className="animate-spin text-accent" /> : <Compass size={13} />}
                   <span>{isRtl ? '🎯 تحديد موقعي الآن تلقائياً (GPS)' : '🎯 Auto-Detect My Location (GPS)'}</span>
                 </button>
 
                 {}
-                <div className="space-y-2 bg-[var(--surface-inset)] p-3 rounded-2xl border border-accent/20">
+                <div className="space-y-2 bg-[var(--surface-inset)] p-3 rounded-[var(--radius-lg)] border border-accent/20">
                   <div className="flex items-center justify-between text-xs font-extrabold">
                     <span className="text-[var(--text-primary)] flex items-center gap-1.5">
                       <SlidersHorizontal size={13} className="text-accent" />
                       <span>{isRtl ? 'نطاق الوصول والشعاع:' : 'Reach Visibility Radius:'}</span>
                     </span>
-                    <span className="text-accent font-black text-xs bg-accent/15 px-2 py-0.5 rounded-lg border border-accent/20">
+                    <span className="text-accent font-black text-xs bg-accent/15 px-2 py-0.5 rounded-[var(--radius-sm)] border border-accent/20">
                       {selectedRadius === 'all' ? (isRtl ? '🌐 بلا حدود (الكل)' : '🌐 Unlimited (Global)') : `🎯 +${selectedRadius} ${isRtl ? 'كم' : 'km'}`}
                     </span>
                   </div>
@@ -7007,7 +7007,7 @@ export const BulletinBoardPage: React.FC = () => {
                         setSelectedRadius(val);
                         secureStorage.set('perplexta_user_radius', val);
                       }}
-                      className="w-full h-2 bg-[var(--surface-subtle)] rounded-lg appearance-none cursor-pointer accent-accent hover:accent-accent-400 transition-theme"
+                      className="w-full h-2 bg-[var(--surface-subtle)] rounded-[var(--radius-sm)] appearance-none cursor-pointer accent-accent hover:accent-accent-400 transition-theme"
                     />
                     <div className="flex justify-between text-[9px] font-bold text-[var(--text-muted)] px-0.5">
                       <span>5 {isRtl ? 'كم' : 'km'}</span>
@@ -7027,7 +7027,7 @@ export const BulletinBoardPage: React.FC = () => {
                           setSelectedRadius(r);
                           secureStorage.set('perplexta_user_radius', r);
                         }}
-                        className={`flex-1 py-1 rounded-lg text-[10px] font-extrabold transition-theme border ${
+                        className={`flex-1 py-1 rounded-[var(--radius-sm)] text-[10px] font-extrabold transition-theme border ${
                           selectedRadius === r
                             ? 'bg-accent text-[var(--text-primary)] border-accent shadow-2xs'
                             : 'bg-[var(--surface-card)] text-[var(--text-secondary)] border-[var(--border-default)] hover:border-accent/50'
@@ -7039,7 +7039,7 @@ export const BulletinBoardPage: React.FC = () => {
                   </div>
 
                   {}
-                  <div className="text-[10px] font-bold text-accent bg-accent/10 px-2.5 py-1.5 rounded-xl border border-accent/20 flex items-center gap-1.5">
+                  <div className="text-[10px] font-bold text-accent bg-accent/10 px-2.5 py-1.5 rounded-[var(--radius-md)] border border-accent/20 flex items-center gap-1.5">
                     <Radio size={12} className="text-accent animate-pulse shrink-0" />
                     <span>
                       {isRtl
@@ -7054,7 +7054,7 @@ export const BulletinBoardPage: React.FC = () => {
               <button
                 type="button"
                 onClick={() => setIsLocationFlyoutOpen(false)}
-                className="w-full py-2.5 rounded-xl bg-accent hover:bg-accent text-[var(--text-primary)] font-extrabold text-xs shadow-md shadow-none active:scale-95 transition-theme flex items-center justify-center gap-1.5"
+                className="w-full py-2.5 rounded-[var(--radius-md)] bg-accent hover:bg-accent text-[var(--text-primary)] font-extrabold text-xs shadow-md shadow-none active:scale-95 transition-theme flex items-center justify-center gap-1.5"
               >
                 <Check size={15} />
                 <span>{isRtl ? 'تأكيد وتطبيق التغطية' : 'Apply Proximity'}</span>
@@ -7410,7 +7410,7 @@ export const BulletinBoardPage: React.FC = () => {
               initial={{ scale: 0.95, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.95, opacity: 0 }}
-              className="relative w-full max-w-xl rounded-xl bg-[var(--surface-card)] border border-[var(--border-default)] p-6 shadow-2xl space-y-4 my-8 text-[var(--text-primary)] transform-gpu no-flicker"
+              className="relative w-full max-w-xl rounded-[var(--radius-md)] bg-[var(--surface-card)] border border-[var(--border-default)] p-6 shadow-2xl space-y-4 my-8 text-[var(--text-primary)] transform-gpu no-flicker"
             >
               <div className="flex items-center justify-between border-b border-[var(--border-default)] pb-3">
                 <div className="flex items-center gap-2">
@@ -7427,7 +7427,7 @@ export const BulletinBoardPage: React.FC = () => {
                 <button
                   type="button"
                   onClick={() => setKycTab('info')}
-                  className={`px-3 py-1.5 text-xs font-bold rounded-lg transition-theme ${
+                  className={`px-3 py-1.5 text-xs font-bold rounded-[var(--radius-sm)] transition-theme ${
                     kycTab === 'info'
                       ? 'bg-accent/10 text-accent'
                       : 'text-[var(--text-secondary)] hover:bg-[var(--surface-inset)]'
@@ -7438,7 +7438,7 @@ export const BulletinBoardPage: React.FC = () => {
                 <button
                   type="button"
                   onClick={() => setKycTab('kyc')}
-                  className={`px-3 py-1.5 text-xs font-bold rounded-lg transition-theme flex items-center gap-1 ${
+                  className={`px-3 py-1.5 text-xs font-bold rounded-[var(--radius-sm)] transition-theme flex items-center gap-1 ${
                     kycTab === 'kyc'
                       ? 'bg-accent/10 text-accent'
                       : 'text-[var(--text-secondary)] hover:bg-[var(--surface-inset)]'
@@ -7452,7 +7452,7 @@ export const BulletinBoardPage: React.FC = () => {
               {kycTab === 'info' ? (
                 <form onSubmit={handleSaveProfile} className="space-y-4">
                   <div className="space-y-3">
-                    <div className="flex flex-col items-center justify-center p-3 rounded-xl bg-[var(--surface-inset)] border border-[var(--border-default)] gap-2">
+                    <div className="flex flex-col items-center justify-center p-3 rounded-[var(--radius-md)] bg-[var(--surface-inset)] border border-[var(--border-default)] gap-2">
                       <BulletinAvatar
                         src={profileFormData.avatar}
                         alt={profileFormData.name}
@@ -7479,7 +7479,7 @@ export const BulletinBoardPage: React.FC = () => {
                         required
                         value={profileFormData.name}
                         onChange={(e) => setProfileFormData(prev => ({ ...prev, name: e.target.value }))}
-                        className="w-full px-3 py-2 text-xs rounded-xl bg-[var(--surface-inset)] border border-[var(--border-default)]"
+                        className="w-full px-3 py-2 text-xs rounded-[var(--radius-md)] bg-[var(--surface-inset)] border border-[var(--border-default)]"
                       />
                     </div>
 
@@ -7489,7 +7489,7 @@ export const BulletinBoardPage: React.FC = () => {
                         rows={3}
                         value={profileFormData.custom_instructions}
                         onChange={(e) => setProfileFormData(prev => ({ ...prev, custom_instructions: e.target.value }))}
-                        className="w-full px-3 py-2 text-xs rounded-xl bg-[var(--surface-inset)] border border-[var(--border-default)]"
+                        className="w-full px-3 py-2 text-xs rounded-[var(--radius-md)] bg-[var(--surface-inset)] border border-[var(--border-default)]"
                         placeholder={isRtl ? 'اكتب نبذة عنك...' : 'Tell us about yourself...'}
                       />
                     </div>
@@ -7499,14 +7499,14 @@ export const BulletinBoardPage: React.FC = () => {
                     <button
                       type="button"
                       onClick={() => setIsProfileEditModalOpen(false)}
-                      className="px-4 py-2 rounded-xl border border-[var(--border-default)] text-xs font-bold"
+                      className="px-4 py-2 rounded-[var(--radius-md)] border border-[var(--border-default)] text-xs font-bold"
                     >
                       {isRtl ? 'إلغاء' : 'Cancel'}
                     </button>
                     <button
                       type="submit"
                       disabled={isSubmittingProfile}
-                      className="px-4 py-2 rounded-xl bg-accent text-[var(--text-primary)] text-xs font-bold"
+                      className="px-4 py-2 rounded-[var(--radius-md)] bg-accent text-[var(--text-primary)] text-xs font-bold"
                     >
                       {isSubmittingProfile ? (isRtl ? 'جاري الحفظ...' : 'Saving...') : (isRtl ? 'حفظ التغييرات' : 'Save Changes')}
                     </button>
@@ -7527,7 +7527,7 @@ export const BulletinBoardPage: React.FC = () => {
                   )}
 
                   {user.kyc_status === 'pending' && (
-                    <div className="p-4 rounded-xl bg-yellow-500/10 border border-yellow-500/20 text-center space-y-2">
+                    <div className="p-4 rounded-[var(--radius-md)] bg-yellow-500/10 border border-yellow-500/20 text-center space-y-2">
                       <div className="flex justify-center">
                         <div className="w-10 h-10 rounded-shape-full border-4 border-yellow-500 border-t-transparent animate-spin" />
                       </div>
@@ -7541,12 +7541,12 @@ export const BulletinBoardPage: React.FC = () => {
                   {(user.kyc_status === 'none' || user.kyc_status === 'rejected' || !user.kyc_status) && (
                     <form onSubmit={handleKycSubmit} className="space-y-4">
                       {user.kyc_status === 'rejected' && (
-                        <div className="p-3 rounded-xl bg-red-500/10 border border-red-500/20 text-xs text-red-500">
+                        <div className="p-3 rounded-[var(--radius-md)] bg-red-500/10 border border-red-500/20 text-xs text-red-500">
                           {isRtl ? 'تم رفض طلب التوثيق السابق. يرجى تقديم الاسم الحقيقي ومستند واضح للتحقق.' : 'Previous verification request was rejected. Please submit valid documents.'}
                         </div>
                       )}
 
-                      <div className="p-3.5 rounded-xl bg-accent/5 border border-accent/10 space-y-1">
+                      <div className="p-3.5 rounded-[var(--radius-md)] bg-accent/5 border border-accent/10 space-y-1">
                         <h4 className="text-xs font-extrabold text-accent">{isRtl ? 'احصل على الشارة الزرقاء في بيربليكستا بورد 🛡️' : 'Get the Blue Verification Badge on Perplexta Board'}</h4>
                         <p className="text-[10px] text-[var(--text-secondary)] leading-relaxed">
                           {isRtl ? 'توثيق الهوية يضمن للعملاء سلامة الصفقات ويمنح منشوراتك الأولوية التامة في محركات البحث والتوصيات بالمنصة.' : 'Verifying your identity builds trust and boosts search priority.'}
@@ -7561,7 +7561,7 @@ export const BulletinBoardPage: React.FC = () => {
                             required
                             value={kycFullName}
                             onChange={(e) => setKycFullName(e.target.value)}
-                            className="w-full px-3 py-2 text-xs rounded-xl bg-[var(--surface-inset)] border border-[var(--border-default)]"
+                            className="w-full px-3 py-2 text-xs rounded-[var(--radius-md)] bg-[var(--surface-inset)] border border-[var(--border-default)]"
                             placeholder={isRtl ? 'مثال: محمد أحمد علي' : 'Legal Name'}
                           />
                         </div>
@@ -7573,7 +7573,7 @@ export const BulletinBoardPage: React.FC = () => {
                             required
                             value={kycIDNumber}
                             onChange={(e) => setKycIDNumber(e.target.value)}
-                            className="w-full px-3 py-2 text-xs rounded-xl bg-[var(--surface-inset)] border border-[var(--border-default)]"
+                            className="w-full px-3 py-2 text-xs rounded-[var(--radius-md)] bg-[var(--surface-inset)] border border-[var(--border-default)]"
                             placeholder="E.g., 401234567"
                           />
                         </div>
@@ -7586,10 +7586,10 @@ export const BulletinBoardPage: React.FC = () => {
                               required
                               value={kycSelfieUrl}
                               onChange={(e) => setKycSelfieUrl(e.target.value)}
-                              className="flex-1 px-3 py-2 text-xs rounded-xl bg-[var(--surface-inset)] border border-[var(--border-default)]"
+                              className="flex-1 px-3 py-2 text-xs rounded-[var(--radius-md)] bg-[var(--surface-inset)] border border-[var(--border-default)]"
                               placeholder="https://..."
                             />
-                            <label className="px-3 py-2 rounded-xl bg-accent text-[var(--text-primary)] text-xs font-bold cursor-pointer flex items-center justify-center shrink-0">
+                            <label className="px-3 py-2 rounded-[var(--radius-md)] bg-accent text-[var(--text-primary)] text-xs font-bold cursor-pointer flex items-center justify-center shrink-0">
                               <Upload size={14} />
                               <input
                                 type="file"
@@ -7606,14 +7606,14 @@ export const BulletinBoardPage: React.FC = () => {
                         <button
                           type="button"
                           onClick={() => setIsProfileEditModalOpen(false)}
-                          className="px-4 py-2 rounded-xl border border-[var(--border-default)] text-xs font-bold"
+                          className="px-4 py-2 rounded-[var(--radius-md)] border border-[var(--border-default)] text-xs font-bold"
                         >
                           {isRtl ? 'إلغاء' : 'Cancel'}
                         </button>
                         <button
                           type="submit"
                           disabled={isSubmittingProfile}
-                          className="px-4 py-2 rounded-xl bg-accent text-[var(--text-primary)] text-xs font-bold"
+                          className="px-4 py-2 rounded-[var(--radius-md)] bg-accent text-[var(--text-primary)] text-xs font-bold"
                         >
                           {isSubmittingProfile ? (isRtl ? 'جاري الإرسال...' : 'Submitting...') : (isRtl ? 'إرسال طلب التوثيق' : 'Submit Verification')}
                         </button>
@@ -7634,7 +7634,7 @@ export const BulletinBoardPage: React.FC = () => {
               initial={{ scale: 0.95, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.95, opacity: 0 }}
-              className="relative w-full max-w-xl rounded-xl bg-[var(--surface-card)] border border-[var(--border-default)] p-6 shadow-2xl space-y-4 my-8 text-[var(--text-primary)] transform-gpu no-flicker"
+              className="relative w-full max-w-xl rounded-[var(--radius-md)] bg-[var(--surface-card)] border border-[var(--border-default)] p-6 shadow-2xl space-y-4 my-8 text-[var(--text-primary)] transform-gpu no-flicker"
             >
               <div className="flex items-center justify-between border-b border-[var(--border-default)] pb-3">
                 <div className="flex items-center gap-2">
@@ -7658,7 +7658,7 @@ export const BulletinBoardPage: React.FC = () => {
                         required
                         value={editPageFormData.name}
                         onChange={(e) => setEditPageFormData({ ...editPageFormData, name: e.target.value })}
-                        className="w-full px-3 py-2 text-xs rounded-xl bg-[var(--surface-inset)] border border-[var(--border-default)]"
+                        className="w-full px-3 py-2 text-xs rounded-[var(--radius-md)] bg-[var(--surface-inset)] border border-[var(--border-default)]"
                       />
                     </div>
 
@@ -7687,7 +7687,7 @@ export const BulletinBoardPage: React.FC = () => {
                         required
                         value={editPageFormData.category}
                         onChange={(e) => setEditPageFormData({ ...editPageFormData, category: e.target.value })}
-                        className="w-full px-3 py-2 text-xs rounded-xl bg-[var(--surface-inset)] border border-[var(--border-default)]"
+                        className="w-full px-3 py-2 text-xs rounded-[var(--radius-md)] bg-[var(--surface-inset)] border border-[var(--border-default)]"
                         placeholder="E.g., E-Commerce"
                       />
                     </div>
@@ -7698,7 +7698,7 @@ export const BulletinBoardPage: React.FC = () => {
                         type="text"
                         value={editPageFormData.address}
                         onChange={(e) => setEditPageFormData({ ...editPageFormData, address: e.target.value })}
-                        className="w-full px-3 py-2 text-xs rounded-xl bg-[var(--surface-inset)] border border-[var(--border-default)]"
+                        className="w-full px-3 py-2 text-xs rounded-[var(--radius-md)] bg-[var(--surface-inset)] border border-[var(--border-default)]"
                         placeholder="E.g., Remal Street"
                       />
                     </div>
@@ -7711,7 +7711,7 @@ export const BulletinBoardPage: React.FC = () => {
                       required
                       value={editPageFormData.description}
                       onChange={(e) => setEditPageFormData({ ...editPageFormData, description: e.target.value })}
-                      className="w-full px-3 py-2 text-xs rounded-xl bg-[var(--surface-inset)] border border-[var(--border-default)]"
+                      className="w-full px-3 py-2 text-xs rounded-[var(--radius-md)] bg-[var(--surface-inset)] border border-[var(--border-default)]"
                     />
                   </div>
 
@@ -7723,7 +7723,7 @@ export const BulletinBoardPage: React.FC = () => {
                         type="text"
                         value={editPageFormData.whatsapp_number}
                         onChange={(e) => setEditPageFormData({ ...editPageFormData, whatsapp_number: e.target.value })}
-                        className="w-full px-3 py-2 text-xs rounded-xl bg-[var(--surface-inset)] border border-[var(--border-default)]"
+                        className="w-full px-3 py-2 text-xs rounded-[var(--radius-md)] bg-[var(--surface-inset)] border border-[var(--border-default)]"
                         placeholder="970599..."
                       />
                     </div>
@@ -7734,7 +7734,7 @@ export const BulletinBoardPage: React.FC = () => {
                         type="text"
                         value={editPageFormData.phone_number}
                         onChange={(e) => setEditPageFormData({ ...editPageFormData, phone_number: e.target.value })}
-                        className="w-full px-3 py-2 text-xs rounded-xl bg-[var(--surface-inset)] border border-[var(--border-default)]"
+                        className="w-full px-3 py-2 text-xs rounded-[var(--radius-md)] bg-[var(--surface-inset)] border border-[var(--border-default)]"
                       />
                     </div>
 
@@ -7744,7 +7744,7 @@ export const BulletinBoardPage: React.FC = () => {
                         type="text"
                         value={editPageFormData.website_url}
                         onChange={(e) => setEditPageFormData({ ...editPageFormData, website_url: e.target.value })}
-                        className="w-full px-3 py-2 text-xs rounded-xl bg-[var(--surface-inset)] border border-[var(--border-default)]"
+                        className="w-full px-3 py-2 text-xs rounded-[var(--radius-md)] bg-[var(--surface-inset)] border border-[var(--border-default)]"
                         placeholder="https://..."
                       />
                     </div>
@@ -7760,9 +7760,9 @@ export const BulletinBoardPage: React.FC = () => {
                           required
                           value={editPageFormData.avatar_url}
                           onChange={(e) => setEditPageFormData({ ...editPageFormData, avatar_url: e.target.value })}
-                          className="flex-1 px-3 py-2 text-xs rounded-xl bg-[var(--surface-inset)] border border-[var(--border-default)]"
+                          className="flex-1 px-3 py-2 text-xs rounded-[var(--radius-md)] bg-[var(--surface-inset)] border border-[var(--border-default)]"
                         />
-                        <label className="px-3 py-2 rounded-xl bg-accent text-[var(--text-primary)] text-xs font-bold cursor-pointer flex items-center justify-center shrink-0">
+                        <label className="px-3 py-2 rounded-[var(--radius-md)] bg-accent text-[var(--text-primary)] text-xs font-bold cursor-pointer flex items-center justify-center shrink-0">
                           <Upload size={14} />
                           <input
                             type="file"
@@ -7781,9 +7781,9 @@ export const BulletinBoardPage: React.FC = () => {
                           type="text"
                           value={editPageFormData.cover_url}
                           onChange={(e) => setEditPageFormData({ ...editPageFormData, cover_url: e.target.value })}
-                          className="flex-1 px-3 py-2 text-xs rounded-xl bg-[var(--surface-inset)] border border-[var(--border-default)]"
+                          className="flex-1 px-3 py-2 text-xs rounded-[var(--radius-md)] bg-[var(--surface-inset)] border border-[var(--border-default)]"
                         />
-                        <label className="px-3 py-2 rounded-xl bg-accent text-[var(--text-primary)] text-xs font-bold cursor-pointer flex items-center justify-center shrink-0">
+                        <label className="px-3 py-2 rounded-[var(--radius-md)] bg-accent text-[var(--text-primary)] text-xs font-bold cursor-pointer flex items-center justify-center shrink-0">
                           <Upload size={14} />
                           <input
                             type="file"
@@ -7811,7 +7811,7 @@ export const BulletinBoardPage: React.FC = () => {
                               type="email"
                               value={newManagerEmail}
                               onChange={(e) => setNewManagerEmail(e.target.value)}
-                              className="w-full px-3 py-2 text-xs rounded-xl bg-[var(--surface-inset)] border border-[var(--border-default)]"
+                              className="w-full px-3 py-2 text-xs rounded-[var(--radius-md)] bg-[var(--surface-inset)] border border-[var(--border-default)]"
                               placeholder="manager@example.com"
                             />
                           </div>
@@ -7850,14 +7850,14 @@ export const BulletinBoardPage: React.FC = () => {
                               setNewManagerEmail('');
                               toast.success(isRtl ? 'تمت إضافة المسؤول للقايمة مؤقتاً! يرجى حفظ الصفحة لتأكيد الحفظ بالخادم.' : 'Manager added to list! Save page to persist.');
                             }}
-                            className="px-3 py-2 bg-accent text-[var(--text-primary)] text-xs font-bold rounded-xl h-9 flex items-center justify-center shrink-0 cursor-pointer"
+                            className="px-3 py-2 bg-accent text-[var(--text-primary)] text-xs font-bold rounded-[var(--radius-md)] h-9 flex items-center justify-center shrink-0 cursor-pointer"
                           >
                             <span>{isRtl ? 'إضافة' : 'Add'}</span>
                           </button>
                         </div>
                       </div>
                     ) : (
-                      <div className="p-3 rounded-xl bg-[var(--surface-subtle)] text-center text-xs text-[var(--text-muted)]">
+                      <div className="p-3 rounded-[var(--radius-md)] bg-[var(--surface-subtle)] text-center text-xs text-[var(--text-muted)]">
                         {isRtl ? 'صلاحية إضافة وإزالة المسؤولين مقتصرة على مالك الصفحة الأساسي.' : 'Only page owner can manage managers.'}
                       </div>
                     )}
@@ -7870,7 +7870,7 @@ export const BulletinBoardPage: React.FC = () => {
                       ) : (
                         <div className="grid grid-cols-1 gap-1.5">
                           {editPageManagers.map((mgr, mIdx) => (
-                            <div key={`edit-mgr-${mIdx}`} className="p-2.5 rounded-xl border border-[var(--border-default)] bg-[var(--surface-inset)] flex items-center justify-between gap-2">
+                            <div key={`edit-mgr-${mIdx}`} className="p-2.5 rounded-[var(--radius-md)] border border-[var(--border-default)] bg-[var(--surface-inset)] flex items-center justify-between gap-2">
                               <div className="min-w-0">
                                 <span className="text-xs font-extrabold truncate block">{mgr.name || mgr.email}</span>
                                 <span className="text-[10px] text-[var(--text-muted)] truncate block">{mgr.email}</span>
@@ -7912,14 +7912,14 @@ export const BulletinBoardPage: React.FC = () => {
                   <button
                     type="button"
                     onClick={() => { setIsEditPageModalOpen(false); setEditingPageData(null); }}
-                    className="px-4 py-2 rounded-xl border border-[var(--border-default)] text-xs font-bold"
+                    className="px-4 py-2 rounded-[var(--radius-md)] border border-[var(--border-default)] text-xs font-bold"
                   >
                     {isRtl ? 'إلغاء' : 'Cancel'}
                   </button>
                   <button
                     type="submit"
                     disabled={isSubmittingPageEdit}
-                    className="px-4 py-2 rounded-xl bg-accent text-[var(--text-primary)] text-xs font-bold"
+                    className="px-4 py-2 rounded-[var(--radius-md)] bg-accent text-[var(--text-primary)] text-xs font-bold"
                   >
                     {isSubmittingPageEdit ? (isRtl ? 'جاري الحفظ...' : 'Saving...') : (isRtl ? 'حفظ التعديلات' : 'Save Changes')}
                   </button>

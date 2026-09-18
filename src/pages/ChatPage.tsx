@@ -778,7 +778,7 @@ const ChatPage: React.FC = () => {
                 exit={{ opacity: 0 }}
                 className="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm"
               >
-                <div className="bg-[var(--surface-page)] border border-[var(--border-default)] rounded-lg w-full max-w-sm p-6 shadow-2xl">
+                <div className="bg-[var(--surface-page)] border border-[var(--border-default)] rounded-[var(--radius-sm)] w-full max-w-sm p-6 shadow-2xl">
                   <h3 className={`text-lg font-black mb-4 uppercase tracking-tighter ${dir === 'rtl' ? 'text-right' : 'text-left'}`}>
                     {dir === 'rtl' ? 'إعادة تسمية المحادثة' : 'Rename Conversation'}
                   </h3>
@@ -811,7 +811,7 @@ const ChatPage: React.FC = () => {
                   animate={{ scale: 1, opacity: 1 }}
                   exit={{ scale: 0.95, opacity: 0 }}
                   onClick={(e) => e.stopPropagation()}
-                  className="bg-[var(--surface-card)] border border-[var(--border-default)] rounded-2xl w-full max-w-sm p-6 shadow-2xl space-y-4"
+                  className="bg-[var(--surface-card)] border border-[var(--border-default)] rounded-[var(--radius-lg)] w-full max-w-sm p-6 shadow-2xl space-y-4"
                 >
                   <div className="flex items-center gap-3">
                     <div className="w-10 h-10 rounded-full bg-[var(--status-danger-subtle)] border border-[var(--status-danger)]/20 flex items-center justify-center text-[var(--fg-danger)] shrink-0">
@@ -831,14 +831,14 @@ const ChatPage: React.FC = () => {
                     <button
                       type="button"
                       onClick={() => setIsDeletingConfirmOpen(false)}
-                      className="flex-1 py-2 rounded-xl text-xs font-bold text-[var(--text-secondary)] bg-[var(--surface-subtle)] hover:bg-[var(--surface-inset)] border border-[var(--border-default)] transition-theme cursor-pointer"
+                      className="flex-1 py-2 rounded-[var(--radius-md)] text-xs font-bold text-[var(--text-secondary)] bg-[var(--surface-subtle)] hover:bg-[var(--surface-inset)] border border-[var(--border-default)] transition-theme cursor-pointer"
                     >
                       {dir === 'rtl' ? 'إلغاء' : 'Cancel'}
                     </button>
                     <button
                       type="button"
                       onClick={confirmDeleteChat}
-                      className="flex-1 py-2 rounded-xl text-xs font-bold text-[var(--ref-neutral-0)] bg-[var(--status-danger)] hover:opacity-90 shadow-sm transition-theme cursor-pointer"
+                      className="flex-1 py-2 rounded-[var(--radius-md)] text-xs font-bold text-[var(--ref-neutral-0)] bg-[var(--status-danger)] hover:opacity-90 shadow-sm transition-theme cursor-pointer"
                     >
                       {dir === 'rtl' ? 'تأكيد الحذف' : 'Delete'}
                     </button>
@@ -953,7 +953,7 @@ const ChatPage: React.FC = () => {
                                   href={cite.url || cite.link}
                                   target="_blank"
                                   rel="noopener noreferrer"
-                                  className="p-3.5 rounded-xl bg-[var(--surface-card)] border border-[var(--border-default)] hover:border-[var(--fg-accent)]/40 transition-all group flex flex-col justify-between gap-2.5 shadow-xs"
+                                  className="p-3.5 rounded-[var(--radius-md)] bg-[var(--surface-card)] border border-[var(--border-default)] hover:border-[var(--fg-accent)]/40 transition-all group flex flex-col justify-between gap-2.5 shadow-xs"
                                 >
                                   <div className="flex items-center gap-2">
                                     <div className="w-5 h-5 rounded-full bg-[var(--surface-subtle)] border border-[var(--border-default)] flex items-center justify-center overflow-hidden shrink-0">
@@ -1003,7 +1003,7 @@ const ChatPage: React.FC = () => {
                             {allImages.map((img, iIdx) => (
                               <div
                                 key={`all-img-${iIdx}`}
-                                className="group relative rounded-xl overflow-hidden border border-[var(--border-default)] bg-[var(--surface-card)] aspect-square flex items-center justify-center shadow-xs cursor-pointer"
+                                className="group relative rounded-[var(--radius-md)] overflow-hidden border border-[var(--border-default)] bg-[var(--surface-card)] aspect-square flex items-center justify-center shadow-xs cursor-pointer"
                                 onClick={() => window.open(img.url, '_blank')}
                               >
                                 <img

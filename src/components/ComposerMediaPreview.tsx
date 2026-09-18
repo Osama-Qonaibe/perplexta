@@ -143,7 +143,7 @@ export const ComposerMediaPreview: React.FC<ComposerMediaPreviewProps> = ({
   };
 
   return (
-    <div className="relative w-full rounded-2xl overflow-hidden border border-[var(--border-default)] bg-[var(--surface-card)] shadow-sm mt-3 group/box transition-theme">
+    <div className="relative w-full rounded-[var(--radius-lg)] overflow-hidden border border-[var(--border-default)] bg-[var(--surface-card)] shadow-sm mt-3 group/box transition-theme">
       {/* Top Floating Action Bar */}
       <div className="absolute top-3 inset-x-3 z-20 flex items-center justify-between pointer-events-auto">
         {/* Left Side: "تعديل الكل" (Edit All) Button + Count */}
@@ -151,14 +151,14 @@ export const ComposerMediaPreview: React.FC<ComposerMediaPreviewProps> = ({
           <button
             type="button"
             onClick={onOpenMediaManager}
-            className="platform-action-btn inline-flex items-center gap-1 px-3.5 py-1.5 min-h-[36px] rounded-xl bg-[var(--surface-card)]/90 hover:bg-[var(--surface-subtle)] text-[var(--text-primary)] text-xs font-bold shadow-md backdrop-blur-md border border-[var(--border-default)] transition-all cursor-pointer active:scale-95 focus:outline-none"
+            className="platform-action-btn inline-flex items-center gap-1 px-3.5 py-1.5 min-h-[36px] rounded-[var(--radius-md)] bg-[var(--surface-card)]/90 hover:bg-[var(--surface-subtle)] text-[var(--text-primary)] text-xs font-bold shadow-md backdrop-blur-md border border-[var(--border-default)] transition-all cursor-pointer active:scale-95 focus:outline-none"
             title={isRtl ? 'تعديل الصور والفيديوهات وإضافة شرح توضيحي' : 'Edit photos & videos'}
           >
             <Edit3 size={14} className="text-[var(--fg-accent)]" />
             <span>{isRtl ? 'تعديل الكل' : 'Edit All'}</span>
           </button>
 
-          <span className="px-2.5 py-1 min-h-[36px] inline-flex items-center rounded-xl bg-[var(--surface-inset)]/90 text-[var(--text-primary)] text-[11px] font-extrabold backdrop-blur-md border border-[var(--border-subtle)] shadow-xs">
+          <span className="px-2.5 py-1 min-h-[36px] inline-flex items-center rounded-[var(--radius-md)] bg-[var(--surface-inset)]/90 text-[var(--text-primary)] text-[11px] font-extrabold backdrop-blur-md border border-[var(--border-subtle)] shadow-xs">
             {totalCount} {isRtl ? (totalCount === 1 ? 'عنصر' : 'عناصر') : (totalCount === 1 ? 'item' : 'items')}
           </span>
         </div>
@@ -168,7 +168,7 @@ export const ComposerMediaPreview: React.FC<ComposerMediaPreviewProps> = ({
           <button
             type="button"
             onClick={onAddMoreClick}
-            className="platform-icon-btn p-1.5 min-h-[36px] min-w-[36px] flex items-center justify-center rounded-xl bg-[var(--surface-card)]/90 hover:bg-[var(--surface-subtle)] text-[var(--text-primary)] text-xs shadow-md backdrop-blur-md border border-[var(--border-default)] transition-all cursor-pointer active:scale-95"
+            className="platform-icon-btn p-1.5 min-h-[36px] min-w-[36px] flex items-center justify-center rounded-[var(--radius-md)] bg-[var(--surface-card)]/90 hover:bg-[var(--surface-subtle)] text-[var(--text-primary)] text-xs shadow-md backdrop-blur-md border border-[var(--border-default)] transition-all cursor-pointer active:scale-95"
             title={isRtl ? 'إضافة المزيد من الوسائط' : 'Add more media'}
           >
             <Plus size={16} />
@@ -177,7 +177,7 @@ export const ComposerMediaPreview: React.FC<ComposerMediaPreviewProps> = ({
           <button
             type="button"
             onClick={onClearAll}
-            className="p-1.5 min-h-[36px] min-w-[36px] flex items-center justify-center rounded-xl bg-[var(--surface-inset)]/90 hover:bg-[var(--fg-danger)] text-[var(--text-primary)] hover:text-white shadow-md backdrop-blur-md border border-[var(--border-default)] transition-all cursor-pointer active:scale-95"
+            className="p-1.5 min-h-[36px] min-w-[36px] flex items-center justify-center rounded-[var(--radius-md)] bg-[var(--surface-inset)]/90 hover:bg-[var(--fg-danger)] text-[var(--text-primary)] hover:text-white shadow-md backdrop-blur-md border border-[var(--border-default)] transition-all cursor-pointer active:scale-95"
             title={isRtl ? 'حذف جميع الوسائط المرفوعة' : 'Clear all media'}
           >
             <X size={16} />

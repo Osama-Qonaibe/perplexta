@@ -1059,7 +1059,7 @@ export const AdsManagementView: React.FC<{
   return (
     <div className="space-y-6 ads-management-container transition-theme [will-change:background-color,border-color,color]">
       {/* Top Header & Stat Cards */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-[var(--surface-subtle)] border border-[var(--border-default)] p-5 rounded-lg shadow-sm">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-[var(--surface-subtle)] border border-[var(--border-default)] p-5 rounded-[var(--radius-sm)] shadow-sm">
         <div>
           <div className="flex items-center gap-2 text-accent  mb-1">
             <Megaphone size={20} />
@@ -1076,7 +1076,7 @@ export const AdsManagementView: React.FC<{
 
         <button
           onClick={handleOpenCreateModal}
-          className="flex items-center justify-center gap-2 px-4 py-2.5 rounded-md bg-accent hover:bg-accent text-white font-bold text-xs shadow-lg shadow-none transition-theme shrink-0"
+          className="flex items-center justify-center gap-2 px-4 py-2.5 rounded-[var(--radius-sm)] bg-accent hover:bg-accent text-white font-bold text-xs shadow-lg shadow-none transition-theme shrink-0"
         >
           <Plus size={16} />
           <span>{isRtl ? 'إضافة إعلان جديد' : 'Create New Ad'}</span>
@@ -1087,7 +1087,7 @@ export const AdsManagementView: React.FC<{
       <div className="flex items-center gap-3 border-b border-[var(--border-default)] pb-3">
         <button
           onClick={() => setActiveTab('platform')}
-          className={`px-4 py-2 rounded-lg text-xs font-bold transition-theme flex items-center gap-2 ${
+          className={`px-4 py-2 rounded-[var(--radius-sm)] text-xs font-bold transition-theme flex items-center gap-2 ${
             activeTab === 'platform'
               ? 'bg-accent text-white shadow-md shadow-none'
               : 'bg-[var(--surface-subtle)] text-[var(--text-muted)] hover:text-accent'
@@ -1105,7 +1105,7 @@ export const AdsManagementView: React.FC<{
             setActiveTab('bulletin');
             fetchBulletinAds();
           }}
-          className={`px-4 py-2 rounded-lg text-xs font-bold transition-theme flex items-center gap-2 ${
+          className={`px-4 py-2 rounded-[var(--radius-sm)] text-xs font-bold transition-theme flex items-center gap-2 ${
             activeTab === 'bulletin'
               ? 'bg-accent text-white shadow-md shadow-none'
               : 'bg-[var(--surface-subtle)] text-[var(--text-muted)] hover:text-accent'
@@ -1125,7 +1125,7 @@ export const AdsManagementView: React.FC<{
             setActiveTab('analytics');
             fetchAdminAnalytics();
           }}
-          className={`px-4 py-2 rounded-lg text-xs font-bold transition-theme flex items-center gap-2 ${
+          className={`px-4 py-2 rounded-[var(--radius-sm)] text-xs font-bold transition-theme flex items-center gap-2 ${
             activeTab === 'analytics'
               ? 'bg-accent text-white shadow-md shadow-none'
               : 'bg-[var(--surface-subtle)] text-[var(--text-muted)] hover:text-accent'
@@ -1141,7 +1141,7 @@ export const AdsManagementView: React.FC<{
             fetchEconomySettings();
             fetchGiftCatalog();
           }}
-          className={`px-4 py-2 rounded-lg text-xs font-bold transition-theme flex items-center gap-2 ${
+          className={`px-4 py-2 rounded-[var(--radius-sm)] text-xs font-bold transition-theme flex items-center gap-2 ${
             activeTab === 'economy'
               ? 'bg-accent text-white shadow-md shadow-none'
               : 'bg-[var(--surface-subtle)] text-[var(--text-muted)] hover:text-accent'
@@ -1156,7 +1156,7 @@ export const AdsManagementView: React.FC<{
             setActiveTab('approval');
             fetchApprovalQueue();
           }}
-          className={`px-4 py-2 rounded-lg text-xs font-bold transition-theme flex items-center gap-2 ${
+          className={`px-4 py-2 rounded-[var(--radius-sm)] text-xs font-bold transition-theme flex items-center gap-2 ${
             activeTab === 'approval'
               ? 'bg-amber-500 text-white shadow-md shadow-amber-500/20'
               : 'bg-[var(--surface-subtle)] text-[var(--text-muted)] hover:text-amber-500'
@@ -1176,7 +1176,7 @@ export const AdsManagementView: React.FC<{
             setActiveTab('audit');
             fetchAuditLogs();
           }}
-          className={`px-4 py-2 rounded-lg text-xs font-bold transition-theme flex items-center gap-2 ${
+          className={`px-4 py-2 rounded-[var(--radius-sm)] text-xs font-bold transition-theme flex items-center gap-2 ${
             activeTab === 'audit'
               ? 'bg-blue-500 text-white shadow-md shadow-blue-500/20'
               : 'bg-[var(--surface-subtle)] text-[var(--text-muted)] hover:text-blue-500'
@@ -1191,7 +1191,7 @@ export const AdsManagementView: React.FC<{
       {activeTab === 'analytics' ? (
         <div className="space-y-6">
           {isAnalyticsLoading || !analyticsData ? (
-            <div className="p-12 text-center text-xs text-gray-400 flex flex-col items-center gap-2 bg-[var(--surface-subtle)] border border-[var(--border-default)] rounded-xl">
+            <div className="p-12 text-center text-xs text-gray-400 flex flex-col items-center gap-2 bg-[var(--surface-subtle)] border border-[var(--border-default)] rounded-[var(--radius-md)]">
               <RefreshCw size={24} className="animate-spin text-accent" />
               <span>{isRtl ? 'جاري تحميل تحليلات وإيرادات الإعلانات...' : 'Loading ad analytics & revenue...'}</span>
             </div>
@@ -1199,8 +1199,8 @@ export const AdsManagementView: React.FC<{
             <>
               {/* Summary Metrics */}
               <div className="grid grid-cols-2 lg:grid-cols-5 gap-4">
-                <div className="bg-[var(--surface-subtle)] border border-[var(--border-default)] p-4 rounded-xl flex items-center gap-3 shadow-sm">
-                  <div className="p-2.5 rounded-lg bg-accent/10 text-accent ">
+                <div className="bg-[var(--surface-subtle)] border border-[var(--border-default)] p-4 rounded-[var(--radius-md)] flex items-center gap-3 shadow-sm">
+                  <div className="p-2.5 rounded-[var(--radius-sm)] bg-accent/10 text-accent ">
                     <DollarSign size={22} />
                   </div>
                   <div>
@@ -1209,8 +1209,8 @@ export const AdsManagementView: React.FC<{
                   </div>
                 </div>
 
-                <div className="bg-[var(--surface-subtle)] border border-[var(--border-default)] p-4 rounded-xl flex items-center gap-3 shadow-sm">
-                  <div className="p-2.5 rounded-lg bg-blue-500/10 text-blue-500">
+                <div className="bg-[var(--surface-subtle)] border border-[var(--border-default)] p-4 rounded-[var(--radius-md)] flex items-center gap-3 shadow-sm">
+                  <div className="p-2.5 rounded-[var(--radius-sm)] bg-blue-500/10 text-blue-500">
                     <Eye size={22} />
                   </div>
                   <div>
@@ -1219,8 +1219,8 @@ export const AdsManagementView: React.FC<{
                   </div>
                 </div>
 
-                <div className="bg-[var(--surface-subtle)] border border-[var(--border-default)] p-4 rounded-xl flex items-center gap-3 shadow-sm">
-                  <div className="p-2.5 rounded-lg bg-purple-500/10 text-purple-500">
+                <div className="bg-[var(--surface-subtle)] border border-[var(--border-default)] p-4 rounded-[var(--radius-md)] flex items-center gap-3 shadow-sm">
+                  <div className="p-2.5 rounded-[var(--radius-sm)] bg-purple-500/10 text-purple-500">
                     <MousePointerClick size={22} />
                   </div>
                   <div>
@@ -1229,8 +1229,8 @@ export const AdsManagementView: React.FC<{
                   </div>
                 </div>
 
-                <div className="bg-[var(--surface-subtle)] border border-[var(--border-default)] p-4 rounded-xl flex items-center gap-3 shadow-sm">
-                  <div className="p-2.5 rounded-lg bg-amber-500/10 text-amber-500">
+                <div className="bg-[var(--surface-subtle)] border border-[var(--border-default)] p-4 rounded-[var(--radius-md)] flex items-center gap-3 shadow-sm">
+                  <div className="p-2.5 rounded-[var(--radius-sm)] bg-amber-500/10 text-amber-500">
                     <TrendingUp size={22} />
                   </div>
                   <div>
@@ -1239,8 +1239,8 @@ export const AdsManagementView: React.FC<{
                   </div>
                 </div>
 
-                <div className="bg-[var(--surface-subtle)] border border-[var(--border-default)] p-4 rounded-xl flex items-center gap-3 shadow-sm col-span-2 lg:col-span-1">
-                  <div className="p-2.5 rounded-lg bg-teal-500/10 text-teal-500">
+                <div className="bg-[var(--surface-subtle)] border border-[var(--border-default)] p-4 rounded-[var(--radius-md)] flex items-center gap-3 shadow-sm col-span-2 lg:col-span-1">
+                  <div className="p-2.5 rounded-[var(--radius-sm)] bg-teal-500/10 text-teal-500">
                     <Users size={22} />
                   </div>
                   <div>
@@ -1253,7 +1253,7 @@ export const AdsManagementView: React.FC<{
               {/* Charts Section */}
               <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                 {/* Time Series Area Chart */}
-                <div className="lg:col-span-2 bg-[var(--surface-subtle)] border border-[var(--border-default)] rounded-2xl p-5 space-y-4 shadow-sm">
+                <div className="lg:col-span-2 bg-[var(--surface-subtle)] border border-[var(--border-default)] rounded-[var(--radius-lg)] p-5 space-y-4 shadow-sm">
                   <div className="flex items-center justify-between pb-3 border-b border-[var(--border-default)]">
                     <div>
                       <h3 className="font-black text-sm text-[var(--text-primary)] flex items-center gap-2">
@@ -1316,7 +1316,7 @@ export const AdsManagementView: React.FC<{
                 </div>
 
                 {/* Placement & Type Breakdown */}
-                <div className="bg-[var(--surface-subtle)] border border-[var(--border-default)] rounded-2xl p-5 space-y-4 shadow-sm">
+                <div className="bg-[var(--surface-subtle)] border border-[var(--border-default)] rounded-[var(--radius-lg)] p-5 space-y-4 shadow-sm">
                   <div className="pb-3 border-b border-[var(--border-default)]">
                     <h3 className="font-black text-sm text-[var(--text-primary)] flex items-center gap-2">
                       <PieIcon size={18} className="text-purple-500" />
@@ -1449,7 +1449,7 @@ export const AdsManagementView: React.FC<{
                   <button
                     onClick={fetchRoiData}
                     disabled={isRoiLoading}
-                    className="p-2 rounded-lg bg-[var(--surface-page)] border border-[var(--border-default)] text-[var(--text-muted)] hover:text-accent transition-theme"
+                    className="p-2 rounded-[var(--radius-sm)] bg-[var(--surface-page)] border border-[var(--border-default)] text-[var(--text-muted)] hover:text-accent transition-theme"
                   >
                     <RefreshCw size={14} className={isRoiLoading ? 'animate-spin' : ''} />
                   </button>
@@ -1551,7 +1551,7 @@ export const AdsManagementView: React.FC<{
               </div>
 
               {/* Ad Performance Heatmap Section */}
-              <div className="bg-[var(--surface-subtle)] border border-[var(--border-default)] rounded-2xl p-6 shadow-sm space-y-6">
+              <div className="bg-[var(--surface-subtle)] border border-[var(--border-default)] rounded-[var(--radius-lg)] p-6 shadow-sm space-y-6">
                 <div className="flex items-center justify-between border-b border-[var(--border-default)] pb-4">
                   <div>
                     <h3 className="font-black text-sm text-[var(--text-primary)] flex items-center gap-2">
@@ -1667,7 +1667,7 @@ export const AdsManagementView: React.FC<{
         </div>
       ) : activeTab === 'approval' ? (
         <div className="space-y-6">
-          <div className="bg-[var(--surface-subtle)] border border-[var(--border-default)] rounded-2xl p-6 shadow-sm space-y-6">
+          <div className="bg-[var(--surface-subtle)] border border-[var(--border-default)] rounded-[var(--radius-lg)] p-6 shadow-sm space-y-6">
             <div className="flex items-center justify-between border-b border-[var(--border-default)] pb-4">
               <div>
                 <h3 className="font-black text-sm text-[var(--text-primary)] flex items-center gap-2">
@@ -1682,23 +1682,23 @@ export const AdsManagementView: React.FC<{
               </div>
               <button
                 onClick={fetchApprovalQueue}
-                className="p-2 rounded-md border border-[var(--border-default)] bg-[var(--surface-page)] text-gray-400 hover:text-amber-500 transition-colors"
+                className="p-2 rounded-[var(--radius-sm)] border border-[var(--border-default)] bg-[var(--surface-page)] text-gray-400 hover:text-amber-500 transition-colors"
               >
                 <RefreshCw size={15} />
               </button>
             </div>
 
             {approvalRequests.length === 0 ? (
-              <div className="p-12 text-center text-xs text-gray-400 bg-[var(--surface-page)]/50 rounded-xl border border-dashed border-[var(--border-default)]">
+              <div className="p-12 text-center text-xs text-gray-400 bg-[var(--surface-page)]/50 rounded-[var(--radius-md)] border border-dashed border-[var(--border-default)]">
                 {isRtl ? 'لا توجد طلبات معلقة حالياً' : 'No pending approval requests.'}
               </div>
             ) : (
               <div className="space-y-4">
                 {/* Bulk Actions Bar */}
                 {selectedRequests.length > 0 && (
-                  <div className="bg-amber-500/10 border border-amber-500/20 rounded-xl p-4 flex items-center justify-between animate-in fade-in slide-in-from-top-2">
+                  <div className="bg-amber-500/10 border border-amber-500/20 rounded-[var(--radius-md)] p-4 flex items-center justify-between animate-in fade-in slide-in-from-top-2">
                     <div className="flex items-center gap-3">
-                      <div className="w-8 h-8 rounded-lg bg-amber-500 text-white flex items-center justify-center font-black text-xs">
+                      <div className="w-8 h-8 rounded-[var(--radius-sm)] bg-amber-500 text-white flex items-center justify-center font-black text-xs">
                         {selectedRequests.length}
                       </div>
                       <span className="text-xs font-bold text-[var(--text-primary)]">
@@ -1849,7 +1849,7 @@ export const AdsManagementView: React.FC<{
                                     });
                                     if (reason && typeof reason === 'string') handleRejectApproval(req.id, reason);
                                   }}
-                                  className="p-1.5 rounded-lg bg-red-500/10 text-red-500 hover:bg-red-500 hover:text-white transition-theme"
+                                  className="p-1.5 rounded-[var(--radius-sm)] bg-red-500/10 text-red-500 hover:bg-red-500 hover:text-white transition-theme"
                                 >
                                   <X size={14} />
                                 </button>
@@ -1872,7 +1872,7 @@ export const AdsManagementView: React.FC<{
         </div>
       ) : activeTab === 'audit' ? (
         <div className="space-y-6">
-          <div className="bg-[var(--surface-subtle)] border border-[var(--border-default)] rounded-2xl p-6 shadow-sm">
+          <div className="bg-[var(--surface-subtle)] border border-[var(--border-default)] rounded-[var(--radius-lg)] p-6 shadow-sm">
             <div className="flex items-center justify-between mb-6">
               <div>
                 <h3 className="text-sm font-black text-[var(--text-primary)] flex items-center gap-2 uppercase tracking-tight">
@@ -1886,19 +1886,19 @@ export const AdsManagementView: React.FC<{
               <button 
                 onClick={fetchAuditLogs}
                 disabled={isAuditLoading}
-                className="p-2 rounded-lg bg-[var(--surface-page)] border border-[var(--border-default)] text-[var(--text-muted)] hover:text-blue-500 transition-theme shadow-sm disabled:opacity-50"
+                className="p-2 rounded-[var(--radius-sm)] bg-[var(--surface-page)] border border-[var(--border-default)] text-[var(--text-muted)] hover:text-blue-500 transition-theme shadow-sm disabled:opacity-50"
               >
                 <RefreshCw size={15} className={isAuditLoading ? 'animate-spin' : ''} />
               </button>
             </div>
 
             {isAuditLoading && auditLogs.length === 0 ? (
-              <div className="p-12 text-center text-xs text-gray-400 bg-[var(--surface-page)]/50 rounded-xl border border-dashed border-[var(--border-default)]">
+              <div className="p-12 text-center text-xs text-gray-400 bg-[var(--surface-page)]/50 rounded-[var(--radius-md)] border border-dashed border-[var(--border-default)]">
                 <RefreshCw size={24} className="animate-spin text-blue-500 mx-auto mb-2" />
                 <span>{isRtl ? 'جاري تحميل سجل التدقيق...' : 'Loading audit history...'}</span>
               </div>
             ) : auditLogs.length === 0 ? (
-              <div className="p-12 text-center text-xs text-gray-400 bg-[var(--surface-page)]/50 rounded-xl border border-dashed border-[var(--border-default)]">
+              <div className="p-12 text-center text-xs text-gray-400 bg-[var(--surface-page)]/50 rounded-[var(--radius-md)] border border-dashed border-[var(--border-default)]">
                 {isRtl ? 'لا توجد سجلات تدقيق متاحة حالياً.' : 'No audit records available yet.'}
               </div>
             ) : (
@@ -2418,7 +2418,7 @@ export const AdsManagementView: React.FC<{
 
           {/* Bulk Action Toolbar */}
           {!isBulletinLoading && bulletinAds.length > 0 && (
-            <div className="flex flex-wrap items-center justify-between gap-2 bg-[var(--surface-page)] p-3 rounded-lg border border-[var(--border-default)]">
+            <div className="flex flex-wrap items-center justify-between gap-2 bg-[var(--surface-page)] p-3 rounded-[var(--radius-sm)] border border-[var(--border-default)]">
               <div className="flex items-center gap-2">
                 <span className="text-xs font-bold text-[var(--text-primary)]">
                   {isRtl ? `تم تحديد ${selectedBulletinIds.length} من ${bulletinAds.length}` : `${selectedBulletinIds.length} of ${bulletinAds.length} selected`}
@@ -2426,7 +2426,7 @@ export const AdsManagementView: React.FC<{
                 {selectedBulletinIds.length > 0 && (
                   <button
                     onClick={() => handleBulkDeleteBulletinAds()}
-                    className="px-3 py-1 rounded bg-red-500 text-white font-bold text-[10px] hover:bg-red-600 transition-theme flex items-center gap-1 shadow"
+                    className="px-3 py-1 rounded-[var(--radius-xs)] bg-red-500 text-white font-bold text-[10px] hover:bg-red-600 transition-theme flex items-center gap-1 shadow cursor-pointer"
                   >
                     <Trash2 size={12} />
                     <span>{isRtl ? 'حذف المحدد' : 'Delete Selected'}</span>
@@ -2435,7 +2435,7 @@ export const AdsManagementView: React.FC<{
               </div>
               <button
                 onClick={handleDeleteAllExpiredOrRejected}
-                className="px-3 py-1 rounded border border-red-500/30 text-red-500 hover:bg-red-500/10 font-bold text-[10px] transition-theme flex items-center gap-1"
+                className="px-3 py-1 rounded-[var(--radius-xs)] border border-red-500/30 text-red-500 hover:bg-red-500/10 font-bold text-[10px] transition-theme flex items-center gap-1 cursor-pointer"
               >
                 <Trash2 size={12} />
                 <span>{isRtl ? 'حذف جميع المنتهية والمرفوضة' : 'Delete All Expired & Rejected'}</span>
@@ -2558,7 +2558,7 @@ export const AdsManagementView: React.FC<{
                                   setRejectingAdId(ad.id);
                                   setRejectionReason('');
                                 }}
-                                className="px-2.5 py-1 rounded bg-red-500/10 text-red-500 font-bold text-[10px] hover:bg-red-500 hover:text-white transition-theme flex items-center gap-1"
+                                className="px-2.5 py-1 rounded-[var(--radius-xs)] bg-red-500/10 text-red-500 font-bold text-[10px] hover:bg-red-500 hover:text-white transition-theme flex items-center gap-1 cursor-pointer"
                               >
                                 <XCircle size={12} />
                                 <span>{isRtl ? 'رفض' : 'Reject'}</span>
@@ -2572,7 +2572,7 @@ export const AdsManagementView: React.FC<{
                                 setStoppingAdId(ad.id);
                                 setStopReason('');
                               }}
-                              className="px-2.5 py-1 rounded bg-amber-500/10 text-amber-500 font-bold text-[10px] hover:bg-amber-500 hover:text-white transition-theme flex items-center gap-1"
+                              className="px-2.5 py-1 rounded-[var(--radius-xs)] bg-amber-500/10 text-amber-500 font-bold text-[10px] hover:bg-amber-500 hover:text-white transition-theme flex items-center gap-1 cursor-pointer"
                               title={isRtl ? 'إيقاف الإعلان فوراً وإشعار المستخدم' : 'Stop Ad & Notify User'}
                             >
                               <XCircle size={12} />
@@ -2582,7 +2582,7 @@ export const AdsManagementView: React.FC<{
 
                           <button
                             onClick={() => handleDeleteBulletinAd(ad.id)}
-                            className="p-1 rounded text-gray-400 hover:text-red-500 hover:bg-red-500/10 transition-colors"
+                            className="p-1 rounded-[var(--radius-xs)] text-gray-400 hover:text-red-500 hover:bg-red-500/10 transition-colors cursor-pointer"
                             title={isRtl ? 'حذف نهائي' : 'Delete'}
                           >
                             <Trash2 size={14} />
@@ -2785,7 +2785,7 @@ export const AdsManagementView: React.FC<{
                             <img
                               src={getMediaUrl(ad.image_url)}
                               alt={ad.title_ar}
-                              className="w-14 h-10 object-cover rounded border border-[var(--border-default)] shrink-0"
+                              className="w-14 h-10 object-cover rounded-[var(--radius-sm)] border border-[var(--border-default)] shrink-0"
                             />
                             <div className="min-w-0">
                               <div className="flex items-center gap-2 mb-0.5">
@@ -2854,7 +2854,7 @@ export const AdsManagementView: React.FC<{
                             <button
                               onClick={() => handleDelete(ad.id)}
                               title={isRtl ? 'حذف' : 'Delete'}
-                              className="p-1.5 rounded bg-red-500/10 hover:bg-red-500/20 text-gray-400 hover:text-red-500 transition-colors"
+                              className="p-1.5 rounded-[var(--radius-xs)] bg-red-500/10 hover:bg-red-500/20 text-gray-400 hover:text-red-500 transition-colors cursor-pointer"
                             >
                               <Trash2 size={14} />
                             </button>

@@ -92,7 +92,7 @@ export const LiveThemePreview: React.FC<LiveThemePreviewProps> = ({ tokens, mode
 
   return (
     <div
-      className="rounded-2xl border shadow-lg transition-all duration-200 overflow-hidden"
+      className="rounded-[var(--radius-lg)] border shadow-lg transition-all duration-200 overflow-hidden"
       style={{
         backgroundColor: surfacePage,
         borderColor: borderDefault,
@@ -109,7 +109,7 @@ export const LiveThemePreview: React.FC<LiveThemePreviewProps> = ({ tokens, mode
       >
         <div className="flex items-center gap-3">
           <div
-            className="w-8 h-8 rounded-lg flex items-center justify-center font-bold text-sm shadow-xs"
+            className="w-8 h-8 rounded-[var(--radius-sm)] flex items-center justify-center font-bold text-sm shadow-xs"
             style={{
               background: `linear-gradient(135deg, ${githubGreen}, ${githubBlue}, ${githubPurple})`,
               color: '#ffffff',
@@ -141,7 +141,7 @@ export const LiveThemePreview: React.FC<LiveThemePreviewProps> = ({ tokens, mode
           </div>
         </div>
 
-        <div className="flex items-center gap-1.5 p-1 rounded-lg border" style={{ backgroundColor: surfaceSubtle, borderColor: borderDefault }}>
+        <div className="flex items-center gap-1.5 p-1 rounded-[var(--radius-sm)] border" style={{ backgroundColor: surfaceSubtle, borderColor: borderDefault }}>
           <button
             type="button"
             onClick={() => setSandboxTab('components')}
@@ -374,7 +374,7 @@ export const LiveThemePreview: React.FC<LiveThemePreviewProps> = ({ tokens, mode
                   <button
                     type="button"
                     onClick={() => setIsMenuOpen(!isMenuOpen)}
-                    className="w-full flex items-center justify-between p-2 border rounded-lg cursor-pointer transition-all"
+                    className="w-full flex items-center justify-between p-2 border rounded-[var(--radius-sm)] cursor-pointer transition-all"
                     style={{
                       backgroundColor: surfaceSubtle,
                       borderColor: isMenuOpen ? githubBlue : borderDefault,
@@ -400,7 +400,7 @@ export const LiveThemePreview: React.FC<LiveThemePreviewProps> = ({ tokens, mode
 
                   {isMenuOpen && (
                     <div
-                      className="absolute z-20 top-full mt-1.5 w-full border rounded-xl overflow-hidden shadow-2xl animate-fade-in"
+                      className="absolute z-20 top-full mt-1.5 w-full border rounded-[var(--radius-md)] overflow-hidden shadow-2xl animate-fade-in"
                       style={{
                         backgroundColor: surfaceCard,
                         borderColor: borderDefault,
@@ -493,7 +493,7 @@ export const LiveThemePreview: React.FC<LiveThemePreviewProps> = ({ tokens, mode
                     <button
                       type="button"
                       disabled={!composerText.trim()}
-                      className="w-9 h-9 rounded-xl flex items-center justify-center transition-all cursor-pointer disabled:cursor-not-allowed"
+                      className="w-9 h-9 rounded-[var(--radius-md)] flex items-center justify-center transition-all cursor-pointer disabled:cursor-not-allowed"
                       style={{
                         backgroundColor: composerText.trim() ? githubGreen : surfaceSubtle,
                         color: composerText.trim() ? '#ffffff' : fgMuted,
@@ -521,7 +521,7 @@ export const LiveThemePreview: React.FC<LiveThemePreviewProps> = ({ tokens, mode
                   <div className="flex items-center gap-1.5">
                     <button
                       type="button"
-                      className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-semibold border cursor-pointer"
+                      className="flex items-center gap-1.5 px-2.5 py-1 rounded-[var(--radius-sm)] text-xs font-semibold border cursor-pointer"
                       style={{
                         backgroundColor: surfaceCard,
                         borderColor: borderDefault,
@@ -545,7 +545,7 @@ export const LiveThemePreview: React.FC<LiveThemePreviewProps> = ({ tokens, mode
                             : 'GLM-4.6'
                         )
                       }
-                      className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-semibold border cursor-pointer"
+                      className="flex items-center gap-1.5 px-2.5 py-1 rounded-[var(--radius-sm)] text-xs font-semibold border cursor-pointer"
                       style={{
                         backgroundColor: surfaceCard,
                         borderColor: borderDefault,
@@ -569,14 +569,14 @@ export const LiveThemePreview: React.FC<LiveThemePreviewProps> = ({ tokens, mode
 
               <div
                 key={streamingKey}
-                className="p-4 border rounded-xl flex items-start gap-3"
+                className="p-4 border rounded-[var(--radius-md)] flex items-start gap-3"
                 style={{
                   backgroundColor: surfaceSubtle,
                   borderColor: borderDefault,
                 }}
               >
                 <div
-                  className="w-7 h-7 rounded-lg flex items-center justify-center font-bold text-xs shrink-0"
+                  className="w-7 h-7 rounded-[var(--radius-sm)] flex items-center justify-center font-bold text-xs shrink-0"
                   style={{ backgroundColor: githubGreen, color: '#ffffff' }}
                 >
                   <Bot size={14} />
@@ -610,11 +610,11 @@ export const LiveThemePreview: React.FC<LiveThemePreviewProps> = ({ tokens, mode
           <div className="space-y-6">
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
               <div
-                className="p-4 border rounded-xl space-y-2 transition-all hover:border-[var(--github-blue)] cursor-pointer"
+                className="p-4 border rounded-[var(--radius-md)] space-y-2 transition-all hover:border-[var(--github-blue)] cursor-pointer"
                 style={{ backgroundColor: surfaceCard, borderColor: borderDefault }}
               >
                 <div
-                  className="w-8 h-8 rounded-lg flex items-center justify-center"
+                  className="w-8 h-8 rounded-[var(--radius-sm)] flex items-center justify-center"
                   style={{ backgroundColor: `${githubBlue}18`, color: githubBlue }}
                 >
                   <Users size={16} />
@@ -628,11 +628,11 @@ export const LiveThemePreview: React.FC<LiveThemePreviewProps> = ({ tokens, mode
               </div>
 
               <div
-                className="p-4 border rounded-xl space-y-2 transition-all hover:border-[var(--github-green)] cursor-pointer"
+                className="p-4 border rounded-[var(--radius-md)] space-y-2 transition-all hover:border-[var(--github-green)] cursor-pointer"
                 style={{ backgroundColor: surfaceCard, borderColor: borderDefault }}
               >
                 <div
-                  className="w-8 h-8 rounded-lg flex items-center justify-center"
+                  className="w-8 h-8 rounded-[var(--radius-sm)] flex items-center justify-center"
                   style={{ backgroundColor: `${githubGreen}18`, color: githubGreen }}
                 >
                   <MessageSquare size={16} />
@@ -646,11 +646,11 @@ export const LiveThemePreview: React.FC<LiveThemePreviewProps> = ({ tokens, mode
               </div>
 
               <div
-                className="p-4 border rounded-xl space-y-2 transition-all hover:border-[var(--github-purple)] cursor-pointer"
+                className="p-4 border rounded-[var(--radius-md)] space-y-2 transition-all hover:border-[var(--github-purple)] cursor-pointer"
                 style={{ backgroundColor: surfaceCard, borderColor: borderDefault }}
               >
                 <div
-                  className="w-8 h-8 rounded-lg flex items-center justify-center"
+                  className="w-8 h-8 rounded-[var(--radius-sm)] flex items-center justify-center"
                   style={{ backgroundColor: `${githubPurple}18`, color: githubPurple }}
                 >
                   <Zap size={16} />
@@ -664,11 +664,11 @@ export const LiveThemePreview: React.FC<LiveThemePreviewProps> = ({ tokens, mode
               </div>
 
               <div
-                className="p-4 border rounded-xl space-y-2 transition-all hover:border-[var(--github-orange)] cursor-pointer"
+                className="p-4 border rounded-[var(--radius-md)] space-y-2 transition-all hover:border-[var(--github-orange)] cursor-pointer"
                 style={{ backgroundColor: surfaceCard, borderColor: borderDefault }}
               >
                 <div
-                  className="w-8 h-8 rounded-lg flex items-center justify-center"
+                  className="w-8 h-8 rounded-[var(--radius-sm)] flex items-center justify-center"
                   style={{ backgroundColor: `${githubOrange}18`, color: githubOrange }}
                 >
                   <Server size={16} />
@@ -683,7 +683,7 @@ export const LiveThemePreview: React.FC<LiveThemePreviewProps> = ({ tokens, mode
             </div>
 
             <div
-              className="p-5 border rounded-xl space-y-4"
+              className="p-5 border rounded-[var(--radius-md)] space-y-4"
               style={{ backgroundColor: surfaceCard, borderColor: borderDefault }}
             >
               <span className="text-xs font-bold uppercase tracking-wider block" style={{ color: fgSecondary }}>
@@ -704,7 +704,7 @@ export const LiveThemePreview: React.FC<LiveThemePreviewProps> = ({ tokens, mode
               <div className="flex flex-wrap items-center justify-between gap-4 pt-2">
                 <div className="flex items-center gap-3">
                   <div
-                    className="w-12 h-12 rounded-xl flex items-center justify-center font-bold text-lg text-white"
+                    className="w-12 h-12 rounded-[var(--radius-md)] flex items-center justify-center font-bold text-lg text-white"
                     style={{
                       background: `linear-gradient(135deg, ${githubGreen} 0%, ${githubBlue} 50%, ${githubPurple} 100%)`,
                       boxShadow: `0 0 0 1px ${borderDefault}, 0 0 24px -6px ${githubPurple}`,
@@ -760,7 +760,7 @@ export const LiveThemePreview: React.FC<LiveThemePreviewProps> = ({ tokens, mode
             </div>
 
             <pre
-              className="p-4 rounded-xl border font-mono text-[11.5px] leading-relaxed overflow-x-auto max-h-[320px] custom-scrollbar"
+              className="p-4 rounded-[var(--radius-md)] border font-mono text-[11.5px] leading-relaxed overflow-x-auto max-h-[320px] custom-scrollbar"
               style={{
                 backgroundColor: surfaceInset,
                 borderColor: borderDefault,

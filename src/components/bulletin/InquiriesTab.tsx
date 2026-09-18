@@ -31,7 +31,7 @@ export const InquiriesTab: React.FC<InquiriesTabProps> = ({
   return (
     <div className="space-y-4 w-full max-w-2xl mx-auto">
       {/* Header Bar */}
-      <div className="rounded-xl bg-[var(--surface-card)] border border-[var(--border-default)] p-3 shadow-xs transition-theme">
+      <div className="rounded-[var(--radius-md)] bg-[var(--surface-card)] border border-[var(--border-default)] p-3 shadow-xs transition-theme">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 w-full">
           <div className="flex items-center gap-2.5">
             <button
@@ -74,14 +74,14 @@ export const InquiriesTab: React.FC<InquiriesTabProps> = ({
 
       {/* Content Section */}
       {inquiriesLoading ? (
-        <div className="text-center py-16 rounded-xl bg-[var(--surface-card)] border border-[var(--border-default)] shadow-xs flex items-center justify-center gap-3 transition-theme">
+        <div className="text-center py-16 rounded-[var(--radius-md)] bg-[var(--surface-card)] border border-[var(--border-default)] shadow-xs flex items-center justify-center gap-3 transition-theme">
           <Loader2 size={18} className="animate-spin text-accent" />
           <span className="text-xs font-bold text-[var(--text-muted)]">
             {isRtl ? 'جاري تحميل صندوق الرسائل...' : 'Loading messenger...'}
           </span>
         </div>
       ) : inquiriesList.length === 0 ? (
-        <div className="flex flex-col items-center justify-center py-16 px-4 rounded-xl bg-[var(--surface-card)] border border-[var(--border-default)] shadow-xs space-y-3 text-center transition-theme">
+        <div className="flex flex-col items-center justify-center py-16 px-4 rounded-[var(--radius-md)] bg-[var(--surface-card)] border border-[var(--border-default)] shadow-xs space-y-3 text-center transition-theme">
           <div className="w-12 h-12 rounded-shape-md bg-[var(--surface-subtle)] border border-[var(--border-default)] flex items-center justify-center text-[var(--text-muted)]">
             <MessageSquare size={22} />
           </div>
