@@ -160,7 +160,7 @@ export const MemoryCenter: React.FC<MemoryCenterProps> = ({
         </div>
 
         {/* Category Filter Chips */}
-        <div className="flex items-center gap-1 overflow-x-auto pb-1 no-scrollbar">
+        <div className="flex items-center gap-1 overflow-x-auto pb-1 custom-scrollbar">
           {categories.map((cat, cIdx) => (
             <button
               key={`mem-cat-btn-${cat.id}-${cIdx}`}

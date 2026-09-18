@@ -440,7 +440,7 @@ const SmartEmailHubView = ({
 
   return (
     <div className="space-y-6 max-w-7xl mx-auto">
-      <div className="flex items-center gap-2 overflow-x-auto pb-2.5 pt-1 no-scrollbar scroll-smooth border-b border-[var(--border-default)]">
+      <div className="flex items-center gap-2 overflow-x-auto pb-2.5 pt-1 custom-scrollbar scroll-smooth border-b border-[var(--border-default)]">
         <button
           onClick={() => setActiveTab("settings")}
           className={`flex items-center gap-2 px-4 py-2 rounded-[var(--radius-sm)] text-xs font-bold transition-all whitespace-nowrap border shrink-0 cursor-pointer ${

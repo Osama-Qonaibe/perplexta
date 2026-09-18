@@ -423,7 +423,7 @@ export const AdDirectChat: React.FC<AdDirectChatProps> = ({ ad, onClose, isCompa
 
       {/* Quick Prompts Bar (when messages exist) */}
       {messages.length > 0 && (
-        <div className="px-3 py-1.5 bg-[var(--surface-card)] border-t border-[var(--border-subtle)] overflow-x-auto no-scrollbar flex items-center gap-1 text-xs shrink-0">
+        <div className="px-3 py-1.5 bg-[var(--surface-card)] border-t border-[var(--border-subtle)] overflow-x-auto custom-scrollbar flex items-center gap-1 text-xs shrink-0">
           {quickQuestions.slice(0, 3).map((q, idx) => (
             <button
               key={`quick-prompt-bar-${idx}-${q}`}

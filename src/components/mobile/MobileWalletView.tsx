@@ -931,7 +931,7 @@ export const MobileWalletView: React.FC<MobileWalletViewProps> = ({
             className="space-y-3"
           >
             {/* Filter Pills */}
-            <div className="flex items-center gap-1.5 p-1 rounded-[var(--radius-md)] bg-[var(--surface-subtle)] border border-[var(--border-default)] overflow-x-auto touch-pan-x no-scrollbar scrollbar-none">
+            <div className="flex items-center gap-1.5 p-1 rounded-[var(--radius-md)] bg-[var(--surface-subtle)] border border-[var(--border-default)] overflow-x-auto touch-pan-x custom-scrollbar">
               {transactionTabs.map((tab) => {
                 const isActive = activeTab === tab.id;
                 return (

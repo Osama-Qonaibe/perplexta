@@ -913,7 +913,7 @@ export const WalletSystem: React.FC<{ theme: string; dir: 'ltr' | 'rtl' }> = ({ 
 
       {/* Perplexta Tabs */}
       <div className="px-2 sm:px-6 md:px-12 mt-6 sm:mt-8 flex-none w-full max-w-5xl mx-auto">
-        <div className="flex items-center overflow-x-auto touch-pan-x gap-2 sm:gap-4 border-b border-[var(--border-default)] no-scrollbar scrollbar-none transition-colors">
+        <div className="flex items-center overflow-x-auto touch-pan-x gap-2 sm:gap-4 border-b border-[var(--border-default)] custom-scrollbar scroll-smooth transition-colors">
           {[
             { id: 'transactions', label: dir === 'rtl' ? 'سجل الإيداع' : 'Deposits Book' },
             { id: 'withdrawal_history', label: dir === 'rtl' ? 'سجل السحب' : 'Withdrawals Book' },
@@ -1869,7 +1869,7 @@ export const WalletSystem: React.FC<{ theme: string; dir: 'ltr' | 'rtl' }> = ({ 
                     </div>
                   </div>
                 )}
-                <div className="w-full overflow-x-auto touch-pan-x no-scrollbar">
+                <div className="w-full overflow-x-auto touch-pan-x custom-scrollbar">
                   <table className="w-full text-left border-separate border-spacing-0">
                     <thead className="sticky top-0 z-20">
                       <tr className="bg-[var(--surface-card)] border-[var(--border-default)] text-[var(--text-muted)]">

@@ -646,7 +646,7 @@ authenticateAgent();`;
               >
                 {copiedId === 'code-copy' ? <Check size={12} className="text-[var(--fg-accent)]" /> : <Copy size={12} />}
               </button>
-              <pre className="text-[10px] font-mono leading-relaxed p-4 bg-[var(--surface-subtle)] text-[var(--text-secondary)] rounded-[var(--radius-sm)] overflow-x-auto max-h-52 no-scrollbar border border-[var(--border-default)]">
+              <pre className="text-[10px] font-mono leading-relaxed p-4 bg-[var(--surface-subtle)] text-[var(--text-secondary)] rounded-[var(--radius-sm)] overflow-x-auto max-h-52 custom-scrollbar border border-[var(--border-default)]">
                 {getCodeSnippet()}
               </pre>
             </div>
@@ -816,7 +816,7 @@ authenticateAgent();`;
                       {mcpExecutionResult && (
                         <div className="space-y-1">
                           <span className="text-[10px] text-[var(--fg-accent)] font-mono font-bold block">[EXECUTION RESULT]:</span>
-                          <pre className="text-[10px] font-mono leading-relaxed p-3 bg-[var(--surface-card)] text-[var(--text-secondary)] rounded-[var(--radius-sm)] border border-[var(--border-accent)]/20 overflow-x-auto max-h-40 no-scrollbar select-all">
+                          <pre className="text-[10px] font-mono leading-relaxed p-3 bg-[var(--surface-card)] text-[var(--text-secondary)] rounded-[var(--radius-sm)] border border-[var(--border-accent)]/20 overflow-x-auto max-h-40 custom-scrollbar select-all">
                             {mcpExecutionResult}
                           </pre>
                         </div>
@@ -965,7 +965,7 @@ authenticateAgent();`;
                   >
                     {copiedId === 'dns-copy' ? <Check size={10} className="text-[var(--fg-accent)]" /> : <Copy size={10} />}
                   </button>
-                  <pre className="text-[10px] font-mono leading-relaxed p-3 bg-[var(--surface-subtle)] text-[var(--text-secondary)] rounded-[var(--radius-sm)] overflow-x-auto no-scrollbar border border-[var(--border-default)]">
+                  <pre className="text-[10px] font-mono leading-relaxed p-3 bg-[var(--surface-subtle)] text-[var(--text-secondary)] rounded-[var(--radius-sm)] overflow-x-auto custom-scrollbar border border-[var(--border-default)]">
                     {`_a2a._agents.${window.location.hostname || 'example.com'}. 3600 IN SVCB 1 ${window.location.hostname || 'example.com'}. alpn="a2a" port=443 mandatory=alpn,port`}
                   </pre>
                 </div>
@@ -986,7 +986,7 @@ authenticateAgent();`;
                     ? 'لقد قمنا بتثبيت ترويسات الاستجابة مسبقاً في الصفحة الرئيسية للتطبيق تلقائياً، والآن يقوم خادم الويب ببث أطراف التوصيل التالية:'
                     : 'Dynamic HTTP response Link headers are pre-configured to be broadcast on the active site root homepage:'}
                 </p>
-                <pre className="text-[10px] font-mono leading-relaxed p-3 bg-[var(--surface-subtle)] text-[var(--text-muted)] rounded-[var(--radius-sm)] overflow-x-auto no-scrollbar border border-[var(--border-default)] select-all">
+                <pre className="text-[10px] font-mono leading-relaxed p-3 bg-[var(--surface-subtle)] text-[var(--text-muted)] rounded-[var(--radius-sm)] overflow-x-auto custom-scrollbar border border-[var(--border-default)] select-all">
                   {`Link: </.well-known/api-catalog>; rel="api-catalog", </.well-known/mcp/server-card.json>; rel="service-desc"`}
                 </pre>
               </div>
@@ -1045,7 +1045,7 @@ authenticateAgent();`;
                     ? 'سيقوم الخادم ببث الرؤوس التالية للرد بـ 402 وتحفيز السداد التلقائي:'
                     : 'The server returns custom headers to trigger prompt agent-side programmatic settlement:'}
                 </p>
-                <pre className="text-[9px] font-mono leading-relaxed p-2.5 bg-[var(--surface-card)] text-[var(--text-secondary)] rounded-[var(--radius-xs)] overflow-x-auto no-scrollbar border border-[var(--border-default)]">
+                <pre className="text-[9px] font-mono leading-relaxed p-2.5 bg-[var(--surface-card)] text-[var(--text-secondary)] rounded-[var(--radius-xs)] overflow-x-auto custom-scrollbar border border-[var(--border-default)]">
 {`HTTP/1.1 402 Payment Required
 Payment-Requirements: {
   "scheme": "exact",

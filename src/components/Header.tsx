@@ -853,7 +853,7 @@ export const Header: React.FC<{ activeLanguage?: string }> = ({ activeLanguage }
               className="flex-1 flex sm:hidden items-center justify-center min-w-0 z-10 mx-1"
               dir={globalLang === 'ar' ? 'rtl' : 'ltr'}
             >
-              <div className="flex items-center justify-center gap-1 overflow-x-auto no-scrollbar max-w-full py-0.5 px-1">
+              <div className="flex items-center justify-center gap-1 overflow-x-auto custom-scrollbar max-w-full py-0.5 px-1">
                 <button
                   type="button"
                   onClick={() => {

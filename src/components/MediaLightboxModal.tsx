@@ -1424,7 +1424,7 @@ export const MediaLightboxModal: React.FC<MediaLightboxModalProps> = ({
           {/* Desktop Bottom Floating Thumbnail Strip */}
           {totalCount > 1 && (
             <div
-              className="hidden lg:flex items-center gap-2 absolute bottom-4 left-1/2 -translate-x-1/2 z-40 px-3 py-2 rounded-[var(--comp-button-radius,8px)] bg-[var(--surface-card)]/90 backdrop-blur-md border border-[var(--border-main)] shadow-lg max-w-[85%] overflow-x-auto no-scrollbar pointer-events-auto"
+              className="hidden lg:flex items-center gap-2 absolute bottom-4 left-1/2 -translate-x-1/2 z-40 px-3 py-2 rounded-[var(--comp-button-radius,8px)] bg-[var(--surface-card)]/90 backdrop-blur-md border border-[var(--border-main)] shadow-lg max-w-[85%] overflow-x-auto custom-scrollbar pointer-events-auto"
               onClick={(e) => e.stopPropagation()}
             >
               {items.map((item, idx) => {

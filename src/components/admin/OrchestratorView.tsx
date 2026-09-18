@@ -696,7 +696,7 @@ export const OrchestratorView = ({
             </div>
           </div>
 
-          <div className="flex items-center gap-2 overflow-x-auto pb-2.5 pt-1 no-scrollbar scroll-smooth border-b border-[var(--border-default)]">
+          <div className="flex items-center gap-2 overflow-x-auto pb-2.5 pt-1 custom-scrollbar scroll-smooth border-b border-[var(--border-default)]">
             {categories.map((cat) => {
               const CatIcon = cat.icon;
               const count = tools.filter((t) => cat.filter(t.id)).length;
