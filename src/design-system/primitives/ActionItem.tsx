@@ -57,7 +57,7 @@ export const ActionItem = forwardRef<HTMLButtonElement, ActionItemProps>(({
 
   // Base touch-target & styling tokens matching design system specs
   const baseClasses = `
-    min-h-[34px] w-full flex items-center gap-2 px-2.5 rounded-[var(--pub-radius-control)] text-xs font-medium
+    min-h-[34px] w-full flex items-center gap-2 px-2.5 rounded-[var(--radius-sm)] text-xs font-medium
     transition-all duration-120 ease-out select-none text-start border border-transparent
     ${isDisabledOrLocked ? 'opacity-40 cursor-not-allowed pointer-events-none' : 'cursor-pointer'}
   `;
@@ -65,7 +65,7 @@ export const ActionItem = forwardRef<HTMLButtonElement, ActionItemProps>(({
   // Color & Hover dynamics
   let stateClasses = '';
   if (isActive) {
-    stateClasses = 'bg-[var(--surface-subtle)] text-[var(--pub-text-primary)] font-bold border-[var(--pub-border-default)]';
+    stateClasses = 'bg-[var(--surface-subtle)] text-[var(--text-primary)] font-bold border-[var(--border-default)]';
   } else if (isDanger) {
     stateClasses = 'text-rose-500 hover:bg-rose-500/10 hover:text-rose-400 font-bold';
   } else if (variant === 'accent') {
@@ -75,7 +75,7 @@ export const ActionItem = forwardRef<HTMLButtonElement, ActionItemProps>(({
   } else if (variant === 'success') {
     stateClasses = 'text-emerald-500 hover:bg-[var(--surface-subtle)]';
   } else {
-    stateClasses = 'text-[var(--pub-text-primary)] hover:bg-[var(--surface-subtle)]';
+    stateClasses = 'text-[var(--text-primary)] hover:bg-[var(--surface-subtle)]';
   }
 
   return (

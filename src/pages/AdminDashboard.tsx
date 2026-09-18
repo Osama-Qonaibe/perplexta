@@ -194,53 +194,53 @@ export const AdminDashboard: React.FC = () => {
   const getTitle = () => {
     switch (path) {
       case "dashboard":
-        return language === "ar" ? "مركز القيادة والنبض" : "COMMAND CENTER";
+        return language === "ar" ? "مركز القيادة" : "COMMAND CENTER";
       case "keys":
       case "gpu":
       case "orchestrator":
       case "memories":
       case "ai-infra":
         return language === "ar"
-          ? "البنية التحتية والذكاء الاصطناعي"
-          : "AI & COMPUTE INFRASTRUCTURE";
+          ? "البنية التحتية والذكاء"
+          : "AI & INFRASTRUCTURE";
       case "databases":
         return language === "ar"
-          ? "أوركسترا قواعد البيانات والتخزين"
-          : "DATABASES & STORAGE ORCHESTRATION";
+          ? "قواعد البيانات"
+          : "DATABASES";
       case "finance":
       case "plans":
       case "referrals":
         return language === "ar"
-          ? "الخزينة والمالية والاشتراكات"
-          : "FINANCE & MONETIZATION HUB";
+          ? "المالية والاشتراكات"
+          : "FINANCE & SUBSCRIPTIONS";
       case "users":
       case "ads":
         return language === "ar"
-          ? "المستخدمين والمجتمع والإعلانات"
-          : "USERS & COMMUNITY HUB";
+          ? "المستخدمين والإعلانات"
+          : "USERS & COMMUNITY";
       case "emails":
       case "broadcast":
         return language === "ar"
-          ? "مركز المراسلات والبث الذكي"
-          : "COMMUNICATIONS & BROADCAST HUB";
+          ? "مركز المراسلات"
+          : "COMMUNICATIONS";
       case "theme":
       case "seo":
       case "design-seo":
         return language === "ar"
-          ? "المظهر والمحركات والـ SEO"
-          : "DESIGN & SEO STUDIO";
+          ? "اعدادات المظهر"
+          : "APPEARANCE SETTINGS";
       case "audit":
       case "radar":
       case "metrics":
         return language === "ar"
-          ? "الأمان والتدقيق والامتثال"
-          : "SECURITY & COMPLIANCE";
+          ? "الامان والتدقيق"
+          : "SECURITY & AUDITING";
       case "settings":
         return language === "ar"
-          ? "إعدادات النظام العامة"
+          ? "اعدادات النظام"
           : "SYSTEM SETTINGS";
       default:
-        return language === "ar" ? "لوحة التحكم الإدارية" : "ADMIN DASHBOARD";
+        return language === "ar" ? "لوحة التحكم" : "ADMIN DASHBOARD";
     }
   };
 
@@ -445,9 +445,9 @@ export const AdminDashboard: React.FC = () => {
           {showAddButton && (
             <button
               onClick={handleAddClick}
-              className="flex items-center gap-2 bg-[var(--bg-accent-emphasis)] hover:opacity-90 text-[var(--fg-on-emphasis)] px-4 py-2 min-h-[40px] rounded-[var(--radius-sm)] transition-theme font-bold text-xs shadow-2xs active:scale-95 cursor-pointer touch-target-44"
+              className="flex items-center gap-1.5 bg-[var(--bg-accent-emphasis)] hover:opacity-90 text-[var(--fg-on-emphasis)] px-3 h-8 rounded-shape-sm transition-all duration-150 font-bold text-xs shadow-2xs active:scale-95 cursor-pointer relative before:absolute before:-inset-1.5 before:content-['']"
             >
-              <Plus size={16} />
+              <Plus size={15} />
               {getAddButtonText()}
             </button>
           )}
@@ -455,7 +455,7 @@ export const AdminDashboard: React.FC = () => {
           <div className="relative">
             <button
               onClick={() => setIsPulseOpen(!isPulseOpen)}
-              className="flex items-center gap-2.5 px-3 py-2 min-h-[40px] rounded-[var(--radius-sm)] border border-[var(--border-default)] bg-[var(--surface-card)] transition-theme hover:bg-[var(--surface-subtle)] hover:border-[var(--border-accent)] cursor-pointer select-none active:scale-95 touch-target-44"
+              className="flex items-center gap-2 px-3 h-8 rounded-shape-sm border border-[var(--border-default)] bg-[var(--surface-card)] transition-all duration-150 hover:bg-[var(--surface-subtle)] hover:border-[var(--border-accent)]/60 cursor-pointer select-none active:scale-95 shadow-2xs relative before:absolute before:-inset-1.5 before:content-['']"
             >
               <div className="relative flex items-center justify-center">
                 <div 
@@ -464,7 +464,7 @@ export const AdminDashboard: React.FC = () => {
                 />
               </div>
               <span className="text-xs font-bold text-[var(--text-primary)]">
-                {language === 'ar' ? 'نبض النظام' : 'System Pulse'}: <span className="text-[var(--text-secondary)]">{pulseText}</span>
+                {language === 'ar' ? 'نبض النظام' : 'System Pulse'}: <span className="text-[var(--text-secondary)] font-normal">{pulseText}</span>
               </span>
             </button>
 

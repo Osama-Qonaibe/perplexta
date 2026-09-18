@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { Languages } from 'lucide-react';
+import { NavLink } from 'react-router-dom';
+import { Languages, ArrowRight } from 'lucide-react';
 import { useAppContext } from '../../context/AppContext';
 import { ThemeToggleButton } from '../ThemeToggleButton';
 import { Logo } from '../common/Logo';
@@ -66,16 +67,21 @@ export const AdminTopBar: React.FC<AdminTopBarProps> = () => {
       {/* Start Section: Official Platform Brand & Identity */}
       <div className="flex items-center gap-3">
         <div className="flex items-center gap-2.5">
-          <div className="w-8 h-8 rounded-shape-sm overflow-hidden flex items-center justify-center shrink-0 border border-[var(--border-default)] bg-[var(--surface-card)] shadow-2xs">
-            <Logo size={24} fallbackType="cpu" />
-          </div>
+          <NavLink
+            to="/admin/dashboard"
+            onClick={() => triggerHaptic('light')}
+            className="w-8 h-8 rounded-shape-sm overflow-hidden flex items-center justify-center shrink-0 border border-[var(--border-default)] bg-[var(--surface-card)] hover:border-[var(--border-accent)]/60 hover:bg-[var(--surface-subtle)] shadow-2xs transition-all duration-150 active:scale-95 cursor-pointer"
+            title={language === 'ar' ? 'لوحة التحكم والقيادة' : 'Admin Dashboard'}
+          >
+            <Logo size={22} fallbackType="cpu" />
+          </NavLink>
 
           <div className="flex flex-col">
             <div className="flex items-center gap-1.5 leading-none">
               <span className="font-black text-sm tracking-tight text-[var(--text-primary)]">
                 {resolvedSiteName}
               </span>
-              <span className="px-1.5 py-0.5 rounded-[var(--radius-xs)] text-[9px] font-bold uppercase tracking-wider bg-[var(--surface-subtle)] text-[var(--text-secondary)] border border-[var(--border-default)]">
+              <span className="px-1.5 py-0.5 rounded-shape-xs text-[9px] font-bold uppercase tracking-wider bg-[var(--surface-subtle)] text-[var(--text-secondary)] border border-[var(--border-default)]">
                 {language === 'ar' ? 'الإدارة' : 'ADMIN'}
               </span>
             </div>
@@ -87,7 +93,7 @@ export const AdminTopBar: React.FC<AdminTopBarProps> = () => {
       </div>
 
       {/* Center Section: Live Health Status Pill */}
-      <div className="hidden md:flex items-center gap-2 px-3 py-1 rounded-full bg-[var(--surface-card)] border border-[var(--border-default)] shadow-2xs">
+      <div className="hidden md:flex items-center gap-2 h-8 px-3 rounded-full bg-[var(--surface-card)] border border-[var(--border-default)] shadow-2xs shrink-0 select-none">
         <span className="relative flex h-2 w-2">
           <span className={`relative inline-flex rounded-full h-2 w-2 ${
             pulseOptimal ? 'bg-emerald-500' : 'bg-rose-500'
@@ -105,19 +111,19 @@ export const AdminTopBar: React.FC<AdminTopBarProps> = () => {
         )}
       </div>
 
-      {/* End Section: Admin Info, Theme & Language */}
+      {/* End Section: Admin Info, Exit Button, Theme & Language */}
       <div className="flex items-center gap-2">
         {/* Admin Identity Pill */}
         {user && (
-          <div className="hidden sm:flex items-center gap-2 px-2.5 py-1 rounded-[var(--radius-sm)] bg-[var(--surface-card)] border border-[var(--border-default)]">
+          <div className="hidden sm:flex items-center gap-2 h-8 px-2.5 rounded-shape-sm bg-[var(--surface-card)] border border-[var(--border-default)] shadow-2xs shrink-0 select-none">
             <div className="w-5 h-5 rounded-full bg-[var(--surface-subtle)] text-[var(--text-primary)] border border-[var(--border-default)] text-[10px] font-bold flex items-center justify-center shrink-0">
               {(user.name || user.email || 'A')[0].toUpperCase()}
             </div>
-            <div className="flex flex-col text-start">
-              <span className="text-[11px] font-bold text-[var(--text-primary)] leading-none truncate max-w-[110px]">
+            <div className="flex flex-col text-start justify-center">
+              <span className="text-[11px] font-bold text-[var(--text-primary)] leading-tight truncate max-w-[110px]">
                 {user.name || user.email?.split('@')[0]}
               </span>
-              <span className="text-[9px] font-bold text-[var(--text-muted)] uppercase leading-none mt-0.5">
+              <span className="text-[9px] font-bold text-[var(--text-muted)] uppercase leading-tight">
                 {user.role === 'admin' 
                   ? (language === 'ar' ? 'مسؤول النظام' : 'Super Admin') 
                   : (language === 'ar' ? 'فريق الدعم' : 'Support')}
@@ -126,23 +132,34 @@ export const AdminTopBar: React.FC<AdminTopBarProps> = () => {
           </div>
         )}
 
-        {/* Theme Toggle */}
-        <ThemeToggleButton 
-          variant="icon-button" 
-          size="sm" 
-          className="!w-8 !h-8 !rounded-shape-sm !border-[var(--border-default)] hover:!border-[var(--border-accent)] !bg-[var(--surface-card)] hover:!bg-[var(--surface-subtle)] !text-[var(--text-secondary)] hover:!text-[var(--text-primary)] transition-all touch-target-44 cursor-pointer" 
-        />
+        {/* Exit Admin to Main App Button */}
+        <NavLink
+          to="/chat"
+          onClick={() => triggerHaptic('light')}
+          className="h-8 px-2.5 rounded-shape-sm border border-[var(--border-default)] bg-[var(--surface-card)] hover:bg-[var(--surface-subtle)] hover:border-[var(--border-accent)]/60 text-[var(--text-secondary)] hover:text-[var(--text-primary)] flex items-center gap-1.5 text-xs font-bold transition-all duration-150 active:scale-95 cursor-pointer shrink-0 shadow-2xs relative before:absolute before:-inset-1.5 before:content-[''] group"
+          title={language === 'ar' ? 'الخروج والعودة للتطبيق' : 'Exit Admin to App'}
+        >
+          <ArrowRight size={13} className={`text-[var(--text-muted)] group-hover:text-[var(--text-primary)] transition-colors duration-150 ${dir === 'rtl' ? 'rotate-180' : ''}`} />
+          <span className="hidden md:inline font-bold text-xs">{language === 'ar' ? 'العودة للمنصة' : 'Exit'}</span>
+        </NavLink>
 
         {/* Language Switch */}
         <button
           type="button"
           onClick={toggleLanguage}
-          className="w-8 h-8 rounded-shape-sm border border-[var(--border-default)] bg-[var(--surface-card)] hover:bg-[var(--surface-subtle)] hover:border-[var(--border-accent)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] flex items-center justify-center cursor-pointer transition-all active:scale-95 touch-target-44"
+          className="w-8 h-8 min-w-[32px] min-h-[32px] max-w-[32px] max-h-[32px] rounded-shape-sm border border-[var(--border-default)] bg-[var(--surface-card)] hover:bg-[var(--surface-subtle)] hover:border-[var(--border-accent)]/60 text-[var(--text-secondary)] hover:text-[var(--text-primary)] flex items-center justify-center cursor-pointer transition-all duration-150 active:scale-95 shadow-2xs relative before:absolute before:-inset-1.5 before:content-[''] shrink-0 group"
           title={language === 'ar' ? 'التبديل إلى الإنجليزية' : 'Switch to Arabic'}
-          aria-label="Toggle Language"
+          aria-label={language === 'ar' ? 'التبديل إلى الإنجليزية' : 'Switch to Arabic'}
         >
-          <Languages size={14} />
+          <Languages size={14} className="text-[var(--text-muted)] group-hover:text-[var(--text-primary)] transition-colors duration-150" />
         </button>
+
+        {/* Theme Toggle */}
+        <ThemeToggleButton 
+          variant="icon-button" 
+          size="sm" 
+          className="!w-8 !h-8 !min-w-[32px] !min-h-[32px] !max-w-[32px] !max-h-[32px] !rounded-shape-sm !border-[var(--border-default)] hover:!border-[var(--border-accent)]/60 !bg-[var(--surface-card)] hover:!bg-[var(--surface-subtle)] !text-[var(--text-secondary)] hover:!text-[var(--text-primary)] transition-all duration-150 shadow-2xs shrink-0 cursor-pointer" 
+        />
       </div>
     </header>
   );

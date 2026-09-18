@@ -1,5 +1,4 @@
 import { DEFAULT_LIGHT_TOKENS, DEFAULT_DARK_TOKENS } from '../components/admin/theme/tokens/defaultTokens';
-import { syncLegacyThemeTokens } from './ThemeController';
 
 export type ThemeMode = 'dark' | 'light' | 'system';
 export type ResolvedThemeMode = 'dark' | 'light';
@@ -153,9 +152,6 @@ export const applyThemeRoot = (
       root.style.setProperty(key, value);
     }
   }
-
-  // Bind and map legacy --pub-* variables to modern semantic variables dynamically
-  syncLegacyThemeTokens(root);
 
   if (root.classList.contains('theme-booting')) {
     requestAnimationFrame(() => {

@@ -1447,7 +1447,7 @@ export const PostFeed: React.FC<PostFeedProps> = ({
           {onLoadMore && (
             <button
               onClick={onLoadMore}
-              className="inline-flex items-center gap-2 px-4 py-2 rounded-shape-sm bg-[var(--surface-card)] hover:bg-[var(--surface-subtle)] text-[var(--pub-accent-primary)] border border-[var(--border-default)] hover:border-[var(--pub-accent-primary)]/50 text-xs font-bold transition-all shadow-sm active:scale-95 cursor-pointer"
+              className="inline-flex items-center gap-2 px-4 py-2 rounded-shape-sm bg-[var(--surface-card)] hover:bg-[var(--surface-subtle)] text-[var(--accent)] border border-[var(--border-default)] hover:border-[var(--accent)]/50 text-xs font-bold transition-all shadow-sm active:scale-95 cursor-pointer"
             >
               <RotateCcw size={14} />
               <span>{isRtl ? 'تحديث ومواصلة التصفح المستمر' : 'Reload for continuous browsing'}</span>

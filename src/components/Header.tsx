@@ -281,68 +281,75 @@ export const Header: React.FC<{ activeLanguage?: string }> = ({ activeLanguage }
   const brandName = (dir === 'rtl' ? siteSettings?.siteNameAr : siteSettings?.siteName) || siteSettings?.siteName || t('appName') || 'Perplexta';
 
   const renderLogo = (
-    <div className={`flex items-center gap-2 h-full ${!isMobileView && isSidebarOpen ? 'px-4 w-full justify-start' : 'justify-center w-full'}`}>
-      {canToggleSidebarFromLogo && !isSidebarOpen ? (
-        <button
-          type="button"
-          onClick={(e) => {
-            e.stopPropagation();
-            triggerHaptic('medium');
-            setIsSidebarOpen(true);
-          }}
-          className="group/logo-btn relative w-8 h-8 rounded-[var(--radius-sm)] overflow-hidden border border-[var(--border-default)] hover:border-[var(--accent-foreground)]/60 bg-transparent hover:bg-[var(--surface-subtle)] transition-all duration-150 flex items-center justify-center flex-shrink-0 cursor-pointer active:scale-95 before:absolute before:-inset-1.5 before:content-['']"
-          title={language === 'ar' ? 'فتح الشريط الجانبي' : 'Open Sidebar'}
-          aria-label="Open Sidebar"
-        >
-          {/* Normal Logo (Custom logo image or icon) */}
-          <div className="w-full h-full flex items-center justify-center transition-all duration-200 group-hover/logo-btn:opacity-0 group-hover/logo-btn:scale-75">
-            {(siteSettings.logoBase64 || siteSettings.logoLightBase64) ? (
-              <motion.div 
-                className="w-full h-full overflow-hidden flex items-center justify-center"
-                animate={isStreaming ? {
-                  scale: [1, 1.03, 1],
-                  borderColor: ["var(--border-default)", "rgba(156,163,175,0.4)", "var(--border-default)"]
-                } : {}}
-                transition={isStreaming ? {
-                  duration: 1.8,
-                  repeat: Infinity,
-                  ease: "easeInOut"
-                } : {}}
-              >
-                <NotificationIconRenderer 
-                  src={resolveImageUrl((theme === 'light' && siteSettings.logoLightBase64) ? siteSettings.logoLightBase64 : siteSettings.logoBase64, 'general')} 
-                  alt={brandName} 
-                  size={32}
-                  className="w-full h-full object-contain block"
-                  fallbackIcon={<Cpu size={14} className="text-accent" />}
-                />
-              </motion.div>
-            ) : (
-              <motion.div
-                className="flex items-center justify-center text-[var(--text-primary)]"
-                animate={isStreaming ? {
-                  scale: [1, 1.05, 1]
-                } : {}}
-                transition={isStreaming ? {
-                  duration: 1.8,
-                  repeat: Infinity,
-                  ease: "easeInOut"
-                } : {}}
-              >
-                <Cpu size={14} className="text-accent" />
-              </motion.div>
-            )}
-          </div>
-
-          {/* Full Glassy Outward Arrow Button Effect on Hover */}
-          <div className="absolute inset-0 flex items-center justify-center opacity-0 scale-75 group-hover/logo-btn:opacity-100 group-hover/logo-btn:scale-100 transition-all duration-150 pointer-events-none bg-[var(--surface-subtle)]">
-            <div className="w-6 h-6 rounded-[var(--radius-xs)] bg-[var(--surface-card)] border border-[var(--border-default)] text-[var(--text-primary)] flex items-center justify-center shadow-2xs">
-              {language === 'ar' ? <ChevronLeft size={14} className="stroke-[2.5]" /> : <ChevronRight size={14} className="stroke-[2.5]" />}
+    <div className="flex items-center h-full w-full overflow-hidden select-none">
+      {/* 
+        Fixed Anchor for the Logo:
+        In desktop view (!isMobileView), this slot is strictly 50px wide (matching the collapsed sidebar 50px width).
+        The logo button (w-8 h-8 = 32px) is perfectly centered inside this 50px slot ((50-32)/2 = 9px offset).
+        This slot never shifts, animates, or resizes, locking the logo in the exact identical position 
+        whether the sidebar is open, closed, animating, or on page refresh.
+      */}
+      <div className={`${!isMobileView ? 'w-[50px] min-w-[50px] max-w-[50px]' : 'w-auto'} h-full flex items-center justify-center shrink-0`}>
+        {canToggleSidebarFromLogo && !isSidebarOpen ? (
+          <button
+            type="button"
+            onClick={(e) => {
+              e.stopPropagation();
+              triggerHaptic('medium');
+              setIsSidebarOpen(true);
+            }}
+            className="group/logo-btn relative w-8 h-8 rounded-[var(--radius-sm)] overflow-hidden border border-[var(--border-default)] hover:border-[var(--accent-foreground)]/60 bg-transparent hover:bg-[var(--surface-subtle)] transition-all duration-150 flex items-center justify-center flex-shrink-0 cursor-pointer active:scale-95 before:absolute before:-inset-1.5 before:content-['']"
+            title={language === 'ar' ? 'فتح الشريط الجانبي' : 'Open Sidebar'}
+            aria-label="Open Sidebar"
+          >
+            {/* Normal Logo (Custom logo image or icon) */}
+            <div className="w-full h-full flex items-center justify-center transition-all duration-200 group-hover/logo-btn:opacity-0 group-hover/logo-btn:scale-75">
+              {(siteSettings.logoBase64 || siteSettings.logoLightBase64) ? (
+                <motion.div 
+                  className="w-full h-full overflow-hidden flex items-center justify-center"
+                  animate={isStreaming ? {
+                    scale: [1, 1.03, 1],
+                    borderColor: ["var(--border-default)", "rgba(156,163,175,0.4)", "var(--border-default)"]
+                  } : {}}
+                  transition={isStreaming ? {
+                    duration: 1.8,
+                    repeat: Infinity,
+                    ease: "easeInOut"
+                  } : {}}
+                >
+                  <NotificationIconRenderer 
+                    src={resolveImageUrl((theme === 'light' && siteSettings.logoLightBase64) ? siteSettings.logoLightBase64 : siteSettings.logoBase64, 'general')} 
+                    alt={brandName} 
+                    size={32}
+                    className="w-full h-full object-contain block"
+                    fallbackIcon={<Cpu size={14} className="text-accent" />}
+                  />
+                </motion.div>
+              ) : (
+                <motion.div
+                  className="flex items-center justify-center text-[var(--text-primary)]"
+                  animate={isStreaming ? {
+                    scale: [1, 1.05, 1]
+                  } : {}}
+                  transition={isStreaming ? {
+                    duration: 1.8,
+                    repeat: Infinity,
+                    ease: "easeInOut"
+                  } : {}}
+                >
+                  <Cpu size={14} className="text-accent" />
+                </motion.div>
+              )}
             </div>
-          </div>
-        </button>
-      ) : (
-        <div className="flex items-center gap-2.5 w-full justify-start select-none">
+
+            {/* Full Glassy Outward Arrow Button Effect on Hover */}
+            <div className="absolute inset-0 flex items-center justify-center opacity-0 scale-75 group-hover/logo-btn:opacity-100 group-hover/logo-btn:scale-100 transition-all duration-150 pointer-events-none bg-[var(--surface-subtle)]">
+              <div className="w-6 h-6 rounded-[var(--radius-xs)] bg-[var(--surface-card)] border border-[var(--border-default)] text-[var(--text-primary)] flex items-center justify-center shadow-2xs">
+                {language === 'ar' ? <ChevronLeft size={14} className="stroke-[2.5]" /> : <ChevronRight size={14} className="stroke-[2.5]" />}
+              </div>
+            </div>
+          </button>
+        ) : (
           <NavLink 
             to="/" 
             onClick={handleNewChat} 
@@ -386,21 +393,26 @@ export const Header: React.FC<{ activeLanguage?: string }> = ({ activeLanguage }
               </motion.div>
             )}
           </NavLink>
-          
-          <AnimatePresence initial={false}>
-            {!isMobileView && isSidebarOpen && (
-              <motion.span
-                initial={{ opacity: 0, x: dir === 'rtl' ? 8 : -8 }}
-                animate={{ opacity: 1, x: 0 }}
-                exit={{ opacity: 0, x: dir === 'rtl' ? 8 : -8 }}
-                transition={SIDEBAR_TRANSITION}
-                className="font-black text-sm text-[var(--text-primary)] whitespace-nowrap overflow-hidden tracking-tight leading-none"
-              >
+        )}
+      </div>
+
+      {/* Brand Name Text: Smoothly reveals beside the fixed logo slot when sidebar is open on desktop */}
+      {!isMobileView && (
+        <AnimatePresence initial={false}>
+          {isSidebarOpen && (
+            <motion.div
+              initial={{ opacity: 0, x: dir === 'rtl' ? 6 : -6 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: dir === 'rtl' ? 6 : -6 }}
+              transition={SIDEBAR_TRANSITION}
+              className="flex-1 min-w-0 flex items-center overflow-hidden pe-2"
+            >
+              <span className="font-black text-sm text-[var(--text-primary)] whitespace-nowrap truncate tracking-tight leading-none">
                 {brandName}
-              </motion.span>
-            )}
-          </AnimatePresence>
-        </div>
+              </span>
+            </motion.div>
+          )}
+        </AnimatePresence>
       )}
     </div>
   );
@@ -676,7 +688,7 @@ export const Header: React.FC<{ activeLanguage?: string }> = ({ activeLanguage }
   return (
     <header 
       dir={globalLang === 'ar' ? 'rtl' : 'ltr'} 
-      className={`fixed top-0 left-0 right-0 h-[calc(50px+env(safe-area-inset-top,0px))] lg:h-[calc(56px+env(safe-area-inset-top,0px))] pt-[env(safe-area-inset-top,0px)] z-[160] transition-theme flex items-center bg-[var(--surface-page)] border-b border-[var(--pub-border-default)]`}
+      className={`fixed top-0 left-0 right-0 h-[calc(50px+env(safe-area-inset-top,0px))] lg:h-[calc(56px+env(safe-area-inset-top,0px))] pt-[env(safe-area-inset-top,0px)] z-[160] transition-theme flex items-center bg-[var(--surface-page)] border-b border-[var(--border-default)]`}
     >
       {/* Full-height vertical divider line matching sidebar width starting from top-0 to 100dvh */}
       <motion.div
@@ -687,7 +699,7 @@ export const Header: React.FC<{ activeLanguage?: string }> = ({ activeLanguage }
         transition={SIDEBAR_TRANSITION}
         className={`absolute top-0 bottom-0 pointer-events-none z-[1] ${
           dir === 'rtl' ? 'right-0 border-l' : 'left-0 border-r'
-        } border-[var(--pub-border-default)]`}
+        } border-[var(--border-default)]`}
         style={{ height: '100dvh', willChange: 'width' }}
       />
       
@@ -701,14 +713,7 @@ export const Header: React.FC<{ activeLanguage?: string }> = ({ activeLanguage }
           transition={SIDEBAR_TRANSITION}
           className="flex items-center h-full shrink-0 z-20 overflow-hidden"
         >
-          <div 
-            className="flex items-center justify-center h-full w-full"
-            style={{
-              width: !isMobileView ? (isSidebarOpen ? '180px' : '50px') : 'auto',
-              minWidth: !isMobileView ? (isSidebarOpen ? '180px' : '50px') : 'auto',
-              transition: 'all 0.3s cubic-bezier(0.2, 0, 0, 1)'
-            }}
-          >
+          <div className="flex items-center h-full w-full">
             {renderLogo}
           </div>
         </motion.div>

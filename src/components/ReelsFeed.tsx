@@ -1864,7 +1864,7 @@ export const ReelsFeed: React.FC<ReelsFeedProps> = ({
           {/* Search Button */}
           <button
             onClick={() => setIsSearchOpen(true)}
-            className="w-8 h-8 sm:w-9 sm:h-9 rounded-shape-sm flex items-center justify-center text-white md:text-[var(--text-primary)] bg-black/50 md:bg-[var(--surface-card)] hover:bg-cyan-500/10 md:hover:bg-cyan-500/10 text-[var(--pub-text-muted)] hover:text-cyan-400 transition-all duration-150 active:scale-95 cursor-pointer border border-white/20 md:border-[var(--border-default)] hover:border-cyan-500/30 shadow-xs relative before:absolute before:-inset-1.5 before:content-['']"
+            className="w-8 h-8 sm:w-9 sm:h-9 rounded-shape-sm flex items-center justify-center text-white md:text-[var(--text-primary)] bg-black/50 md:bg-[var(--surface-card)] hover:bg-cyan-500/10 md:hover:bg-cyan-500/10 text-[var(--text-muted)] hover:text-cyan-400 transition-all duration-150 active:scale-95 cursor-pointer border border-white/20 md:border-[var(--border-default)] hover:border-cyan-500/30 shadow-xs relative before:absolute before:-inset-1.5 before:content-['']"
             title={isRtl ? 'بحث في مقاطع ريلز' : 'Search Reels'}
           >
             <Search size={14} />
@@ -1873,7 +1873,7 @@ export const ReelsFeed: React.FC<ReelsFeedProps> = ({
           {/* Upload Button */}
           <button
             onClick={handleUploadReelClick}
-            className="w-8 h-8 sm:w-9 sm:h-9 rounded-shape-sm flex items-center justify-center text-white md:text-[var(--text-primary)] bg-black/50 md:bg-[var(--surface-card)] hover:bg-cyan-500/10 md:hover:bg-cyan-500/10 text-[var(--pub-text-muted)] hover:text-cyan-400 transition-all duration-150 active:scale-95 cursor-pointer border border-white/20 md:border-[var(--border-default)] hover:border-cyan-500/30 shadow-xs relative before:absolute before:-inset-1.5 before:content-['']"
+            className="w-8 h-8 sm:w-9 sm:h-9 rounded-shape-sm flex items-center justify-center text-white md:text-[var(--text-primary)] bg-black/50 md:bg-[var(--surface-card)] hover:bg-cyan-500/10 md:hover:bg-cyan-500/10 text-[var(--text-muted)] hover:text-cyan-400 transition-all duration-150 active:scale-95 cursor-pointer border border-white/20 md:border-[var(--border-default)] hover:border-cyan-500/30 shadow-xs relative before:absolute before:-inset-1.5 before:content-['']"
             title={isRtl ? 'رفع مقطع ريلز جديد' : 'Upload New Reel'}
           >
             <Plus size={16} />
@@ -1887,7 +1887,7 @@ export const ReelsFeed: React.FC<ReelsFeedProps> = ({
           >
             <button
               onClick={toggleMute}
-              className="w-8 h-8 sm:w-9 sm:h-9 rounded-shape-sm flex items-center justify-center text-white md:text-[var(--text-primary)] bg-black/50 md:bg-[var(--surface-card)] hover:bg-cyan-500/10 md:hover:bg-cyan-500/10 text-[var(--pub-text-muted)] hover:text-cyan-400 transition-all duration-150 active:scale-95 cursor-pointer border border-white/20 md:border-[var(--border-default)] hover:border-cyan-500/30 shadow-xs relative before:absolute before:-inset-1.5 before:content-['']"
+              className="w-8 h-8 sm:w-9 sm:h-9 rounded-shape-sm flex items-center justify-center text-white md:text-[var(--text-primary)] bg-black/50 md:bg-[var(--surface-card)] hover:bg-cyan-500/10 md:hover:bg-cyan-500/10 text-[var(--text-muted)] hover:text-cyan-400 transition-all duration-150 active:scale-95 cursor-pointer border border-white/20 md:border-[var(--border-default)] hover:border-cyan-500/30 shadow-xs relative before:absolute before:-inset-1.5 before:content-['']"
               title={isMuted ? (isRtl ? 'تشغيل الصوت (M)' : 'Unmute (M)') : (isRtl ? 'كتم الصوت (M)' : 'Mute (M)')}
             >
               {isMuted ? (

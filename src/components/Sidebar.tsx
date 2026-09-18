@@ -475,8 +475,8 @@ export const Sidebar: React.FC<{ activeLanguage?: string }> = ({ activeLanguage 
             {/* Header / Logo Zone Spacer */}
             <div className="h-[calc(50px+env(safe-area-inset-top,0px))] lg:h-[calc(56px+env(safe-area-inset-top,0px))] flex-shrink-0 border-b border-[var(--border-default)] w-full transition-all duration-150" />
 
-            <div className="flex-shrink-0 pt-3.5">
-              <nav className="space-y-1">
+            <div className="flex-shrink-0 pt-2">
+              <nav className="space-y-0.5">
                 {navItems.map((item, index) => (
                   <NavLink
                     key={`nav-${item.path}-${index}`}
@@ -489,7 +489,7 @@ export const Sidebar: React.FC<{ activeLanguage?: string }> = ({ activeLanguage 
                       const active = isActive;
                       return (
                         <div 
-                          className={`${(item as any).className || 'flex'} items-center transition-all duration-150 w-full h-[36px] overflow-hidden flex-shrink-0 group relative rounded-[var(--radius-sm)] border cursor-pointer ${
+                          className={`${(item as any).className || 'flex'} items-center transition-all duration-150 w-full h-[34px] overflow-hidden flex-shrink-0 group relative rounded-[var(--radius-sm)] border cursor-pointer ${
                             active 
                               ? 'bg-[color-mix(in_oklab,var(--accent)_12%,transparent)] text-[var(--accent)] border-[color-mix(in_oklab,var(--accent)_30%,var(--border-default))] font-bold shadow-2xs'
                               : 'border-transparent text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--surface-subtle)] hover:border-[var(--border-default)]'
@@ -525,10 +525,10 @@ export const Sidebar: React.FC<{ activeLanguage?: string }> = ({ activeLanguage 
                 ))}
 
                   {user && token && (
-                  <div className="mt-1.5 pt-1.5 pb-1.5 border-t border-[var(--border-default)] transition-theme">
+                  <div className="my-1 pt-1 pb-1 border-t border-[var(--border-default)] transition-theme">
                     <button 
                       onClick={handleNewChat}
-                      className="flex items-center transition-all duration-150 w-full h-[36px] overflow-hidden flex-shrink-0 group cursor-pointer border border-transparent rounded-[var(--radius-sm)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--surface-subtle)]"
+                      className="flex items-center transition-all duration-150 w-full h-[34px] overflow-hidden flex-shrink-0 group cursor-pointer border border-transparent rounded-[var(--radius-sm)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--surface-subtle)]"
                       style={{ paddingInlineStart: '10px', paddingInlineEnd: '8px' }}
                     >
                       <div className={`w-7 h-7 flex-shrink-0 flex items-center justify-center transition-colors duration-150 text-[var(--text-muted)] group-hover:text-[var(--text-primary)] ${isSidebarOpen ? 'my-auto' : '-translate-y-[0.5px]'}`}>
@@ -555,7 +555,7 @@ export const Sidebar: React.FC<{ activeLanguage?: string }> = ({ activeLanguage 
               <div className="flex-grow flex-shrink flex-1 min-h-0 flex flex-col overflow-hidden relative">
                 {/* Fixed History Section Title */}
                 <div 
-                  className="h-8 border-t border-[var(--border-default)] transition-theme flex-shrink-0 flex items-center justify-between overflow-hidden bg-[var(--surface-sidebar)] select-none"
+                  className="h-7 border-t border-[var(--border-default)] transition-theme flex-shrink-0 flex items-center justify-between overflow-hidden bg-[var(--surface-sidebar)] select-none"
                   style={{ paddingInlineStart: '11px', paddingInlineEnd: '8px' }}
                 >
                   <div className="flex items-center w-full h-full">
@@ -604,7 +604,7 @@ export const Sidebar: React.FC<{ activeLanguage?: string }> = ({ activeLanguage 
                                     repeat: Infinity,
                                     ease: "easeInOut"
                                   }}
-                                  className={`flex items-center w-full h-[36px] ${isMenuOpen ? 'overflow-visible z-30' : 'overflow-hidden'} flex-shrink-0 transition-all duration-150 group relative border rounded-[var(--radius-sm)] cursor-pointer ${
+                                  className={`flex items-center w-full h-[32px] ${isMenuOpen ? 'overflow-visible z-30' : 'overflow-hidden'} flex-shrink-0 transition-all duration-150 group relative border rounded-[var(--radius-sm)] cursor-pointer ${
                                     isActive 
                                       ? 'bg-[color-mix(in_oklab,var(--accent)_12%,transparent)] text-[var(--accent)] border-[color-mix(in_oklab,var(--accent)_30%,var(--border-default))] font-bold shadow-2xs' 
                                       : 'border-transparent text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--surface-subtle)] hover:border-[var(--border-default)]'
@@ -794,7 +794,7 @@ export const Sidebar: React.FC<{ activeLanguage?: string }> = ({ activeLanguage 
               </div>
             )}
 
-            <div className={`mt-auto ${isMobile ? 'pt-2 pb-2 space-y-1' : 'pt-2 pb-2.5 space-y-1'} border-t border-[var(--border-default)] transition-all duration-150 flex-shrink-0 relative`}>
+            <div className={`mt-auto ${isMobile ? 'pt-1.5 pb-1.5 space-y-0.5' : 'pt-1.5 pb-2 space-y-0.5'} border-t border-[var(--border-default)] transition-all duration-150 flex-shrink-0 relative`}>
               {user ? (
                 <div 
                   onClick={(e) => {
@@ -802,7 +802,7 @@ export const Sidebar: React.FC<{ activeLanguage?: string }> = ({ activeLanguage 
                     const rect = e.currentTarget.getBoundingClientRect();
                     setProfileMenuTarget(profileMenuTarget ? null : { rect });
                   }}
-                  className={`flex items-center group cursor-pointer w-full h-[38px] overflow-hidden flex-shrink-0 rounded-[var(--radius-sm)] border transition-all duration-150 ${
+                  className={`flex items-center group cursor-pointer w-full h-[36px] overflow-hidden flex-shrink-0 rounded-[var(--radius-sm)] border transition-all duration-150 ${
                     profileMenuTarget
                       ? 'bg-[var(--surface-card)] text-[var(--text-primary)] border-[var(--border-default)] shadow-2xs' 
                       : 'border-transparent text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--surface-subtle)]'
@@ -810,7 +810,7 @@ export const Sidebar: React.FC<{ activeLanguage?: string }> = ({ activeLanguage 
                   style={{ paddingInlineStart: '10px', paddingInlineEnd: '8px' }}
                 >
                   <div className="flex items-center h-full overflow-hidden w-full relative text-[var(--text-primary)]">
-                    <div className="w-7 h-[36px] flex-shrink-0 flex items-center justify-center relative">
+                    <div className="w-7 h-[34px] flex-shrink-0 flex items-center justify-center relative">
                       <div 
                         className="w-7 h-7 rounded-[var(--radius-xs)] bg-[var(--surface-subtle)] flex items-center justify-center flex-shrink-0 overflow-hidden border transition-all duration-150 relative z-10 group-hover:border-[var(--border-accent)] shadow-2xs"
                         style={{ 
@@ -853,7 +853,7 @@ export const Sidebar: React.FC<{ activeLanguage?: string }> = ({ activeLanguage 
                 </div>
               ) : (
                 <div 
-                  className="flex items-center group cursor-pointer w-full h-[38px] overflow-hidden flex-shrink-0 transition-all duration-150 rounded-[var(--radius-sm)] border border-transparent text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--surface-subtle)]"
+                  className="flex items-center group cursor-pointer w-full h-[36px] overflow-hidden flex-shrink-0 transition-all duration-150 rounded-[var(--radius-sm)] border border-transparent text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--surface-subtle)]"
                   style={{ paddingInlineStart: '10px', paddingInlineEnd: '8px' }}
                   onClick={() => {
                     setIsAuthModalOpen(true);
@@ -862,7 +862,7 @@ export const Sidebar: React.FC<{ activeLanguage?: string }> = ({ activeLanguage 
                     }
                   }}
                 >
-                  <div className="w-7 h-[36px] flex-shrink-0 flex items-center justify-center relative">
+                  <div className="w-7 h-[34px] flex-shrink-0 flex items-center justify-center relative">
                     <div className="w-7 h-7 rounded-[var(--radius-xs)] bg-[var(--surface-subtle)] flex items-center justify-center flex-shrink-0 relative z-10 transition-colors duration-150 border border-[var(--border-default)] group-hover:border-[var(--border-accent)]">
                       <User size={15} className="text-[var(--text-muted)] group-hover:text-[var(--text-primary)] transition-colors duration-150" />
                     </div>
