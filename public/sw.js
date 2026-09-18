@@ -1,39 +1,51 @@
-// Version 1.0.2 - Resilient Media & Range Stream Support
+// Version 1.0.3 - Resilient Routing & Navigation Bypass
 self.addEventListener('install', (event) => {
   self.skipWaiting();
 });
 
 self.addEventListener('activate', (event) => {
-  event.waitUntil(clients.claim());
+  // Clear all caches on activation to prevent stale asset issues during build transitions
+  event.waitUntil(
+    caches.keys().then((cacheNames) => {
+      return Promise.all(
+        cacheNames.map((cacheName) => caches.delete(cacheName))
+      );
+    }).then(() => self.clients.claim())
+  );
 });
 
 self.addEventListener('fetch', (event) => {
-  // 1. Bypass navigation requests (like F5 reloads on /chat) to let the server serve 
-  // fresh, secure HTML containing dynamic CSP nonces and real-time SEO tags
+  // 1. Bypass all navigation requests (F5 / deep-link refreshes)
+  // This ensures the server always handles the initial HTML delivery,
+  // providing fresh CSP nonces and server-side SEO metadata.
   if (event.request.mode === 'navigate') {
     return;
   }
 
-  // 2. Let the browser handle video/audio streaming and Range requests natively
+  // 2. Bypass API calls and Uploads - never cache these in SW
+  if (event.request.url.includes('/api/') || event.request.url.includes('/uploads/')) {
+    return;
+  }
+
+  // 3. Let the browser handle video/audio streaming and Range requests natively
   if (
     event.request.headers.has('range') ||
     event.request.destination === 'video' ||
-    event.request.destination === 'audio' ||
-    event.request.url.includes('/uploads/')
+    event.request.destination === 'audio'
   ) {
     return;
   }
 
-  // 3. Workaround for Chromium 'only-if-cached' bug causing ERR_FAILED on asset reloads
+  // 4. Workaround for Chromium 'only-if-cached' bug
   if (event.request.cache === 'only-if-cached' && event.request.mode !== 'same-origin') {
     return;
   }
 
-  // 4. Safe pass-through for other assets with global error handling
+  // 5. Safe pass-through for other assets (JS, CSS, Images)
+  // We avoid aggressive SW caching for now to ensure professional consistency across refreshes.
   event.respondWith(
     fetch(event.request).catch((err) => {
-      console.warn('[SW] Passive fetch fallback:', err);
-      // Let it fail gracefully or let the browser handle it natively
+      console.warn('[SW] Fetch failed, returning network error state:', err);
       return new Response('Network Error', { status: 408, statusText: 'Network Error' });
     })
   );

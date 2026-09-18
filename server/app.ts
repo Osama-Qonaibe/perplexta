@@ -373,6 +373,8 @@ app.use((req, res, next) => {
   
   if (!isApiOrUploads && !hasStaticExtension) {
     res.setHeader('Link', '</.well-known/api-catalog>; rel="api-catalog", </.well-known/mcp/server-card.json>; rel="service-desc", </.well-known/acp.json>; rel="acp", </.well-known/oauth-authorization-server>; rel="oauth-authorization-server", </.well-known/oauth-protected-resource>; rel="oauth-protected-resource", </auth.md>; rel="service-doc"');
+    res.setHeader('X-Frame-Options', 'SAMEORIGIN'); // Basic protection for non-iframe modes
+    res.setHeader('X-Content-Type-Options', 'nosniff');
   }
   next();
 });
@@ -410,17 +412,8 @@ app.use(helmet({
   crossOriginOpenerPolicy: { policy: "same-origin-allow-popups" }
 }));
 
-// ===== PERFORMANCE: Compression =====
-app.use(compression({
-  level: 6, // gzip level (1-9)
-  threshold: 1024, // compress if > 1KB
-  filter: (req, res) => {
-    if (req.headers['x-no-compression']) {
-      return false;
-    }
-    return compression.filter(req, res);
-  }
-}) as any);
+// ===== PERFORMANCE: Compression (Integrated with dynamic data-saver logic above) =====
+// Note: Global compression is already handled by the normalCompression/aggressiveCompression middleware stack.
 // ====================================
 
 const allowedOrigins = process.env.ALLOWED_ORIGINS?.split(',') || [
@@ -2129,7 +2122,10 @@ async function injectSEOTags(
       normalizedPath.startsWith('/share/') ||
       normalizedPath.startsWith('/bulletin') ||
       normalizedPath.startsWith('/viralbook') ||
-      normalizedPath.startsWith('/rewards')
+      normalizedPath.startsWith('/rewards') ||
+      normalizedPath.startsWith('/auth') ||
+      normalizedPath.startsWith('/login') ||
+      normalizedPath.startsWith('/register')
     );
 
   let metaBlock = '';
@@ -2355,16 +2351,23 @@ app.use(async (req: express.Request, res: express.Response, next: express.NextFu
 
     let finalHtml = processedHtml;
     try {
-      const settings = await getSystemSettings();
-      finalHtml = await injectSEOTags(processedHtml, settings, req, baseUrl);
+      const settings = await getSystemSettings().catch(err => {
+        console.warn('[Server] System settings unavailable, using defaults for SEO:', err.message);
+        return {} as any;
+      });
+      finalHtml = await injectSEOTags(processedHtml, settings, req, baseUrl).catch(err => {
+        console.warn('[Server] SEO injection failed, serving base HTML:', err.message);
+        return processedHtml;
+      });
     } catch (settingsError) {
-      console.warn('[SEO] getSystemSettings failed, serving HTML without SEO tags:', settingsError);
+      console.warn('[SEO] Unexpected error in SEO pipeline:', settingsError);
     }
 
-    res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate');
+    res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
     res.setHeader('Pragma', 'no-cache');
     res.setHeader('Expires', '0');
     res.setHeader('Surrogate-Control', 'no-store');
+    res.setHeader('Vary', 'Accept-Encoding, Accept-Language, Cookie');
     res.type('html').send(finalHtml);
   } catch (err) {
     console.error('[SEO] Wildcard serve error, falling back to basic noncing:', err);
@@ -2380,7 +2383,7 @@ app.use(async (req: express.Request, res: express.Response, next: express.NextFu
       res.type('html').send(baseHtml.replace(/<script\b/g, `<script nonce="${nonce}"`) );
     } catch (readErr) {
       console.error('[SEO] Critical: Could not read index.html fallback:', readErr);
-      res.status(500).send('Internal Server Error');
+      res.status(500).send('<html><body style="font-family: sans-serif; display: flex; align-items: center; justify-content: center; height: 100vh; background: #faf9f5; color: #181715;"><div><h1 style="font-size: 24px;">Perplexta — System Initialization</h1><p>The platform is currently preparing its secure workspace environment. Please refresh shortly.</p></div></body></html>');
     }
   }
 });
