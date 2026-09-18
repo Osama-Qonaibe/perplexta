@@ -121,7 +121,7 @@ export function CanvasZoomControls({
         {/* Quick Presets Dropdown */}
         {showPresetMenu && (
           <div
-            className="absolute bottom-full mb-2 start-0 w-max min-w-[160px] p-1 bg-[var(--surface-card)] border border-[var(--border-default)] rounded-xl shadow-2xl backdrop-blur-xl z-50 flex flex-col gap-0.5"
+            className="absolute bottom-full mb-2 start-0 w-max min-w-[160px] p-1 bg-[var(--surface-card)] border border-[var(--border-default)] rounded-[var(--radius-md)] shadow-2xl backdrop-blur-xl z-50 flex flex-col gap-0.5"
             dir={isAr ? 'rtl' : 'ltr'}
           >
             <div className="px-2.5 py-1 text-[10px] font-bold text-[var(--text-muted)] tracking-wider uppercase border-b border-[var(--border-default)]/50 mb-0.5 flex items-center justify-between">

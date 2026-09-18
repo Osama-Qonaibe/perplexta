@@ -546,7 +546,7 @@ export const GoogleContacts: React.FC<GoogleContactsProps> = ({ dir, theme }) =>
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch">
             
             {/* Left Column: Explorer Area */}
-            <div className="lg:col-span-5 flex flex-col rounded-xl border bg-[var(--surface-subtle)] border-[var(--border-default)] overflow-hidden min-h-[500px]">
+            <div className="lg:col-span-5 flex flex-col rounded-[var(--radius-md)] border bg-[var(--surface-subtle)] border-[var(--border-default)] overflow-hidden min-h-[500px]">
               
               {/* Explorer Header */}
               <div className="p-4 border-b border-[var(--border-default)]/50 flex flex-col gap-3 flex-none">

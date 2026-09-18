@@ -701,7 +701,7 @@ export const PostOptionsMenu: React.FC<PostOptionsMenuProps> = ({
                 initial={{ opacity: 0, scale: 0.95, y: 10 }}
                 animate={{ opacity: 1, scale: 1, y: 0 }}
                 exit={{ opacity: 0, scale: 0.95, y: 10 }}
-                className="relative w-full max-w-md bg-[var(--surface-card)] text-[var(--text-primary)] rounded-xl border border-[var(--border-default)] shadow-2xl p-4 sm:p-5 overflow-hidden"
+                className="relative w-full max-w-md bg-[var(--surface-card)] text-[var(--text-primary)] rounded-[var(--radius-lg)] border border-[var(--border-default)] shadow-2xl p-4 sm:p-5 overflow-hidden"
                 onClick={(e) => e.stopPropagation()}
               >
               {/* Close Button Header */}

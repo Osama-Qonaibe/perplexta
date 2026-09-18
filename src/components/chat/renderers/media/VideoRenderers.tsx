@@ -27,7 +27,7 @@ export const SimpleVideoLoadingPlaceholder = ({ dir, aspectRatio = '9:16' }: { d
   return (
     <div className="w-full flex flex-col my-2 items-start">
       <div 
-        className={`relative overflow-hidden rounded-xl border border-[var(--border-default)] bg-[var(--surface-subtle)] ${containerAspectClass} w-full flex items-center justify-center`}
+        className={`relative overflow-hidden rounded-[var(--radius-md)] border border-[var(--border-default)] bg-[var(--surface-subtle)] ${containerAspectClass} w-full flex items-center justify-center`}
       >
         <div className="absolute inset-0 backdrop-blur-md bg-zinc-950/30 flex flex-col items-center justify-center gap-2 z-10">
           <Logo size={28} fallbackType="cpu" className="animate-pulse" />

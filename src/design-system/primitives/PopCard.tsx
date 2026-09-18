@@ -6,7 +6,7 @@
  * - Surface: var(--popover)
  * - Border: 1px solid var(--border)
  * - Shadow: 0 12px 32px -8px rgba(0,0,0,0.5), 0 4px 12px -2px rgba(0,0,0,0.25), inset 0 1px 0 0 color-mix(in oklab, var(--foreground) 5%, transparent)
- * - Corner radius: 12px (rounded-xl)
+ * - Corner radius: 12px (var(--radius-md))
  */
 
 import React, { forwardRef, useEffect, useRef, useImperativeHandle } from 'react';

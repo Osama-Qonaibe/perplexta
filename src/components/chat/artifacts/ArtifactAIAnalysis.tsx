@@ -209,7 +209,7 @@ const dataMetrics = [
       <div className="bg-[var(--surface-card)] border border-[var(--border-default)] rounded-shape-md p-4 sm:p-5 shadow-sm transition-theme">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-[var(--border-default)] pb-4 mb-4">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-shape-sm bg-[var(--surface-inset)] border border-[var(--border-default)] flex items-center justify-center text-[var(--sys-color-primary)] shrink-0">
+            <div className="w-10 h-10 rounded-shape-sm bg-[var(--surface-inset)] border border-[var(--border-default)] flex items-center justify-center text-[var(--fg-accent)] shrink-0">
               <Logo size={22} fallbackType="cpu" />
             </div>
             <div>
@@ -299,7 +299,7 @@ const dataMetrics = [
       <div className="bg-[var(--surface-card)] border border-[var(--border-default)] rounded-shape-md p-4 sm:p-5 shadow-sm transition-theme">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-[var(--border-default)] pb-3 mb-4">
           <div className="flex items-center gap-2">
-            <BarChart3 size={16} className="text-[var(--sys-color-primary)]" />
+            <BarChart3 size={16} className="text-[var(--fg-accent)]" />
             <h3 className="text-xs sm:text-sm font-bold text-[var(--text-primary)]">
               {isAr ? 'معاينة الرسوم البيانية المباشرة (Data Visualizer)' : 'Live Chart Visualization Sandbox'}
             </h3>
@@ -499,7 +499,7 @@ const dataMetrics = [
             className="flex items-center justify-between p-3 min-h-[44px] text-right rounded-shape-sm bg-[var(--surface-subtle)] border border-[var(--border-default)] hover:bg-[var(--surface-inset)] transition-theme cursor-pointer group"
           >
             <div className="flex items-center gap-2.5">
-              <span className="w-2 h-2 rounded-full bg-[var(--sys-color-primary)]" />
+              <span className="w-2 h-2 rounded-full bg-[var(--fg-accent)]" />
               <span className="text-xs font-bold text-[var(--text-primary)]">
                 {isAr ? 'تحليل معماري وتدقيق أداء الكود' : 'Deep Architecture & Performance Audit'}
               </span>
@@ -517,7 +517,7 @@ const dataMetrics = [
             className="flex items-center justify-between p-3 min-h-[44px] text-right rounded-shape-sm bg-[var(--surface-subtle)] border border-[var(--border-default)] hover:bg-[var(--surface-inset)] transition-theme cursor-pointer group"
           >
             <div className="flex items-center gap-2.5">
-              <span className="w-2 h-2 rounded-full bg-[var(--sys-color-info)]" />
+              <span className="w-2 h-2 rounded-full bg-[var(--fg-info)]" />
               <span className="text-xs font-bold text-[var(--text-primary)]">
                 {isAr ? 'مواءمة التصميم مع هوية Perplexta M3' : 'Align with Perplexta M3 Visual Identity'}
               </span>
@@ -535,7 +535,7 @@ const dataMetrics = [
             className="flex items-center justify-between p-3 min-h-[44px] text-right rounded-shape-sm bg-[var(--surface-subtle)] border border-[var(--border-default)] hover:bg-[var(--surface-inset)] transition-theme cursor-pointer group"
           >
             <div className="flex items-center gap-2.5">
-              <span className="w-2 h-2 rounded-full bg-[var(--sys-color-success)]" />
+              <span className="w-2 h-2 rounded-full bg-[var(--fg-success)]" />
               <span className="text-xs font-bold text-[var(--text-primary)]">
                 {isAr ? 'تحويل إلى لوحة بيانات وإحصائيات متكاملة' : 'Convert into Full Analytics Dashboard'}
               </span>
@@ -553,7 +553,7 @@ const dataMetrics = [
             className="flex items-center justify-between p-3 min-h-[44px] text-right rounded-shape-sm bg-[var(--surface-subtle)] border border-[var(--border-default)] hover:bg-[var(--surface-inset)] transition-theme cursor-pointer group"
           >
             <div className="flex items-center gap-2.5">
-              <span className="w-2 h-2 rounded-full bg-[var(--sys-color-warning)]" />
+              <span className="w-2 h-2 rounded-full bg-[var(--fg-warning)]" />
               <span className="text-xs font-bold text-[var(--text-primary)]">
                 {isAr ? 'فحص التوافقية وإمكانية الوصول WCAG' : 'Accessibility & WCAG AA Compliance Check'}
               </span>

@@ -446,9 +446,9 @@ export const BlockquoteWithActions = ({ children, dir }: { children: React.React
 
   return (
     <div className="relative group/bq my-2 select-text">
-      <blockquote className="relative py-2 px-3.5 border-s-3 border-[var(--sys-color-primary)] bg-[var(--surface-subtle)]/60 rounded-r-shape-md border-y-0 border-e-0 transition-all hover:bg-[var(--surface-subtle)] shadow-2xs flex flex-col gap-1">
+      <blockquote className="relative py-2 px-3.5 border-s-3 border-[var(--fg-accent)] bg-[var(--surface-subtle)]/60 rounded-r-shape-md border-y-0 border-e-0 transition-all hover:bg-[var(--surface-subtle)] shadow-2xs flex flex-col gap-1">
         <div className="text-xs font-bold text-[var(--text-primary)] flex items-center gap-1.5">
-          <span className="inline-block w-1.5 h-1.5 rounded-full bg-[var(--sys-color-primary)]"></span>
+          <span className="inline-block w-1.5 h-1.5 rounded-full bg-[var(--fg-accent)]"></span>
           <span>{dir === 'rtl' ? 'ملاحظة أمان' : 'Security Note'}</span>
         </div>
         <div className="text-xs font-medium leading-relaxed text-[var(--text-secondary)] ps-3">

@@ -72,7 +72,7 @@ export const UserMessageBubble: React.FC<UserMessageBubbleProps> = ({
               referrerPolicy="no-referrer"
             />
           ) : (
-            <div className="w-9 h-9 rounded-shape-sm bg-[var(--sys-color-primary)]/10 flex items-center justify-center text-[var(--sys-color-primary)]">
+            <div className="w-9 h-9 rounded-shape-sm bg-accent/10 flex items-center justify-center text-accent">
               {getFileIcon(msg.file.type)}
             </div>
           )}
@@ -176,7 +176,7 @@ export const UserMessageBubble: React.FC<UserMessageBubbleProps> = ({
 
           {/* Clean Compact User Message Bubble */}
           <div 
-            className={`px-3.5 py-2 sm:px-4 sm:py-2.5 rounded-xl rounded-tr-[2px] border border-[var(--border-default)] bg-[var(--surface-subtle)] dark:bg-slate-900/90 dark:border-slate-800/80 text-[var(--text-primary)] dark:text-slate-100 shadow-2xs transition-all duration-150 min-w-0 ${
+            className={`px-3.5 py-2 sm:px-4 sm:py-2.5 rounded-[var(--radius-md)] rounded-tr-[2px] border border-[var(--border-default)] bg-[var(--surface-subtle)] text-[var(--text-primary)] shadow-2xs transition-all duration-150 min-w-0 ${
               dir === 'rtl' ? 'text-right' : 'text-left'
             }`}
           >

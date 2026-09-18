@@ -3715,7 +3715,7 @@ export const BulletinBoardPage: React.FC = () => {
                     <h4 className="text-[11px] font-extrabold text-[var(--text-muted)] uppercase tracking-wider mb-2">{isRtl ? 'أقسام المنصة' : 'Platform Sections'}</h4>
                     <button
                       onClick={() => { setSelectedPageDetail(null); setActiveTab('board'); setIsMobileSidebarOpen(false); }}
-                      className={`group w-full px-3 py-2.5 rounded-xl text-xs font-bold flex items-center gap-2.5 transition-theme ${
+                      className={`group w-full px-3 py-2.5 rounded-[var(--radius-md)] text-xs font-bold flex items-center gap-2.5 transition-theme ${
                         activeTab === 'board' && !selectedPageDetail
                           ? 'bg-accent/10 text-accent shadow-sm border border-accent/20'
                           : 'bg-transparent text-[var(--text-secondary)] hover:bg-[var(--surface-subtle)]'
@@ -3727,7 +3727,7 @@ export const BulletinBoardPage: React.FC = () => {
 
                     <button
                       onClick={() => { setSelectedPageDetail(null); setActiveTab('pages'); setIsMobileSidebarOpen(false); }}
-                      className={`group w-full px-3 py-2.5 rounded-xl text-xs font-bold flex items-center gap-2.5 transition-theme ${
+                      className={`group w-full px-3 py-2.5 rounded-[var(--radius-md)] text-xs font-bold flex items-center gap-2.5 transition-theme ${
                         activeTab === 'pages' && !selectedPageDetail
                           ? 'bg-accent/10 text-accent shadow-sm border border-accent/20'
                           : 'bg-transparent text-[var(--text-secondary)] hover:bg-[var(--surface-subtle)]'
@@ -3740,7 +3740,7 @@ export const BulletinBoardPage: React.FC = () => {
                     {user && (
                       <button
                         onClick={() => { setSelectedPageDetail(null); setActiveTab('inquiries'); setIsMobileSidebarOpen(false); }}
-                        className={`group w-full px-3 py-2.5 rounded-xl text-xs font-bold flex items-center justify-between transition-theme ${
+                        className={`group w-full px-3 py-2.5 rounded-[var(--radius-md)] text-xs font-bold flex items-center justify-between transition-theme ${
                           activeTab === 'inquiries' && !selectedPageDetail
                             ? 'bg-accent/10 text-accent shadow-sm border border-accent/20'
                             : 'bg-transparent text-[var(--text-secondary)] hover:bg-[var(--surface-subtle)]'
@@ -3761,7 +3761,7 @@ export const BulletinBoardPage: React.FC = () => {
                     {user && (
                       <button
                         onClick={() => { setSelectedPageDetail(null); setActiveTab('my_ads'); setIsMobileSidebarOpen(false); }}
-                        className={`group w-full px-3 py-2.5 rounded-xl text-xs font-bold flex items-center gap-2.5 transition-theme ${
+                        className={`group w-full px-3 py-2.5 rounded-[var(--radius-md)] text-xs font-bold flex items-center gap-2.5 transition-theme ${
                           activeTab === 'my_ads' && !selectedPageDetail
                             ? 'bg-accent/10 text-accent shadow-sm border border-accent/20'
                             : 'bg-transparent text-[var(--text-secondary)] hover:bg-[var(--surface-subtle)]'
@@ -3774,7 +3774,7 @@ export const BulletinBoardPage: React.FC = () => {
 
                     <button
                       onClick={() => { setSelectedPageDetail(null); setActiveTab('analytics'); setIsMobileSidebarOpen(false); }}
-                      className={`group w-full px-3 py-2.5 rounded-xl text-xs font-bold flex items-center gap-2.5 transition-theme ${
+                      className={`group w-full px-3 py-2.5 rounded-[var(--radius-md)] text-xs font-bold flex items-center gap-2.5 transition-theme ${
                         activeTab === 'analytics' && !selectedPageDetail
                           ? 'bg-accent/10 text-accent shadow-sm border border-accent/20'
                           : 'bg-transparent text-[var(--text-secondary)] hover:bg-[var(--surface-subtle)]'
@@ -3792,7 +3792,7 @@ export const BulletinBoardPage: React.FC = () => {
                         setIsMobileSidebarOpen(false);
                         fetchSavedAds();
                       }}
-                      className={`group w-full px-3 py-2.5 rounded-xl text-xs font-bold flex items-center gap-2.5 transition-theme ${
+                      className={`group w-full px-3 py-2.5 rounded-[var(--radius-md)] text-xs font-bold flex items-center gap-2.5 transition-theme ${
                         activeTab === 'saved' && !selectedPageDetail
                           ? 'bg-accent/10 text-accent shadow-sm border border-accent/20'
                           : 'bg-transparent text-[var(--text-secondary)] hover:bg-[var(--surface-subtle)]'
@@ -3811,7 +3811,7 @@ export const BulletinBoardPage: React.FC = () => {
                         setIsPageModalOpen(true);
                         setIsMobileSidebarOpen(false);
                       }}
-                      className="p-2.5 rounded-xl bg-[var(--surface-subtle)] text-[var(--text-primary)] font-bold text-xs flex items-center justify-center gap-1.5 shadow-sm"
+                      className="p-2.5 rounded-[var(--radius-md)] bg-[var(--surface-subtle)] text-[var(--text-primary)] font-bold text-xs flex items-center justify-center gap-1.5 shadow-sm"
                     >
                       <Building2 size={14} className="text-accent" />
                       <span>{isRtl ? 'إنشاء صفحة' : 'Create Page'}</span>
@@ -3822,7 +3822,7 @@ export const BulletinBoardPage: React.FC = () => {
                         setIsAdModalOpen(true);
                         setIsMobileSidebarOpen(false);
                       }}
-                      className="p-2.5 rounded-xl bg-accent text-[var(--text-primary)] font-bold text-xs flex items-center justify-center gap-1.5 shadow-md shadow-none"
+                      className="p-2.5 rounded-[var(--radius-md)] bg-accent text-[var(--text-primary)] font-bold text-xs flex items-center justify-center gap-1.5 shadow-md shadow-none"
                     >
                       <Plus size={14} />
                       <span>{isRtl ? 'نشر إعلان' : 'Publish Ad'}</span>
@@ -3837,11 +3837,11 @@ export const BulletinBoardPage: React.FC = () => {
         {}
         {activeTab === 'analytics' && !selectedPageDetail ? (
           <div className="space-y-6">
-            <div className="flex items-center justify-between p-4 rounded-xl bg-[var(--surface-card)] border border-[var(--border-default)]">
+            <div className="flex items-center justify-between p-4 rounded-[var(--radius-md)] bg-[var(--surface-card)] border border-[var(--border-default)]">
               <div className="flex items-center gap-3">
                 <button
                   onClick={() => setActiveTab('board')}
-                  className="px-4 py-2 rounded-xl bg-accent hover:bg-accent text-[var(--text-primary)] font-bold text-xs flex items-center gap-2 shadow transition-theme active:scale-95"
+                  className="px-4 py-2 rounded-[var(--radius-md)] bg-accent hover:bg-accent text-[var(--text-primary)] font-bold text-xs flex items-center gap-2 shadow transition-theme active:scale-95"
                 >
                   {isRtl ? <ArrowRight size={16} /> : <ArrowLeft size={16} />}
                   <span>{isRtl ? 'رجوع إلى خلاصة الإعلانات' : 'Back to Feed'}</span>
@@ -3945,7 +3945,7 @@ export const BulletinBoardPage: React.FC = () => {
             {pagesLoading ? (
               <div className="space-y-6">
                 {[1, 2, 3].map(n => (
-                  <div key={`bulletin-skel-pages-${n}`} className="rounded-xl bg-[var(--surface-card)] h-72 border border-[var(--border-default)] animate-pulse"></div>
+                  <div key={`bulletin-skel-pages-${n}`} className="rounded-[var(--radius-md)] bg-[var(--surface-card)] h-72 border border-[var(--border-default)] animate-pulse"></div>
                 ))}
               </div>
             ) : pagesList.length === 0 ? (
@@ -3967,7 +3967,7 @@ export const BulletinBoardPage: React.FC = () => {
                     key={`page-item-${page.id}-${pIdx}`}
                     initial={{ opacity: 0, y: 15 }}
                     animate={{ opacity: 1, y: 0 }}
-                    className="rounded-xl bg-[var(--surface-card)] border border-[var(--border-default)] transition-theme space-y-4"
+                    className="rounded-[var(--radius-md)] bg-[var(--surface-card)] border border-[var(--border-default)] transition-theme space-y-4"
                   >
                     {}
                     <div className="h-32 sm:h-52 w-full bg-[var(--surface-subtle)] relative cursor-pointer overflow-hidden rounded-t-xl" onClick={() => handleOpenPageDetail(page.id)}>
@@ -4005,7 +4005,7 @@ export const BulletinBoardPage: React.FC = () => {
                         <div className="flex items-center gap-1.5 sm:gap-2 shrink-0 pt-1 sm:pt-0 overflow-x-auto pb-1 sm:pb-0">
                           <button
                             onClick={() => handleToggleFollowPage(page.id)}
-                            className={`px-3 py-2 rounded-xl text-xs font-bold transition-theme flex items-center gap-1 shadow shrink-0 ${
+                            className={`px-3 py-2 rounded-[var(--radius-md)] text-xs font-bold transition-theme flex items-center gap-1 shadow shrink-0 ${
                               page.user_is_following
                                 ? 'bg-[var(--surface-subtle)] text-[var(--text-secondary)]'
                                 : 'bg-accent text-[var(--text-primary)] hover:bg-accent'
@@ -4017,7 +4017,7 @@ export const BulletinBoardPage: React.FC = () => {
 
                           <button
                             onClick={() => handleOpenPageDetail(page.id)}
-                            className="px-3 py-2 rounded-xl bg-[var(--text-primary)] text-[var(--surface-page)] font-black text-xs flex items-center gap-1 shadow shrink-0"
+                            className="px-3 py-2 rounded-[var(--radius-md)] bg-[var(--text-primary)] text-[var(--surface-page)] font-black text-xs flex items-center gap-1 shadow shrink-0"
                           >
                             <Globe size={14} />
                             <span>{isRtl ? 'زيارة' : 'Visit'}</span>
@@ -4115,7 +4115,7 @@ export const BulletinBoardPage: React.FC = () => {
                   </div>
                 </div>
               ) : (
-                <div className="p-3 rounded-xl bg-accent/10 border border-accent/20 text-center space-y-2">
+                <div className="p-3 rounded-[var(--radius-md)] bg-accent/10 border border-accent/20 text-center space-y-2">
                   <p className="text-xs font-bold text-accent">
                     {isRtl ? 'سجل الدخول لنشر وتفاعل كامل مع الإعلانات!' : 'Sign in to publish and interact!'}
                   </p>
@@ -4347,7 +4347,7 @@ export const BulletinBoardPage: React.FC = () => {
               {pagesLoading ? (
                 <div className="flex flex-col gap-1.5 w-full">
                   {[1, 2, 3].map(n => (
-                    <div key={`bulletin-skel-rec-${n}`} className="h-10 rounded-xl bg-[var(--surface-subtle)] animate-pulse"></div>
+                    <div key={`bulletin-skel-rec-${n}`} className="h-10 rounded-[var(--radius-md)] bg-[var(--surface-subtle)] animate-pulse"></div>
                   ))}
                 </div>
               ) : pagesList.slice(0, 5).length === 0 ? (
@@ -4462,7 +4462,7 @@ export const BulletinBoardPage: React.FC = () => {
                     animate={{ opacity: 1, scale: 1, y: 0 }}
                     exit={{ opacity: 0, scale: 0.9, y: -8 }}
                     transition={{ duration: 0.15, ease: 'easeOut' }}
-                    className="absolute z-50 w-max min-w-[190px] rounded-xl shadow-2xl border border-[var(--border-default)] p-1 backdrop-blur-xl ring-1 ring-black/5 dark:ring-white/10 select-none bg-[var(--surface-card)] text-[var(--text-primary)] flex flex-col gap-0.5"
+                    className="absolute z-50 w-max min-w-[190px] rounded-[var(--radius-md)] shadow-2xl border border-[var(--border-default)] p-1 backdrop-blur-xl ring-1 ring-black/5 dark:ring-white/10 select-none bg-[var(--surface-card)] text-[var(--text-primary)] flex flex-col gap-0.5"
                     style={{
                       left: `${contextMenu.x}px`,
                       top: `${contextMenu.y}px`,
@@ -4544,13 +4544,13 @@ export const BulletinBoardPage: React.FC = () => {
               <motion.div
                 initial={{ opacity: 0, y: 15 }}
                 animate={{ opacity: 1, y: 0 }}
-                className="rounded-xl bg-[var(--surface-card)] border border-[var(--border-default)] overflow-hidden space-y-4"
+                className="rounded-[var(--radius-md)] bg-[var(--surface-card)] border border-[var(--border-default)] overflow-hidden space-y-4"
               >
                 {}
                 <div className="p-3 bg-[var(--surface-subtle)] border-b border-[var(--border-default)] flex items-center justify-between">
                   <button
                     onClick={handleBackToBoard}
-                    className="px-3 py-1.5 rounded-xl bg-accent text-[var(--text-primary)] font-bold text-xs flex items-center gap-2 hover:bg-accent transition-theme shadow"
+                    className="px-3 py-1.5 rounded-[var(--radius-md)] bg-accent text-[var(--text-primary)] font-bold text-xs flex items-center gap-2 hover:bg-accent transition-theme shadow"
                   >
                     {isRtl ? <ArrowRight size={16} /> : <ArrowLeft size={16} />}
                     <span>{isRtl ? 'العودة إلى خلاصة بيربليكستا بورد' : 'Back to Perplexta Board Feed'}</span>
@@ -4587,7 +4587,7 @@ export const BulletinBoardPage: React.FC = () => {
                     <div className="flex flex-wrap items-center gap-2">
                       <button
                         onClick={() => handleToggleFollowPage(selectedPageDetail.page.id)}
-                        className={`px-4 py-2 rounded-xl text-xs font-bold transition-theme flex items-center gap-1.5 shadow ${
+                        className={`px-4 py-2 rounded-[var(--radius-md)] text-xs font-bold transition-theme flex items-center gap-1.5 shadow ${
                           selectedPageDetail.page.user_is_following
                             ? 'bg-[var(--surface-subtle)] text-[var(--text-secondary)]'
                             : 'bg-accent text-[var(--text-primary)] hover:bg-accent'
@@ -4622,7 +4622,7 @@ export const BulletinBoardPage: React.FC = () => {
                               setEditingPageData(selectedPageDetail.page);
                               setIsEditPageModalOpen(true);
                             }}
-                            className="px-4 py-2 rounded-xl text-xs font-bold transition-theme flex items-center gap-1.5 bg-[var(--surface-subtle)] hover:bg-[var(--surface-inset)] text-[var(--text-secondary)] shadow cursor-pointer"
+                            className="px-4 py-2 rounded-[var(--radius-md)] text-xs font-bold transition-theme flex items-center gap-1.5 bg-[var(--surface-subtle)] hover:bg-[var(--surface-inset)] text-[var(--text-secondary)] shadow cursor-pointer"
                           >
                             <Settings size={16} />
                             <span>{isRtl ? 'إدارة وتعديل الصفحة' : 'Manage & Edit Page'}</span>
@@ -4702,7 +4702,7 @@ export const BulletinBoardPage: React.FC = () => {
                   {pageDetailTab === 'ads' && (
                     <div className="pt-2 space-y-4">
                       {user && myPagesList.some(p => p.id === selectedPageDetail.page.id) && (
-                        <div className="p-3.5 rounded-xl bg-accent/10 border border-accent/20 flex items-center justify-between">
+                        <div className="p-3.5 rounded-[var(--radius-md)] bg-accent/10 border border-accent/20 flex items-center justify-between">
                           <span className="text-xs font-bold text-accent">
                             {isRtl ? 'أنت مالك هذه الصفحة التجارية! يمكنك إضافة منشور إعلاني جديد باسمها.' : 'You own this page! Add a new ad post.'}
                           </span>
@@ -4711,7 +4711,7 @@ export const BulletinBoardPage: React.FC = () => {
                               setAdFormData(prev => ({ ...prev, page_id: selectedPageDetail.page.id }));
                               setIsAdModalOpen(true);
                             }}
-                            className="px-3 py-1.5 rounded-xl bg-accent text-[var(--text-primary)] font-bold text-xs"
+                            className="px-3 py-1.5 rounded-[var(--radius-md)] bg-accent text-[var(--text-primary)] font-bold text-xs"
                           >
                             + {isRtl ? 'نشر إعلان باسم الصفحة' : 'Post as Page'}
                           </button>
@@ -4719,7 +4719,7 @@ export const BulletinBoardPage: React.FC = () => {
                       )}
 
                       {selectedPageDetail.ads.length === 0 ? (
-                        <div className="text-center py-12 bg-[var(--surface-subtle)] border border-[var(--border-default)] rounded-xl space-y-2">
+                        <div className="text-center py-12 bg-[var(--surface-subtle)] border border-[var(--border-default)] rounded-[var(--radius-md)] space-y-2">
                           <Megaphone size={32} className="text-[var(--text-secondary)] mx-auto" />
                           <p className="text-xs text-[var(--text-muted)] italic">
                             {isRtl ? 'لا توجد إعلانات نشطة لهذه الصفحة حالياً' : 'No active ads for this page yet.'}
@@ -4728,8 +4728,8 @@ export const BulletinBoardPage: React.FC = () => {
                       ) : (
                         <div className="grid grid-cols-1 gap-4 max-w-2xl mx-auto w-full">
                           {selectedPageDetail.ads.map((ad, adIdx) => (
-                            <div key={`page-ad-${ad.id}-${adIdx}`} className="p-3.5 rounded-xl bg-[var(--surface-subtle)] border border-[var(--border-default)] space-y-2.5">
-                              <div className="relative aspect-square rounded-xl overflow-hidden cursor-pointer" onClick={() => handleOpenLightbox(getMediaUrl(ad.image_url), ad.media_gallery, 0, ad.title, ad.author_name, ad)}>
+                            <div key={`page-ad-${ad.id}-${adIdx}`} className="p-3.5 rounded-[var(--radius-md)] bg-[var(--surface-subtle)] border border-[var(--border-default)] space-y-2.5">
+                              <div className="relative aspect-square rounded-[var(--radius-md)] overflow-hidden cursor-pointer" onClick={() => handleOpenLightbox(getMediaUrl(ad.image_url), ad.media_gallery, 0, ad.title, ad.author_name, ad)}>
                                 <img
                                   src={getMediaUrl(ad.image_url)}
                                   alt={ad.title || 'Ad thumbnail'}
@@ -4781,34 +4781,34 @@ export const BulletinBoardPage: React.FC = () => {
 
                   {}
                   {pageDetailTab === 'about' && (
-                    <div className="p-4 rounded-xl bg-[var(--surface-subtle)] border border-[var(--border-default)] space-y-3 text-xs">
+                    <div className="p-4 rounded-[var(--radius-md)] bg-[var(--surface-subtle)] border border-[var(--border-default)] space-y-3 text-xs">
                       <h4 className="font-extrabold text-sm border-b border-[var(--border-default)] pb-2">
                         {isRtl ? 'تفاصيل الصفحة التجارية:' : 'Business Details:'}
                       </h4>
                       <p className="text-[var(--text-secondary)] leading-relaxed">{selectedPageDetail.page.description}</p>
 
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2">
-                        <div className="p-3 rounded-xl bg-[var(--surface-card)] border border-[var(--border-default)]">
+                        <div className="p-3 rounded-[var(--radius-md)] bg-[var(--surface-card)] border border-[var(--border-default)]">
                           <span className="text-[var(--text-muted)] text-[10px] block">{isRtl ? 'المحافظة / المدينة:' : 'City:'}</span>
                           <strong className="font-bold text-xs">{selectedPageDetail.page.city}</strong>
                         </div>
 
                         {selectedPageDetail.page.address && (
-                          <div className="p-3 rounded-xl bg-[var(--surface-card)] border border-[var(--border-default)]">
+                          <div className="p-3 rounded-[var(--radius-md)] bg-[var(--surface-card)] border border-[var(--border-default)]">
                             <span className="text-[var(--text-muted)] text-[10px] block">{isRtl ? 'العنوان التفصيلي:' : 'Address:'}</span>
                             <strong className="font-bold text-xs">{selectedPageDetail.page.address}</strong>
                           </div>
                         )}
 
                         {selectedPageDetail.page.whatsapp_number && (
-                          <div className="p-3 rounded-xl bg-[var(--surface-card)] border border-[var(--border-default)]">
+                          <div className="p-3 rounded-[var(--radius-md)] bg-[var(--surface-card)] border border-[var(--border-default)]">
                             <span className="text-[var(--text-muted)] text-[10px] block">{isRtl ? 'الواتساب الرسمي:' : 'WhatsApp:'}</span>
                             <strong className="font-bold text-xs text-accent">{selectedPageDetail.page.whatsapp_number}</strong>
                           </div>
                         )}
 
                         {selectedPageDetail.page.website_url && (
-                          <div className="p-3 rounded-xl bg-[var(--surface-card)] border border-[var(--border-default)]">
+                          <div className="p-3 rounded-[var(--radius-md)] bg-[var(--surface-card)] border border-[var(--border-default)]">
                             <span className="text-[var(--text-muted)] text-[10px] block">{isRtl ? 'الموقع الإلكتروني:' : 'Website:'}</span>
                             <a href={selectedPageDetail.page.website_url} target="_blank" rel="noreferrer" className="font-bold text-xs text-blue-500 hover:underline">
                               {selectedPageDetail.page.website_url}
@@ -4827,7 +4827,7 @@ export const BulletinBoardPage: React.FC = () => {
                           <div
                             key={`page-gallery-ad-${ad.id}-${gIdx}`}
                             onClick={() => handleOpenLightbox(getMediaUrl(ad.image_url), ad.media_gallery, 0, ad.title, ad.author_name, ad)}
-                            className="aspect-square rounded-xl overflow-hidden cursor-pointer relative group bg-[var(--surface-subtle)]"
+                            className="aspect-square rounded-[var(--radius-md)] overflow-hidden cursor-pointer relative group bg-[var(--surface-subtle)]"
                           >
                             <img
                               src={getMediaUrl(ad.image_url)}
@@ -5059,7 +5059,7 @@ export const BulletinBoardPage: React.FC = () => {
                 {pagesLoading ? (
                   <div className="flex flex-col gap-1.5 w-full">
                     {[1, 2, 3].map(n => (
-                      <div key={`bulletin-skel-rec-col3-${n}`} className="h-10 rounded-xl bg-[var(--surface-subtle)] animate-pulse"></div>
+                      <div key={`bulletin-skel-rec-col3-${n}`} className="h-10 rounded-[var(--radius-md)] bg-[var(--surface-subtle)] animate-pulse"></div>
                     ))}
                   </div>
                 ) : pagesList.slice(0, 5).length === 0 ? (
@@ -5370,7 +5370,7 @@ export const BulletinBoardPage: React.FC = () => {
 
                       {}
                       {suggestionType !== 'none' && (
-                        <div className="my-2 p-2 bg-[var(--surface-card)] border border-[var(--border-default)] rounded-xl shadow-lg max-h-[160px] overflow-y-auto z-50 animate-in fade-in slide-in-from-bottom-2 duration-200">
+                        <div className="my-2 p-2 bg-[var(--surface-card)] border border-[var(--border-default)] rounded-[var(--radius-md)] shadow-lg max-h-[160px] overflow-y-auto z-50 animate-in fade-in slide-in-from-bottom-2 duration-200">
                           <div className="flex items-center justify-between px-2 pb-1.5 border-b border-[var(--border-default)] text-[10px] text-[var(--text-muted)] font-extrabold">
                             <span>
                               {suggestionType === 'hashtag'
@@ -5442,7 +5442,7 @@ export const BulletinBoardPage: React.FC = () => {
 
                     {/* Upload progress & transcoding status */}
                     {(videoMetadataInfo.processingStage === 'uploading' || videoMetadataInfo.processingStage === 'transcoding') && (
-                      <div className="mb-3 p-3.5 rounded-xl bg-[var(--surface-subtle)] border border-[var(--border-default)] space-y-2">
+                      <div className="mb-3 p-3.5 rounded-[var(--radius-md)] bg-[var(--surface-subtle)] border border-[var(--border-default)] space-y-2">
                         <div className="flex items-center justify-between text-xs font-bold text-[var(--text-primary)]">
                           <span className="flex items-center gap-2">
                             <Loader2 size={14} className="animate-spin text-accent" />
@@ -5579,7 +5579,7 @@ export const BulletinBoardPage: React.FC = () => {
                       </div>
                     )}
                         {adFormData.has_whatsapp_button && (
-                          <div className="mt-2 p-2 sm:p-3 bg-[var(--surface-inset)] rounded-xl border border-[var(--border-default)] flex items-center justify-between gap-2 sm:gap-3">
+                          <div className="mt-2 p-2 sm:p-3 bg-[var(--surface-inset)] rounded-[var(--radius-md)] border border-[var(--border-default)] flex items-center justify-between gap-2 sm:gap-3">
                             <div className="flex items-center gap-2 min-w-0">
                               <div className="w-7 h-7 sm:w-9 sm:h-9 rounded-shape-xs bg-[#25D366]/10 flex items-center justify-center text-[#25D366] shrink-0">
                                 <MessageCircle size={16} className="text-[#25D366] sm:size-5" />
@@ -5630,7 +5630,7 @@ export const BulletinBoardPage: React.FC = () => {
 
                     {}
                     {adFormData.has_whatsapp_button && (
-                      <div className="px-2.5 py-1.5 sm:px-3 sm:py-2 rounded-xl bg-[var(--status-success-subtle)] border border-[var(--fg-success)]/30 flex items-center justify-between gap-2">
+                      <div className="px-2.5 py-1.5 sm:px-3 sm:py-2 rounded-[var(--radius-md)] bg-[var(--status-success-subtle)] border border-[var(--fg-success)]/30 flex items-center justify-between gap-2">
                         <div className="flex items-center gap-2 flex-1">
                           <Phone size={13} className="text-[#25D366] shrink-0" />
                           <input
@@ -5747,7 +5747,7 @@ export const BulletinBoardPage: React.FC = () => {
                           setAdFormData({...adFormData, feeling: f.id});
                           setComposerView('main');
                         }}
-                        className={`p-3 rounded-xl border flex items-center gap-3 transition-theme ${adFormData.feeling === f.id ? 'border-accent bg-accent/5 text-accent' : 'border-[var(--border-default)] hover:bg-[var(--surface-subtle)] text-[var(--text-secondary)]'}`}
+                        className={`p-3 rounded-[var(--radius-md)] border flex items-center gap-3 transition-theme ${adFormData.feeling === f.id ? 'border-accent bg-accent/5 text-accent' : 'border-[var(--border-default)] hover:bg-[var(--surface-subtle)] text-[var(--text-secondary)]'}`}
                       >
                         <span className="text-xl">{f.icon}</span>
                         <span className="text-xs font-bold">{isRtl ? f.labelAr : f.labelEn}</span>
@@ -5755,7 +5755,7 @@ export const BulletinBoardPage: React.FC = () => {
                     ))}
                     <button
                       onClick={() => { setAdFormData({...adFormData, feeling: ''}); setComposerView('main'); }}
-                      className="col-span-2 p-2 text-xs font-bold text-red-500 hover:bg-red-500/10 rounded-xl transition-theme"
+                      className="col-span-2 p-2 text-xs font-bold text-red-500 hover:bg-red-500/10 rounded-[var(--radius-md)] transition-theme"
                     >
                       {isRtl ? 'إزالة الشعور' : 'Remove Feeling'}
                     </button>
@@ -5768,12 +5768,12 @@ export const BulletinBoardPage: React.FC = () => {
                     animate={{ opacity: 1, y: 0, scale: 1 }}
                     exit={{ opacity: 0, y: -8, scale: 0.98 }}
                     transition={{ duration: 0.15, ease: "easeOut" }}
-                    className="p-4 rounded-xl bg-[var(--surface-card)] border border-[var(--border-default)] shadow-xl space-y-4 text-start"
+                    className="p-4 rounded-[var(--radius-md)] bg-[var(--surface-card)] border border-[var(--border-default)] shadow-xl space-y-4 text-start"
                   >
                     {}
                     <div className="flex items-center justify-between border-b border-[var(--border-default)] pb-3">
                       <div className="flex items-center gap-2.5">
-                        <div className="w-8 h-8 rounded-xl bg-accent/10 text-accent flex items-center justify-center border border-accent/20 shrink-0">
+                        <div className="w-8 h-8 rounded-[var(--radius-md)] bg-accent/10 text-accent flex items-center justify-center border border-accent/20 shrink-0">
                           <MapPin size={16} className="animate-bounce" />
                         </div>
                         <div>
@@ -5800,7 +5800,7 @@ export const BulletinBoardPage: React.FC = () => {
                     </div>
 
                     {}
-                    <div className="p-3 rounded-xl bg-[var(--surface-inset)] border border-accent/25 flex items-center justify-between shadow-2xs">
+                    <div className="p-3 rounded-[var(--radius-md)] bg-[var(--surface-inset)] border border-accent/25 flex items-center justify-between shadow-2xs">
                       <div className="flex items-center gap-2">
                         <Navigation size={14} className="text-accent shrink-0" />
                         <div>
@@ -5847,7 +5847,7 @@ export const BulletinBoardPage: React.FC = () => {
                           value={customLocationSearch}
                           onChange={(e) => setCustomLocationSearch(e.target.value)}
                           placeholder={isRtl ? 'اكتب اسم المدينة، الحي، الدولة أو المعلم...' : 'Type city, landmark, or country...'}
-                          className="w-full ps-8 pe-8 py-2 text-xs rounded-xl bg-[var(--surface-inset)] border border-[var(--border-default)] text-[var(--text-primary)] focus:outline-none focus:border-accent font-bold transition-theme shadow-inner"
+                          className="w-full ps-8 pe-8 py-2 text-xs rounded-[var(--radius-md)] bg-[var(--surface-inset)] border border-[var(--border-default)] text-[var(--text-primary)] focus:outline-none focus:border-accent font-bold transition-theme shadow-inner"
                         />
                         <Search size={14} className="absolute start-2.5 top-1/2 -translate-y-1/2 text-[var(--text-muted)]" />
                         {customLocationSearch && (
@@ -5863,7 +5863,7 @@ export const BulletinBoardPage: React.FC = () => {
 
                       {}
                       {locationSuggestions.length > 0 && (
-                        <div className="mt-1 max-h-44 overflow-y-auto custom-scrollbar border border-accent/30 rounded-xl bg-[var(--surface-card)] p-1.5 shadow-xl space-y-1">
+                        <div className="mt-1 max-h-44 overflow-y-auto custom-scrollbar border border-accent/30 rounded-[var(--radius-md)] bg-[var(--surface-card)] p-1.5 shadow-xl space-y-1">
                           <div className="text-[10px] font-bold text-accent px-2 py-0.5 flex items-center justify-between border-b border-[var(--border-default)]">
                             <span>{isRtl ? 'النتائج المباشرة:' : 'Live Matches:'}</span>
                             <span>{locationSuggestions.length}</span>
@@ -5888,7 +5888,7 @@ export const BulletinBoardPage: React.FC = () => {
                     </div>
 
                     {}
-                    <div className="space-y-1.5 p-3 rounded-xl bg-[var(--surface-inset)] border border-[var(--border-default)]">
+                    <div className="space-y-1.5 p-3 rounded-[var(--radius-md)] bg-[var(--surface-inset)] border border-[var(--border-default)]">
                       <label className="block text-[11px] font-extrabold text-[var(--text-primary)] flex items-center gap-1.5">
                         <Building2 size={13} className="text-accent" />
                         <span>{isRtl ? 'اختيار سريع حسب القوائم الجاهزة:' : 'Quick Country & City Selection:'}</span>
@@ -5952,7 +5952,7 @@ export const BulletinBoardPage: React.FC = () => {
                     </div>
 
                     {}
-                    <div className="space-y-2 p-3 rounded-xl bg-[var(--surface-inset)] border border-accent/20">
+                    <div className="space-y-2 p-3 rounded-[var(--radius-md)] bg-[var(--surface-inset)] border border-accent/20">
                       <div className="flex items-center justify-between text-xs font-extrabold">
                         <span className="text-[var(--text-primary)] flex items-center gap-1.5">
                           <SlidersHorizontal size={13} className="text-accent" />
@@ -6035,7 +6035,7 @@ export const BulletinBoardPage: React.FC = () => {
                           { timeout: 8000 }
                         );
                       }}
-                      className="w-full py-2 px-3 rounded-xl bg-accent/10 hover:bg-accent/20 border border-accent/30 text-accent font-extrabold text-[11px] flex items-center justify-center gap-1.5 transition-theme active:scale-95"
+                      className="w-full py-2 px-3 rounded-[var(--radius-md)] bg-accent/10 hover:bg-accent/20 border border-accent/30 text-accent font-extrabold text-[11px] flex items-center justify-center gap-1.5 transition-theme active:scale-95"
                     >
                       <Compass size={14} className="text-accent shrink-0" />
                       <span>{isRtl ? '🎯 تحديد موقعي الجغرافي تلقائياً (GPS)' : '🎯 Auto-Detect GPS Location'}</span>
@@ -6046,7 +6046,7 @@ export const BulletinBoardPage: React.FC = () => {
                       <button
                         type="button"
                         onClick={() => setComposerView('main')}
-                        className="flex-1 py-2 bg-[var(--surface-subtle)] hover:bg-[var(--surface-page)] text-[var(--text-secondary)] rounded-xl text-xs font-bold transition-theme"
+                        className="flex-1 py-2 bg-[var(--surface-subtle)] hover:bg-[var(--surface-page)] text-[var(--text-secondary)] rounded-[var(--radius-md)] text-xs font-bold transition-theme"
                       >
                         {isRtl ? 'إلغاء' : 'Cancel'}
                       </button>

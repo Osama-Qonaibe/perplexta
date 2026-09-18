@@ -115,9 +115,9 @@ export const PwaInstallBanner: React.FC = () => {
                 src={resolveImageUrl((theme === 'light' && siteSettings?.logoLightBase64) ? siteSettings?.logoLightBase64 : siteSettings?.logoBase64, 'general')}
                 alt={siteName}
                 size={34}
-                className="rounded-[var(--sys-shape-md)] border border-[var(--border-default)] bg-[var(--surface-subtle)] p-1 shrink-0"
+                className="rounded-[var(--radius-md)] border border-[var(--border-default)] bg-[var(--surface-subtle)] p-1 shrink-0"
                 fallbackIcon={
-                  <div className="w-8 h-8 rounded-[var(--sys-shape-md)] bg-[var(--sys-color-primary-container)] border border-[var(--border-default)] flex items-center justify-center text-[var(--sys-color-primary)] p-1 shrink-0">
+                  <div className="w-8 h-8 rounded-[var(--radius-md)] bg-[var(--surface-subtle)] border border-[var(--border-default)] flex items-center justify-center text-[var(--fg-accent)] p-1 shrink-0">
                     <Smartphone size={16} />
                   </div>
                 }
@@ -128,7 +128,7 @@ export const PwaInstallBanner: React.FC = () => {
                   <span className="text-xs font-bold text-[var(--text-primary)] truncate">
                     {siteName}
                   </span>
-                  <span className="px-1.5 py-0.5 text-[9px] font-extrabold uppercase rounded bg-[var(--sys-color-primary-container)] text-[var(--sys-color-primary)] border border-[var(--border-default)]">
+                  <span className="px-1.5 py-0.5 text-[9px] font-extrabold uppercase rounded bg-[var(--surface-subtle)] text-[var(--fg-accent)] border border-[var(--border-default)]">
                     {isAndroid ? (isAr ? 'نسخة أندرويد' : 'Android') : (isAr ? 'تطبيق أصلي' : 'Native')}
                   </span>
                 </div>
@@ -144,7 +144,7 @@ export const PwaInstallBanner: React.FC = () => {
                 type="button"
                 onClick={handleAction}
                 disabled={installState === 'installing'}
-                className="px-3 py-1.5 text-[11px] font-extrabold rounded-[var(--sys-shape-md)] bg-[var(--sys-color-primary)] text-[var(--sys-color-on-primary)] hover:opacity-90 active:scale-95 transition-all min-h-[36px] flex items-center justify-center gap-1 cursor-pointer shadow-sm"
+                className="px-3 py-1.5 text-[11px] font-extrabold rounded-[var(--radius-md)] bg-[var(--fg-accent)] text-[var(--comp-button-primary-fg,#ffffff)] hover:opacity-90 active:scale-95 transition-all min-h-[36px] flex items-center justify-center gap-1 cursor-pointer shadow-sm"
               >
                 {installState === 'installing' ? (
                   <Loader2 size={13} className="animate-spin" />

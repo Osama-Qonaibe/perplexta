@@ -1249,7 +1249,7 @@ export const SystemSettingsView: React.FC<SystemSettingsViewProps> = ({
         )}
 
         {/* Missing Asset Report Section */}
-        <div className="mb-8 p-5 rounded-xl border border-[var(--border-default)] bg-[var(--surface-subtle)] shadow-sm">
+        <div className="mb-8 p-5 rounded-[var(--radius-md)] border border-[var(--border-default)] bg-[var(--surface-subtle)] shadow-sm">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-4">
             <div className="flex items-center gap-3">
               <div className="p-2.5 rounded-lg bg-red-500/10 text-red-500">
@@ -1611,7 +1611,7 @@ export const SystemSettingsView: React.FC<SystemSettingsViewProps> = ({
               return (
                 <div
                   key={asset.id || asset.filename}
-                  className="p-3.5 rounded-xl border border-[var(--border-default)] bg-[var(--surface-subtle)] flex flex-col justify-between hover:border-accent/40 transition-all group relative"
+                  className="p-3.5 rounded-[var(--radius-md)] border border-[var(--border-default)] bg-[var(--surface-subtle)] flex flex-col justify-between hover:border-accent/40 transition-all group relative"
                 >
                   <div>
                     <div className="flex items-center justify-between gap-1 mb-2.5">

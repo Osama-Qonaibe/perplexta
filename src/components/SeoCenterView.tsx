@@ -959,7 +959,7 @@ export const SeoCenterView: React.FC<SeoCenterViewProps> = ({
                 {/* Meta Titles Grid */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   {/* Meta Title EN */}
-                  <div className="space-y-2 p-3.5 rounded-xl border border-[var(--border-default)] bg-[var(--surface-page)]">
+                  <div className="space-y-2 p-3.5 rounded-[var(--radius-md)] border border-[var(--border-default)] bg-[var(--surface-page)]">
                     <div className="flex items-center justify-between">
                       <label className="font-black text-[var(--text-primary)] flex items-center gap-1">
                         <span>{isAr ? "عنوان SEO المقترح (إنكليزي)" : "Meta Title Suggested (EN)"}</span>

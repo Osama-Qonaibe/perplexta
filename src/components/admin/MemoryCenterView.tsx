@@ -732,10 +732,10 @@ export const MemoryCenterView = ({
                   <Line 
                     type="monotone" 
                     dataKey="density" 
-                    stroke="var(--sys-color-primary, #10b881)" 
+                    stroke="var(--fg-accent, #10b881)" 
                     strokeWidth={2.5} 
-                    dot={{ fill: 'var(--sys-color-primary, #10b881)', r: 4 }} 
-                    activeDot={{ r: 6, fill: 'var(--sys-color-primary, #10b881)', stroke: '#ffffff', strokeWidth: 2 }} 
+                    dot={{ fill: 'var(--fg-accent, #10b881)', r: 4 }} 
+                    activeDot={{ r: 6, fill: 'var(--fg-accent, #10b881)', stroke: '#ffffff', strokeWidth: 2 }} 
                   />
                   <ReferenceLine 
                     y={40} 

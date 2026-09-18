@@ -41,11 +41,11 @@ export const AppStudioPage: React.FC = () => {
   <title>متجر بيربليكستا الذكي</title>
   <link rel="stylesheet" href="style.css">
 </head>
-<body class="bg-slate-50 text-slate-900 font-sans p-6">
+<body class="bg-[var(--surface-page,#f8fafc)] text-[var(--text-primary,#0f172a)] font-sans p-6">
   <div class="max-w-4xl mx-auto space-y-6">
-    <header class="flex justify-between items-center bg-white p-4 rounded-xl shadow-sm border border-slate-200">
-      <h1 class="text-xl font-bold text-indigo-600">��️ متجر بيربليكستا الرقمي</h1>
-      <span id="cart-count" class="px-3 py-1 bg-indigo-50 text-indigo-700 text-xs font-bold rounded-full">السلة: 0 منتجات</span>
+    <header class="flex justify-between items-center bg-[var(--surface-card,#ffffff)] p-4 rounded-[var(--radius-md,12px)] shadow-sm border border-[var(--border-default,#e2e8f0)]">
+      <h1 class="text-xl font-bold text-[var(--fg-accent,#2563eb)]">��️ متجر بيربليكستا الرقمي</h1>
+      <span id="cart-count" class="px-3 py-1 bg-[var(--surface-subtle,#f1f5f9)] text-[var(--text-secondary,#334155)] text-xs font-bold rounded-full">السلة: 0 منتجات</span>
     </header>
     
     <main class="grid grid-cols-1 md:grid-cols-2 gap-4" id="products-grid">
@@ -78,12 +78,12 @@ const products = [
 const grid = document.getElementById('products-grid');
 if (grid) {
   grid.innerHTML = products.map(p => \`
-    <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-xs flex flex-col justify-between gap-3">
+    <div class="bg-[var(--surface-card,#ffffff)] p-4 rounded-[var(--radius-md,12px)] border border-[var(--border-default,#e2e8f0)] shadow-xs flex flex-col justify-between gap-3">
       <div>
-        <h3 class="font-bold text-slate-800">\${p.name}</h3>
-        <p class="text-sm text-slate-500">\${p.price} $</p>
+        <h3 class="font-bold text-[var(--text-primary,#0f172a)]">\${p.name}</h3>
+        <p class="text-sm text-[var(--text-secondary,#475569)]">\${p.price} $</p>
       </div>
-      <button onclick="alert('تمت إضافة \${p.name} إلى السلة بنجاح!')" class="px-4 py-2 bg-indigo-600 text-white rounded-lg text-xs font-bold hover:bg-indigo-700 transition cursor-pointer">إضافة للسلة</button>
+      <button onclick="alert('تمت إضافة \${p.name} إلى السلة بنجاح!')" class="px-4 py-2 bg-[var(--comp-button-primary-bg,#2563eb)] text-[var(--comp-button-primary-fg,#ffffff)] rounded-[var(--radius-sm,8px)] text-xs font-bold hover:opacity-90 transition cursor-pointer">إضافة للسلة</button>
     </div>
   \`).join('');
 }`
@@ -1074,12 +1074,12 @@ echo json_encode($products);
                         type="text"
                         value={sqlCustomQuery}
                         onChange={(e) => setSqlCustomQuery(e.target.value)}
-                        className="flex-1 px-3 py-2 bg-[var(--surface-subtle)] border border-[var(--border-default)] rounded-xl font-mono text-xs text-[var(--text-primary)] outline-none focus:border-accent"
+                        className="flex-1 px-3 py-2 bg-[var(--surface-subtle)] border border-[var(--border-default)] rounded-[var(--radius-md)] font-mono text-xs text-[var(--text-primary)] outline-none focus:border-accent"
                         placeholder="SELECT * FROM users;"
                       />
                       <button
                         onClick={runCustomSqlQuery}
-                        className="px-4 py-2 bg-[var(--comp-button-primary-bg)] text-[var(--comp-button-primary-fg)] text-xs font-bold rounded-xl hover:opacity-90 transition cursor-pointer"
+                        className="px-4 py-2 bg-[var(--comp-button-primary-bg)] text-[var(--comp-button-primary-fg)] text-xs font-bold rounded-[var(--radius-md)] hover:opacity-90 transition cursor-pointer"
                       >
                         {language === 'ar' ? 'تنفيذ' : 'Run'}
                       </button>
@@ -1091,7 +1091,7 @@ echo json_encode($products);
                     <span className="text-xs font-bold text-[var(--text-secondary)]">
                       {language === 'ar' ? `بيانات الجدول: ${selectedTable}` : `Table Data: ${selectedTable}`}
                     </span>
-                    <div className="flex-1 overflow-auto rounded-xl border border-[var(--border-default)] bg-[var(--surface-subtle)]">
+                    <div className="flex-1 overflow-auto rounded-[var(--radius-md)] border border-[var(--border-default)] bg-[var(--surface-subtle)]">
                       {tableColumns.length > 0 ? (
                         <table className="w-full text-right text-xs font-mono">
                           <thead className="bg-[var(--surface-card)] border-b border-[var(--border-default)] sticky top-0">

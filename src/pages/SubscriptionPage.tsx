@@ -186,7 +186,7 @@ export const SubscriptionPage: React.FC = () => {
 
   if (!plansLoaded) return (
     <div className="flex flex-col items-center justify-center min-h-[60vh] gap-4">
-      <div className="w-9 h-9 border-2 border-[var(--border-main)] border-t-[var(--sys-color-primary)] rounded-shape-full animate-spin" />
+      <div className="w-9 h-9 border-2 border-[var(--border-main)] border-t-[var(--fg-accent)] rounded-shape-full animate-spin" />
       <p className="text-xs font-bold uppercase tracking-wider text-[var(--text-muted)]">
         {dir === 'rtl' ? 'جاري تحميل الخطط...' : 'Loading plans...'}
       </p>
@@ -316,7 +316,7 @@ export const SubscriptionPage: React.FC = () => {
     >
       {isVerifying && (
         <div className="fixed inset-0 z-[999] flex flex-col items-center justify-center bg-[var(--surface-overlay)] backdrop-blur-md">
-          <Loader2 className="animate-spin text-[var(--sys-color-primary)] mb-4" size={48} />
+          <Loader2 className="animate-spin text-[var(--fg-accent)] mb-4" size={48} />
           <h2 className="text-lg md:text-xl font-black text-[var(--text-primary)] uppercase tracking-wider mb-2">
             {dir === 'rtl' ? 'جاري تفعيل الاشتراك...' : 'Activating Subscription...'}
           </h2>
@@ -331,7 +331,7 @@ export const SubscriptionPage: React.FC = () => {
           <div className="flex items-center gap-3 md:gap-4">
             <button 
               onClick={() => navigate(-1)}
-              className="w-9 h-9 min-h-[44px] min-w-[44px] sm:min-h-[36px] sm:min-w-[36px] sm:w-9 sm:h-9 rounded-shape-sm flex items-center justify-center transition-theme bg-[var(--surface-subtle)] border border-[var(--border-main)] text-[var(--text-secondary)] hover:text-[var(--sys-color-primary)] hover:border-[var(--border-accent)] active:scale-95 cursor-pointer touch-target-44"
+              className="w-9 h-9 min-h-[44px] min-w-[44px] sm:min-h-[36px] sm:min-w-[36px] sm:w-9 sm:h-9 rounded-shape-sm flex items-center justify-center transition-theme bg-[var(--surface-subtle)] border border-[var(--border-main)] text-[var(--text-secondary)] hover:text-[var(--fg-accent)] hover:border-[var(--border-accent)] active:scale-95 cursor-pointer touch-target-44"
               title={dir === 'rtl' ? 'رجوع' : 'Back'}
             >
               {dir === 'rtl' ? <ChevronRight size={18} /> : <ChevronLeft size={18} />}
@@ -384,7 +384,7 @@ export const SubscriptionPage: React.FC = () => {
                 : 'text-[var(--text-muted)] hover:text-[var(--text-primary)]'
             }`}
           >
-            <Sparkles size={14} className={activeTab === 'user' ? 'text-[var(--sys-color-primary)]' : ''} />
+            <Sparkles size={14} className={activeTab === 'user' ? 'text-[var(--fg-accent)]' : ''} />
             <span>
               {dir === 'rtl' ? 'خطط الاستخدام العام' : 'Performance Plans'}
             </span>
@@ -397,7 +397,7 @@ export const SubscriptionPage: React.FC = () => {
                 : 'text-[var(--text-muted)] hover:text-[var(--text-primary)]'
             }`}
           >
-            <Code2 size={14} className={activeTab === 'developer' ? 'text-[var(--sys-color-primary)]' : ''} />
+            <Code2 size={14} className={activeTab === 'developer' ? 'text-[var(--fg-accent)]' : ''} />
             <span>
               {dir === 'rtl' ? 'خطط المطورين والوكلاء' : 'Developer & Agent Plans'}
             </span>
@@ -409,7 +409,7 @@ export const SubscriptionPage: React.FC = () => {
         <div
           className="w-full max-w-3xl mx-auto rounded-shape-lg border border-[var(--border-main)] bg-[var(--surface-card)] p-8 md:p-12 text-center relative overflow-hidden flex flex-col items-center justify-center min-h-[350px] shadow-sm"
         >
-          <div className="w-14 h-14 rounded-shape-md bg-[var(--surface-subtle)] flex items-center justify-center mb-5 border border-[var(--border-main)] text-[var(--sys-color-primary)]">
+          <div className="w-14 h-14 rounded-shape-md bg-[var(--surface-subtle)] flex items-center justify-center mb-5 border border-[var(--border-main)] text-[var(--fg-accent)]">
             <Code2 size={26} className="animate-pulse" />
           </div>
 
@@ -427,12 +427,12 @@ export const SubscriptionPage: React.FC = () => {
 
           <div className="flex flex-col sm:flex-row items-center gap-3">
             <div className="flex items-center gap-2 px-4 py-2 rounded-shape-sm bg-[var(--surface-subtle)] border border-[var(--border-main)] text-xs text-[var(--text-muted)] font-bold">
-              <span className="w-2.5 h-2.5 rounded-shape-full bg-[var(--sys-color-primary)] animate-ping" />
+              <span className="w-2.5 h-2.5 rounded-shape-full bg-[var(--fg-accent)] animate-ping" />
               <span>{dir === 'rtl' ? 'المرحلة: التأسيس المعماري والنمذجة' : 'Phase: Architectural Ingestion & Setup'}</span>
             </div>
             <button
               onClick={() => navigate('/')}
-              className="px-6 py-2.5 min-h-[44px] rounded-shape-sm bg-[var(--sys-color-primary)] text-[var(--sys-color-on-primary)] font-bold text-xs hover:opacity-90 transition-all duration-150 shadow-sm active:scale-95 cursor-pointer touch-target-44"
+              className="px-6 py-2.5 min-h-[44px] rounded-shape-sm bg-[var(--fg-accent)] text-[var(--comp-button-primary-fg,#ffffff)] font-bold text-xs hover:opacity-90 transition-all duration-150 shadow-sm active:scale-95 cursor-pointer touch-target-44"
             >
               {dir === 'rtl' ? 'العودة لمساحة العمل' : 'Return to Workspace'}
             </button>
@@ -441,7 +441,7 @@ export const SubscriptionPage: React.FC = () => {
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 md:gap-6 items-start">
           {displayedPlans.map((plan, planIdx) => {
-            const planColor = plan.color || 'var(--sys-color-primary)';
+            const planColor = plan.color || 'var(--fg-accent)';
             const isPlanActive = isActivePlan(plan.id);
             return (
               <div 
@@ -620,7 +620,7 @@ export const SubscriptionPage: React.FC = () => {
               >
                 <div className="p-5 md:p-6 border-b border-[var(--border-main)] flex items-center justify-between">
                   <div className="flex items-center gap-3">
-                    <div className="p-2.5 rounded-shape-sm bg-[var(--sys-color-primary-container)] text-[var(--sys-color-primary)]">
+                    <div className="p-2.5 rounded-shape-sm bg-[var(--surface-subtle)] text-[var(--fg-accent)]">
                       <Wallet size={20} />
                     </div>
                     <h3 className="text-lg font-bold text-[var(--text-primary)]">{t('confirmSubscription')}</h3>
@@ -644,7 +644,7 @@ export const SubscriptionPage: React.FC = () => {
                     </div>
                     <div className="flex justify-between items-center text-xs md:text-sm">
                       <span className="text-[var(--text-muted)]">{t('planPrice')}</span>
-                      <span className="font-bold text-[var(--sys-color-primary)]">-${getDisplayPrice(confirmingPlan, billingCycle).toFixed(2)}</span>
+                      <span className="font-bold text-[var(--fg-accent)]">-${getDisplayPrice(confirmingPlan, billingCycle).toFixed(2)}</span>
                     </div>
                     <div className="pt-2.5 border-t border-[var(--border-main)] flex justify-between items-center text-xs md:text-sm">
                       <span className="font-medium text-[var(--text-primary)]">{t('remainingBalance')}</span>
@@ -671,7 +671,7 @@ export const SubscriptionPage: React.FC = () => {
                   <button 
                     onClick={executePayment}
                     disabled={loading !== null || balanceUSD - getDisplayPrice(confirmingPlan, billingCycle) < 0}
-                    className="flex-1 py-2.5 min-h-[44px] rounded-shape-sm bg-[var(--sys-color-primary)] hover:opacity-90 text-[var(--sys-color-on-primary)] font-bold text-xs md:text-sm transition-all duration-150 shadow-sm flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer touch-target-44 active:scale-95"
+                    className="flex-1 py-2.5 min-h-[44px] rounded-shape-sm bg-[var(--fg-accent)] hover:opacity-90 text-[var(--comp-button-primary-fg,#ffffff)] font-bold text-xs md:text-sm transition-all duration-150 shadow-sm flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer touch-target-44 active:scale-95"
                   >
                     {loading ? <Loader2 size={16} className="animate-spin" /> : <CheckCircle2 size={16} />}
                     {t('confirmAndActivate')}
@@ -700,7 +700,7 @@ export const SubscriptionPage: React.FC = () => {
                 className="relative w-full max-w-md rounded-shape-lg shadow-2xl overflow-hidden border p-5 md:p-7 text-center bg-[var(--surface-card)] border-[var(--border-main)]"
               >
                 {/* Admin Defined Plan Color Stripe */}
-                <div className="absolute top-0 left-0 right-0 h-1.5" style={{ backgroundColor: selectedPlanForModal?.color || 'var(--sys-color-primary)' }} />
+                <div className="absolute top-0 left-0 right-0 h-1.5" style={{ backgroundColor: selectedPlanForModal?.color || 'var(--fg-accent)' }} />
                 
                 <button 
                   onClick={() => {
@@ -720,8 +720,8 @@ export const SubscriptionPage: React.FC = () => {
                   <div 
                     className="w-16 h-16 md:w-18 md:h-18 rounded-shape-md flex items-center justify-center"
                     style={{ 
-                      backgroundColor: `${selectedPlanForModal?.color || 'var(--sys-color-primary)'}18`, 
-                      color: selectedPlanForModal?.color || 'var(--sys-color-primary)' 
+                      backgroundColor: `${selectedPlanForModal?.color || 'var(--fg-accent)'}18`, 
+                      color: selectedPlanForModal?.color || 'var(--fg-accent)' 
                     }}
                   >
                     {resultModal === 'success' ? (
@@ -745,7 +745,7 @@ export const SubscriptionPage: React.FC = () => {
                   >
                     <div 
                       className="flex items-center gap-2 text-xs font-bold mb-2"
-                      style={{ color: selectedPlanForModal?.color || 'var(--sys-color-primary)' }}
+                      style={{ color: selectedPlanForModal?.color || 'var(--fg-accent)' }}
                     >
                       <Loader2 size={14} className="animate-spin" />
                       <span>
@@ -758,7 +758,7 @@ export const SubscriptionPage: React.FC = () => {
                     <div className="w-full bg-[var(--border-main)] h-1.5 rounded-shape-full overflow-hidden">
                       <div 
                         className="h-full transition-all duration-1000"
-                        style={{ width: `${(redirectCountdown / 5) * 100}%`, backgroundColor: selectedPlanForModal?.color || 'var(--sys-color-primary)' }}
+                        style={{ width: `${(redirectCountdown / 5) * 100}%`, backgroundColor: selectedPlanForModal?.color || 'var(--fg-accent)' }}
                       />
                     </div>
                   </div>
@@ -782,7 +782,7 @@ export const SubscriptionPage: React.FC = () => {
                     <button 
                       onClick={handleCopyLink}
                       className="shrink-0 w-8 h-8 rounded-shape-xs flex items-center justify-center transition-all text-white cursor-pointer active:scale-95"
-                      style={{ backgroundColor: copied ? '#059669' : selectedPlanForModal?.color || 'var(--sys-color-primary)' }}
+                      style={{ backgroundColor: copied ? '#059669' : selectedPlanForModal?.color || 'var(--fg-accent)' }}
                       title={copied ? 'Copied' : 'Copy link'}
                     >
                       {copied ? <CheckCircle2 size={15} /> : <Copy size={15} />}
@@ -798,7 +798,7 @@ export const SubscriptionPage: React.FC = () => {
                     onClick={handleShare}
                     className="flex-1 py-2.5 min-h-[44px] rounded-shape-sm text-white font-bold text-xs md:text-sm transition-all duration-150 shadow-sm flex items-center justify-center gap-2 cursor-pointer active:scale-95 touch-target-44"
                     style={{ 
-                      backgroundColor: selectedPlanForModal?.color || 'var(--sys-color-primary)', 
+                      backgroundColor: selectedPlanForModal?.color || 'var(--fg-accent)', 
                       boxShadow: `0 4px 14px -2px ${(selectedPlanForModal?.color || '#0969da')}40` 
                     }}
                   >
@@ -816,7 +816,7 @@ export const SubscriptionPage: React.FC = () => {
                   >
                     {resultModal === 'success' ? (
                       <>
-                        <CheckCircle2 size={16} style={{ color: selectedPlanForModal?.color || 'var(--sys-color-primary)' }} />
+                        <CheckCircle2 size={16} style={{ color: selectedPlanForModal?.color || 'var(--fg-accent)' }} />
                         <span>{dir === 'rtl' ? 'الانتقال للرئيسية' : 'Go to Homepage'}</span>
                       </>
                     ) : (
