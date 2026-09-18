@@ -15,6 +15,7 @@
 import React, { useEffect, useLayoutEffect, useRef, useState, useCallback } from 'react';
 import { createPortal } from 'react-dom';
 import { motion, AnimatePresence, type Variants } from 'motion/react';
+import { SCROLL_STYLES } from '../styles/scrollStyles';
 
 // Unified zero-sagging popover animation anchored strictly to corner
 const menuVariants: Variants = {
@@ -573,7 +574,7 @@ export const AdaptiveMenu: React.FC<AdaptiveMenuProps> = ({
               transformOrigin: coords.transformOrigin,
               width: width === 'auto' ? undefined : (typeof width === 'number' ? `${width}px` : width),
             }}
-            className={`z-[99999] rounded-[var(--radius-md)] border border-[var(--border-default)] bg-[var(--surface-card)] text-[var(--text-primary)] backdrop-blur-2xl max-h-[calc(100vh-24px)] overflow-y-auto overscroll-contain custom-scrollbar ${coords.originClass} shadow-2xl ring-1 ring-black/5 dark:ring-white/10 transition-colors duration-150 p-1.5 flex flex-col gap-0.5 ${
+            className={`z-[99999] rounded-[var(--radius-md)] border border-[var(--border-default)] bg-[var(--surface-card)] text-[var(--text-primary)] backdrop-blur-2xl ${SCROLL_STYLES.dropdown} max-h-[calc(100vh-24px)] ${coords.originClass} shadow-2xl ring-1 ring-black/5 dark:ring-white/10 transition-colors duration-150 p-1.5 flex flex-col gap-0.5 ${
               width === 'auto' ? 'w-max min-w-[180px] max-w-[calc(100vw-2rem)]' : ''
             } ${className}`}
             onClick={(e) => e.stopPropagation()}

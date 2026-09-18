@@ -14,6 +14,7 @@ import { FloatingPopover } from './FloatingPopover';
 import { useArtifact } from '../context/ArtifactContext';
 import { useCanvasLayout } from './chat/hooks/useCanvasLayout';
 import { AssistantIcon, SIDEBAR_TRANSITION, toast } from '@/design-system';
+import { SCROLL_STYLES } from '../styles/scrollStyles';
 
 export const HEADER_SIZING = {
   headerHeight: 'h-12',
@@ -595,7 +596,7 @@ export const Header: React.FC<{ activeLanguage?: string }> = ({ activeLanguage }
                     </div>
                   </div>
                   
-                  <div className="flex-1 overflow-y-auto py-1 custom-scrollbar">
+                  <div className={`flex-1 py-1 ${SCROLL_STYLES.dropdown}`}>
                     {notifications.length > 0 ? (
                       notifications.map((notif, nIdx) => (
                         <div

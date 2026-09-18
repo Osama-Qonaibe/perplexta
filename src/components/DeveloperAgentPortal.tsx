@@ -7,6 +7,7 @@ import {
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { toast, useConfirm, SelectDropdown } from '@/design-system';
+import { SCROLL_STYLES } from '../styles/scrollStyles';
 
 interface Agent {
   id: number;
@@ -504,7 +505,7 @@ authenticateAgent();`;
                 </span>
               </div>
             ) : (
-              <div className="divide-y divide-[var(--border-default)] max-h-56 overflow-y-auto no-scrollbar">
+              <div className={`divide-y divide-[var(--border-default)] ${SCROLL_STYLES.limited('14rem')}`}>
                 {agents.map(agent => (
                   <div key={agent.id} className="py-3.5 flex items-center justify-between gap-4">
                     <div className="space-y-1">
@@ -840,7 +841,7 @@ authenticateAgent();`;
                     </button>
                   </div>
 
-                  <div className="h-56 bg-[var(--surface-subtle)] p-4 rounded-[var(--radius-sm)] border border-[var(--border-default)] font-mono text-[10px] text-[var(--fg-accent)] overflow-y-auto no-scrollbar space-y-2 flex flex-col-reverse shadow-inner">
+                  <div className={`h-56 bg-[var(--surface-subtle)] p-4 rounded-[var(--radius-sm)] border border-[var(--border-default)] font-mono text-[10px] text-[var(--fg-accent)] ${SCROLL_STYLES.sidebar} space-y-2 flex flex-col-reverse shadow-inner`}>
                     {mcpLogs.length === 0 ? (
                       <span className="text-[10px] text-[var(--text-muted)] block uppercase tracking-wider select-none h-full flex items-center justify-center text-center">
                         {isAr ? 'بانتظار تنفيذ العمليات في المنصة...' : 'System Idle. Awaiting WebMCP requests...'}

@@ -38,6 +38,7 @@ import { motion, AnimatePresence } from 'motion/react';
 import { FloatingPopover } from './FloatingPopover';
 import { triggerHaptic } from '../utils/haptics';
 import { SIDEBAR_TRANSITION, toast, ActionItem, Badge } from '@/design-system';
+import { SCROLL_STYLES, HOVER_STYLES } from '../styles/scrollStyles';
 
 export const Sidebar: React.FC<{ activeLanguage?: string }> = ({ activeLanguage }) => {
   const { 
@@ -492,7 +493,7 @@ export const Sidebar: React.FC<{ activeLanguage?: string }> = ({ activeLanguage 
                           className={`${(item as any).className || 'flex'} items-center transition-all duration-150 w-full h-[34px] overflow-hidden flex-shrink-0 group relative rounded-[var(--radius-sm)] border cursor-pointer ${
                             active 
                               ? 'bg-[color-mix(in_oklab,var(--accent)_12%,transparent)] text-[var(--accent)] border-[color-mix(in_oklab,var(--accent)_30%,var(--border-default))] font-bold shadow-2xs'
-                              : 'border-transparent text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--surface-subtle)] hover:border-[var(--border-default)]'
+                              : HOVER_STYLES.sidebarItem
                           }`}
                           style={{ paddingInlineStart: '10px', paddingInlineEnd: '8px' }}
                         >
@@ -575,7 +576,7 @@ export const Sidebar: React.FC<{ activeLanguage?: string }> = ({ activeLanguage 
                   </div>
                 </div>
 
-                <div className="flex-1 overflow-y-auto no-scrollbar scrollbar-none scroll-smooth pb-2 min-h-0">
+                <div className={`flex-1 pb-2 min-h-0 ${SCROLL_STYLES.sidebar}`}>
                   <div className="min-h-[85px]">
                     {isChatsLoading ? (
                       <SkeletonLoader 
@@ -607,7 +608,7 @@ export const Sidebar: React.FC<{ activeLanguage?: string }> = ({ activeLanguage 
                                   className={`flex items-center w-full h-[32px] ${isMenuOpen ? 'overflow-visible z-30' : 'overflow-hidden'} flex-shrink-0 transition-all duration-150 group relative border rounded-[var(--radius-sm)] cursor-pointer ${
                                     isActive 
                                       ? 'bg-[color-mix(in_oklab,var(--accent)_12%,transparent)] text-[var(--accent)] border-[color-mix(in_oklab,var(--accent)_30%,var(--border-default))] font-bold shadow-2xs' 
-                                      : 'border-transparent text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--surface-subtle)] hover:border-[var(--border-default)]'
+                                      : HOVER_STYLES.sidebarItem
                                   }`}
                                   style={{ paddingInlineStart: '10px', paddingInlineEnd: '6px' }}
                                 >

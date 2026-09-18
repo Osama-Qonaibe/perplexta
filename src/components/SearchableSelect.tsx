@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { ChevronDown, Search, Check } from 'lucide-react';
+import { SCROLL_STYLES } from '../styles/scrollStyles';
 
 export interface SearchableSelectOption {
   value: string;
@@ -181,7 +182,7 @@ export const SearchableSelect: React.FC<SearchableSelectProps> = ({
                />
             </div>
           )}
-          <div className="max-h-60 overflow-y-auto divide-y divide-[var(--border-default)]/30 custom-scrollbar overscroll-contain p-1 space-y-0.5">
+          <div className={`divide-y divide-[var(--border-default)]/30 ${SCROLL_STYLES.dropdown} max-h-60 p-1 space-y-0.5`}>
             {placeholder && !validOptions.some(o => o.value === '') && (
               <div 
                 className={`group px-3 py-2 text-xs rounded-[var(--radius-xs)] cursor-pointer transition-colors duration-150 flex items-center justify-between ${

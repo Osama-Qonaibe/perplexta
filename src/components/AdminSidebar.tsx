@@ -8,6 +8,7 @@ import {
 } from 'lucide-react';
 import { useAppContext } from '../context/AppContext';
 import { triggerHaptic } from '../utils/haptics';
+import { SCROLL_STYLES, HOVER_STYLES } from '../styles/scrollStyles';
 
 export interface AdminSidebarProps {
   activeLanguage?: string;
@@ -104,7 +105,7 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({
         dir === 'rtl' ? 'border-l' : 'border-r'
       }`}
     >
-      <nav className="flex-1 px-2 space-y-0.5 pt-2 pb-1.5 overflow-y-auto custom-scrollbar scroll-smooth">
+      <nav className={`flex-1 px-2 space-y-0.5 pt-2 pb-1.5 ${SCROLL_STYLES.sidebar}`}>
           {navItems.map((item, index) => {
             const isItemActive = item.matchPaths.some(
               (p) => location.pathname === p || location.pathname.startsWith(p + '/')
@@ -122,7 +123,7 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({
                     ? `bg-[var(--surface-card)] text-[var(--accent)] border-[var(--border-default)] font-bold shadow-2xs before:absolute before:inset-y-1.5 before:w-1 before:rounded-full before:bg-[var(--accent)] ${
                         dir === 'rtl' ? 'before:right-1' : 'before:left-1'
                       }`
-                    : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--surface-subtle)] hover:border-[var(--border-default)] border-transparent'
+                    : HOVER_STYLES.sidebarItem
                 }`}
               >
                 <div className={`w-5 h-5 flex-shrink-0 flex items-center justify-center transition-colors duration-150 ${

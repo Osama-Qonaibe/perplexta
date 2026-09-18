@@ -13,6 +13,7 @@ import {
 import { useAppContext } from '../context/AppContext';
 import { MobileWalletView } from './mobile/MobileWalletView';
 import { toast, useConfirm } from '@/design-system';
+import { SCROLL_STYLES } from '../styles/scrollStyles';
 
 interface Transaction {
   id: number;
@@ -1822,7 +1823,7 @@ export const WalletSystem: React.FC<{ theme: string; dir: 'ltr' | 'rtl' }> = ({ 
                       </span>
                       {dir === 'rtl' ? 'طلبات الإيداع قيد المراجعة والتحقق المالي بالمستندات:' : 'Manual verification queue logs & pending requests:'}
                     </p>
-                    <div className="space-y-3 max-h-60 overflow-y-auto no-scrollbar">
+                    <div className={`space-y-3 ${SCROLL_STYLES.limited('15rem')}`}>
                       {manualDeposits.map((dep, dIdx) => {
                         let refId = '';
                         try {

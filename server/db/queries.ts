@@ -157,6 +157,56 @@ export const walletLoader = new DataLoader<number | string, any>(async (userIds)
 }, { ttl: 5000 }); // 5-second cache for rapid point/balance changes
 
 /**
+ * Batched chat loading for dashboard and history views
+ */
+export const chatLoader = new DataLoader<number | string, any>(async (ids) => {
+  if (ids.length === 0) return [];
+  if (!pool) return ids.map(() => null);
+  const uniqueIds = Array.from(new Set(ids)).map(id => typeof id === 'number' ? id : parseInt(id, 10));
+
+  try {
+    const res = await pool.query(
+      'SELECT * FROM chats WHERE id = ANY($1)',
+      [uniqueIds]
+    );
+    const chatMap = new Map<number, any>();
+    res.rows.forEach((row: any) => chatMap.set(row.id, row));
+    return ids.map(id => {
+      const idNum = typeof id === 'number' ? id : parseInt(id, 10);
+      return chatMap.get(idNum) || null;
+    });
+  } catch (err: any) {
+    console.warn('[DataLoader] Failed to batch load chats:', err.message);
+    return ids.map(() => null);
+  }
+}, { ttl: 10000 }); // 10-second cache
+
+/**
+ * Batched message loading for deep context retrievals
+ */
+export const messageLoader = new DataLoader<number | string, any>(async (ids) => {
+  if (ids.length === 0) return [];
+  if (!pool) return ids.map(() => null);
+  const uniqueIds = Array.from(new Set(ids)).map(id => typeof id === 'number' ? id : parseInt(id, 10));
+
+  try {
+    const res = await pool.query(
+      'SELECT * FROM messages WHERE id = ANY($1)',
+      [uniqueIds]
+    );
+    const msgMap = new Map<number, any>();
+    res.rows.forEach((row: any) => msgMap.set(row.id, row));
+    return ids.map(id => {
+      const idNum = typeof id === 'number' ? id : parseInt(id, 10);
+      return msgMap.get(idNum) || null;
+    });
+  } catch (err: any) {
+    console.warn('[DataLoader] Failed to batch load messages:', err.message);
+    return ids.map(() => null);
+  }
+}, { ttl: 5000 }); // 5-second cache
+
+/**
  * Batched subscription checking
  */
 export const subscriptionLoader = new DataLoader<number | string, any>(async (userIds) => {

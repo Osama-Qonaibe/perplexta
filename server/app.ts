@@ -85,6 +85,8 @@ export async function ensureApiPerfLogsTable() {
       CREATE INDEX IF NOT EXISTS idx_api_performance_logs_created_at ON api_performance_logs (created_at DESC);
       CREATE INDEX IF NOT EXISTS idx_api_performance_logs_duration ON api_performance_logs (duration_ms);
       CREATE INDEX IF NOT EXISTS idx_api_performance_logs_endpoint ON api_performance_logs (endpoint);
+      CREATE INDEX IF NOT EXISTS idx_api_performance_logs_user_id ON api_performance_logs (user_id);
+      CREATE INDEX IF NOT EXISTS idx_api_performance_logs_is_slow ON api_performance_logs (is_slow) WHERE is_slow = true;
     `);
     isApiPerfTableEnsured = true;
   } catch (err: any) {
@@ -236,7 +238,7 @@ const normalCompression = compression({
     }
     const isMedia = req.path && (
       req.path.startsWith('/uploads/') ||
-      /\.(mp4|webm|mov|ogg|mp3|wav|m4a|aac|flac|png|jpg|jpeg|gif|webp)$/i.test(req.path)
+      /\.(mp4|webm|mov|ogg|mp3|wav|m4a|aac|flac|png|jpg|jpeg|gif|webp|pdf|zip|gz|br)$/i.test(req.path)
     );
     if (isMedia) {
       return false;
@@ -258,7 +260,7 @@ const aggressiveCompression = compression({
     }
     const isMedia = req.path && (
       req.path.startsWith('/uploads/') ||
-      /\.(mp4|webm|mov|ogg|mp3|wav|m4a|aac|flac|png|jpg|jpeg|gif|webp)$/i.test(req.path)
+      /\.(mp4|webm|mov|ogg|mp3|wav|m4a|aac|flac|png|jpg|jpeg|gif|webp|pdf|zip|gz|br)$/i.test(req.path)
     );
     if (isMedia) {
       return false;
@@ -661,7 +663,7 @@ app.use(wellKnownRouter);
 app.use(express.static('public', {
   etag: true,
   lastModified: true,
-  maxAge: '1d', // browser cache for 1 day
+  maxAge: '7d', // browser cache for 7 days
   immutable: false
 }));
 // =======================================

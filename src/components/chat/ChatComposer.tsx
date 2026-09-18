@@ -8,6 +8,7 @@ import {
 import { getMatchingSuggestions } from '../../constants/contextualSuggestions';
 import { useArtifact } from '../../context/ArtifactContext';
 import { useAppContext } from '../../context/AppContext';
+import { SCROLL_STYLES } from '../../styles/scrollStyles';
 
 interface ChatComposerProps {
   query: string;
@@ -686,7 +687,7 @@ export const ChatComposer: React.FC<ChatComposerProps> = ({
                                 className={`absolute bottom-full mb-2 ${dir === 'rtl' ? 'right-0' : 'left-0'} w-52 max-w-[calc(100vw-2rem)] rounded-shape-md border border-[var(--border-default)] shadow-2xl ring-1 ring-black/5 dark:ring-white/10 flex flex-col z-[200] overflow-hidden bg-[var(--surface-card)] backdrop-blur-2xl p-1.5`}
                                 onClick={(e) => e.stopPropagation()}
                               >
-                                <div className="flex flex-col gap-0.5 max-h-[70vh] sm:max-h-[60vh] overflow-y-auto custom-scrollbar">
+                                <div className={`flex flex-col gap-0.5 ${SCROLL_STYLES.limited('70vh')} sm:max-h-[60vh]`}>
                                   {sortedAdvancedTools.map((tool, tIdx) => {
                                     const limit = currentPlan?.limits?.[tool.id];
                                     const isZeroLimit = limit?.daily === 0 && limit?.monthly === 0;
@@ -833,7 +834,7 @@ export const ChatComposer: React.FC<ChatComposerProps> = ({
               transition={{ duration: 0.14, ease: [0.16, 1, 0.3, 1] }}
               className="absolute top-full mt-2 left-0 right-0 z-50 pointer-events-auto box-border overflow-hidden rounded-shape-md border border-[var(--border-default)] bg-[var(--surface-card)] shadow-2xl backdrop-blur-xl p-1.5 space-y-0.5 text-[var(--text-primary)]"
             >
-              <div className="w-full max-h-[260px] overflow-y-auto custom-scrollbar space-y-0.5">
+              <div className={`w-full ${SCROLL_STYLES.limited('260px')} space-y-0.5`}>
                 {suggestions.map((item, idx) => {
                   const isHighlighted = activeSuggestionIndex === idx;
                   const categoryText = dir === 'rtl' ? item.suggestion.categoryAr : item.suggestion.categoryEn;
