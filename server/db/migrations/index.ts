@@ -308,7 +308,7 @@ export async function runDatabaseMigrations(targetId?: string, type: 'additive' 
       )
     `);
 
-    await client.query(`CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_migration_security_audit_created_at ON migration_security_audit(created_at)`);
+    await client.query(`CREATE INDEX IF NOT EXISTS idx_migration_security_audit_created_at ON migration_security_audit(created_at)`);
 
     try {
       await safeQueryClient(securityClient, client, `

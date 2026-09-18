@@ -859,8 +859,15 @@ export async function runVersionedMigrations(
       await tx.query(`CREATE INDEX IF NOT EXISTS idx_password_resets_email ON password_resets(email)`);
       await tx.query(`CREATE INDEX IF NOT EXISTS idx_password_resets_token ON password_resets(token)`);
 
-      await tx.query(`CREATE INDEX IF NOT EXISTS idx_marketplace_items_status ON marketplace_items(status)`);
-      await tx.query(`CREATE INDEX IF NOT EXISTS idx_marketplace_items_user_id ON marketplace_items(user_id)`);
+      await tx.query(`
+        DO $$
+        BEGIN
+          IF EXISTS (SELECT 1 FROM information_schema.tables WHERE table_name = 'marketplace_items') THEN
+            CREATE INDEX IF NOT EXISTS idx_marketplace_items_status ON marketplace_items(status);
+            CREATE INDEX IF NOT EXISTS idx_marketplace_items_user_id ON marketplace_items(user_id);
+          END IF;
+        END $$;
+      `);
 
       const extTarget = externalClient || client;
       try {
@@ -897,8 +904,8 @@ export async function runVersionedMigrations(
       }
 
       const lTarget = ledgerClient || client;
-      await lTarget.query(`CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_ledger_tx_user_id ON ledger_transactions(user_id)`);
-      await lTarget.query(`CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_ledger_tx_status ON ledger_transactions(status)`);
+      await lTarget.query(`CREATE INDEX IF NOT EXISTS idx_ledger_tx_user_id ON ledger_transactions(user_id)`);
+      await lTarget.query(`CREATE INDEX IF NOT EXISTS idx_ledger_tx_status ON ledger_transactions(status)`);
 
       const sTarget = securityClient || client;
       await sTarget.query(`CREATE INDEX IF NOT EXISTS idx_security_alerts_user_id ON security_alerts(user_id)`);
