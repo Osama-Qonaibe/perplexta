@@ -6,7 +6,7 @@ import path from 'path';
 import crypto from 'crypto';
 import fs from 'fs';
 import { Readable, Transform } from 'stream';
-import { globalLimiter, adminLimiter } from './middleware/rateLimit.js';
+import { globalLimiter, authLimiter, adminLimiter } from './middleware/rateLimit.js';
 import { csrfProtection } from './middleware/csrf.js';
 import { uploadValidator } from './middleware/uploadValidator.js';
 import { errorHandler, notFoundHandler } from './middleware/errorHandler.js';
@@ -390,141 +390,44 @@ app.use((req, res, next) => {
   next();
 });
 
-app.use((req: any, res: any, next: any) => {
-  const isDev = process.env.NODE_ENV !== 'production';
-  const nonce = res.locals.nonce || '';
-  
-  // 1. Explicitly separate GTM (Google Tag Manager) script directives
-  const gtmScriptSources = [
-    "https://www.googletagmanager.com",
-    "https://*.googletagmanager.com"
-  ];
+app.use(helmet({
+  contentSecurityPolicy: {
+    directives: {
+      defaultSrc: ["'self'"],
+      styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com", "https://*.googleapis.com"],
+      fontSrc: ["'self'", "https://fonts.gstatic.com", "https://cdn.jsdelivr.net", "data:"],
+      imgSrc: ["'self'", "data:", "https:", "blob:", "*"],
+      scriptSrc: ["'self'", "'unsafe-inline'", "'unsafe-eval'", "https://*.googleapis.com", "https://*.googletagmanager.com"],
+      connectSrc: ["'self'", "https://api.perplexta.online", "wss:", "ws:", "https:", "*"],
+      frameAncestors: ["'self'", "https://*.google.com", "https://ai.studio", "https://*.run.app", "https://*.aistudio.google"],
+      frameSrc: ["'self'", "https:", "*"],
+      objectSrc: ["'none'"]
+    }
+  },
+  crossOriginEmbedderPolicy: false,
+  crossOriginOpenerPolicy: { policy: "same-origin-allow-popups" }
+}));
 
-  // 2. Explicitly separate GA (Google Analytics) script directives
-  const gaScriptSources = [
-    "https://*.google-analytics.com",
-    "https://analytics.google.com",
-    "https://*.analytics.google.com"
-  ];
-
-  // 3. Define other trusted script sources
-  const otherScriptSources = [
-    "https://apis.google.com",
-    "https://*.google.com",
-    "https://*.gstatic.com",
-    "https://*.googleapis.com",
-    "https://*.stripe.com",
-    "https://*.firebaseapp.com",
-    "https://*.doubleclick.net",
-    "https://*.googleadservices.com",
-    "https://www.youtube.com",
-    "https://s.ytimg.com"
-  ];
-
-  // 4. Construct CSP script-src directives using modern 'strict-dynamic' for secure nested loads,
-  // while keeping 'unsafe-inline' and host sources as solid fallbacks for backward compatibility.
-  const scriptSrcDirectives = [
-    "'self'",
-    "'unsafe-inline'",
-    "'unsafe-eval'",
-    ...(!isDev && nonce ? [`'nonce-${nonce}'`, "'strict-dynamic'"] : []),
-    ...gtmScriptSources,
-    ...gaScriptSources,
-    ...otherScriptSources
-  ];
-
-  const scriptSrcElemDirectives = [
-    "'self'",
-    "'unsafe-inline'",
-    ...(!isDev && nonce ? [`'nonce-${nonce}'`, "'strict-dynamic'"] : []),
-    ...gtmScriptSources,
-    ...gaScriptSources,
-    ...otherScriptSources
-  ];
-
-  const cspDirectives: any = {
-    defaultSrc: ["'self'"],
-    scriptSrc: scriptSrcDirectives,
-    scriptSrcElem: scriptSrcElemDirectives,
-    scriptSrcAttr: ["'self'", "'unsafe-inline'"],
-    styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com", "https://*.googleapis.com", "https://accounts.google.com"],
-    styleSrcElem: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com", "https://*.googleapis.com", "https://accounts.google.com"],
-    styleSrcAttr: ["'self'", "'unsafe-inline'"],
-    imgSrc: ["'self'", "data:", "blob:", "https:", "*"],
-    connectSrc: [
-      "'self'", 
-      "wss:", 
-      "ws:", 
-      "https://*.googleapis.com", 
-      "https://*.firebaseapp.com", 
-      "https://api.stripe.com", 
-      "https://checkout.stripe.com", 
-      "https://maps.googleapis.com", 
-      "https://*.google-analytics.com", 
-      "https://analytics.google.com", 
-      "https://*.analytics.google.com", 
-      "https://www.google.com", 
-      "https://*.google.com", 
-      "https://apis.google.com", 
-      "https://*.googletagmanager.com", 
-      "https://*.doubleclick.net", 
-      "https://*.googleadservices.com", 
-      "https://stats.g.doubleclick.net", 
-      "https://*.g.doubleclick.net", 
-      "https://*.run.app", 
-      "https://*.aistudio.google"
-    ],
-    fontSrc: ["'self'", "https://fonts.gstatic.com", "data:"],
-    frameAncestors: ["'self'", "https://*.google.com", "https://ai.studio", "https://*.run.app", "https://*.aistudio.google"],
-    frameSrc: [
-      "'self'", 
-      "https://*.stripe.com", 
-      "https://*.google.com", 
-      "https://apis.google.com", 
-      "https://accounts.google.com", 
-      "https://www.youtube.com", 
-      "https://www.youtube-nocookie.com", 
-      "https://*.youtube.com", 
-      "https://*.doubleclick.net"
-    ],
-    workerSrc: ["'self'", "blob:"],
-    childSrc: ["'self'", "blob:"],
-    manifestSrc: ["'self'"]
-  };
-
-  if (!isDev) {
-    cspDirectives.upgradeInsecureRequests = [];
-  }
-
-  helmet({
-    contentSecurityPolicy: {
-      directives: cspDirectives
-    },
-    crossOriginEmbedderPolicy: false,
-    crossOriginOpenerPolicy: false
-  })(req, res, next);
-});
-
-const envOrigins = process.env.CORS_ALLOWED_ORIGINS ? process.env.CORS_ALLOWED_ORIGINS.split(',').map(o => o.trim()) : [];
-const allowedOrigins = [
-  process.env.APP_URL,
-  ...envOrigins
-].filter(Boolean) as string[];
+const allowedOrigins = process.env.ALLOWED_ORIGINS?.split(',') || [
+  'https://perplexta.online',
+  'https://www.perplexta.online',
+  'http://localhost:5173'
+];
 
 app.use(cors({
   origin: (origin, callback) => {
-    if (!origin) return callback(null, '*');
-    if (process.env.NODE_ENV !== 'production' || allowedOrigins.includes(origin)) {
-      return callback(null, origin);
+    if (!origin || allowedOrigins.includes(origin) || origin.endsWith('.run.app') || origin.endsWith('.aistudio.google') || process.env.NODE_ENV !== 'production') {
+      callback(null, true);
+    } else {
+      console.warn(`[CORS] Blocked origin: ${origin}`);
+      callback(new Error('Not allowed by CORS'));
     }
-    if (origin.endsWith('.run.app') || origin.endsWith('.aistudio.google')) {
-      return callback(null, origin);
-    }
-    callback(new Error('CORS Policy: Origin not permitted. Configure CORS_ALLOWED_ORIGINS in .env if needed.'));
   },
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Accept', 'Origin']
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-CSRF-Token', 'X-Requested-With', 'Accept', 'Origin'],
+  exposedHeaders: ['X-CSRF-Token', 'X-Request-Id'],
+  maxAge: 86400
 }));
 
 app.use(express.json({ 
@@ -1338,6 +1241,8 @@ Verification: Do not include conversational text or markdown codeblocks before o
 });
 
 app.use('/api', globalLimiter);
+app.use('/api/auth', authLimiter);
+app.use('/api/admin', adminLimiter);
 app.use('/api', csrfProtection);
 
 app.get('/api/health', (req, res) => res.json({
@@ -1446,7 +1351,7 @@ import sceneArchitectRoutes from './routes/sceneArchitect.js';
 import studioRoutes from './routes/studio.js';
 
 app.use('/api/mcp', mcpRoutes);
-app.use('/api/auth', authRoutes);
+app.use('/api/auth', authLimiter, authRoutes);
 app.use('/api/chats', chatRoutes);
 app.use('/api/messages', messageRoutes);
 app.use('/api/admin', adminLimiter, adminRoutes);
