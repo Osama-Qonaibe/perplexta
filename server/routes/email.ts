@@ -2,6 +2,7 @@ import express from 'express';
 import { pool } from '../db/index.js';
 import { authenticateAdmin } from '../middleware/auth.js';
 import { syncSystemTemplates, verifySmtpConnection } from '../services/email.js';
+import { emailConfigSchema, verifyEmailConfigSchema, emailTemplateSchema } from '../schemas/email.schemas.js';
 
 const router = express.Router();
 
@@ -31,6 +32,14 @@ router.get('/config', authenticateAdmin, async (req, res) => {
 
 router.put('/config', authenticateAdmin, async (req, res) => {
   try {
+    const parsed = emailConfigSchema.safeParse(req.body);
+    if (!parsed.success) {
+      return res.status(400).json({
+        error: 'Validation failed',
+        details: parsed.error.flatten()
+      });
+    }
+
     const {
       mailer_type,
       smtp_host,
@@ -40,7 +49,7 @@ router.put('/config', authenticateAdmin, async (req, res) => {
       smtp_password,
       sender_name,
       sender_email
-    } = req.body;
+    } = parsed.data;
 
     const upsertRes = await pool.query(`
       INSERT INTO email_settings (
@@ -81,6 +90,14 @@ router.put('/config', authenticateAdmin, async (req, res) => {
 
 router.post('/verify', authenticateAdmin, async (req, res) => {
   try {
+    const parsed = verifyEmailConfigSchema.safeParse(req.body);
+    if (!parsed.success) {
+      return res.status(400).json({
+        error: 'Validation failed',
+        details: parsed.error.flatten()
+      });
+    }
+
     const {
       mailer_type,
       smtp_host,
@@ -90,11 +107,7 @@ router.post('/verify', authenticateAdmin, async (req, res) => {
       smtp_password,
       sender_name,
       sender_email
-    } = req.body;
-
-    if (!smtp_host || !smtp_port) {
-      return res.status(400).json({ error: 'SMTP Host and Port are required for verification.' });
-    }
+    } = parsed.data;
 
     try {
       await verifySmtpConnection({
@@ -163,6 +176,14 @@ router.get('/templates', authenticateAdmin, async (req, res) => {
 
 router.post('/templates', authenticateAdmin, async (req, res) => {
   try {
+    const parsed = emailTemplateSchema.safeParse(req.body);
+    if (!parsed.success) {
+      return res.status(400).json({
+        error: 'Validation failed',
+        details: parsed.error.flatten()
+      });
+    }
+
     const {
       id,
       name,
@@ -171,11 +192,7 @@ router.post('/templates', authenticateAdmin, async (req, res) => {
       body_en,
       body_ar,
       type
-    } = req.body;
-
-    if (!name?.trim()) {
-      return res.status(400).json({ error: 'Template name is required.' });
-    }
+    } = parsed.data;
 
     let savedTemplate;
     if (id) {

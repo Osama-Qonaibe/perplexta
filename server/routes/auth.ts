@@ -2,6 +2,7 @@ import express from 'express';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import crypto from 'crypto';
+import { signupSchema, loginSchema } from '../schemas/user.schemas.js';
 import { pool, ledgerPool, getSecurityPool } from '../db/index.js';
 import { getCachedSystemSettings } from '../db/queries.js';
 import { sendSmartEmail } from '../services/email.js';
@@ -90,14 +91,15 @@ async function generateUniqueReferralCode(): Promise<string> {
 
 router.post("/signup", authLimiter, async (req, res) => {
   try {
-    const { email, password, name, language = 'ar', theme = 'dark', ref } = req.body;
-    if (!email || !password) return res.status(400).json({ error: 'Email and password are required' });
-    if (typeof email !== 'string' || typeof password !== 'string') {
-      return res.status(400).json({ error: 'Email and password must be strings' });
+    const parsed = signupSchema.safeParse(req.body);
+    if (!parsed.success) {
+      return res.status(400).json({
+        error: 'Validation failed',
+        details: parsed.error.flatten()
+      });
     }
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(email)) return res.status(400).json({ error: 'Invalid email format' });
-    if (password.length < 8) return res.status(400).json({ error: 'Password must be at least 8 characters' });
+
+    const { email, password, name, language, theme, ref } = parsed.data;
 
     const lowerEmail = email.toLowerCase();
     const existingUser = await pool.query('SELECT id FROM users WHERE LOWER(email) = $1::text', [lowerEmail]);
@@ -238,13 +240,15 @@ router.post("/signup", authLimiter, async (req, res) => {
 
 router.post("/login", authLimiter, async (req, res) => {
   try {
-    const { email, password } = req.body;
-    if (!email || !password) return res.status(400).json({ error: 'Email and password are required' });
-    if (typeof email !== 'string' || typeof password !== 'string') {
-      return res.status(400).json({ error: 'Email and password must be strings' });
+    const parsed = loginSchema.safeParse(req.body);
+    if (!parsed.success) {
+      return res.status(400).json({
+        error: 'Validation failed',
+        details: parsed.error.flatten()
+      });
     }
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(email)) return res.status(400).json({ error: 'Invalid email format' });
+
+    const { email, password } = parsed.data;
 
     const lowerEmail = email.toLowerCase();
     const result = await pool.query('SELECT * FROM users WHERE LOWER(email) = $1::text', [lowerEmail]);

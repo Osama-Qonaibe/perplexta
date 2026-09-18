@@ -1,6 +1,7 @@
 import express from 'express';
 import fs from 'fs/promises';
 import path from 'path';
+import { createUserSchema } from '../schemas/user.schemas.js';
 import { pool, ledgerPool, getSecurityPool, mediaPool } from '../db/index.js';
 import { authenticateAdmin, invalidateUserCache } from '../middleware/auth.js';
 import { syncProviderModelsInternal, checkProviderStatus, invalidateVaultCache } from '../services/ai.js';
@@ -1682,20 +1683,15 @@ router.get("/activity-stream", authenticateAdmin, async (req, res) => {
 
 router.post("/users", authenticateAdmin, async (req, res) => {
   try {
-    const { name, email, password, role = 'user', balance = 0, points = 0 } = req.body;
-    
-    if (!name || !email || !password) {
-      return res.status(400).json({ error: 'Name, email and password are required' });
+    const parsed = createUserSchema.safeParse(req.body);
+    if (!parsed.success) {
+      return res.status(400).json({ 
+        error: 'Validation failed',
+        details: parsed.error.flatten()
+      });
     }
 
-    if (typeof name !== 'string' || typeof email !== 'string' || typeof password !== 'string') {
-      return res.status(400).json({ error: 'Name, email and password must be strings' });
-    }
-
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(email)) {
-      return res.status(400).json({ error: 'Invalid email format' });
-    }
+    const { name, email, password, role, balance, points } = parsed.data;
 
     const check = await pool.query('SELECT id FROM users WHERE email = $1', [email]);
     if (check.rows.length > 0) return res.status(400).json({ error: 'Email already exists' });
