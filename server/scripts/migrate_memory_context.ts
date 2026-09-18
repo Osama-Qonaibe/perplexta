@@ -146,7 +146,23 @@ async function main() {
 }
 
 // Only execute directly if invoked via CLI/tsx
-if (import.meta.url.endsWith(process.argv[1]) || process.argv[1]?.endsWith('migrate_memory_context.ts')) {
+const isDirectRun = () => {
+  try {
+    // Check for CommonJS direct run
+    if (typeof require !== 'undefined' && require.main === module) return true;
+    
+    // Check for ESM direct run (tsx)
+    const scriptPath = process.argv[1];
+    if (scriptPath && (scriptPath.endsWith('migrate_memory_context.ts') || scriptPath.endsWith('migrate_memory_context.js'))) {
+      return true;
+    }
+  } catch (e) {
+    // Fallback to false if any error occurs during check
+  }
+  return false;
+};
+
+if (isDirectRun()) {
   main().catch((err) => {
     console.error('[Script] ❌ Unhandled error during memory context migration:', err);
     process.exit(1);
