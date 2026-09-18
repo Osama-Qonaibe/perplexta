@@ -121,7 +121,7 @@ export const Copyright: React.FC = () => {
           </div>
         </div>
 
-        <div className="relative overflow-hidden rounded-[var(--radius)] border border-[var(--border-default)] bg-[var(--surface-card)] p-6 md:p-8 space-y-4 shadow-inner">
+        <div className="relative overflow-hidden rounded-[var(--radius-md)] border border-[var(--border-default)] bg-[var(--surface-card)] p-6 md:p-8 space-y-4 shadow-inner">
           <div className="absolute top-0 right-0 w-32 h-32 bg-accent/5 rounded-full blur-2xl pointer-events-none" />
           <h2 className="text-xl md:text-2xl font-black text-[var(--text-primary)] tracking-tight leading-snug">
             {isAr ? "حقوق الملكية الفكرية وحماية الابتكار" : "Intellectual Property & Innovation Protection"}
@@ -139,7 +139,7 @@ export const Copyright: React.FC = () => {
             return (
               <div 
                 key={idx}
-                className="p-5 md:p-6 rounded-[var(--radius)] border border-[var(--border-default)] bg-[var(--surface-card)] hover:border-accent/40 transition-all duration-300 space-y-4"
+                className="p-5 md:p-6 rounded-[var(--radius-md)] border border-[var(--border-default)] bg-[var(--surface-card)] hover:border-accent/40 transition-all duration-300 space-y-4"
               >
                 <div className="flex items-center gap-3 text-[var(--text-primary)] pb-3 border-b border-[var(--border-subtle)]">
                   <div className="p-2 rounded-[var(--radius-xs)] bg-accent/5 text-accent">
@@ -183,7 +183,7 @@ export const Copyright: React.FC = () => {
             </p>
           </div>
 
-          <div className="p-5 md:p-6 rounded-[var(--radius)] border border-[var(--border-default)] bg-[var(--surface-card)] space-y-3 max-w-4xl mx-auto shadow-inner text-center">
+          <div className="p-5 md:p-6 rounded-[var(--radius-md)] border border-[var(--border-default)] bg-[var(--surface-card)] space-y-3 max-w-4xl mx-auto shadow-inner text-center">
             <div className="flex items-center justify-center gap-2 text-[var(--text-primary)]">
               <ShieldCheck className="w-5 h-5 text-accent" />
               <h3 className="text-xs md:text-sm font-black">

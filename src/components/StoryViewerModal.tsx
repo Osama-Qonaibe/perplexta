@@ -351,7 +351,7 @@ export const StoryViewerModal: React.FC<StoryViewerModalProps> = ({
           <div className="absolute inset-0 bg-[var(--surface-overlay)] backdrop-blur-2xl" />
         </div>
 
-        <div className="relative w-full h-full md:w-auto md:aspect-[9/16] md:max-w-none md:h-[95vh] md:rounded-[var(--radius-xl)] bg-[var(--surface-page)] shadow-2xl overflow-hidden z-10 border-0 md:border md:border-[var(--border-default)] flex items-center justify-center">
+        <div className="relative w-full h-full md:w-auto md:aspect-[9/16] md:max-w-none md:h-[95vh] md:rounded-[var(--radius-lg)] bg-[var(--surface-page)] shadow-2xl overflow-hidden z-10 border-0 md:border md:border-[var(--border-default)] flex items-center justify-center">
           {/* Progress Bars (Persistent) */}
           <div className="absolute top-4 inset-x-0 z-50 flex items-center gap-1 px-4 pointer-events-none">
             {stories.map((story, idx) => (

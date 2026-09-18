@@ -267,7 +267,7 @@ export const MobileNavigation: React.FC = () => {
             <div className="p-3 border-b border-[var(--border-default)] shrink-0 bg-[var(--surface-page)]">
               <button
                 onClick={handleNewChat}
-                className="w-full h-10 px-3 rounded-[var(--radius)] bg-[var(--bg-accent-emphasis)] text-[var(--fg-on-emphasis)] font-bold text-xs flex items-center justify-center gap-2 shadow-xs active:scale-[0.98] transition-transform cursor-pointer"
+                className="w-full h-10 px-3 rounded-[var(--radius-md)] bg-[var(--bg-accent-emphasis)] text-[var(--fg-on-emphasis)] font-bold text-xs flex items-center justify-center gap-2 shadow-xs active:scale-[0.98] transition-transform cursor-pointer"
               >
                 <Plus size={16} />
                 <span>{t('newChat') || (isRtl ? 'محادثة جديدة' : 'New Chat')}</span>
@@ -370,7 +370,7 @@ export const MobileNavigation: React.FC = () => {
                     setIsDrawerOpen(false);
                     setIsAuthModalOpen(true);
                   }}
-                  className="w-full h-11 px-4 rounded-[var(--radius)] bg-[var(--bg-accent-emphasis)] text-[var(--fg-on-emphasis)] font-bold text-xs flex items-center justify-center gap-2 shadow-xs transition-transform active:scale-[0.98] cursor-pointer"
+                  className="w-full h-11 px-4 rounded-[var(--radius-md)] bg-[var(--bg-accent-emphasis)] text-[var(--fg-on-emphasis)] font-bold text-xs flex items-center justify-center gap-2 shadow-xs transition-transform active:scale-[0.98] cursor-pointer"
                 >
                   <User size={16} />
                   <span>{isRtl ? 'تسجيل الدخول / إنشاء حساب' : 'Sign In / Register'}</span>

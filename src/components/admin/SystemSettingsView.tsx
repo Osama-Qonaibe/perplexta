@@ -1080,7 +1080,7 @@ export const SystemSettingsView: React.FC<SystemSettingsViewProps> = ({
             type="button"
             id="admin-open-theme-studio-btn"
             onClick={() => navigate("/admin/theme")}
-            className="flex items-center justify-center gap-2.5 px-5 py-3 rounded-[var(--radius)] font-bold text-sm bg-[var(--bg-accent-emphasis)] text-[var(--fg-on-emphasis)] hover:opacity-90 transition-theme shadow-sm cursor-pointer shrink-0 active:scale-95"
+            className="flex items-center justify-center gap-2.5 px-5 py-3 rounded-[var(--radius-md)] font-bold text-sm bg-[var(--bg-accent-emphasis)] text-[var(--fg-on-emphasis)] hover:opacity-90 transition-theme shadow-sm cursor-pointer shrink-0 active:scale-95"
           >
             <Palette size={18} />
             <span>{language === "ar" ? "فتح استوديو المظهر والثيمات" : "Open Theme Studio"}</span>
@@ -1359,7 +1359,7 @@ export const SystemSettingsView: React.FC<SystemSettingsViewProps> = ({
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
           {/* Logo Upload (Dark theme) */}
           <div
-            className="p-6 rounded-[var(--radius)] border border-dashed border-[var(--border-default)] bg-[var(--surface-subtle)] flex flex-col items-center justify-center text-center relative overflow-hidden group"
+            className="p-6 rounded-[var(--radius-md)] border border-dashed border-[var(--border-default)] bg-[var(--surface-subtle)] flex flex-col items-center justify-center text-center relative overflow-hidden group"
           >
             {logoBase64 && (
               <button
@@ -1430,7 +1430,7 @@ export const SystemSettingsView: React.FC<SystemSettingsViewProps> = ({
 
           {/* Logo Upload (Light theme) */}
           <div
-            className="p-6 rounded-[var(--radius)] border border-dashed border-[var(--border-default)] bg-[var(--surface-subtle)] flex flex-col items-center justify-center text-center relative overflow-hidden group"
+            className="p-6 rounded-[var(--radius-md)] border border-dashed border-[var(--border-default)] bg-[var(--surface-subtle)] flex flex-col items-center justify-center text-center relative overflow-hidden group"
           >
             {logoLightBase64 && (
               <button
@@ -2029,7 +2029,7 @@ export const SystemSettingsView: React.FC<SystemSettingsViewProps> = ({
           <button
             onClick={handleSaveVisibilitySettings}
             disabled={isSaving}
-            className="flex items-center gap-2 bg-accent hover:bg-accent text-white px-5 py-2 rounded-[var(--radius)] transition-theme text-xs font-bold shadow-sm disabled:opacity-50"
+            className="flex items-center gap-2 bg-accent hover:bg-accent text-white px-5 py-2 rounded-[var(--radius-md)] transition-theme text-xs font-bold shadow-sm disabled:opacity-50"
           >
             {isSaving ? <RefreshCw className="animate-spin" size={14} /> : <Save size={14} />}
             <span>{dir === "rtl" ? "حفظ التغييرات الآن" : "Save Visibility Settings"}</span>
@@ -2172,7 +2172,7 @@ export const SystemSettingsView: React.FC<SystemSettingsViewProps> = ({
                 type="text"
                 value={keywordsEn || ""}
                 onChange={(e) => setKeywordsEn(e.target.value)}
-                className="w-full px-4 py-3 rounded-[var(--radius)] border focus:outline-none focus:ring-2 focus:ring-accent-500/50 transition-theme bg-[var(--surface-subtle)] border-[var(--border-default)] text-[var(--text-primary)]"
+                className="w-full px-4 py-3 rounded-[var(--radius-md)] border focus:outline-none focus:ring-2 focus:ring-accent-500/50 transition-theme bg-[var(--surface-subtle)] border-[var(--border-default)] text-[var(--text-primary)]"
               />
             </div>
             <div>
@@ -2183,7 +2183,7 @@ export const SystemSettingsView: React.FC<SystemSettingsViewProps> = ({
                 type="text"
                 value={keywordsAr || ""}
                 onChange={(e) => setKeywordsAr(e.target.value)}
-                className="w-full px-4 py-3 rounded-[var(--radius)] border focus:outline-none focus:ring-2 focus:ring-accent-500/50 transition-theme bg-[var(--surface-subtle)] border-[var(--border-default)] text-[var(--text-primary)]"
+                className="w-full px-4 py-3 rounded-[var(--radius-md)] border focus:outline-none focus:ring-2 focus:ring-accent-500/50 transition-theme bg-[var(--surface-subtle)] border-[var(--border-default)] text-[var(--text-primary)]"
               />
             </div>
           </div>
@@ -2390,7 +2390,7 @@ export const SystemSettingsView: React.FC<SystemSettingsViewProps> = ({
               {/* Image Uploader */}
               <div className="space-y-4">
                 <div
-                  className="p-6 rounded-[var(--radius)] border border-dashed border-[var(--border-default)] bg-[var(--surface-subtle)] hover:border-accent/50 transition-theme flex flex-col items-center justify-center text-center relative overflow-hidden min-h-[220px] group"
+                  className="p-6 rounded-[var(--radius-md)] border border-dashed border-[var(--border-default)] bg-[var(--surface-subtle)] hover:border-accent/50 transition-theme flex flex-col items-center justify-center text-center relative overflow-hidden min-h-[220px] group"
                 >
                   <input
                     type="file"

@@ -531,7 +531,7 @@ const GoogleHubPage: React.FC = () => {
                         }}
                         role="button"
                         tabIndex={tool.available ? 0 : -1}
-                        className={`w-full relative p-5 rounded-[var(--radius)] border text-start transition-theme group cursor-pointer ${
+                        className={`w-full relative p-5 rounded-[var(--radius-md)] border text-start transition-theme group cursor-pointer ${
                           tool.available 
                             ? 'bg-[var(--surface-subtle)] border-[var(--border-default)] hover:border-accent/50 hover:shadow-[0_10px_20px_rgba(156,163,175,0.08)]'
                             : 'bg-[var(--surface-subtle)]/50 border-dashed border-[var(--border-default)] opacity-60 grayscale cursor-not-allowed'

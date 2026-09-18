@@ -180,7 +180,7 @@ export const Privacy: React.FC = () => {
 
         <section className="grid grid-cols-1 md:grid-cols-2 gap-10 items-start">
           <div className="space-y-8">
-            <div className="p-6 md:p-8 rounded-[var(--radius)] border border-[var(--border-default)] bg-[var(--surface-card)] backdrop-blur-sm shadow-sm transition-theme hover:border-[var(--border-accent)] group">
+            <div className="p-6 md:p-8 rounded-[var(--radius-md)] border border-[var(--border-default)] bg-[var(--surface-card)] backdrop-blur-sm shadow-sm transition-theme hover:border-[var(--border-accent)] group">
               <div className="flex items-center gap-3 text-[var(--text-primary)] mb-4">
                 <Scale className="w-6 h-6 text-[var(--text-muted)] group-hover:text-[var(--fg-accent)] transition-theme" />
                 <h2 className="text-xl md:text-2xl font-black">{isAr ? "المبادئ التأسيسية" : "Foundational Principles"}</h2>
@@ -196,7 +196,7 @@ export const Privacy: React.FC = () => {
             </div>
           </div>
 
-          <div className="relative aspect-square rounded-[var(--radius-xl)] overflow-hidden bg-[var(--surface-subtle)] border border-[var(--border-default)] flex items-center justify-center p-8 shadow-inner">
+          <div className="relative aspect-square rounded-[var(--radius-lg)] overflow-hidden bg-[var(--surface-subtle)] border border-[var(--border-default)] flex items-center justify-center p-8 shadow-inner">
             <div className="relative z-10 flex flex-col items-center gap-8 w-full">
               <div className="flex items-center justify-center p-6 rounded-[var(--radius-xs)] bg-[var(--surface-card)] border border-[var(--border-default)] shadow-lg hover:shadow-none transition-theme group animate-pulse">
                 <Lock className="w-24 h-24 text-[var(--text-muted)] group-hover:text-[var(--fg-accent)] transition-theme" />
@@ -239,7 +239,7 @@ export const Privacy: React.FC = () => {
             {sections.map((section, i) => (
               <div 
                 key={`privacy-sec-${i}-${section.title}`} 
-                className="p-6 md:p-8 rounded-[var(--radius)] border border-[var(--border-default)] bg-[var(--surface-card)] hover:bg-[var(--surface-subtle)] hover:border-[var(--border-accent)] transition-theme group shadow-sm"
+                className="p-6 md:p-8 rounded-[var(--radius-md)] border border-[var(--border-default)] bg-[var(--surface-card)] hover:bg-[var(--surface-subtle)] hover:border-[var(--border-accent)] transition-theme group shadow-sm"
               >
                 <div className="flex items-center gap-4 mb-6">
                   <div className="w-12 h-12 rounded-[var(--radius-xs)] bg-[var(--surface-card)] border border-[var(--border-default)] flex items-center justify-center text-[var(--text-muted)] group-hover:text-[var(--fg-accent)] transition-theme">
@@ -265,7 +265,7 @@ export const Privacy: React.FC = () => {
           </div>
         </section>
 
-        <section className="p-6 md:p-8 rounded-[var(--radius)] border border-[var(--border-default)] bg-[var(--surface-card)] space-y-8">
+        <section className="p-6 md:p-8 rounded-[var(--radius-md)] border border-[var(--border-default)] bg-[var(--surface-card)] space-y-8">
           <div className="flex items-center gap-3 text-[var(--text-primary)]">
             <Shield className="w-5 h-5 text-[var(--fg-accent)]" />
             <h2 className="text-xl md:text-2xl font-black">{isAr ? "الهوية المؤسسية والشفافية" : "Corporate Identity & Transparency"}</h2>
@@ -287,7 +287,7 @@ export const Privacy: React.FC = () => {
             </p>
           </div>
 
-          <div className="p-6 md:p-8 rounded-[var(--radius)] border border-[var(--border-default)] bg-[var(--surface-card)] space-y-4 max-w-4xl mx-auto shadow-inner">
+          <div className="p-6 md:p-8 rounded-[var(--radius-md)] border border-[var(--border-default)] bg-[var(--surface-card)] space-y-4 max-w-4xl mx-auto shadow-inner">
             <div className="flex items-center gap-3 text-[var(--text-primary)]">
               <Shield className="w-5 h-5 text-[var(--fg-accent)]" />
               <h3 className="text-base md:text-lg font-black">{isAr ? "حقوق الملكية الفكرية" : "Intellectual Property Rights"}</h3>

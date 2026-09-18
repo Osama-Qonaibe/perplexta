@@ -55,6 +55,8 @@ export const DEFAULT_LIGHT_TOKENS: ThemeTokensMap = {
   '--border-followup-btn-hover': '#d0d7de',
   '--control-active-bg': '#1a7f37',
   '--control-active-fg': '#ffffff',
+  '--comp-button-primary-bg': '#1a7f37',
+  '--comp-button-primary-fg': '#ffffff',
 
   '--btn-header-size': '32px',
   '--btn-header-radius': '8px',
@@ -110,6 +112,7 @@ export const DEFAULT_LIGHT_TOKENS: ThemeTokensMap = {
   '--github-orange': '#bc4c00',
   '--github-pink': '#bf3989',
 
+  '--radius': '12px',
   '--radius-xs': '4px',
   '--radius-sm': '8px',
   '--radius-md': '12px',
@@ -176,6 +179,8 @@ export const DEFAULT_DARK_TOKENS: ThemeTokensMap = {
   '--border-followup-btn-hover': '#3d444d',
   '--control-active-bg': '#238636',
   '--control-active-fg': '#ffffff',
+  '--comp-button-primary-bg': '#238636',
+  '--comp-button-primary-fg': '#ffffff',
 
   '--btn-header-size': '32px',
   '--btn-header-radius': '8px',
@@ -231,6 +236,7 @@ export const DEFAULT_DARK_TOKENS: ThemeTokensMap = {
   '--github-orange': '#db6d28',
   '--github-pink': '#db61a2',
 
+  '--radius': '12px',
   '--radius-xs': '4px',
   '--radius-sm': '8px',
   '--radius-md': '12px',

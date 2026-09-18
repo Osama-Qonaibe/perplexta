@@ -1191,7 +1191,7 @@ export const AdsManagementView: React.FC<{
       {activeTab === 'analytics' ? (
         <div className="space-y-6">
           {isAnalyticsLoading || !analyticsData ? (
-            <div className="p-12 text-center text-xs text-gray-400 flex flex-col items-center gap-2 bg-[var(--surface-subtle)] border border-[var(--border-default)] rounded-[var(--radius-md)]">
+            <div className="p-12 text-center text-xs text-[var(--text-muted)] flex flex-col items-center gap-2 bg-[var(--surface-subtle)] border border-[var(--border-default)] rounded-[var(--radius-md)]">
               <RefreshCw size={24} className="animate-spin text-accent" />
               <span>{isRtl ? 'جاري تحميل تحليلات وإيرادات الإعلانات...' : 'Loading ad analytics & revenue...'}</span>
             </div>
@@ -1682,14 +1682,14 @@ export const AdsManagementView: React.FC<{
               </div>
               <button
                 onClick={fetchApprovalQueue}
-                className="p-2 rounded-[var(--radius-sm)] border border-[var(--border-default)] bg-[var(--surface-page)] text-gray-400 hover:text-amber-500 transition-colors"
+                className="p-2 rounded-[var(--radius-sm)] border border-[var(--border-default)] bg-[var(--surface-page)] text-[var(--text-muted)] hover:text-amber-500 transition-colors"
               >
                 <RefreshCw size={15} />
               </button>
             </div>
 
             {approvalRequests.length === 0 ? (
-              <div className="p-12 text-center text-xs text-gray-400 bg-[var(--surface-page)]/50 rounded-[var(--radius-md)] border border-dashed border-[var(--border-default)]">
+              <div className="p-12 text-center text-xs text-[var(--text-muted)] bg-[var(--surface-page)]/50 rounded-[var(--radius-md)] border border-dashed border-[var(--border-default)]">
                 {isRtl ? 'لا توجد طلبات معلقة حالياً' : 'No pending approval requests.'}
               </div>
             ) : (
@@ -1893,12 +1893,12 @@ export const AdsManagementView: React.FC<{
             </div>
 
             {isAuditLoading && auditLogs.length === 0 ? (
-              <div className="p-12 text-center text-xs text-gray-400 bg-[var(--surface-page)]/50 rounded-[var(--radius-md)] border border-dashed border-[var(--border-default)]">
+              <div className="p-12 text-center text-xs text-[var(--text-muted)] bg-[var(--surface-page)]/50 rounded-[var(--radius-md)] border border-dashed border-[var(--border-default)]">
                 <RefreshCw size={24} className="animate-spin text-blue-500 mx-auto mb-2" />
                 <span>{isRtl ? 'جاري تحميل سجل التدقيق...' : 'Loading audit history...'}</span>
               </div>
             ) : auditLogs.length === 0 ? (
-              <div className="p-12 text-center text-xs text-gray-400 bg-[var(--surface-page)]/50 rounded-[var(--radius-md)] border border-dashed border-[var(--border-default)]">
+              <div className="p-12 text-center text-xs text-[var(--text-muted)] bg-[var(--surface-page)]/50 rounded-[var(--radius-md)] border border-dashed border-[var(--border-default)]">
                 {isRtl ? 'لا توجد سجلات تدقيق متاحة حالياً.' : 'No audit records available yet.'}
               </div>
             ) : (
@@ -1994,7 +1994,7 @@ export const AdsManagementView: React.FC<{
                 <div className="flex-1 space-y-1 px-2">
                   <div className="flex justify-between items-center mb-1">
                     <span className="text-[10px] font-black text-[var(--text-muted)] uppercase">{isRtl ? 'النسبة' : 'Percentage'}</span>
-                    <span className={`text-xs font-black ${batchAdjustmentPercent > 0 ? 'text-[var(--fg-accent)]' : batchAdjustmentPercent < 0 ? 'text-red-500' : 'text-gray-400'}`}>
+                    <span className={`text-xs font-black ${batchAdjustmentPercent > 0 ? 'text-[var(--fg-accent)]' : batchAdjustmentPercent < 0 ? 'text-red-500' : 'text-[var(--text-muted)]'}`}>
                       {batchAdjustmentPercent > 0 ? '+' : ''}{batchAdjustmentPercent}%
                     </span>
                   </div>
@@ -2532,7 +2532,7 @@ export const AdsManagementView: React.FC<{
                             ? 'bg-amber-500/10 text-amber-500 border border-amber-500/20 animate-pulse'
                             : ad.status === 'rejected'
                             ? 'bg-red-500/10 text-red-500 border border-red-500/20'
-                            : 'bg-gray-500/10 text-gray-400 border border-gray-500/20'
+                            : 'bg-gray-500/10 text-[var(--text-muted)] border border-gray-500/20'
                         }`}>
                           {ad.status === 'approved' && (isRtl ? 'مقبول / نشط' : 'Approved')}
                           {ad.status === 'pending' && (isRtl ? 'قيد المراجعة' : 'Pending')}
@@ -2582,7 +2582,7 @@ export const AdsManagementView: React.FC<{
 
                           <button
                             onClick={() => handleDeleteBulletinAd(ad.id)}
-                            className="p-1 rounded-[var(--radius-xs)] text-gray-400 hover:text-red-500 hover:bg-red-500/10 transition-colors cursor-pointer"
+                            className="p-1 rounded-[var(--radius-xs)] text-[var(--text-muted)] hover:text-red-500 hover:bg-red-500/10 transition-colors cursor-pointer"
                             title={isRtl ? 'حذف نهائي' : 'Delete'}
                           >
                             <Trash2 size={14} />
@@ -2835,7 +2835,7 @@ export const AdsManagementView: React.FC<{
                             className={`px-2.5 py-1 rounded-[var(--radius-full)] text-[10px] font-bold border transition-theme cursor-pointer ${
                               ad.is_active
                                 ? 'bg-[var(--bg-accent-muted)] text-[var(--fg-accent)] border-[var(--border-accent)]/30 hover:opacity-90'
-                                : 'bg-gray-500/10 text-gray-400 border-gray-500/20 hover:bg-gray-500/20'
+                                : 'bg-gray-500/10 text-[var(--text-muted)] border-gray-500/20 hover:bg-gray-500/20'
                             }`}
                           >
                             {ad.is_active ? (isRtl ? 'نشط' : 'Active') : (isRtl ? 'معطل' : 'Disabled')}
@@ -2854,7 +2854,7 @@ export const AdsManagementView: React.FC<{
                             <button
                               onClick={() => handleDelete(ad.id)}
                               title={isRtl ? 'حذف' : 'Delete'}
-                              className="p-1.5 rounded-[var(--radius-xs)] bg-red-500/10 hover:bg-red-500/20 text-gray-400 hover:text-red-500 transition-colors cursor-pointer"
+                              className="p-1.5 rounded-[var(--radius-xs)] bg-red-500/10 hover:bg-red-500/20 text-[var(--text-muted)] hover:text-red-500 transition-colors cursor-pointer"
                             >
                               <Trash2 size={14} />
                             </button>

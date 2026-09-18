@@ -206,7 +206,7 @@ export const AudioStudioPage: React.FC = () => {
           <div className="flex items-center gap-3">
             <button 
               onClick={() => navigate(-1)} 
-              className="h-9 px-3 flex items-center gap-1.5 rounded-[var(--radius)] bg-[var(--surface-subtle)] border border-[var(--border-default)] text-[var(--text-primary)] hover:text-accent transition-theme active:scale-95 cursor-pointer text-xs font-bold"
+              className="h-9 px-3 flex items-center gap-1.5 rounded-[var(--radius-md)] bg-[var(--surface-subtle)] border border-[var(--border-default)] text-[var(--text-primary)] hover:text-accent transition-theme active:scale-95 cursor-pointer text-xs font-bold"
             >
               {isAr ? <ChevronRight size={16} /> : <ChevronLeft size={16} />}
               <span>{isAr ? 'الرجوع' : 'Back'}</span>
@@ -236,7 +236,7 @@ export const AudioStudioPage: React.FC = () => {
       </header>
 
       <main className="flex-1 overflow-y-auto max-w-5xl w-full mx-auto px-4 py-3 space-y-3">
-        <section className="p-4 sm:p-5 rounded-[var(--radius)] bg-gradient-to-br from-[var(--surface-card)] to-[var(--surface-subtle)] border border-[var(--border-default)] relative overflow-hidden">
+        <section className="p-4 sm:p-5 rounded-[var(--radius-md)] bg-gradient-to-br from-[var(--surface-card)] to-[var(--surface-subtle)] border border-[var(--border-default)] relative overflow-hidden">
           <div className="max-w-3xl relative z-10 space-y-2">
             <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-shape-sm bg-accent/10 border border-accent/20 text-accent text-[11px] font-black uppercase tracking-wider">
               <Sparkle size={12} className="animate-spin-slow" />
@@ -272,7 +272,7 @@ export const AudioStudioPage: React.FC = () => {
                   setActiveTab(tab.id as AudioTab);
                   setErrorText(null);
                 }}
-                className={`p-3.5 rounded-[var(--radius)] border font-bold text-xs flex items-center justify-between transition-all duration-200 active:scale-98 cursor-pointer ${
+                className={`p-3.5 rounded-[var(--radius-md)] border font-bold text-xs flex items-center justify-between transition-all duration-200 active:scale-98 cursor-pointer ${
                   isSelected
                     ? 'bg-[var(--bg-accent-emphasis)] text-[var(--fg-on-emphasis)] border-accent shadow-sm'
                     : 'bg-[var(--surface-card)] text-[var(--text-primary)] border-[var(--border-default)] hover:border-accent/40'
@@ -291,13 +291,13 @@ export const AudioStudioPage: React.FC = () => {
         </section>
 
         {errorText && (
-          <div className="p-4 rounded-[var(--radius)] bg-red-500/10 border border-red-500/20 text-red-500 text-xs font-bold flex items-center gap-2.5">
+          <div className="p-4 rounded-[var(--radius-md)] bg-red-500/10 border border-red-500/20 text-red-500 text-xs font-bold flex items-center gap-2.5">
             <AlertCircle size={16} className="shrink-0" />
             <span>{errorText}</span>
           </div>
         )}
 
-        <section className="p-6 sm:p-8 rounded-[var(--radius)] bg-[var(--surface-card)] border border-[var(--border-default)] min-h-[300px] flex flex-col justify-between relative shadow-xs">
+        <section className="p-6 sm:p-8 rounded-[var(--radius-md)] bg-[var(--surface-card)] border border-[var(--border-default)] min-h-[300px] flex flex-col justify-between relative shadow-xs">
           
           {activeTab === 'orchestra' && (
             <div className="space-y-6 flex-1 flex flex-col justify-between">
@@ -322,7 +322,7 @@ export const AudioStudioPage: React.FC = () => {
                     value={orchPrompt}
                     onChange={(e) => setOrchPrompt(e.target.value)}
                     placeholder={isAr ? 'مثال: معزوفة عود شرقي حزين مع تداخل الكمان والأصوات الطبيعية الهادئة للأمطار والليل الغامض...' : 'Example: Dramatic cinematic orchestral arrangement with slow ambient violin and natural rain frequencies...'}
-                    className="w-full h-32 rounded-[var(--radius)] bg-[var(--surface-subtle)] border border-[var(--border-default)] p-4 text-xs font-bold focus:border-accent focus:outline-none transition-theme leading-relaxed text-[var(--text-primary)]"
+                    className="w-full h-32 rounded-[var(--radius-md)] bg-[var(--surface-subtle)] border border-[var(--border-default)] p-4 text-xs font-bold focus:border-accent focus:outline-none transition-theme leading-relaxed text-[var(--text-primary)]"
                   />
                 </div>
 
@@ -367,7 +367,7 @@ export const AudioStudioPage: React.FC = () => {
                 <button
                   onClick={executeOrchestra}
                   disabled={isGenerating}
-                  className="h-10 px-6 rounded-[var(--radius)] bg-[var(--bg-accent-emphasis)] text-[var(--fg-on-emphasis)] font-black text-xs transition-all flex items-center gap-2 hover:opacity-90 active:scale-95 cursor-pointer disabled:opacity-50"
+                  className="h-10 px-6 rounded-[var(--radius-md)] bg-[var(--bg-accent-emphasis)] text-[var(--fg-on-emphasis)] font-black text-xs transition-all flex items-center gap-2 hover:opacity-90 active:scale-95 cursor-pointer disabled:opacity-50"
                 >
                   {isGenerating ? <RefreshCw size={14} className="animate-spin" /> : <Sparkles size={14} />}
                   <span>{isAr ? 'بدء إنتاج الأوركسترا' : 'Launch Orchestra Suite'}</span>
@@ -396,7 +396,7 @@ export const AudioStudioPage: React.FC = () => {
                     value={musicPrompt}
                     onChange={(e) => setMusicPrompt(e.target.value)}
                     placeholder={isAr ? 'مثال: أغنية طرب شرقية هادئة على مقام راست بآلة العود والناي تحاكي الشوق والحنين...' : 'Example: Lofi chill study beat with soft acoustic guitar chords and ambient keyboard layer...'}
-                    className="w-full h-32 rounded-[var(--radius)] bg-[var(--surface-subtle)] border border-[var(--border-default)] p-4 text-xs font-bold focus:border-accent focus:outline-none transition-theme leading-relaxed text-[var(--text-primary)]"
+                    className="w-full h-32 rounded-[var(--radius-md)] bg-[var(--surface-subtle)] border border-[var(--border-default)] p-4 text-xs font-bold focus:border-accent focus:outline-none transition-theme leading-relaxed text-[var(--text-primary)]"
                   />
                 </div>
 
@@ -464,7 +464,7 @@ export const AudioStudioPage: React.FC = () => {
                 <button
                   onClick={executeMusic}
                   disabled={isGenerating}
-                  className="h-10 px-6 rounded-[var(--radius)] bg-[var(--bg-accent-emphasis)] text-[var(--fg-on-emphasis)] font-black text-xs transition-all flex items-center gap-2 hover:opacity-90 active:scale-95 cursor-pointer disabled:opacity-50"
+                  className="h-10 px-6 rounded-[var(--radius-md)] bg-[var(--bg-accent-emphasis)] text-[var(--fg-on-emphasis)] font-black text-xs transition-all flex items-center gap-2 hover:opacity-90 active:scale-95 cursor-pointer disabled:opacity-50"
                 >
                   {isGenerating ? <RefreshCw size={14} className="animate-spin" /> : <Disc size={14} />}
                   <span>{isAr ? 'تأليف اللحن الموسيقي' : 'Compose Audio'}</span>
@@ -493,7 +493,7 @@ export const AudioStudioPage: React.FC = () => {
                     value={ttsText}
                     onChange={(e) => setTtsText(e.target.value)}
                     placeholder={isAr ? 'اكتب هنا ما تود سماعه، مثل التقارير الإخبارية، المناهج التعليمية، أو السرد القصصي الاحترافي...' : 'Type anything you want the engine to narrate with high-fidelity, organic voice patterns...'}
-                    className="w-full h-32 rounded-[var(--radius)] bg-[var(--surface-subtle)] border border-[var(--border-default)] p-4 text-xs font-bold focus:border-accent focus:outline-none transition-theme leading-relaxed text-[var(--text-primary)]"
+                    className="w-full h-32 rounded-[var(--radius-md)] bg-[var(--surface-subtle)] border border-[var(--border-default)] p-4 text-xs font-bold focus:border-accent focus:outline-none transition-theme leading-relaxed text-[var(--text-primary)]"
                   />
                 </div>
 
@@ -505,7 +505,7 @@ export const AudioStudioPage: React.FC = () => {
                     <div className="grid grid-cols-2 gap-2">
                       <button
                         onClick={() => setTtsGender('female')}
-                        className={`h-10 rounded-[var(--radius)] border text-xs font-bold transition-all ${
+                        className={`h-10 rounded-[var(--radius-md)] border text-xs font-bold transition-all ${
                           ttsGender === 'female'
                             ? 'bg-accent/10 text-accent border-accent'
                             : 'bg-[var(--surface-subtle)] text-[var(--text-primary)] border-[var(--border-default)] hover:border-accent/40'
@@ -515,7 +515,7 @@ export const AudioStudioPage: React.FC = () => {
                       </button>
                       <button
                         onClick={() => setTtsGender('male')}
-                        className={`h-10 rounded-[var(--radius)] border text-xs font-bold transition-all ${
+                        className={`h-10 rounded-[var(--radius-md)] border text-xs font-bold transition-all ${
                           ttsGender === 'male'
                             ? 'bg-accent/10 text-accent border-accent'
                             : 'bg-[var(--surface-subtle)] text-[var(--text-primary)] border-[var(--border-default)] hover:border-accent/40'
@@ -566,7 +566,7 @@ export const AudioStudioPage: React.FC = () => {
                 <button
                   onClick={executeTTS}
                   disabled={isGenerating}
-                  className="h-10 px-6 rounded-[var(--radius)] bg-[var(--bg-accent-emphasis)] text-[var(--fg-on-emphasis)] font-black text-xs transition-all flex items-center gap-2 hover:opacity-90 active:scale-95 cursor-pointer disabled:opacity-50"
+                  className="h-10 px-6 rounded-[var(--radius-md)] bg-[var(--bg-accent-emphasis)] text-[var(--fg-on-emphasis)] font-black text-xs transition-all flex items-center gap-2 hover:opacity-90 active:scale-95 cursor-pointer disabled:opacity-50"
                 >
                   {isGenerating ? <RefreshCw size={14} className="animate-spin" /> : <Volume2 size={14} />}
                   <span>{isAr ? 'توليد النطق الطبيعي' : 'Generate Speech'}</span>
@@ -592,7 +592,7 @@ export const AudioStudioPage: React.FC = () => {
                     onDragOver={handleDragOver}
                     onDragLeave={handleDragLeave}
                     onDrop={handleDrop}
-                    className={`border border-dashed rounded-[var(--radius)] p-6 flex flex-col items-center justify-center text-center gap-3 min-h-[180px] transition-all relative ${
+                    className={`border border-dashed rounded-[var(--radius-md)] p-6 flex flex-col items-center justify-center text-center gap-3 min-h-[180px] transition-all relative ${
                       sttDragOver
                         ? 'border-accent bg-accent/5 scale-[1.01]'
                         : 'border-[var(--border-default)] bg-[var(--surface-subtle)] hover:border-accent/40'
@@ -625,7 +625,7 @@ export const AudioStudioPage: React.FC = () => {
                     )}
                   </div>
 
-                  <div className="border border-[var(--border-default)] rounded-[var(--radius)] bg-[var(--surface-subtle)] p-6 flex flex-col items-center justify-center text-center gap-4 min-h-[180px]">
+                  <div className="border border-[var(--border-default)] rounded-[var(--radius-md)] bg-[var(--surface-subtle)] p-6 flex flex-col items-center justify-center text-center gap-4 min-h-[180px]">
                     {isRecording ? (
                       <div className="space-y-4 w-full flex flex-col items-center">
                         <div className="flex items-center gap-1.5 h-8">
@@ -684,7 +684,7 @@ export const AudioStudioPage: React.FC = () => {
                 <button
                   onClick={executeSTT}
                   disabled={isGenerating || (!sttFile && !isRecording)}
-                  className="h-10 px-6 rounded-[var(--radius)] bg-[var(--bg-accent-emphasis)] text-[var(--fg-on-emphasis)] font-black text-xs transition-all flex items-center gap-2 hover:opacity-90 active:scale-95 cursor-pointer disabled:opacity-50"
+                  className="h-10 px-6 rounded-[var(--radius-md)] bg-[var(--bg-accent-emphasis)] text-[var(--fg-on-emphasis)] font-black text-xs transition-all flex items-center gap-2 hover:opacity-90 active:scale-95 cursor-pointer disabled:opacity-50"
                 >
                   {isGenerating ? <RefreshCw size={14} className="animate-spin" /> : <Mic size={14} />}
                   <span>{isAr ? 'تفريغ وتفسير المقطع الصوتي' : 'Transcribe Audio'}</span>

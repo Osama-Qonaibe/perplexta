@@ -783,7 +783,7 @@ export const RewardsPage: React.FC = () => {
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
         
         {/* Withdrawable Balance Card */}
-        <div className="relative overflow-hidden rounded-[var(--radius)] p-5 md:p-8 border bg-[var(--surface-subtle)] border-[var(--border-default)] flex flex-col items-center justify-center text-center min-h-[180px] md:min-h-[240px]">
+        <div className="relative overflow-hidden rounded-[var(--radius-md)] p-5 md:p-8 border bg-[var(--surface-subtle)] border-[var(--border-default)] flex flex-col items-center justify-center text-center min-h-[180px] md:min-h-[240px]">
           <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-[120px] md:text-[180px] font-bold text-[var(--text-muted)] opacity-10 select-none pointer-events-none">
             $
           </div>
@@ -804,7 +804,7 @@ export const RewardsPage: React.FC = () => {
         </div>
 
         {/* Points Balance Card */}
-        <div className="relative overflow-hidden rounded-[var(--radius)] p-5 md:p-8 border bg-[var(--surface-subtle)] border-[var(--border-default)] flex flex-col items-center justify-center text-center min-h-[180px] md:min-h-[240px]">
+        <div className="relative overflow-hidden rounded-[var(--radius-md)] p-5 md:p-8 border bg-[var(--surface-subtle)] border-[var(--border-default)] flex flex-col items-center justify-center text-center min-h-[180px] md:min-h-[240px]">
           <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 select-none pointer-events-none opacity-5">
             <Gift className="text-[var(--text-muted)] w-[140px] h-[140px] md:w-[200px] md:h-[200px]" />
           </div>
@@ -833,7 +833,7 @@ export const RewardsPage: React.FC = () => {
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
         
         {/* How it works */}
-        <div className="rounded-[var(--radius)] p-5 md:p-8 border bg-[var(--surface-subtle)] border-[var(--border-default)] transition-theme hover:border-[var(--border-default)]">
+        <div className="rounded-[var(--radius-md)] p-5 md:p-8 border bg-[var(--surface-subtle)] border-[var(--border-default)] transition-theme hover:border-[var(--border-default)]">
           <h3 className="text-lg md:text-xl font-bold text-[var(--text-primary)] mb-6 md:mb-8 text-center flex items-center justify-center gap-2">
             <Zap size={20} className="text-[var(--fg-accent)]" />
             <span>{t('howSystemWorks')}</span>
@@ -876,7 +876,7 @@ export const RewardsPage: React.FC = () => {
         </div>
 
         {/* Invite Friends */}
-        <div className="rounded-[var(--radius)] p-5 md:p-8 border bg-[var(--surface-subtle)] border-[var(--border-default)] flex flex-col transition-theme hover:border-[var(--border-default)]">
+        <div className="rounded-[var(--radius-md)] p-5 md:p-8 border bg-[var(--surface-subtle)] border-[var(--border-default)] flex flex-col transition-theme hover:border-[var(--border-default)]">
           <div className="text-center mb-6 md:mb-8">
             <h3 className="text-lg md:text-xl font-bold text-[var(--text-primary)] flex items-center justify-center gap-2">
               <Zap size={18} className="text-[var(--fg-accent)]" />
@@ -889,7 +889,7 @@ export const RewardsPage: React.FC = () => {
 
           <div className="mt-auto space-y-4 md:space-y-6">
             {!wallet?.referral_activated ? (
-              <div className="p-4 md:p-6 rounded-[var(--radius)] border border-[var(--border-default)] bg-[var(--surface-page)] flex flex-col gap-4 text-center">
+              <div className="p-4 md:p-6 rounded-[var(--radius-md)] border border-[var(--border-default)] bg-[var(--surface-page)] flex flex-col gap-4 text-center">
                 {!showActivationForm ? (
                   <>
                     <div className="w-10 h-10 rounded-[var(--radius-xs)] bg-[var(--surface-inset)] flex items-center justify-center text-[var(--text-primary)] mx-auto border border-[var(--border-default)]">
@@ -1429,7 +1429,7 @@ export const RewardsPage: React.FC = () => {
               </div>
             )}
 
-            <div className="group flex items-center justify-between p-4 md:p-6 rounded-[var(--radius)] border bg-[var(--surface-page)] border-[var(--border-default)] hover:border-[var(--border-accent)] transition-all duration-300 shadow-[0_4px_20px_rgba(0,0,0,0.02)]">
+            <div className="group flex items-center justify-between p-4 md:p-6 rounded-[var(--radius-md)] border bg-[var(--surface-page)] border-[var(--border-default)] hover:border-[var(--border-accent)] transition-all duration-300 shadow-[0_4px_20px_rgba(0,0,0,0.02)]">
               <div className="flex items-center gap-3 md:gap-4">
                 <div className="w-10 h-10 md:w-12 md:h-12 rounded-[var(--radius-xs)] bg-[var(--surface-inset)] border border-[var(--border-default)] flex items-center justify-center text-[var(--text-primary)] transition-all duration-300">
                   <Gift size={20} className="md:w-6 md:h-6 group-hover:scale-110 transition-transform duration-300 text-[var(--fg-accent)]" />
@@ -1448,7 +1448,7 @@ export const RewardsPage: React.FC = () => {
       </div>
 
       {/* Referred Friends & Deposit Verification History List */}
-      <div className="rounded-[var(--radius)] p-5 md:p-8 border bg-[var(--surface-subtle)] border-[var(--border-default)] flex flex-col transition-theme hover:border-[var(--border-accent)]">
+      <div className="rounded-[var(--radius-md)] p-5 md:p-8 border bg-[var(--surface-subtle)] border-[var(--border-default)] flex flex-col transition-theme hover:border-[var(--border-accent)]">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6 border-b border-[var(--border-default)] pb-6">
           <div>
             <h3 className="text-lg font-bold text-[var(--text-primary)] flex items-center gap-2">
@@ -1526,7 +1526,7 @@ export const RewardsPage: React.FC = () => {
 
           if (filtered.length === 0) {
             return (
-              <div className="py-12 text-center rounded-[var(--radius)] border border-dashed border-[var(--border-default)] bg-[var(--surface-page)]/40">
+              <div className="py-12 text-center rounded-[var(--radius-md)] border border-dashed border-[var(--border-default)] bg-[var(--surface-page)]/40">
                 <Users className="mx-auto text-[var(--text-muted)] opacity-30 mb-3" size={32} />
                 <h4 className="text-sm font-bold text-[var(--text-primary)]">
                   {dir === 'rtl' ? 'لا توجد نتائج مطابقة لتصفيتك' : 'No Friends Fit This Filter'}
@@ -1698,7 +1698,7 @@ export const RewardsPage: React.FC = () => {
 
       {/* KYC Verification Card */}
       {contextUser?.kyc_required && contextUser?.kyc_status !== 'verified' && (
-        <div className={`rounded-[var(--radius)] p-5 md:p-8 border transition-theme bg-[var(--surface-subtle)] border-[var(--border-default)] col-span-1 md:col-span-2 shadow-sm ${
+        <div className={`rounded-[var(--radius-md)] p-5 md:p-8 border transition-theme bg-[var(--surface-subtle)] border-[var(--border-default)] col-span-1 md:col-span-2 shadow-sm ${
           contextUser?.kyc_status === 'pending' ? 'bg-[var(--surface-inset)] border-[var(--border-default)]' : 
           contextUser?.kyc_status === 'rejected' ? 'bg-red-500/5 border-red-500/20 shadow-red-500/5' : ''
         }`}>
@@ -1706,10 +1706,10 @@ export const RewardsPage: React.FC = () => {
           {contextUser?.kyc_status === 'pending' ? (
             <div className="flex flex-col items-center text-center py-6 md:py-10 space-y-4 md:space-y-6">
               <div className="relative">
-                <div className="w-20 h-20 md:w-24 md:h-24 rounded-[var(--radius)] bg-[var(--surface-inset)] flex items-center justify-center border border-[var(--border-default)]">
+                <div className="w-20 h-20 md:w-24 md:h-24 rounded-[var(--radius-md)] bg-[var(--surface-inset)] flex items-center justify-center border border-[var(--border-default)]">
                   <ShieldCheck size={40} className="md:w-[48px] md:h-[48px] text-[var(--fg-accent)]" />
                 </div>
-                <div className="absolute -bottom-1.5 -right-1.5 w-8 h-8 md:w-10 md:h-10 rounded-[var(--radius)] bg-[var(--surface-card)] border-[3px] md:border-4 border-[var(--surface-page)] flex items-center justify-center">
+                <div className="absolute -bottom-1.5 -right-1.5 w-8 h-8 md:w-10 md:h-10 rounded-[var(--radius-md)] bg-[var(--surface-card)] border-[3px] md:border-4 border-[var(--surface-page)] flex items-center justify-center">
                   <Clock size={16} className="text-amber-500" />
                 </div>
               </div>
@@ -1725,8 +1725,8 @@ export const RewardsPage: React.FC = () => {
                 </p>
               </div>
 
-              <div className={`mt-4 md:mt-8 p-4 md:p-6 rounded-[var(--radius)] border flex flex-col md:flex-row items-center gap-4 md:gap-6 max-w-3xl bg-[var(--surface-page)]/50 border-[var(--border-default)]`}>
-                <div className="flex-shrink-0 p-3 md:p-4 rounded-[var(--radius)] bg-[var(--surface-inset)] text-[var(--text-primary)]">
+              <div className={`mt-4 md:mt-8 p-4 md:p-6 rounded-[var(--radius-md)] border flex flex-col md:flex-row items-center gap-4 md:gap-6 max-w-3xl bg-[var(--surface-page)]/50 border-[var(--border-default)]`}>
+                <div className="flex-shrink-0 p-3 md:p-4 rounded-[var(--radius-md)] bg-[var(--surface-inset)] text-[var(--text-primary)]">
                   <Lock size={20} className="md:w-6 md:h-6" />
                 </div>
                 <div className={`text-[10px] md:text-sm leading-relaxed ${dir === 'rtl' ? 'text-right' : 'text-left'}`}>
@@ -1744,7 +1744,7 @@ export const RewardsPage: React.FC = () => {
           ) : contextUser?.kyc_status === 'rejected' ? (
             <div className="flex flex-col items-center text-center py-6 md:py-10 space-y-4 md:space-y-6">
               <div className="relative">
-                <div className="w-20 h-20 md:w-24 md:h-24 rounded-[var(--radius)] bg-red-500/10 flex items-center justify-center">
+                <div className="w-20 h-20 md:w-24 md:h-24 rounded-[var(--radius-md)] bg-red-500/10 flex items-center justify-center">
                   <XCircle size={40} className="md:w-[48px] md:h-[48px] text-red-500" />
                 </div>
               </div>
@@ -1754,7 +1754,7 @@ export const RewardsPage: React.FC = () => {
                   {dir === 'rtl' ? 'تم رفض طلب التحقق' : 'Verification Request Rejected'}
                 </h3>
                 {contextUser?.kyc_rejection_reason && (
-                  <div className={`p-4 rounded-[var(--radius)] border bg-red-500/5 border-red-500/20 text-red-500 text-sm md:text-base font-medium`}>
+                  <div className={`p-4 rounded-[var(--radius-md)] border bg-red-500/5 border-red-500/20 text-red-500 text-sm md:text-base font-medium`}>
                     <p className="text-[10px] uppercase tracking-widest text-red-400 mb-1 font-black">
                       {t('kycRejectionReason')}
                     </p>
@@ -1773,7 +1773,7 @@ export const RewardsPage: React.FC = () => {
                     setSelfieData(null);
                     setKycFullName('');
                   }}
-                  className="mt-4 px-8 py-3 rounded-[var(--radius)] bg-[var(--control-active-bg)] hover:opacity-90 text-[var(--control-active-fg)] font-bold text-sm md:text-base transition-all duration-300 shadow-md flex items-center gap-2 mx-auto cursor-pointer"
+                  className="mt-4 px-8 py-3 rounded-[var(--radius-md)] bg-[var(--control-active-bg)] hover:opacity-90 text-[var(--control-active-fg)] font-bold text-sm md:text-base transition-all duration-300 shadow-md flex items-center gap-2 mx-auto cursor-pointer"
                 >
                   <RefreshCw size={18} className="text-[var(--fg-accent)]" />
                   {dir === 'rtl' ? 'إعادة المحاولة' : 'Try Again'}
@@ -1785,7 +1785,7 @@ export const RewardsPage: React.FC = () => {
               {/* Left Side: Info */}
               <div className="flex-1 space-y-4 md:space-y-6">
                 <div className="flex items-center gap-3 md:gap-4">
-                  <div className="w-10 h-10 md:w-12 md:h-12 rounded-[var(--radius)] bg-[var(--surface-inset)] flex items-center justify-center text-[var(--text-primary)] border border-[var(--border-default)] flex-shrink-0">
+                  <div className="w-10 h-10 md:w-12 md:h-12 rounded-[var(--radius-md)] bg-[var(--surface-inset)] flex items-center justify-center text-[var(--text-primary)] border border-[var(--border-default)] flex-shrink-0">
                     <ShieldCheck size={20} className="md:w-6 md:h-6 text-[var(--fg-accent)]" />
                   </div>
                   <div>
@@ -1793,7 +1793,7 @@ export const RewardsPage: React.FC = () => {
                       <h3 className="text-lg md:text-xl font-bold text-[var(--text-primary)]">
                         {t('kycVerification')}
                       </h3>
-                      <span className={`px-2 py-0.5 rounded-[calc(var(--radius)/2)] text-[9px] md:text-xs font-bold border bg-[var(--surface-page)]/50 border-[var(--border-default)] text-[var(--text-secondary)]`}>
+                      <span className={`px-2 py-0.5 rounded-[var(--radius-xs)] text-[9px] md:text-xs font-bold border bg-[var(--surface-page)]/50 border-[var(--border-default)] text-[var(--text-secondary)]`}>
                         {t('kycThresholdNote')}
                       </span>
                     </div>
@@ -1804,7 +1804,7 @@ export const RewardsPage: React.FC = () => {
                   {t('kycDescription')}
                 </p>
 
-                <div className="p-4 rounded-[var(--radius)] border flex items-start gap-3 bg-[var(--surface-page)] border-[var(--border-default)]">
+                <div className="p-4 rounded-[var(--radius-md)] border flex items-start gap-3 bg-[var(--surface-page)] border-[var(--border-default)]">
                   <Lock className="text-[var(--text-muted)] mt-0.5 flex-shrink-0" size={16} />
                   <p className="text-[10px] md:text-sm text-[var(--text-secondary)] leading-relaxed font-medium">
                     {t('selfieSecurityNote')}
@@ -1819,7 +1819,7 @@ export const RewardsPage: React.FC = () => {
                   <label className="block text-xs md:text-sm font-medium text-[var(--text-secondary)]">
                     {t('fullNameAsPerIdUser')}
                   </label>
-                  <div className={`relative flex items-center rounded-[var(--radius)] border transition-theme bg-[var(--surface-subtle)] border-[var(--border-default)] focus-within:border-[var(--border-accent)]`}>
+                  <div className={`relative flex items-center rounded-[var(--radius-md)] border transition-theme bg-[var(--surface-subtle)] border-[var(--border-default)] focus-within:border-[var(--border-accent)]`}>
                     <input 
                       type="text"
                       value={kycFullName || ''}
@@ -1834,10 +1834,10 @@ export const RewardsPage: React.FC = () => {
                 <div className="space-y-2">
                   {isCapturing && !selfieCaptured ? (
                     <div className="space-y-2">
-                      <video ref={videoRef} className="w-full rounded-[var(--radius)] bg-[var(--surface-inset)]" autoPlay playsInline />
+                      <video ref={videoRef} className="w-full rounded-[var(--radius-md)] bg-[var(--surface-inset)]" autoPlay playsInline />
                       <button 
                         onClick={captureImage}
-                        className="w-full py-2.5 md:py-3 rounded-[var(--radius)] bg-[var(--control-active-bg)] hover:opacity-90 text-[var(--control-active-fg)] font-bold text-xs md:text-base cursor-pointer transition-all duration-300"
+                        className="w-full py-2.5 md:py-3 rounded-[var(--radius-md)] bg-[var(--control-active-bg)] hover:opacity-90 text-[var(--control-active-fg)] font-bold text-xs md:text-base cursor-pointer transition-all duration-300"
                       >
                         {t('capture')}
                       </button>
@@ -1846,7 +1846,7 @@ export const RewardsPage: React.FC = () => {
                     <button 
                       onClick={startCamera}
                       disabled={selfieCaptured}
-                      className={`w-full flex items-center justify-center gap-2 md:gap-3 py-3 md:py-4 rounded-[var(--radius)] border-2 border-dashed transition-theme ${
+                      className={`w-full flex items-center justify-center gap-2 md:gap-3 py-3 md:py-4 rounded-[var(--radius-md)] border-2 border-dashed transition-theme ${
                         selfieCaptured 
                           ? 'border-[var(--border-default)] bg-[var(--surface-inset)] text-[var(--text-primary)] cursor-default shadow-sm'
                           : `border-[var(--border-default)] hover:border-[var(--border-accent)] text-[var(--text-secondary)] hover:text-[var(--text-primary)]`
@@ -1917,7 +1917,7 @@ export const RewardsPage: React.FC = () => {
             )}
           </div>
           
-          <div className={`overflow-hidden rounded-[var(--radius)] border border-[var(--border-default)] bg-[var(--surface-subtle)]`}>
+          <div className={`overflow-hidden rounded-[var(--radius-md)] border border-[var(--border-default)] bg-[var(--surface-subtle)]`}>
             <div className="overflow-x-auto no-scrollbar">
               <table className="w-full text-[10px] md:text-sm text-left rtl:text-right">
                 <thead className={`text-[9px] md:text-xs uppercase bg-[var(--surface-page)]/40 text-[var(--text-muted)]`}>
@@ -1949,7 +1949,7 @@ export const RewardsPage: React.FC = () => {
                         return (
                           <tr key={`rewards-tx-${tx.id || txIdx}-${txIdx}`} className="border-b border-[var(--border-default)] hover:bg-[var(--surface-page)]/20 transition-colors">
                             <td className="px-6 py-4 font-medium text-[var(--text-primary)] whitespace-nowrap">
-                              <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-[var(--radius)] text-xs font-semibold ${badgeClass}`}>
+                              <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-[var(--radius-md)] text-xs font-semibold ${badgeClass}`}>
                                 {label}
                               </span>
                             </td>
@@ -2023,7 +2023,7 @@ export const RewardsPage: React.FC = () => {
               onTouchStart={swipeHandlers.onTouchStart}
               onTouchMove={swipeHandlers.onTouchMove}
               onTouchEnd={swipeHandlers.onTouchEnd}
-              className={`relative w-full max-w-md rounded-[var(--radius)] p-6 md:p-8 shadow-2xl bg-[var(--surface-card)] border border-[var(--border-default)] z-10`}
+              className={`relative w-full max-w-md rounded-[var(--radius-md)] p-6 md:p-8 shadow-2xl bg-[var(--surface-card)] border border-[var(--border-default)] z-10`}
             >
               
               {/* Header */}

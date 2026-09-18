@@ -909,11 +909,11 @@ export const UserManagementView: React.FC<UserManagementProps> = ({
   return (
     <div className="space-y-6 pb-12">
       {/* 1. Command Center Header */}
-      <div className={`p-6 rounded-2xl border flex flex-col md:flex-row md:items-center justify-between gap-4 transition-all ${
+      <div className={`p-6 rounded-[var(--radius-lg)] border flex flex-col md:flex-row md:items-center justify-between gap-4 transition-all ${
         'bg-[var(--surface-card)] border-[var(--border-default)] shadow-sm transition-theme'
       }`}>
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-lg bg-[var(--surface-subtle)] border border-[var(--surface-subtle)] flex items-center justify-center text-[var(--fg-accent)] shadow-sm">
+          <div className="w-10 h-10 rounded-[var(--radius-sm)] bg-[var(--surface-subtle)] border border-[var(--surface-subtle)] flex items-center justify-center text-[var(--fg-accent)] shadow-sm">
             <Users size={24} />
           </div>
           <div>
@@ -958,7 +958,7 @@ export const UserManagementView: React.FC<UserManagementProps> = ({
           }`}>
             <button
               onClick={() => setAutoSync(!autoSync)}
-              className={`px-2.5 py-1 rounded-lg text-[10px] uppercase tracking-wider font-extrabold transition-all ${
+              className={`px-2.5 py-1 rounded-[var(--radius-sm)] text-[10px] uppercase tracking-wider font-extrabold transition-all ${
                 autoSync
                   ? 'bg-[var(--fg-accent)] text-[var(--comp-button-primary-fg,#ffffff)] shadow-sm'
                   : ('text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-theme')
@@ -1009,7 +1009,7 @@ export const UserManagementView: React.FC<UserManagementProps> = ({
       </div>
 
       {/* 2. Advanced Multi-level Search & Filtering Bar */}
-      <div className={`p-4 rounded-2xl border space-y-3 ${
+      <div className={`p-4 rounded-[var(--radius-lg)] border space-y-3 ${
         'bg-[var(--surface-card)] border-[var(--border-default)] shadow-sm transition-theme'
       }`}>
         <div className="relative">
@@ -1019,7 +1019,7 @@ export const UserManagementView: React.FC<UserManagementProps> = ({
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             placeholder={isRtl ? 'بحث باسم المستخدم، البريد الإلكتروني، أو المصرّح المالي #ID...' : 'Search name, email, or user ID...'}
-            className="w-full h-10 ltr:pl-9 ltr:pr-4 rtl:pr-9 rtl:pl-4 rounded-lg border text-xs focus:outline-none focus:border-[var(--fg-accent)] focus:ring-1 focus:ring-[var(--fg-accent)] bg-[var(--surface-card)] border-[var(--border-default)] text-[var(--text-primary)] placeholder-[var(--text-muted)] shadow-sm transition-all"
+            className="w-full h-10 ltr:pl-9 ltr:pr-4 rtl:pr-9 rtl:pl-4 rounded-[var(--radius-sm)] border text-xs focus:outline-none focus:border-[var(--fg-accent)] focus:ring-1 focus:ring-[var(--fg-accent)] bg-[var(--surface-card)] border-[var(--border-default)] text-[var(--text-primary)] placeholder-[var(--text-muted)] shadow-sm transition-all"
           />
         </div>
 
@@ -1088,7 +1088,7 @@ export const UserManagementView: React.FC<UserManagementProps> = ({
       </div>
 
       {/* 3. Primary Users Data Grid */}
-      <div className={`rounded-2xl border overflow-hidden transition-all ${
+      <div className={`rounded-[var(--radius-lg)] border overflow-hidden transition-all ${
         'bg-[var(--surface-card)] border-[var(--border-default)] shadow-sm transition-theme'
       }`}>
         <div className="overflow-x-auto">
@@ -1261,7 +1261,7 @@ export const UserManagementView: React.FC<UserManagementProps> = ({
                       <td className="px-5 py-3.5">
                         <div className="flex items-center gap-3">
                           <div className="relative">
-                            <div className={`w-9 h-9 rounded-lg border flex items-center justify-center overflow-hidden shrink-0 transition-colors ${
+                            <div className={`w-9 h-9 rounded-[var(--radius-sm)] border flex items-center justify-center overflow-hidden shrink-0 transition-colors ${
                               'bg-[var(--surface-card)] border-[var(--border-default)] group-hover:border-[var(--border-accent)] transition-theme'
                             }`}>
                               {user.avatar ? (
@@ -1300,7 +1300,7 @@ export const UserManagementView: React.FC<UserManagementProps> = ({
                             value={user.role || 'user'}
                             onChange={(e) => handleUpdateRole(user.id.toString(), e.target.value)}
                             disabled={isUpdating}
-                            className={`text-[10px] font-black uppercase tracking-wider px-2 py-1.5 rounded-lg border appearance-none w-full text-center focus:outline-none focus:border-[var(--fg-accent)] focus:ring-1 focus:ring-[var(--fg-accent)] cursor-pointer shadow-sm transition-all ${
+                            className={`text-[10px] font-black uppercase tracking-wider px-2 py-1.5 rounded-[var(--radius-sm)] border appearance-none w-full text-center focus:outline-none focus:border-[var(--fg-accent)] focus:ring-1 focus:ring-[var(--fg-accent)] cursor-pointer shadow-sm transition-all ${
                               user.role === 'admin'
                                 ? 'text-purple-500 border-purple-500/30 bg-purple-500/10'
                                 : user.role === 'elite'
@@ -1326,7 +1326,7 @@ export const UserManagementView: React.FC<UserManagementProps> = ({
                             value={user.plan_id || 'free'}
                             onChange={(e) => handleUpdatePlan(user.id.toString(), e.target.value)}
                             disabled={isUpdating}
-                            className="text-[10px] font-black uppercase tracking-wider px-2 py-1.5 rounded-lg border appearance-none w-full text-center focus:outline-none focus:border-[var(--fg-accent)] focus:ring-1 focus:ring-[var(--fg-accent)] cursor-pointer shadow-sm transition-all"
+                            className="text-[10px] font-black uppercase tracking-wider px-2 py-1.5 rounded-[var(--radius-sm)] border appearance-none w-full text-center focus:outline-none focus:border-[var(--fg-accent)] focus:ring-1 focus:ring-[var(--fg-accent)] cursor-pointer shadow-sm transition-all"
                             style={{
                               backgroundColor: `${plan.color}15`,
                               color: plan.color,
@@ -1424,7 +1424,7 @@ export const UserManagementView: React.FC<UserManagementProps> = ({
                           {/* Send Email */}
                           <button
                             onClick={() => setEmailModalUser(user)}
-                            className={`w-7 h-7 rounded-lg border flex items-center justify-center transition-all ${
+                            className={`w-7 h-7 rounded-[var(--radius-sm)] border flex items-center justify-center transition-all ${
                               'bg-[var(--surface-subtle)] text-[var(--text-secondary)] hover:text-accent hover:bg-accent/10 border-[var(--border-default)] hover:border-accent/30 transition-theme'
                             }`}
                             title={isRtl ? 'إرسال بريد' : 'Send Email'}
@@ -1435,7 +1435,7 @@ export const UserManagementView: React.FC<UserManagementProps> = ({
                           {/* View Detail Modal */}
                           <button
                             onClick={() => handleOpenUserDetail(user, 'profile')}
-                            className="w-8 h-8 rounded-lg flex items-center justify-center transition-all bg-[var(--surface-subtle)] hover:opacity-80 text-[var(--fg-accent)] border border-[var(--surface-subtle)] cursor-pointer "
+                            className="w-8 h-8 rounded-[var(--radius-sm)] flex items-center justify-center transition-all bg-[var(--surface-subtle)] hover:opacity-80 text-[var(--fg-accent)] border border-[var(--surface-subtle)] cursor-pointer "
                             title={isRtl ? 'إعدادات وإدارة الحساب' : 'View Account Settings'}
                           >
                             <Eye size={13} />
@@ -1444,7 +1444,7 @@ export const UserManagementView: React.FC<UserManagementProps> = ({
                           {/* Delete Account */}
                           <button
                             onClick={() => handleDeleteUser(user.id.toString())}
-                            className={`w-7 h-7 rounded-lg border flex items-center justify-center transition-all ${
+                            className={`w-7 h-7 rounded-[var(--radius-sm)] border flex items-center justify-center transition-all ${
                               'bg-[var(--surface-subtle)] text-[var(--text-secondary)] hover:text-rose-400 hover:bg-rose-500/10 border-[var(--border-default)] hover:border-rose-500/30 transition-theme'
                             }`}
                             title={isRtl ? 'حذف الحساب' : 'Delete Account'}
@@ -1497,7 +1497,7 @@ export const UserManagementView: React.FC<UserManagementProps> = ({
               <select
                 value={pageSize}
                 onChange={(e) => setPageSize(Number(e.target.value))}
-                className={`p-1 rounded-lg border text-xs font-mono font-bold focus:outline-none focus:border-[var(--fg-accent)] focus:ring-1 focus:ring-[var(--fg-accent)] cursor-pointer ${
+                className={`p-1 rounded-[var(--radius-sm)] border text-xs font-mono font-bold focus:outline-none focus:border-[var(--fg-accent)] focus:ring-1 focus:ring-[var(--fg-accent)] cursor-pointer ${
                   'bg-[var(--surface-card)] border-[var(--border-default)] text-[var(--text-primary)] transition-theme'
                 }`}
               >
@@ -1514,7 +1514,7 @@ export const UserManagementView: React.FC<UserManagementProps> = ({
                 type="button"
                 onClick={() => setCurrentPage(1)}
                 disabled={safeCurrentPage <= 1}
-                className={`p-1.5 rounded-lg border transition-all disabled:opacity-30 disabled:cursor-not-allowed ${
+                className={`p-1.5 rounded-[var(--radius-sm)] border transition-all disabled:opacity-30 disabled:cursor-not-allowed ${
                   'bg-[var(--surface-card)] border-[var(--border-default)] text-[var(--text-secondary)] hover:bg-[var(--surface-subtle)] hover:text-[var(--text-primary)] transition-theme'
                 }`}
                 title={isRtl ? 'الصفحة الأولى' : 'First Page'}
@@ -1526,7 +1526,7 @@ export const UserManagementView: React.FC<UserManagementProps> = ({
                 type="button"
                 onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
                 disabled={safeCurrentPage <= 1}
-                className={`p-1.5 rounded-lg border transition-all disabled:opacity-30 disabled:cursor-not-allowed ${
+                className={`p-1.5 rounded-[var(--radius-sm)] border transition-all disabled:opacity-30 disabled:cursor-not-allowed ${
                   'bg-[var(--surface-card)] border-[var(--border-default)] text-[var(--text-secondary)] hover:bg-[var(--surface-subtle)] hover:text-[var(--text-primary)] transition-theme'
                 }`}
                 title={isRtl ? 'الصفحة السابقة' : 'Previous Page'}
@@ -1548,7 +1548,7 @@ export const UserManagementView: React.FC<UserManagementProps> = ({
                         <button
                           type="button"
                           onClick={() => setCurrentPage(page)}
-                          className={`w-8 h-8 rounded-lg text-xs font-mono font-bold transition-all ${ safeCurrentPage === page ? 'bg-[var(--fg-accent)] text-[var(--comp-button-primary-fg,#ffffff)] shadow-sm font-black border border-[var(--fg-accent)]' : 'bg-[var(--surface-card)] border border-[var(--border-default)] text-[var(--text-secondary)] hover:bg-[var(--surface-subtle)] hover:text-[var(--text-primary)] transition-theme' }`}
+                          className={`w-8 h-8 rounded-[var(--radius-sm)] text-xs font-mono font-bold transition-all ${ safeCurrentPage === page ? 'bg-[var(--fg-accent)] text-[var(--comp-button-primary-fg,#ffffff)] shadow-sm font-black border border-[var(--fg-accent)]' : 'bg-[var(--surface-card)] border border-[var(--border-default)] text-[var(--text-secondary)] hover:bg-[var(--surface-subtle)] hover:text-[var(--text-primary)] transition-theme' }`}
                         >
                           {page}
                         </button>
@@ -1561,7 +1561,7 @@ export const UserManagementView: React.FC<UserManagementProps> = ({
                 type="button"
                 onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
                 disabled={safeCurrentPage >= totalPages}
-                className={`p-1.5 rounded-lg border transition-all disabled:opacity-30 disabled:cursor-not-allowed ${
+                className={`p-1.5 rounded-[var(--radius-sm)] border transition-all disabled:opacity-30 disabled:cursor-not-allowed ${
                   'bg-[var(--surface-card)] border-[var(--border-default)] text-[var(--text-secondary)] hover:bg-[var(--surface-subtle)] hover:text-[var(--text-primary)] transition-theme'
                 }`}
                 title={isRtl ? 'الصفحة التالية' : 'Next Page'}
@@ -1573,7 +1573,7 @@ export const UserManagementView: React.FC<UserManagementProps> = ({
                 type="button"
                 onClick={() => setCurrentPage(totalPages)}
                 disabled={safeCurrentPage >= totalPages}
-                className={`p-1.5 rounded-lg border transition-all disabled:opacity-30 disabled:cursor-not-allowed ${
+                className={`p-1.5 rounded-[var(--radius-sm)] border transition-all disabled:opacity-30 disabled:cursor-not-allowed ${
                   'bg-[var(--surface-card)] border-[var(--border-default)] text-[var(--text-secondary)] hover:bg-[var(--surface-subtle)] hover:text-[var(--text-primary)] transition-theme'
                 }`}
                 title={isRtl ? 'الصفحة الأخيرة' : 'Last Page'}
@@ -1594,7 +1594,7 @@ export const UserManagementView: React.FC<UserManagementProps> = ({
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0, scale: 0.96 }}
               transition={{ duration: 0.2 }}
-              className={`relative w-full max-w-4xl max-h-[90vh] overflow-hidden rounded-2xl border shadow-2xl flex flex-col ${
+              className={`relative w-full max-w-4xl max-h-[90vh] overflow-hidden rounded-[var(--radius-lg)] border shadow-2xl flex flex-col ${
                 'bg-[var(--surface-card)] border-[var(--border-default)] text-[var(--text-primary)] transition-theme'
               }`}
             >
@@ -1631,7 +1631,7 @@ export const UserManagementView: React.FC<UserManagementProps> = ({
 
                 <button
                   onClick={() => setIsDetailModalOpen(false)}
-                  className={`p-2 rounded-lg transition-colors ${
+                  className={`p-2 rounded-[var(--radius-sm)] transition-colors ${
                     'text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--surface-subtle)] transition-theme'
                   }`}
                 >
@@ -1743,7 +1743,7 @@ export const UserManagementView: React.FC<UserManagementProps> = ({
                             value={selectedUser.role || 'user'}
                             onChange={(e) => handleUpdateRole(selectedUser.id, e.target.value)}
                             disabled={isUpdating}
-                            className="w-full h-10 px-3 rounded-lg border text-xs font-bold focus:outline-none focus:border-[var(--fg-accent)] focus:ring-1 focus:ring-[var(--fg-accent)] bg-[var(--surface-card)] border-[var(--border-default)] text-[var(--text-primary)] transition-all"
+                            className="w-full h-10 px-3 rounded-[var(--radius-sm)] border text-xs font-bold focus:outline-none focus:border-[var(--fg-accent)] focus:ring-1 focus:ring-[var(--fg-accent)] bg-[var(--surface-card)] border-[var(--border-default)] text-[var(--text-primary)] transition-all"
                           >
                             <option value="user">{isRtl ? 'مستخدم' : 'User'}</option>
                             <option value="support">{isRtl ? 'دعم فني' : 'Support'}</option>
@@ -1777,7 +1777,7 @@ export const UserManagementView: React.FC<UserManagementProps> = ({
 
                       {/* Selfie Photo Preview if available */}
                       {selectedUser.kyc_selfie && (
-                        <div className="space-y-2 p-3 rounded-lg bg-[var(--surface-subtle)] border border-[var(--border-default)]">
+                        <div className="space-y-2 p-3 rounded-[var(--radius-sm)] bg-[var(--surface-subtle)] border border-[var(--border-default)]">
                           <div className="flex items-center justify-between">
                             <span className="text-[11px] font-bold text-[var(--text-muted)]">{isRtl ? 'صورة التوثيق المرفوعة:' : 'Uploaded Selfie:'}</span>
                             <button
@@ -1791,7 +1791,7 @@ export const UserManagementView: React.FC<UserManagementProps> = ({
                           {selectedUser.kyc_full_name && (
                             <p className="text-xs font-bold">{isRtl ? 'الاسم بالهوية:' : 'Name on ID:'} <span className="text-accent">{selectedUser.kyc_full_name}</span></p>
                           )}
-                          <div className="max-w-xs rounded-lg overflow-hidden border border-[var(--border-default)]">
+                          <div className="max-w-xs rounded-[var(--radius-sm)] overflow-hidden border border-[var(--border-default)]">
                             <img src={selectedUser.kyc_selfie} alt="KYC Selfie" className="w-full h-auto object-cover max-h-48" />
                           </div>
                         </div>
@@ -1800,14 +1800,14 @@ export const UserManagementView: React.FC<UserManagementProps> = ({
                       {/* KYC Actions */}
                       <div className="space-y-3 pt-2">
                         {selectedUser.kyc_status === 'pending' && (
-                          <div className="p-3 rounded-lg bg-amber-500/10 border border-amber-500/30 text-amber-500 text-xs flex items-center gap-2">
+                          <div className="p-3 rounded-[var(--radius-sm)] bg-amber-500/10 border border-amber-500/30 text-amber-500 text-xs flex items-center gap-2">
                             <Clock size={16} className="shrink-0" />
                             <span>{isRtl ? 'هذا المستخدم ينتظر مراجعة وتوثيق وثائق الهوية الرسمية' : 'User pending identity verification audit'}</span>
                           </div>
                         )}
 
                         {selectedUser.kyc_status === 'rejected' && selectedUser.kyc_rejection_reason && (
-                          <div className="p-3 rounded-lg bg-rose-600/10 border border-rose-500/30 text-rose-400 text-xs">
+                          <div className="p-3 rounded-[var(--radius-sm)] bg-rose-600/10 border border-rose-500/30 text-rose-400 text-xs">
                             <span className="font-bold block mb-1">{isRtl ? 'سبب الرفض السابق:' : 'Rejection Reason:'}</span>
                             <p className="font-mono">{selectedUser.kyc_rejection_reason}</p>
                           </div>
@@ -1817,7 +1817,7 @@ export const UserManagementView: React.FC<UserManagementProps> = ({
                           <button
                             onClick={() => handleUpdateKYCVerificationStatus(selectedUser.id, 'verified')}
                             disabled={isUpdating}
-                            className="h-8 flex-1 flex items-center justify-center gap-1.5 px-3 bg-[var(--fg-accent)] hover:opacity-90 text-[var(--comp-button-primary-fg,#ffffff)] font-bold text-xs rounded-lg shadow-sm transition-all active:scale-95 cursor-pointer"
+                            className="h-8 flex-1 flex items-center justify-center gap-1.5 px-3 bg-[var(--fg-accent)] hover:opacity-90 text-[var(--comp-button-primary-fg,#ffffff)] font-bold text-xs rounded-[var(--radius-sm)] shadow-sm transition-all active:scale-95 cursor-pointer"
                           >
                             <CheckCircle2 size={14} />
                             <span>{isRtl ? 'اعتماد التوثيق' : 'Approve KYC'}</span>
@@ -1837,7 +1837,7 @@ export const UserManagementView: React.FC<UserManagementProps> = ({
                               if (reason) handleUpdateKYCVerificationStatus(selectedUser.id, 'rejected', reason);
                             }}
                             disabled={isUpdating}
-                            className="h-8 flex-1 flex items-center justify-center gap-1.5 px-3 bg-rose-600 hover:bg-rose-500 text-white font-bold text-xs rounded-lg shadow-sm transition-all active:scale-95 cursor-pointer"
+                            className="h-8 flex-1 flex items-center justify-center gap-1.5 px-3 bg-rose-600 hover:bg-rose-500 text-white font-bold text-xs rounded-[var(--radius-sm)] shadow-sm transition-all active:scale-95 cursor-pointer"
                           >
                             <XCircle size={14} />
                             <span>{isRtl ? 'رفض التوثيق' : 'Reject KYC'}</span>
@@ -1860,14 +1860,14 @@ export const UserManagementView: React.FC<UserManagementProps> = ({
                         value={supportNotes}
                         onChange={(e) => setSupportNotes(e.target.value)}
                         placeholder={isRtl ? 'اكتب أي ملاحظات خاصة بهذا المستخدم تظهر للفريق فقط...' : 'Internal notes visible to team only...'}
-                        className="w-full p-3 rounded-lg border text-xs focus:outline-none focus:border-[var(--fg-accent)] focus:ring-1 focus:ring-[var(--fg-accent)] bg-[var(--surface-card)] border-[var(--border-default)] text-[var(--text-primary)] transition-all placeholder-[var(--text-muted)]"
+                        className="w-full p-3 rounded-[var(--radius-sm)] border text-xs focus:outline-none focus:border-[var(--fg-accent)] focus:ring-1 focus:ring-[var(--fg-accent)] bg-[var(--surface-card)] border-[var(--border-default)] text-[var(--text-primary)] transition-all placeholder-[var(--text-muted)]"
                       />
 
                       <div className="flex justify-end">
                         <button
                           onClick={handleSaveSupportNotes}
                           disabled={isUpdating}
-                          className="h-8 flex items-center justify-center px-4 bg-[var(--fg-accent)] hover:opacity-90 text-[var(--comp-button-primary-fg,#ffffff)] font-bold text-xs rounded-lg shadow-sm transition-all active:scale-95 cursor-pointer"
+                          className="h-8 flex items-center justify-center px-4 bg-[var(--fg-accent)] hover:opacity-90 text-[var(--comp-button-primary-fg,#ffffff)] font-bold text-xs rounded-[var(--radius-sm)] shadow-sm transition-all active:scale-95 cursor-pointer"
                         >
                           {isRtl ? 'حفظ الملاحظات' : 'Save Notes'}
                         </button>
@@ -1916,7 +1916,7 @@ export const UserManagementView: React.FC<UserManagementProps> = ({
                           <select
                             value={ledgerUnit}
                             onChange={(e: any) => setLedgerUnit(e.target.value)}
-                            className="w-full p-2.5 rounded-lg border text-xs bg-[var(--surface-card)] border-[var(--border-default)] text-[var(--text-primary)]"
+                            className="w-full p-2.5 rounded-[var(--radius-sm)] border text-xs bg-[var(--surface-card)] border-[var(--border-default)] text-[var(--text-primary)]"
                           >
                             <option value="PTS">{isRtl ? 'نقاط (PTS)' : 'Points (PTS)'}</option>
                             <option value="USD">{isRtl ? 'دولار أمريكي (USD)' : 'USD ($)'}</option>
@@ -1929,7 +1929,7 @@ export const UserManagementView: React.FC<UserManagementProps> = ({
                           <select
                             value={ledgerAction}
                             onChange={(e: any) => setLedgerAction(e.target.value)}
-                            className="w-full p-2.5 rounded-lg border text-xs bg-[var(--surface-card)] border-[var(--border-default)] text-[var(--text-primary)]"
+                            className="w-full p-2.5 rounded-[var(--radius-sm)] border text-xs bg-[var(--surface-card)] border-[var(--border-default)] text-[var(--text-primary)]"
                           >
                             <option value="add">{isRtl ? 'إضافة / إيداع (+)' : 'Credit / Deposit (+)'}</option>
                             <option value="deduct">{isRtl ? 'خصم / سحب (-)' : 'Debit / Withdraw (-)'}</option>
@@ -1946,7 +1946,7 @@ export const UserManagementView: React.FC<UserManagementProps> = ({
                           placeholder="0.00"
                           value={ledgerAmount}
                           onChange={(e) => setLedgerAmount(e.target.value)}
-                          className="w-full h-10 px-3 rounded-lg border text-xs font-mono focus:outline-none focus:border-[var(--fg-accent)] focus:ring-1 focus:ring-[var(--fg-accent)] bg-[var(--surface-card)] border-[var(--border-default)] text-[var(--text-primary)] transition-all"
+                          className="w-full h-10 px-3 rounded-[var(--radius-sm)] border text-xs font-mono focus:outline-none focus:border-[var(--fg-accent)] focus:ring-1 focus:ring-[var(--fg-accent)] bg-[var(--surface-card)] border-[var(--border-default)] text-[var(--text-primary)] transition-all"
                         />
                       </div>
 
@@ -1957,14 +1957,14 @@ export const UserManagementView: React.FC<UserManagementProps> = ({
                           placeholder={isRtl ? 'مثال: مكافأة تشجيعية، تعويض فني...' : 'e.g. Compensation, Promo reward...'}
                           value={ledgerReason}
                           onChange={(e) => setLedgerReason(e.target.value)}
-                          className="w-full h-10 px-3 rounded-lg border text-xs focus:outline-none focus:border-[var(--fg-accent)] focus:ring-1 focus:ring-[var(--fg-accent)] bg-[var(--surface-card)] border-[var(--border-default)] text-[var(--text-primary)] transition-all"
+                          className="w-full h-10 px-3 rounded-[var(--radius-sm)] border text-xs focus:outline-none focus:border-[var(--fg-accent)] focus:ring-1 focus:ring-[var(--fg-accent)] bg-[var(--surface-card)] border-[var(--border-default)] text-[var(--text-primary)] transition-all"
                         />
                       </div>
 
                       <button
                         type="submit"
                         disabled={isUpdating}
-                        className="w-full h-8 flex items-center justify-center bg-[var(--fg-accent)] hover:opacity-90 text-[var(--comp-button-primary-fg,#ffffff)] font-bold text-xs rounded-lg shadow-sm transition-all active:scale-95 cursor-pointer"
+                        className="w-full h-8 flex items-center justify-center bg-[var(--fg-accent)] hover:opacity-90 text-[var(--comp-button-primary-fg,#ffffff)] font-bold text-xs rounded-[var(--radius-sm)] shadow-sm transition-all active:scale-95 cursor-pointer"
                       >
                         {isRtl ? 'تأكيد التسوية وتسجيل الحركة' : 'Execute Ledger Transaction'}
                       </button>
@@ -1993,7 +1993,7 @@ export const UserManagementView: React.FC<UserManagementProps> = ({
                           {userTransactions.map((tx: any, idx: number) => {
                             const isDeposit = tx.type === 'deposit' || tx.type === 'add' || tx.amount > 0;
                             return (
-                              <div key={`user-tx-${tx.id || idx}-${idx}`} className={`p-3 rounded-lg border text-xs flex items-center justify-between ${
+                              <div key={`user-tx-${tx.id || idx}-${idx}`} className={`p-3 rounded-[var(--radius-sm)] border text-xs flex items-center justify-between ${
                                 'bg-[var(--surface-card)] border-[var(--border-default)] transition-theme'
                               }`}>
                                 <div className="flex items-center gap-2.5">
@@ -2020,7 +2020,7 @@ export const UserManagementView: React.FC<UserManagementProps> = ({
                           })}
                         </div>
                       ) : (
-                        <div className="text-center py-6 text-xs text-[var(--text-muted)] border rounded-lg border-dashed border-[var(--border-default)]">
+                        <div className="text-center py-6 text-xs text-[var(--text-muted)] border rounded-[var(--radius-sm)] border-dashed border-[var(--border-default)]">
                           {isRtl ? 'لا توجد حركات مالية سابقة مسجلة لهذا المستخدم' : 'No recorded transactions'}
                         </div>
                       )}
@@ -2032,7 +2032,7 @@ export const UserManagementView: React.FC<UserManagementProps> = ({
                 {activeTab === 'plan' && (
                   <div className="space-y-6">
                     {/* Active Subscription Live Status Card */}
-                    <div className={`p-5 rounded-2xl border space-y-3 ${
+                    <div className={`p-5 rounded-[var(--radius-lg)] border space-y-3 ${
                       'bg-[var(--surface-card)] border-[var(--border-default)] transition-theme'
                     }`}>
                       <div className="flex items-center justify-between">
@@ -2088,7 +2088,7 @@ export const UserManagementView: React.FC<UserManagementProps> = ({
                     </div>
 
                     {/* All Real Database Plans Grid */}
-                    <div className={`p-5 rounded-2xl border space-y-4 ${
+                    <div className={`p-5 rounded-[var(--radius-lg)] border space-y-4 ${
                       'bg-[var(--surface-card)] border-[var(--border-default)] transition-theme'
                     }`}>
                       <h4 className="text-xs font-black uppercase tracking-wider text-[var(--text-muted)] flex items-center justify-between">
@@ -2223,7 +2223,7 @@ export const UserManagementView: React.FC<UserManagementProps> = ({
                     ) : activityLogs.length > 0 ? (
                       <div className="space-y-2 max-h-80 overflow-y-auto custom-scrollbar">
                         {activityLogs.map((log: any, idx: number) => (
-                          <div key={`user-log-${log.id || idx}-${idx}`} className={`p-3 rounded-lg border text-xs flex items-center justify-between ${
+                          <div key={`user-log-${log.id || idx}-${idx}`} className={`p-3 rounded-[var(--radius-sm)] border text-xs flex items-center justify-between ${
                             'bg-[var(--surface-card)] border-[var(--border-default)] transition-theme'
                           }`}>
                             <div className="space-y-0.5">
@@ -2239,7 +2239,7 @@ export const UserManagementView: React.FC<UserManagementProps> = ({
                         ))}
                       </div>
                     ) : (
-                      <div className="text-center py-8 text-xs text-[var(--text-muted)] border rounded-lg border-dashed border-[var(--border-default)]">
+                      <div className="text-center py-8 text-xs text-[var(--text-muted)] border rounded-[var(--radius-sm)] border-dashed border-[var(--border-default)]">
                         {isRtl ? 'لا توجد سجلات نشاط مسجلة مؤخراً' : 'No recorded activity'}
                       </div>
                     )}
@@ -2259,7 +2259,7 @@ export const UserManagementView: React.FC<UserManagementProps> = ({
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0, scale: 0.95 }}
-              className={`w-full max-w-md rounded-2xl p-6 border shadow-2xl relative space-y-5 ${
+              className={`w-full max-w-md rounded-[var(--radius-lg)] p-6 border shadow-2xl relative space-y-5 ${
                 'bg-[var(--surface-card)] border-[var(--border-default)] text-[var(--text-primary)] transition-theme'
               }`}
             >
@@ -2267,14 +2267,14 @@ export const UserManagementView: React.FC<UserManagementProps> = ({
                 'border-[var(--border-default)] transition-theme'
               }`}>
                 <div className="flex items-center gap-2.5">
-                  <div className="w-9 h-9 rounded-lg bg-[var(--surface-subtle)] border border-[var(--surface-subtle)] flex items-center justify-center text-[var(--fg-accent)]">
+                  <div className="w-9 h-9 rounded-[var(--radius-sm)] bg-[var(--surface-subtle)] border border-[var(--surface-subtle)] flex items-center justify-center text-[var(--fg-accent)]">
                     <UserPlus size={18} />
                   </div>
                   <h3 className="font-black text-base">{isRtl ? 'إضافة مستخدم جديد' : 'Add New Explorer'}</h3>
                 </div>
                 <button
                   onClick={() => setIsCreateModalOpen(false)}
-                  className={`p-1.5 rounded-lg transition-colors ${
+                  className={`p-1.5 rounded-[var(--radius-sm)] transition-colors ${
                     'text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--surface-subtle)] transition-theme'
                   }`}
                 >
@@ -2290,7 +2290,7 @@ export const UserManagementView: React.FC<UserManagementProps> = ({
                     required
                     value={newUser.name}
                     onChange={(e) => setNewUser({ ...newUser, name: e.target.value })}
-                    className="w-full h-10 px-3 rounded-lg border text-xs focus:outline-none focus:border-[var(--fg-accent)] focus:ring-1 focus:ring-[var(--fg-accent)] bg-[var(--surface-card)] border-[var(--border-default)] text-[var(--text-primary)] transition-all"
+                    className="w-full h-10 px-3 rounded-[var(--radius-sm)] border text-xs focus:outline-none focus:border-[var(--fg-accent)] focus:ring-1 focus:ring-[var(--fg-accent)] bg-[var(--surface-card)] border-[var(--border-default)] text-[var(--text-primary)] transition-all"
                   />
                 </div>
 
@@ -2301,7 +2301,7 @@ export const UserManagementView: React.FC<UserManagementProps> = ({
                     required
                     value={newUser.email}
                     onChange={(e) => setNewUser({ ...newUser, email: e.target.value })}
-                    className="w-full h-10 px-3 rounded-lg border text-xs focus:outline-none focus:border-[var(--fg-accent)] focus:ring-1 focus:ring-[var(--fg-accent)] bg-[var(--surface-card)] border-[var(--border-default)] text-[var(--text-primary)] transition-all"
+                    className="w-full h-10 px-3 rounded-[var(--radius-sm)] border text-xs focus:outline-none focus:border-[var(--fg-accent)] focus:ring-1 focus:ring-[var(--fg-accent)] bg-[var(--surface-card)] border-[var(--border-default)] text-[var(--text-primary)] transition-all"
                   />
                 </div>
 
@@ -2312,7 +2312,7 @@ export const UserManagementView: React.FC<UserManagementProps> = ({
                     required
                     value={newUser.password}
                     onChange={(e) => setNewUser({ ...newUser, password: e.target.value })}
-                    className="w-full h-10 px-3 rounded-lg border text-xs focus:outline-none focus:border-[var(--fg-accent)] focus:ring-1 focus:ring-[var(--fg-accent)] bg-[var(--surface-card)] border-[var(--border-default)] text-[var(--text-primary)] transition-all"
+                    className="w-full h-10 px-3 rounded-[var(--radius-sm)] border text-xs focus:outline-none focus:border-[var(--fg-accent)] focus:ring-1 focus:ring-[var(--fg-accent)] bg-[var(--surface-card)] border-[var(--border-default)] text-[var(--text-primary)] transition-all"
                   />
                 </div>
 
@@ -2321,7 +2321,7 @@ export const UserManagementView: React.FC<UserManagementProps> = ({
                   <select
                     value={newUser.role}
                     onChange={(e) => setNewUser({ ...newUser, role: e.target.value })}
-                    className="w-full p-2.5 rounded-lg border text-xs bg-[var(--surface-card)] border-[var(--border-default)] text-[var(--text-primary)]"
+                    className="w-full p-2.5 rounded-[var(--radius-sm)] border text-xs bg-[var(--surface-card)] border-[var(--border-default)] text-[var(--text-primary)]"
                   >
                     <option value="user">{isRtl ? 'مستخدم عادي' : 'Standard User'}</option>
                     <option value="support">{isRtl ? 'دعم فني' : 'Support Team'}</option>
@@ -2334,7 +2334,7 @@ export const UserManagementView: React.FC<UserManagementProps> = ({
                   <button
                     type="button"
                     onClick={() => setIsCreateModalOpen(false)}
-                    className={`px-4 py-2 rounded-lg text-xs font-bold ${
+                    className={`px-4 py-2 rounded-[var(--radius-sm)] text-xs font-bold ${
                       'bg-[var(--surface-subtle)] text-[var(--text-secondary)] hover:bg-[var(--surface-inset)] transition-theme'
                     }`}
                   >
@@ -2343,7 +2343,7 @@ export const UserManagementView: React.FC<UserManagementProps> = ({
                   <button
                     type="submit"
                     disabled={isUpdating}
-                    className="h-8 px-5 flex items-center justify-center bg-[var(--fg-accent)] hover:opacity-90 text-[var(--comp-button-primary-fg,#ffffff)] font-bold text-xs rounded-lg shadow-sm transition-all active:scale-95 cursor-pointer"
+                    className="h-8 px-5 flex items-center justify-center bg-[var(--fg-accent)] hover:opacity-90 text-[var(--comp-button-primary-fg,#ffffff)] font-bold text-xs rounded-[var(--radius-sm)] shadow-sm transition-all active:scale-95 cursor-pointer"
                   >
                     {isRtl ? 'إنشاء الحساب' : 'Create User'}
                   </button>
@@ -2362,7 +2362,7 @@ export const UserManagementView: React.FC<UserManagementProps> = ({
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0, scale: 0.95 }}
-              className={`w-full max-w-lg rounded-2xl p-6 border shadow-2xl relative space-y-5 ${
+              className={`w-full max-w-lg rounded-[var(--radius-lg)] p-6 border shadow-2xl relative space-y-5 ${
                 'bg-[var(--surface-card)] border-[var(--border-default)] text-[var(--text-primary)] transition-theme'
               }`}
             >
@@ -2370,7 +2370,7 @@ export const UserManagementView: React.FC<UserManagementProps> = ({
                 'border-[var(--border-default)] transition-theme'
               }`}>
                 <div className="flex items-center gap-2.5">
-                  <div className="w-9 h-9 rounded-lg bg-[var(--surface-subtle)] border border-[var(--surface-subtle)] flex items-center justify-center text-[var(--fg-accent)]">
+                  <div className="w-9 h-9 rounded-[var(--radius-sm)] bg-[var(--surface-subtle)] border border-[var(--surface-subtle)] flex items-center justify-center text-[var(--fg-accent)]">
                     <Mail size={18} />
                   </div>
                   <div>
@@ -2380,7 +2380,7 @@ export const UserManagementView: React.FC<UserManagementProps> = ({
                 </div>
                 <button
                   onClick={() => setEmailModalUser(null)}
-                  className={`p-1.5 rounded-lg transition-colors ${
+                  className={`p-1.5 rounded-[var(--radius-sm)] transition-colors ${
                     'text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--surface-subtle)] transition-theme'
                   }`}
                 >
@@ -2397,7 +2397,7 @@ export const UserManagementView: React.FC<UserManagementProps> = ({
                     placeholder={isRtl ? 'مثال: تحديث بشأن حسابك...' : 'e.g. Account update...'}
                     value={emailSubject}
                     onChange={(e) => setEmailSubject(e.target.value)}
-                    className="w-full h-10 px-3 rounded-lg border text-xs focus:outline-none focus:border-[var(--fg-accent)] focus:ring-1 focus:ring-[var(--fg-accent)] bg-[var(--surface-card)] border-[var(--border-default)] text-[var(--text-primary)] transition-all"
+                    className="w-full h-10 px-3 rounded-[var(--radius-sm)] border text-xs focus:outline-none focus:border-[var(--fg-accent)] focus:ring-1 focus:ring-[var(--fg-accent)] bg-[var(--surface-card)] border-[var(--border-default)] text-[var(--text-primary)] transition-all"
                   />
                 </div>
 
@@ -2409,14 +2409,14 @@ export const UserManagementView: React.FC<UserManagementProps> = ({
                     placeholder={isRtl ? 'اكتب نص الرسالة التي ستصل للبريد الإلكتروني...' : 'Write message content...'}
                     value={emailBody}
                     onChange={(e) => setEmailBody(e.target.value)}
-                    className="w-full p-3 rounded-lg border text-xs focus:outline-none focus:border-[var(--fg-accent)] focus:ring-1 focus:ring-[var(--fg-accent)] bg-[var(--surface-card)] border-[var(--border-default)] text-[var(--text-primary)] placeholder-[var(--text-muted)] transition-all" />
+                    className="w-full p-3 rounded-[var(--radius-sm)] border text-xs focus:outline-none focus:border-[var(--fg-accent)] focus:ring-1 focus:ring-[var(--fg-accent)] bg-[var(--surface-card)] border-[var(--border-default)] text-[var(--text-primary)] placeholder-[var(--text-muted)] transition-all" />
                 </div>
 
                 <div className="pt-2 flex items-center justify-end gap-2">
                   <button
                     type="button"
                     onClick={() => setEmailModalUser(null)}
-                    className={`px-4 py-2 rounded-lg text-xs font-bold ${
+                    className={`px-4 py-2 rounded-[var(--radius-sm)] text-xs font-bold ${
                       'bg-[var(--surface-subtle)] text-[var(--text-secondary)] hover:bg-[var(--surface-inset)] transition-theme'
                     }`}
                   >
@@ -2425,7 +2425,7 @@ export const UserManagementView: React.FC<UserManagementProps> = ({
                   <button
                     type="submit"
                     disabled={isSendingEmail}
-                    className="h-8 px-5 flex items-center justify-center gap-2 bg-[var(--fg-accent)] hover:opacity-90 text-[var(--comp-button-primary-fg,#ffffff)] font-bold text-xs rounded-lg shadow-sm transition-all active:scale-95 cursor-pointer"
+                    className="h-8 px-5 flex items-center justify-center gap-2 bg-[var(--fg-accent)] hover:opacity-90 text-[var(--comp-button-primary-fg,#ffffff)] font-bold text-xs rounded-[var(--radius-sm)] shadow-sm transition-all active:scale-95 cursor-pointer"
                   >
                     <Send size={14} />
                     <span>{isSendingEmail ? (isRtl ? 'جاري الإرسال...' : 'Sending...') : (isRtl ? 'إرسال الرسالة' : 'Send Email')}</span>

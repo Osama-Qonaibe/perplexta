@@ -750,8 +750,8 @@ export const WalletSystem: React.FC<{ theme: string; dir: 'ltr' | 'rtl' }> = ({ 
   if (loading && !wallet) {
     return (
       <div className="space-y-10 animate-pulse w-full max-w-5xl mx-auto px-6 md:px-12 pt-6">
-        <div className="h-[280px] w-full rounded-[var(--radius)] border border-[var(--border-default)] bg-[var(--surface-card)] transition-theme" />
-        <div className="h-[400px] w-full rounded-[var(--radius)] border border-[var(--border-default)] bg-[var(--surface-card)] transition-theme" />
+        <div className="h-[280px] w-full rounded-[var(--radius-md)] border border-[var(--border-default)] bg-[var(--surface-card)] transition-theme" />
+        <div className="h-[400px] w-full rounded-[var(--radius-md)] border border-[var(--border-default)] bg-[var(--surface-card)] transition-theme" />
       </div>
     );
   }

@@ -439,7 +439,7 @@ export const GoogleContacts: React.FC<GoogleContactsProps> = ({ dir, theme }) =>
       
       {/* 1. DISCONNECTED BANNER / INTRO */}
       {!isConnected ? (
-        <div className="p-8 md:p-12 rounded-[var(--radius)] border bg-[var(--surface-subtle)] border-[var(--border-default)] shadow-2xl relative overflow-hidden flex flex-col items-center text-center">
+        <div className="p-8 md:p-12 rounded-[var(--radius-md)] border bg-[var(--surface-subtle)] border-[var(--border-default)] shadow-2xl relative overflow-hidden flex flex-col items-center text-center">
           <div className="w-16 h-16 rounded-[var(--radius-sm)] bg-[var(--surface-subtle)] border border-[var(--border-accent)] flex items-center justify-center text-[var(--fg-accent)] mb-6 animate-pulse">
             <Users size={32} />
           </div>
@@ -524,7 +524,7 @@ export const GoogleContacts: React.FC<GoogleContactsProps> = ({ dir, theme }) =>
               <button
                 onClick={() => fetchContacts()}
                 disabled={isLoading}
-                className="w-10 h-10 flex items-center justify-center rounded-[var(--radius)] border border-transparent hover:bg-gray-50 dark:hover:bg-gray-800 text-gray-400 hover:text-accent transition-theme"
+                className="w-10 h-10 flex items-center justify-center rounded-[var(--radius-md)] border border-transparent hover:bg-gray-50 dark:hover:bg-gray-800 text-gray-400 hover:text-accent transition-theme"
                 title={isAr ? 'تحديث جهات الاتصال' : 'Refresh contacts'}
               >
                 <RefreshCw size={16} className={isLoading ? 'animate-spin text-accent' : ''} />
@@ -534,7 +534,7 @@ export const GoogleContacts: React.FC<GoogleContactsProps> = ({ dir, theme }) =>
 
               <button
                 onClick={handleDisconnect}
-                className="px-3 py-1.5 rounded-[var(--radius)] border border-red-500/20 hover:bg-red-500/10 text-red-500 transition-theme font-bold text-xs flex items-center gap-1"
+                className="px-3 py-1.5 rounded-[var(--radius-md)] border border-red-500/20 hover:bg-red-500/10 text-red-500 transition-theme font-bold text-xs flex items-center gap-1"
               >
                 <LogOut size={13} />
                 <span>{isAr ? 'قطع الاتصال' : 'Disconnect'}</span>
@@ -844,7 +844,7 @@ export const GoogleContacts: React.FC<GoogleContactsProps> = ({ dir, theme }) =>
                       <button
                         type="button"
                         onClick={handleCancelForm}
-                        className="w-8 h-8 flex items-center justify-center rounded-[var(--radius)] text-gray-400 hover:text-red-500 hover:bg-red-500/10 transition-theme"
+                        className="w-8 h-8 flex items-center justify-center rounded-[var(--radius-md)] text-gray-400 hover:text-red-500 hover:bg-red-500/10 transition-theme"
                       >
                         <X size={14} />
                       </button>
@@ -944,14 +944,14 @@ export const GoogleContacts: React.FC<GoogleContactsProps> = ({ dir, theme }) =>
                     <button
                       type="button"
                       onClick={handleCancelForm}
-                      className="px-4 py-2 text-xs font-semibold rounded-[var(--radius)] border border-transparent hover:bg-gray-150 dark:hover:bg-gray-800 text-gray-400 hover:text-gray-200 transition-theme"
+                      className="px-4 py-2 text-xs font-semibold rounded-[var(--radius-md)] border border-transparent hover:bg-gray-150 dark:hover:bg-gray-800 text-gray-400 hover:text-gray-200 transition-theme"
                     >
                       {isAr ? 'إلغاء' : 'Cancel'}
                     </button>
                     
                     <button
                       type="submit"
-                      className="px-4 py-2 text-xs font-bold bg-accent hover:bg-accent text-white rounded-[var(--radius)] shadow-[0_0_15px_rgba(156,163,175,0.3)] transition-theme"
+                      className="px-4 py-2 text-xs font-bold bg-accent hover:bg-accent text-white rounded-[var(--radius-md)] shadow-[0_0_15px_rgba(156,163,175,0.3)] transition-theme"
                     >
                       {isAr ? 'حفظ جهة الاتصال' : 'Save Connection'}
                     </button>

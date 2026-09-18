@@ -186,7 +186,7 @@ export const VideoPlaybackComponent = ({ src, dir: propDir, alt, title, ...props
             className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-auto cursor-pointer"
           >
             <div className="w-12 h-12 rounded-[var(--radius-sm)] bg-[var(--surface-inset)]/80 backdrop-blur-md border border-[var(--border-default)] hover:border-accent/40 flex items-center justify-center text-accent hover:text-accent hover:scale-110 active:scale-95 transition-theme shadow-[0_0_20px_rgba(0,0,0,0.6)]">
-              {isPlaying ? <Pause size={18} className="fill-current/20" /> : <Play size={18} className="fill-current/20 ml-0.5" />}
+              {isPlaying ? <Pause size={18} className="fill-[var(--accent)]" /> : <Play size={18} className="fill-[var(--accent)] ml-0.5" />}
             </div>
           </div>
 
@@ -338,7 +338,7 @@ export const VideoPlaybackComponent = ({ src, dir: propDir, alt, title, ...props
                     className="absolute inset-0 flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity duration-300 cursor-pointer"
                   >
                     <div className="w-16 h-16 rounded-[var(--radius-sm)] bg-[var(--surface-inset)]/80 backdrop-blur-md border border-[var(--border-default)]/80 flex items-center justify-center text-accent shadow-2xl">
-                      {isPreviewPlaying ? <Pause size={24} className="fill-current/20" /> : <Play size={24} className="fill-current/20 ml-1" />}
+                      {isPreviewPlaying ? <Pause size={24} className="fill-[var(--accent)]" /> : <Play size={24} className="fill-[var(--accent)] ml-1" />}
                     </div>
                   </div>
                 </motion.div>
@@ -354,7 +354,7 @@ export const VideoPlaybackComponent = ({ src, dir: propDir, alt, title, ...props
                     className="w-8 h-8 rounded-[var(--radius-sm)] bg-[var(--surface-subtle)] hover:bg-[var(--surface-inset)] border border-[var(--border-default)]/60 text-accent hover:text-accent flex items-center justify-center active:scale-95 transition-theme"
                     title={isPreviewPlaying ? (dir === 'rtl' ? 'إيقاف' : 'Pause') : (dir === 'rtl' ? 'تشغيل' : 'Play')}
                   >
-                    {isPreviewPlaying ? <Pause size={13} className="fill-current/20" /> : <Play size={13} className="fill-current/20 ml-0.5" />}
+                    {isPreviewPlaying ? <Pause size={13} className="fill-[var(--accent)]" /> : <Play size={13} className="fill-[var(--accent)] ml-0.5" />}
                   </button>
 
                   <button
