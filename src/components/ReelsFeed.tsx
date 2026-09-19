@@ -3205,9 +3205,6 @@ export const ReelsFeed: React.FC<ReelsFeedProps> = ({
                               title={isRtl ? reac.labelAr : reac.labelEn}
                             >
                               <span className="block transform-gpu shrink-0">{reac.emoji}</span>
-                              <span className="inline-block sm:hidden text-xs font-bold text-[var(--text-primary)] shrink-0">
-                                {isRtl ? reac.labelAr : reac.labelEn}
-                              </span>
                               {hoveredReactionId === reac.id && (
                                 <span className="hidden sm:block absolute -top-7 left-1/2 -translate-x-1/2 bg-[var(--surface-card)] text-[var(--text-primary)] border border-[var(--border-default)] text-[10px] font-bold py-0.5 px-2 rounded-shape-xs whitespace-nowrap pointer-events-none shadow-md z-50">
                                   {isRtl ? reac.labelAr : reac.labelEn}

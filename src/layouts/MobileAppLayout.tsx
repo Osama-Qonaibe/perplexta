@@ -3,6 +3,7 @@ import { Outlet, useLocation } from 'react-router-dom';
 import { Header } from '../components/Header';
 import { AuthModal } from '../components/AuthModal';
 import { MobileNavigation } from '../components/mobile/MobileNavigation';
+import { MobileChatHistoryDrawer } from '../components/mobile/MobileChatHistoryDrawer';
 import { DesktopOnlyNotice } from '../components/mobile/DesktopOnlyNotice';
 import { useAppContext } from '../context/AppContext';
 import { isDesktopOnlyRoute } from '../constants/mobileCapabilities';
@@ -52,8 +53,9 @@ export const MobileAppLayout: React.FC = () => {
         <MobileNavigation />
       )}
 
-      {/* Global Auth Modal */}
+      {/* Global Auth Modal & Mobile Chat History Drawer */}
       <AuthModal />
+      <MobileChatHistoryDrawer />
     </div>
   );
 };

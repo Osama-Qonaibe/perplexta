@@ -35,7 +35,8 @@ import {
   Handshake,
   ThumbsUp,
   Plus,
-  RotateCcw
+  RotateCcw,
+  RefreshCw
 } from 'lucide-react';
 import { BulletinAd, BulletinAdComment } from '../../server/db/types';
 import { AdDirectChat } from './AdDirectChat';
@@ -173,6 +174,8 @@ export interface PostFeedProps {
   onArchiveAd?: (ad: BulletinAd) => void;
   onTrashAd?: (ad: BulletinAd) => void;
   onUpdateAd?: (updatedAd: Partial<BulletinAd> & { id: number }) => void;
+  onRefresh?: () => void | Promise<void>;
+  isRefreshing?: boolean;
 }
 
 const QUICK_EMOJIS = ['👍', '❤️', '😂', '🔥', '👏', '😮', '🎉', '💯', '🚀', '😍', '✨', '🙏'];
@@ -183,6 +186,8 @@ export const PostFeed: React.FC<PostFeedProps> = ({
   hasMore = false,
   loadingMore = false,
   onLoadMore,
+  onRefresh,
+  isRefreshing = false,
   isRtl,
   token,
   user,
@@ -226,6 +231,70 @@ export const PostFeed: React.FC<PostFeedProps> = ({
   });
   const [activeMoreMenuId, setActiveMoreMenuId] = useState<number | null>(null);
   const [localAdOverrides, setLocalAdOverrides] = useState<Record<number, Partial<BulletinAd>>>({});
+
+  // Pull to refresh gesture state
+  const [pullY, setPullY] = useState<number>(0);
+  const [pullRefreshing, setPullRefreshing] = useState<boolean>(false);
+  const touchStartYRef = useRef<number>(0);
+  const isPullingRef = useRef<boolean>(false);
+
+  const handleTouchStart = (e: React.TouchEvent) => {
+    if (window.scrollY <= 10) {
+      touchStartYRef.current = e.touches[0].clientY;
+      isPullingRef.current = true;
+    } else {
+      isPullingRef.current = false;
+    }
+  };
+
+  const handleTouchMove = (e: React.TouchEvent) => {
+    if (!isPullingRef.current || pullRefreshing || isRefreshing) return;
+    const currentY = e.touches[0].clientY;
+    const dy = currentY - touchStartYRef.current;
+    if (dy > 0 && window.scrollY <= 5) {
+      const dist = Math.min(80, dy * 0.45);
+      setPullY(dist);
+    } else {
+      setPullY(0);
+    }
+  };
+
+  const handleTouchEnd = async () => {
+    if (!isPullingRef.current) return;
+    isPullingRef.current = false;
+    if (pullY >= 50 && onRefresh) {
+      if (typeof window !== 'undefined' && window.navigator && window.navigator.vibrate) {
+        window.navigator.vibrate([15, 30]);
+      }
+      setPullRefreshing(true);
+      setPullY(55);
+      try {
+        await onRefresh();
+      } catch {
+        // ignore
+      } finally {
+        setTimeout(() => {
+          setPullRefreshing(false);
+          setPullY(0);
+        }, 300);
+      }
+    } else {
+      setPullY(0);
+    }
+  };
+
+  const handleSwipeDismiss = (ad: BulletinAd) => {
+    if (typeof window !== 'undefined' && window.navigator && window.navigator.vibrate) {
+      window.navigator.vibrate(15);
+    }
+    setHiddenAdIds(prev => {
+      const next = [...prev, ad.id];
+      safeStorageSet('perplexta_hidden_ads', JSON.stringify(next));
+      return next;
+    });
+
+    toast.success(isRtl ? 'تم إخفاء الإعلان من خلاصتك' : 'Post hidden from feed');
+  };
 
   // Facebook-style reactions bar state (Rock-solid stability & clickability)
   const [reactionBarAdId, setReactionBarAdId] = useState<number | null>(null);
@@ -508,24 +577,84 @@ export const PostFeed: React.FC<PostFeedProps> = ({
     .filter(ad => !hiddenAdIds.includes(ad.id) && ad.status !== 'archived' && ad.status !== 'trash');
 
   return (
-    <div className="flex flex-col gap-4 sm:gap-4 w-full max-w-2xl mx-auto touch-pan-y">
-      {visibleAds.map((ad, index) => {
-        const isTextExpanded = !!expandedTextIds[ad.id];
-        const isLongText = ad.description && ad.description.length > 100;
-
-        return (
-          <motion.article
-            key={(ad as any)._virtualId || `bulletin-ad-${ad.id}-${index}`}
-            id={`bulletin-ad-${ad.id}`}
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            className={`w-full rounded-[var(--radius-md)] bg-[var(--surface-card)] border border-[var(--border-default)] shadow-xs flex flex-col touch-pan-y transition-theme ${
-              activeMoreMenuId === ad.id || reactionBarAdId === ad.id ? 'relative z-30 overflow-visible' : 'overflow-hidden'
-            }`}
+    <div 
+      onTouchStart={handleTouchStart}
+      onTouchMove={handleTouchMove}
+      onTouchEnd={handleTouchEnd}
+      className="grid grid-cols-1 gap-3 sm:gap-4 w-full max-w-2xl mx-auto px-1 sm:px-0 touch-pan-y relative"
+    >
+      {/* Pull to Refresh Indicator Banner */}
+      <AnimatePresence>
+        {(pullY > 0 || pullRefreshing || isRefreshing) && (
+          <motion.div
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ 
+              height: pullRefreshing || isRefreshing ? 48 : pullY, 
+              opacity: Math.min(1, pullY / 25 || 1) 
+            }}
+            exit={{ height: 0, opacity: 0 }}
+            className="col-span-full flex items-center justify-center gap-2 overflow-hidden text-xs font-bold text-[var(--fg-accent)] bg-[var(--surface-card)] rounded-[var(--radius-md)] border border-[var(--border-accent)]/30 py-2 shadow-xs transition-theme select-none"
           >
+            <RefreshCw 
+              size={15} 
+              className={`text-[var(--fg-accent)] ${pullRefreshing || isRefreshing ? 'animate-spin' : ''}`}
+              style={{ transform: pullRefreshing || isRefreshing ? undefined : `rotate(${pullY * 4}deg)` }}
+            />
+            <span>
+              {pullRefreshing || isRefreshing
+                ? (isRtl ? 'جاري تحديث الخلاصة...' : 'Refreshing feed...')
+                : pullY >= 50
+                ? (isRtl ? 'اترك الآن للتحديث' : 'Release to refresh')
+                : (isRtl ? 'اسحب لأسفل للتحديث' : 'Pull down to refresh')}
+            </span>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      <AnimatePresence mode="popLayout">
+        {visibleAds.map((ad, index) => {
+          const isTextExpanded = !!expandedTextIds[ad.id];
+          const isLongText = ad.description && ad.description.length > 100;
+
+          return (
+            <motion.div
+              key={(ad as any)._virtualId || `bulletin-ad-${ad.id}-${index}`}
+              initial={{ opacity: 0, y: 12 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, x: isRtl ? -280 : 280, height: 0, marginBottom: 0, transition: { duration: 0.22 } }}
+              layout
+              className="relative overflow-hidden rounded-[var(--radius-md)] touch-pan-y"
+            >
+              {/* Background Indicator Revealed On Swipe */}
+              <div className="absolute inset-0 bg-rose-500/10 dark:bg-rose-950/30 border border-rose-500/30 rounded-[var(--radius-md)] flex items-center justify-between px-5 text-rose-600 dark:text-rose-400 font-extrabold text-xs pointer-events-none select-none">
+                <div className="flex items-center gap-1.5">
+                  <EyeOff size={15} />
+                  <span>{isRtl ? 'سحب لإخفاء الإعلان' : 'Swipe to hide'}</span>
+                </div>
+                <div className="flex items-center gap-1.5">
+                  <span>{isRtl ? 'سحب لإخفاء الإعلان' : 'Swipe to hide'}</span>
+                  <EyeOff size={15} />
+                </div>
+              </div>
+
+              {/* Swipable Card Content */}
+              <motion.article
+                id={`bulletin-ad-${ad.id}`}
+                drag="x"
+                dragConstraints={{ left: 0, right: 0 }}
+                dragElastic={0.65}
+                onDragEnd={(event, info) => {
+                  if (Math.abs(info.offset.x) > 125 || Math.abs(info.velocity.x) > 500) {
+                    handleSwipeDismiss(ad);
+                  }
+                }}
+                className={`w-full rounded-[var(--radius-md)] bg-[var(--surface-card)] border border-[var(--border-default)] shadow-xs flex flex-col transition-theme relative z-10 ${
+                  activeMoreMenuId === ad.id || reactionBarAdId === ad.id ? 'relative z-30 overflow-visible' : 'overflow-hidden'
+                }`}
+              >
             {/* Header: Author / Merchant Page info */}
-            <div className="p-3 sm:p-4 flex items-center justify-between border-b border-[var(--border-default)]">
-              <div className="flex items-center gap-2 min-w-0">
+            <div className="p-3 sm:p-4 flex items-center justify-between border-b border-[var(--border-default)] gap-2">
+              <div className="flex items-center gap-2 min-w-0 flex-1">
                 <BulletinAvatar
                   src={ad.page_id ? (ad.page_avatar || ad.author_avatar) : ad.author_avatar}
                   alt={ad.page_id ? (ad.page_name || ad.author_name) : ad.author_name}
@@ -536,7 +665,7 @@ export const PostFeed: React.FC<PostFeedProps> = ({
                   }
                 />
 
-                <div className="min-w-0">
+                <div className="min-w-0 flex-1">
                   <div className="flex items-center gap-1">
                     <h4
                       onClick={() =>
@@ -552,18 +681,18 @@ export const PostFeed: React.FC<PostFeedProps> = ({
                       <CheckCircle2 size={13} className="text-[var(--fg-accent)] shrink-0" />
                     )}
                   </div>
-                  <div className="flex items-center gap-2 text-[10px] text-[var(--text-muted)] pt-0.5">
-                    <span className="flex items-center gap-0.5 font-medium">
+                  <div className="flex items-center gap-1.5 sm:gap-2 text-[10px] text-[var(--text-muted)] pt-0.5 flex-wrap sm:flex-nowrap">
+                    <span className="flex items-center gap-0.5 font-medium truncate max-w-[90px] sm:max-w-none">
                       <MapPin size={10} className="text-[var(--fg-accent)] shrink-0" />
                       {ad.location_city || 'فلسطين'}
                     </span>
                     <span>•</span>
-                    <span className="font-medium">
+                    <span className="font-medium shrink-0">
                       {new Date(ad.created_at).toLocaleDateString(isRtl ? 'ar-EG' : 'en-US')}
                     </span>
                     <span>•</span>
                     <span 
-                      className="flex items-center gap-0.5 font-medium cursor-help"
+                      className="flex items-center gap-0.5 font-medium cursor-help shrink-0"
                       title={
                         ad.audience === 'friends' ? (isRtl ? 'الجمهور: الأصدقاء' : 'Audience: Friends') :
                         ad.audience === 'only_me' ? (isRtl ? 'الجمهور: أنا فقط' : 'Audience: Only Me') :
@@ -586,7 +715,7 @@ export const PostFeed: React.FC<PostFeedProps> = ({
                     {ad.is_boosted && (
                       <>
                         <span>•</span>
-                        <span className="text-amber-500 font-bold">{isRtl ? 'مُموَّل' : 'Sponsored'}</span>
+                        <span className="text-amber-500 font-bold shrink-0">{isRtl ? 'مُموَّل' : 'Sponsored'}</span>
                       </>
                     )}
                   </div>
@@ -595,9 +724,9 @@ export const PostFeed: React.FC<PostFeedProps> = ({
 
               <div className="flex items-center gap-1 shrink-0">
                 {ad.is_ai_generated && (
-                  <span className="px-2 py-0.5 rounded-[var(--radius-xs)] bg-indigo-500/10 border border-indigo-500/30 text-indigo-500 dark:text-indigo-400 text-[10px] font-black flex items-center gap-1 shadow-sm">
+                  <span className="px-1.5 sm:px-2 py-0.5 rounded-[var(--radius-xs)] bg-indigo-500/10 border border-indigo-500/30 text-indigo-500 dark:text-indigo-400 text-[10px] font-black flex items-center gap-1 shadow-sm">
                     <Sparkles size={11} className="text-indigo-500 animate-pulse" />
-                    <span>{isRtl ? 'بواسطة AI' : 'AI-Generated'}</span>
+                    <span className="hidden sm:inline">{isRtl ? 'بواسطة AI' : 'AI-Generated'}</span>
                   </span>
                 )}
                 {ad.ad_format && ad.ad_format !== 'post' && (
@@ -608,24 +737,18 @@ export const PostFeed: React.FC<PostFeedProps> = ({
                         onOpenReelFeed(ad.id);
                       }
                     }}
-                    className={`px-2 py-0.5 rounded-[var(--radius-xs)] border text-[10px] font-black flex items-center gap-1 shadow-sm transition-transform active:scale-95 ${
+                    className={`px-1.5 sm:px-2 py-0.5 rounded-[var(--radius-xs)] border text-[10px] font-black flex items-center gap-1 shadow-sm transition-transform active:scale-95 ${
                       ad.ad_format === 'reel' 
                         ? 'bg-purple-500/10 border-purple-500/30 text-purple-600 dark:text-purple-400 hover:bg-purple-500/20 cursor-pointer' 
                         : 'bg-[var(--bg-accent-muted)] border-[var(--border-accent)]/30 text-[var(--fg-accent)]'
                     }`}
                   >
                     {ad.ad_format === 'reel' ? <Clapperboard size={11} className="text-purple-500" /> : <Camera size={11} className="text-[var(--fg-accent)]" />}
-                    <span>{ad.ad_format === 'reel' ? (isRtl ? 'ريلز' : 'Reel') : (isRtl ? 'قصة' : 'Story')}</span>
+                    <span className="hidden sm:inline">{ad.ad_format === 'reel' ? (isRtl ? 'ريلز' : 'Reel') : (isRtl ? 'قصة' : 'Story')}</span>
                   </button>
                 )}
-                {ad.is_boosted && (
-                  <span className="px-2 py-0.5 rounded-[var(--radius-xs)] bg-amber-500/15 border border-amber-500/40 text-amber-500 text-[10px] font-black flex items-center gap-1 shadow-sm">
-                    <Rocket size={11} className="text-amber-500 animate-bounce" />
-                    <span className="hidden sm:inline">{isRtl ? 'مُموَّل VIP' : 'Boosted'}</span>
-                  </span>
-                )}
                 {ad.category && !['عام', 'general', 'عام / general', 'عام / General'].includes(ad.category.trim().toLowerCase()) && (
-                  <span className="px-2 py-0.5 rounded-shape-xs bg-[var(--bg-accent-muted)] border border-[var(--border-accent)]/20 text-[var(--fg-accent)] text-[10px] font-black flex items-center gap-1 shadow-sm shrink-0">
+                  <span className="hidden sm:inline-flex px-2 py-0.5 rounded-shape-xs bg-[var(--bg-accent-muted)] border border-[var(--border-accent)]/20 text-[var(--fg-accent)] text-[10px] font-black items-center gap-1 shadow-sm shrink-0">
                     <span className="w-1 h-1 rounded-full bg-[var(--fg-accent)] shrink-0" />
                     <span>{ad.category}</span>
                   </span>
@@ -985,20 +1108,20 @@ export const PostFeed: React.FC<PostFeedProps> = ({
             {/* ========================================================== */}
             {/* UNIFIED COMPACT MERCHANDISING & ACTION ROW */}
             {/* ========================================================== */}
-            <div className="py-1 px-2 sm:px-4 bg-[var(--surface-subtle)]/30 flex items-center justify-between border-t border-[var(--border-default)] w-full">
+            <div className="py-1 px-1.5 sm:px-4 bg-[var(--surface-subtle)]/30 flex items-center justify-between border-t border-[var(--border-default)] w-full">
               <div className="flex items-center justify-around w-full gap-1 sm:gap-2">
                 {/* 1. Boost / Promote Button */}
                 {onBoostAd ? (
                   <button
                     onClick={() => onBoostAd(ad)}
-                    className={`flex-1 min-w-0 flex items-center justify-center gap-1 sm:gap-1 transition-all duration-200 active:scale-95 cursor-pointer py-1.5 font-bold text-[11px] sm:text-xs select-none ${
+                    className={`flex-1 min-w-0 min-h-[44px] flex items-center justify-center gap-1 sm:gap-1.5 transition-all duration-200 active:scale-95 cursor-pointer py-2 font-bold text-[11px] sm:text-xs select-none ${
                       ad.is_boosted
                         ? 'text-amber-500 hover:text-amber-600'
                         : 'text-[var(--text-muted)] hover:text-amber-500'
                     }`}
                     title={isRtl ? 'ترويج الإعلان' : 'Boost Ad'}
                   >
-                    <Rocket size={13} className="shrink-0" />
+                    <Rocket size={14} className="shrink-0" />
                     <span className="truncate">
                       {ad.is_boosted ? (isRtl ? 'تمديد' : 'Extend') : (isRtl ? 'ترويج' : 'Boost')}
                     </span>
@@ -1008,14 +1131,14 @@ export const PostFeed: React.FC<PostFeedProps> = ({
                 {/* 2. Insights / Stats Button (الرؤى) */}
                 <button
                   onClick={() => setActiveInsightsAdId(activeInsightsAdId === ad.id ? null : ad.id)}
-                  className={`flex-1 min-w-0 flex items-center justify-center gap-1 sm:gap-1 transition-all duration-200 active:scale-95 cursor-pointer py-1.5 font-bold text-[11px] sm:text-xs select-none ${
+                  className={`flex-1 min-w-0 min-h-[44px] flex items-center justify-center gap-1 sm:gap-1.5 transition-all duration-200 active:scale-95 cursor-pointer py-2 font-bold text-[11px] sm:text-xs select-none ${
                     activeInsightsAdId === ad.id
                       ? 'text-[var(--fg-accent)]'
                       : 'text-[var(--text-muted)] hover:text-[var(--text-primary)]'
                   }`}
                   title={isRtl ? 'الرؤى والتحليلات' : 'Insights & Analytics'}
                 >
-                  <BarChart2 size={13} className="shrink-0" />
+                  <BarChart2 size={14} className="shrink-0" />
                   <span className="truncate">{isRtl ? 'الرؤى' : 'Insights'}</span>
                 </button>
 
@@ -1026,7 +1149,7 @@ export const PostFeed: React.FC<PostFeedProps> = ({
                     if (onMessageAdvertiser) onMessageAdvertiser(ad);
                   }}
                   disabled={messagingAdId === ad.id}
-                  className={`flex-1 min-w-0 flex items-center justify-center gap-1 sm:gap-1 transition-all duration-200 active:scale-95 cursor-pointer py-1.5 font-bold text-[11px] sm:text-xs select-none ${
+                  className={`flex-1 min-w-0 min-h-[44px] flex items-center justify-center gap-1 sm:gap-1.5 transition-all duration-200 active:scale-95 cursor-pointer py-2 font-bold text-[11px] sm:text-xs select-none ${
                     activeChatAdId === ad.id
                       ? 'text-[var(--fg-accent)] font-extrabold'
                       : 'text-[var(--text-muted)] hover:text-[var(--text-primary)]'
@@ -1034,10 +1157,10 @@ export const PostFeed: React.FC<PostFeedProps> = ({
                   title={isRtl ? 'مراسلة المعلن' : 'Message'}
                 >
                   {messagingAdId === ad.id ? (
-                    <Loader2 size={13} className="animate-spin text-[var(--fg-accent)] shrink-0" />
+                    <Loader2 size={14} className="animate-spin text-[var(--fg-accent)] shrink-0" />
                   ) : (
                     <>
-                      <MessageCircle size={13} className="shrink-0" />
+                      <MessageCircle size={14} className="shrink-0" />
                       <span className="truncate">{isRtl ? 'مراسلة' : 'Message'}</span>
                     </>
                   )}
@@ -1047,10 +1170,10 @@ export const PostFeed: React.FC<PostFeedProps> = ({
                 {(ad.whatsapp_number || ad.has_whatsapp_button) && (
                   <button
                     onClick={(e) => onWhatsApp(ad, e)}
-                    className="flex-1 min-w-0 flex items-center justify-center gap-1 sm:gap-1 transition-all duration-200 active:scale-95 cursor-pointer py-1.5 font-bold text-[11px] sm:text-xs select-none text-[#25D366]/80 hover:text-[#25D366]"
+                    className="flex-1 min-w-0 min-h-[44px] flex items-center justify-center gap-1 sm:gap-1.5 transition-all duration-200 active:scale-95 cursor-pointer py-2 font-bold text-[11px] sm:text-xs select-none text-[#25D366]/80 hover:text-[#25D366]"
                     title={isRtl ? 'تواصل عبر واتساب' : 'WhatsApp'}
                   >
-                    <Phone size={13} className="shrink-0" />
+                    <Phone size={14} className="shrink-0" />
                     <span className="truncate">{isRtl ? 'واتساب' : 'WhatsApp'}</span>
                   </button>
                 )}
@@ -1060,10 +1183,10 @@ export const PostFeed: React.FC<PostFeedProps> = ({
                   <a
                     href={`tel:${ad.phone_number}`}
                     onClick={(e) => e.stopPropagation()}
-                    className="flex-1 min-w-0 flex items-center justify-center gap-1 sm:gap-1 transition-all duration-200 active:scale-95 cursor-pointer py-1.5 font-bold text-[11px] sm:text-xs select-none text-blue-500/80 hover:text-blue-500 decoration-none"
+                    className="flex-1 min-w-0 min-h-[44px] flex items-center justify-center gap-1 sm:gap-1.5 transition-all duration-200 active:scale-95 cursor-pointer py-2 font-bold text-[11px] sm:text-xs select-none text-blue-500/80 hover:text-blue-500 decoration-none"
                     title={isRtl ? `اتصال: ${ad.phone_number}` : `Call: ${ad.phone_number}`}
                   >
-                    <PhoneCall size={13} className="shrink-0" />
+                    <PhoneCall size={14} className="shrink-0" />
                     <span className="truncate">{isRtl ? 'اتصال' : 'Call'}</span>
                   </a>
                 )}
@@ -1129,7 +1252,7 @@ export const PostFeed: React.FC<PostFeedProps> = ({
                  <AnimatePresence>
                    {reactionBarAdId === ad.id && (
                      <div
-                       className="absolute bottom-full pb-2 z-50 pointer-events-auto left-1/2 -translate-x-1/2 sm:w-72"
+                       className="absolute bottom-full pb-2 z-50 pointer-events-auto left-1/2 -translate-x-1/2 w-auto"
                        onMouseEnter={() => handleLikeMouseEnter(ad.id)}
                        onMouseLeave={handleLikeMouseLeave}
                      >
@@ -1138,7 +1261,7 @@ export const PostFeed: React.FC<PostFeedProps> = ({
                          animate={{ opacity: 1, y: 0, scale: 1 }}
                          exit={{ opacity: 0, y: 4, scale: 0.88 }}
                          transition={{ duration: 0.16, ease: 'easeOut' }}
-                         className="vb-emoji-bar w-full select-none"
+                         className="vb-emoji-bar w-auto select-none"
                          onMouseEnter={() => handleLikeMouseEnter(ad.id)}
                          onMouseLeave={handleLikeMouseLeave}
                        >
@@ -1159,9 +1282,6 @@ export const PostFeed: React.FC<PostFeedProps> = ({
                              title={isRtl ? reac.labelAr : reac.labelEn}
                            >
                              <span className="block transform-gpu shrink-0">{reac.emoji}</span>
-                              <span className="inline-block sm:hidden text-xs font-bold text-[var(--text-primary)] shrink-0">
-                                {isRtl ? reac.labelAr : reac.labelEn}
-                              </span>
                              {hoveredReactionId === reac.id && (
                                <span className="hidden sm:block absolute -top-6 left-1/2 -translate-x-1/2 bg-[var(--surface-overlay)] text-[var(--text-primary)] text-[9px] font-bold py-0.5 px-1.5 rounded-shape-xs whitespace-nowrap pointer-events-none shadow-md z-50">
                                  {isRtl ? reac.labelAr : reac.labelEn}
@@ -1415,9 +1535,11 @@ export const PostFeed: React.FC<PostFeedProps> = ({
                 </motion.div>
               )}
             </AnimatePresence>
-          </motion.article>
-        );
-      })}
+              </motion.article>
+            </motion.div>
+          );
+        })}
+      </AnimatePresence>
 
       {/* Infinite Scroll Intersection Observer Sentinel */}
       {hasMore && (

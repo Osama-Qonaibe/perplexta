@@ -293,9 +293,11 @@ router.get('/', authenticateTokenOptional, async (req: any, res: any) => {
 });
 
 /**
- * GET /api/recommendations/marketplace (Legacy compatibility handler - returns empty array)
+ * GET /api/recommendations/marketplace (Legacy compatibility handler - deprecated)
  */
 router.get('/marketplace', authenticateTokenOptional, async (req: any, res: any) => {
+  res.set('Deprecation', 'true');
+  res.set('Sunset', 'Wed, 31 Dec 2026 23:59:59 GMT');
   res.json({
     success: true,
     items: []

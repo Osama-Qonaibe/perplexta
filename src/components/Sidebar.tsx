@@ -353,11 +353,35 @@ export const Sidebar: React.FC<{ activeLanguage?: string }> = ({ activeLanguage 
     let debounceTimer: any = null;
     const debouncedFetch = () => {
       if (debounceTimer) clearTimeout(debounceTimer);
-      debounceTimer = setTimeout(() => fetchChats(), 300);
+      debounceTimer = setTimeout(() => fetchChats(), 250);
     };
 
-    window.addEventListener('chat-created', debouncedFetch);
-    window.addEventListener('chat-updated', debouncedFetch);
+    const handleChatEvent = (e: Event) => {
+      const customEvent = e as CustomEvent;
+      if (customEvent && customEvent.detail && customEvent.detail.id) {
+        const { id, title } = customEvent.detail;
+        setRecentChats(prev => {
+          const exists = prev.some((c: any) => String(c.id) === String(id));
+          let next;
+          if (exists) {
+            next = prev.map((c: any) => String(c.id) === String(id) ? { ...c, title: title || c.title, updated_at: new Date().toISOString() } : c);
+          } else {
+            next = [{
+              id,
+              title: title || (language === 'ar' ? 'محادثة جديدة' : 'New Session'),
+              created_at: new Date().toISOString(),
+              updated_at: new Date().toISOString()
+            }, ...prev];
+          }
+          try { safeStorageSet('perplexta_recent_chats', JSON.stringify(next)); } catch {}
+          return next;
+        });
+      }
+      debouncedFetch();
+    };
+
+    window.addEventListener('chat-created', handleChatEvent);
+    window.addEventListener('chat-updated', handleChatEvent);
 
     // Auto-refresh chat history list when streaming finishes or starts
     const handleStreamingState = (e: Event) => {
@@ -373,24 +397,36 @@ export const Sidebar: React.FC<{ activeLanguage?: string }> = ({ activeLanguage 
     };
     window.addEventListener('ai-streaming-state', handleStreamingState);
 
+    const handleSocketTitleUpdated = (data: { chatId: string, title: string }) => {
+      if (data && data.chatId && data.title) {
+        setRecentChats(prev => {
+          const next = prev.map((c: any) => String(c.id) === String(data.chatId) ? { ...c, title: data.title } : c);
+          try { safeStorageSet('perplexta_recent_chats', JSON.stringify(next)); } catch {}
+          return next;
+        });
+      }
+    };
+
     // Socket real-time synchronization
     if (socket) {
       socket.on('chat_updated', debouncedFetch);
       socket.on('chat_created', debouncedFetch);
+      socket.on('chat_title_updated', handleSocketTitleUpdated);
     }
 
     return () => {
-      window.removeEventListener('chat-created', debouncedFetch);
-      window.removeEventListener('chat-updated', debouncedFetch);
+      window.removeEventListener('chat-created', handleChatEvent);
+      window.removeEventListener('chat-updated', handleChatEvent);
       window.removeEventListener('ai-streaming-state', handleStreamingState);
       if (socket) {
         socket.off('chat_updated', debouncedFetch);
         socket.off('chat_created', debouncedFetch);
+        socket.off('chat_title_updated', handleSocketTitleUpdated);
       }
       if (debounceTimer) clearTimeout(debounceTimer);
       if (retryTimeoutRef.current) clearTimeout(retryTimeoutRef.current);
     };
-  }, [fetchChats, socket]);
+  }, [fetchChats, socket, language]);
 
   const rawNavItems: { icon: React.ReactNode, label: string, path: string, className?: string }[] = [];
 

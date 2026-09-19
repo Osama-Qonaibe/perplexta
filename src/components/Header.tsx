@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect, useMemo } from 'react';
 import { useLocation, useNavigate, NavLink } from 'react-router-dom';
-import { Bell, Languages, Menu, Check, Trash2, Clock, ShieldCheck, Landmark, MessageSquare, Edit2, X, WifiOff, Megaphone, Cpu, Plus, Pin, MoreHorizontal, Bookmark, FolderPlus, FileText, FileCode, FileType, Pencil, Globe, Image as ImageIcon, Download, Share2, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Bell, Languages, Menu, Check, Trash2, Clock, ShieldCheck, Landmark, MessageSquare, MessagesSquare, History, Edit2, X, WifiOff, Megaphone, Cpu, Plus, Pin, MoreHorizontal, Bookmark, FolderPlus, FileText, FileCode, FileType, Pencil, Globe, Image as ImageIcon, Download, Share2, ChevronLeft, ChevronRight } from 'lucide-react';
 import { useAppContext } from '../context/AppContext';
 import { isPathBlocked } from '../utils/sectionVisibility';
 import { resolveImageUrl } from '../utils/imageResolver';
@@ -29,7 +29,7 @@ export const HEADER_SIZING = {
 } as const;
 
 export const Header: React.FC<{ activeLanguage?: string }> = ({ activeLanguage }) => {
-  const { language: globalLang, setLanguage, theme, isSidebarOpen, setIsSidebarOpen, user, notifications, unreadCount, markAsRead, markAllAsRead, deleteNotification, clearAllNotifications, siteSettings, t, token, memoryNotification, closeMemoryNotification, isOperationPending } = useAppContext();
+  const { language: globalLang, setLanguage, theme, isSidebarOpen, setIsSidebarOpen, user, notifications, unreadCount, markAsRead, markAllAsRead, deleteNotification, clearAllNotifications, siteSettings, t, token, memoryNotification, closeMemoryNotification, isOperationPending, socket } = useAppContext();
   const { isArtifactOpen, isFullscreen } = useArtifact();
   const { headerTabsMaxWidth, isDraggingResize, chatWidth } = useCanvasLayout();
   
@@ -164,18 +164,41 @@ export const Header: React.FC<{ activeLanguage?: string }> = ({ activeLanguage }
     fetchChatTitle();
 
     let debounceTimer: any = null;
-    const handleChatUpdated = () => {
+    const handleChatUpdated = (e?: Event) => {
+      const customEvent = e as CustomEvent;
+      if (customEvent && customEvent.detail && String(customEvent.detail.id) === String(chatId)) {
+        if (customEvent.detail.title) {
+          setChatTitle(customEvent.detail.title);
+        }
+      }
       if (debounceTimer) clearTimeout(debounceTimer);
-      debounceTimer = setTimeout(() => fetchChatTitle(), 400);
+      debounceTimer = setTimeout(() => fetchChatTitle(), 300);
     };
+
+    const handleSocketTitleUpdated = (data: { chatId: string, title: string }) => {
+      if (data && String(data.chatId) === String(chatId) && data.title) {
+        setChatTitle(data.title);
+      }
+    };
+
     window.addEventListener('chat-updated', handleChatUpdated);
     window.addEventListener('chat-created', handleChatUpdated);
+
+    if (socket) {
+      socket.on('chat_title_updated', handleSocketTitleUpdated);
+      socket.on('chat_updated', handleChatUpdated);
+    }
+
     return () => {
       window.removeEventListener('chat-updated', handleChatUpdated);
       window.removeEventListener('chat-created', handleChatUpdated);
+      if (socket) {
+        socket.off('chat_title_updated', handleSocketTitleUpdated);
+        socket.off('chat_updated', handleChatUpdated);
+      }
       if (debounceTimer) clearTimeout(debounceTimer);
     };
-  }, [chatId, token]);
+  }, [chatId, token, socket]);
 
   const handleRename = async () => {
     if (!chatId || !token) return;
@@ -509,12 +532,12 @@ export const Header: React.FC<{ activeLanguage?: string }> = ({ activeLanguage }
     
       {(user || token) && (
         <div className="flex items-center gap-1 sm:gap-1 h-full">
-          {/* Messages & Inquiries Inbox button - only visible on desktop in ads / bulletin section */}
+          {/* Messages & Inquiries Inbox button - visible on desktop in ads / bulletin section */}
           {isViralbookActive && (
             <button
               onClick={() => {
                 triggerHaptic('light');
-                navigate('/viralbook?tab=inquiries');
+                navigate('/viralbook/inquiries');
                 window.dispatchEvent(new CustomEvent('open-bulletin-inquiries'));
               }}
               className={`hidden sm:flex items-center justify-center w-8 h-8 rounded-[var(--radius-sm)] border transition-all duration-150 relative active:scale-95 group shrink-0 cursor-pointer before:absolute before:-inset-1.5 before:content-[''] ${
@@ -525,7 +548,7 @@ export const Header: React.FC<{ activeLanguage?: string }> = ({ activeLanguage }
               title={language === 'ar' ? 'صندوق المحادثات والرسائل' : 'Messages & Inquiries Inbox'}
               aria-label={language === 'ar' ? 'صندوق المحادثات والرسائل' : 'Messages & Inquiries Inbox'}
             >
-              <MessageSquare 
+              <MessagesSquare 
                 size={14} 
                 className={`transition-colors duration-150 ${
                   location.pathname.includes('/inquiries') || location.search.includes('tab=inquiries')

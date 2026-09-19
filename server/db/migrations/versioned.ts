@@ -11,15 +11,18 @@ export async function runVersionedMigrations(
   externalClient: any,
   ledgerClient: any,
   securityClient: any,
+  mediaClient: any,
   targetPool: QueryClient,
   targetLedgerPool: QueryClient,
   targetExternalPool: QueryClient,
   targetSecurityPool: QueryClient,
+  targetMediaPool: QueryClient,
   migrationMetrics: MigrationMetrics
 ) {
   const extTarget = externalClient || client;
   const ledgerTarget = ledgerClient || client;
   const secTarget = securityClient || client;
+  const mediaTarget = mediaClient || client;
 
   const existingMigrationsRes = await client.query("SELECT migration_name FROM migration_history").catch(() => ({ rows: [] }));
   const existingMigrations = new Set(existingMigrationsRes.rows.map((r: any) => r.migration_name));
@@ -36,15 +39,20 @@ export async function runVersionedMigrations(
     if (ledgerClient) await ledgerClient.query("BEGIN");
     if (externalClient) await externalClient.query("BEGIN");
     if (securityClient) await securityClient.query("BEGIN");
+    if (mediaClient) await mediaClient.query("BEGIN");
     try {
-      await client.query(`SELECT pg_try_advisory_xact_lock($1)`, [lockKey]).catch(() => {});
+      const lockRes = await client.query(`SELECT pg_try_advisory_xact_lock($1)`, [lockKey]).catch(() => ({ rows: [] }));
+      if (lockRes.rows?.[0]?.pg_try_advisory_xact_lock === false) {
+        throw new Error(`[Migrations] Advisory transaction lock unavailable for ${name}. Another process is migrating.`);
+      }
         const doubleCheck = await client.query("SELECT 1 FROM migration_history WHERE migration_name = $1", [name]);
         if (doubleCheck.rows.length > 0) {
           existingMigrations.add(name);
-          await client.query("COMMIT");
           if (ledgerClient) await ledgerClient.query("COMMIT");
           if (externalClient) await externalClient.query("COMMIT");
           if (securityClient) await securityClient.query("COMMIT");
+          if (mediaClient) await mediaClient.query("COMMIT");
+          await client.query("COMMIT");
           return;
         }
 
@@ -61,6 +69,8 @@ export async function runVersionedMigrations(
                   return externalClient || client;
                 case "security":
                   return securityClient || client;
+                case "media":
+                  return mediaClient || client;
               }
             }
           }
@@ -76,6 +86,9 @@ export async function runVersionedMigrations(
             } else if (text && typeof text === "object" && text.text) {
               sqlString = text.text;
             }
+            if (process.env.NODE_ENV === 'production' && /DROP\s+TABLE/i.test(sqlString)) {
+              throw new Error(`[Migrations] DROP TABLE is FORBIDDEN in production migrations: ${sqlString.slice(0, 100)}`);
+            }
             const targetClient = findClientForQuery(sqlString, params);
             return targetClient.query(text, params);
           }
@@ -90,6 +103,9 @@ export async function runVersionedMigrations(
             } else if (text && typeof text === "object" && text.text) {
               sqlString = text.text;
             }
+            if (process.env.NODE_ENV === 'production' && /DROP\s+TABLE/i.test(sqlString)) {
+              throw new Error(`[Migrations] DROP TABLE is FORBIDDEN in production migrations: ${sqlString.slice(0, 100)}`);
+            }
             const targetClient = findClientForQuery(sqlString, params);
             const finalClient = targetClient === client ? (ledgerClient || client) : targetClient;
             return finalClient.query(text, params);
@@ -97,12 +113,19 @@ export async function runVersionedMigrations(
         };
 
         await fn(wrappedClient, wrappedLedgerClient);
-        await client.query("INSERT INTO migration_history (migration_name) VALUES ($1) ON CONFLICT (migration_name) DO NOTHING", [name]);
+        const checksum = crypto.createHash('sha256').update(fn.toString()).digest('hex');
+        await client.query(
+          "INSERT INTO migration_history (migration_name, checksum, executed_at) VALUES ($1, $2, CURRENT_TIMESTAMP) ON CONFLICT (migration_name) DO UPDATE SET checksum = EXCLUDED.checksum",
+          [name, checksum]
+        ).catch(() => {
+          return client.query("INSERT INTO migration_history (migration_name) VALUES ($1) ON CONFLICT (migration_name) DO NOTHING", [name]);
+        });
         existingMigrations.add(name);
-        await client.query("COMMIT");
         if (ledgerClient) await ledgerClient.query("COMMIT");
         if (externalClient) await externalClient.query("COMMIT");
         if (securityClient) await securityClient.query("COMMIT");
+        if (mediaClient) await mediaClient.query("COMMIT");
+        await client.query("COMMIT");
         const duration = Date.now() - startTime;
         migrationMetrics.total++;
         migrationMetrics.successful++;
@@ -114,6 +137,7 @@ export async function runVersionedMigrations(
         if (ledgerClient) await ledgerClient.query("ROLLBACK");
         if (externalClient) await externalClient.query("ROLLBACK");
         if (securityClient) await securityClient.query("ROLLBACK");
+        if (mediaClient) await mediaClient.query("ROLLBACK");
         const err = error as Error & { code?: string };
         console.error(`[Migrations] Failed to apply ${name}:`, err.message);
         migrationMetrics.total++;
@@ -2515,23 +2539,18 @@ export async function runVersionedMigrations(
       `).catch(() => {});
     });
 
-    // v113 is suspended from execution by default until a formal business decision is made.
-    // The dangerous CASCADE clauses have been removed to prevent unintended schema dependency drops.
-    if (process.env.ENABLE_V113_MIGRATION === 'YES') {
-      await runVersioned('v113_drop_legacy_cost_columns', 'Drop legacy point deduction and wallet cost columns and indices from tool_orchestrator table', async (tx) => {
-        await tx.query(`
-          ALTER TABLE tool_orchestrator DROP COLUMN IF EXISTS wallet_cost;
-          ALTER TABLE tool_orchestrator DROP COLUMN IF EXISTS points_required;
-          ALTER TABLE tool_orchestrator DROP COLUMN IF EXISTS cost_per_usage;
-          ALTER TABLE tool_orchestrator DROP COLUMN IF EXISTS cost_per_1k_input_tokens;
-          ALTER TABLE tool_orchestrator DROP COLUMN IF EXISTS cost_per_1k_output_tokens;
-        `).catch((err) => {
-          console.warn('[Migration v113] Warning during legacy cost columns dropping:', err.message);
-        });
+    // v113 is enabled per Audit Plan Phase 3 (confirmed 0 live consumers in codebase)
+    await runVersioned('v113_drop_legacy_cost_columns', 'Drop legacy point deduction and wallet cost columns and indices from tool_orchestrator table', async (tx) => {
+      await tx.query(`
+        ALTER TABLE tool_orchestrator DROP COLUMN IF EXISTS wallet_cost;
+        ALTER TABLE tool_orchestrator DROP COLUMN IF EXISTS points_required;
+        ALTER TABLE tool_orchestrator DROP COLUMN IF EXISTS cost_per_usage;
+        ALTER TABLE tool_orchestrator DROP COLUMN IF EXISTS cost_per_1k_input_tokens;
+        ALTER TABLE tool_orchestrator DROP COLUMN IF EXISTS cost_per_1k_output_tokens;
+      `).catch((err) => {
+        console.warn('[Migration v113] Warning during legacy cost columns dropping:', err.message);
       });
-    } else {
-      console.log('[Migration] Suspension state of v113: Preserving legacy wallet cost and point columns in tool_orchestrator.');
-    }
+    });
 
     await runVersioned('v114_unrestrict_media_assets_context', 'Drop restrictive context check constraints on media_assets to allow all media types and contexts', async (tx) => {
       await tx.query(`
@@ -2539,6 +2558,33 @@ export async function runVersionedMigrations(
         ALTER TABLE media_assets DROP CONSTRAINT IF EXISTS media_assets_context_check;
       `).catch((err) => {
         console.warn('[Migration v114] Warning dropping media_assets context check on primary pool:', err.message);
+      });
+    });
+
+    // Phase 2 & 4 Reconciliation Migrations
+    await runVersioned('v115_unify_media_assets_storage', 'Reconcile and unify media_assets into dedicated Media DB and clean orphaned columns', async (tx) => {
+      await tx.query(`
+        ALTER TABLE media_assets DROP COLUMN IF EXISTS blog_article_id;
+        ALTER TABLE media_assets DROP COLUMN IF EXISTS marketplace_item_id;
+      `).catch((err) => {
+        console.warn('[Migration v115] Warning cleaning media_assets columns:', err.message);
+      });
+    });
+
+    await runVersioned('v116_security_split_data_reconciliation', 'Verify and reconcile security audit indexes and integrity across Security DB split', async (tx) => {
+      await tx.query(`
+        CREATE INDEX IF NOT EXISTS idx_token_blacklist_expires ON token_blacklist(expires_at);
+        CREATE INDEX IF NOT EXISTS idx_security_alerts_user ON security_alerts(user_id);
+        CREATE INDEX IF NOT EXISTS idx_admin_audit_logs_created ON admin_audit_logs(created_at);
+      `).catch((err) => {
+        console.warn('[Migration v116] Warning during security split index reconciliation:', err.message);
+      });
+    });
+
+    await runVersioned('v117_drop_ghost_external_tables', 'Drop decommissioned ghost external tables (external_articles, external_categories, external_sync_logs)', async (tx) => {
+      const ext = externalClient || tx;
+      await ext.query(`DROP TABLE IF EXISTS external_sync_logs, external_categories, external_articles CASCADE`).catch((err: any) => {
+        console.warn('[Migration v117] Notice during external ghost tables cleanup:', err.message);
       });
     });
     

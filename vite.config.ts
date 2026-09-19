@@ -9,45 +9,53 @@ const rootDir = path.dirname(fileURLToPath(import.meta.url));
 
 const pwaConfig: any = {
   registerType: 'autoUpdate',
-  includeAssets: ['favicon.ico', 'app-assets/icon.png', 'app-assets/og-image.png'],
+  manifest: false, // Let public/manifest.json and server dynamic manifest be authoritative
   workbox: {
     navigateFallback: '/index.html',
-    navigateFallbackDenylist: [/^\/api\//],
+    navigateFallbackDenylist: [/^\/api\//, /^\/uploads\//, /^\/\.well-known\//],
     skipWaiting: true,
     clientsClaim: true,
     cleanupOutdatedCaches: true,
-    maximumFileSizeToCacheInBytes: 3 * 1024 * 1024,
+    maximumFileSizeToCacheInBytes: 5 * 1024 * 1024,
     runtimeCaching: [
       {
-        urlPattern: /\/uploads\/.*/i,
-        handler: 'NetworkOnly',
+        urlPattern: /^https:\/\/fonts\.googleapis\.com\/.*/i,
+        handler: 'CacheFirst',
+        options: {
+          cacheName: 'google-fonts-cache',
+          expiration: {
+            maxEntries: 10,
+            maxAgeSeconds: 60 * 60 * 24 * 365,
+          },
+          cacheableResponse: {
+            statuses: [0, 200],
+          },
+        },
+      },
+      {
+        urlPattern: /^https:\/\/fonts\.gstatic\.com\/.*/i,
+        handler: 'CacheFirst',
+        options: {
+          cacheName: 'gstatic-fonts-cache',
+          expiration: {
+            maxEntries: 20,
+            maxAgeSeconds: 60 * 60 * 24 * 365,
+          },
+          cacheableResponse: {
+            statuses: [0, 200],
+          },
+        },
       },
       {
         urlPattern: /\/api\/.*/i,
         handler: 'NetworkOnly',
       },
+      {
+        urlPattern: /\/uploads\/.*/i,
+        handler: 'NetworkOnly',
+      },
     ],
   },
-  manifest: {
-    name: 'Perplexta Intelligence Platform',
-    short_name: 'Perplexta',
-    description: 'Next-Generation AI Intelligence Platform',
-    theme_color: '#0f172a',
-    background_color: '#0f172a',
-    display: 'standalone',
-    icons: [
-      {
-        src: 'pwa-192x192.png',
-        sizes: '192x192',
-        type: 'image/png'
-      },
-      {
-        src: 'pwa-512x512.png',
-        sizes: '512x512',
-        type: 'image/png'
-      }
-    ]
-  }
 };
 
 export default defineConfig(({ mode }) => {

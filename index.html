@@ -2,7 +2,7 @@
 <html lang="en" class="light theme-booting" data-theme="light">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, viewport-fit=cover" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, viewport-fit=cover, interactive-widget=resizes-content" />
     <meta id="theme-color-meta" name="theme-color" content="#ffffff" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
@@ -13,6 +13,26 @@
     <meta name="msapplication-tap-highlight" content="no" />
     <meta name="edge-sidebar" content="disable" />
     <meta name="format-detection" content="telephone=no" />
+
+    <!-- Visual Viewport & Keyboard Handler -->
+    <script>
+      (function() {
+        function updateViewportVars() {
+          if (!window.visualViewport) return;
+          var vv = window.visualViewport;
+          var kbHeight = Math.max(0, window.innerHeight - vv.height);
+          document.documentElement.style.setProperty('--kb-height', kbHeight + 'px');
+          document.documentElement.style.setProperty('--vv-height', vv.height + 'px');
+        }
+        if (window.visualViewport) {
+          window.visualViewport.addEventListener('resize', updateViewportVars);
+          window.visualViewport.addEventListener('scroll', updateViewportVars);
+          window.addEventListener('orientationchange', function() {
+            setTimeout(updateViewportVars, 200);
+          });
+        }
+      })();
+    </script>
 
     <!-- Canonical Theme & Language Bootstrap (Executes synchronously before first paint) -->
     <script>

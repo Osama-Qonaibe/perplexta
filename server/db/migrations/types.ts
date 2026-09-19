@@ -123,9 +123,6 @@ export const TABLE_POOL_REGISTRY: Record<string, DatabasePoolKey> = {
   stripe_events: 'ledger',
 
   // External DB Tables (Reserved for isolated third-party integration pipelines)
-  blog_articles: 'external',
-  blog_comments: 'external',
-  blog_ratings: 'external',
 
   // Security DB Tables
   security_alerts: 'security',

@@ -5169,15 +5169,15 @@ export const BulletinBoardPage: React.FC = () => {
         layer="modal"
         closeOnBackdrop={false}
       >
-              {}
-              <div className="bg-[var(--surface-subtle)] border-b border-[var(--border-default)] p-3.5 sm:p-4 text-[var(--text-primary)] relative overflow-hidden shrink-0">
+              {/* Modal Header */}
+              <div className="bg-[var(--surface-subtle)] border-b border-[var(--border-default)] p-2.5 sm:p-4 text-[var(--text-primary)] relative overflow-hidden shrink-0">
                 <div className="flex items-center justify-between relative z-10">
-                  <div className="flex items-center gap-2.5 min-w-0">
-                    <div className="p-2 sm:p-2.5 rounded-shape-sm bg-accent/10 text-accent border border-accent/20 shrink-0">
-                      <Edit2 size={18} />
+                  <div className="flex items-center gap-2 sm:gap-2.5 min-w-0">
+                    <div className="p-1.5 sm:p-2.5 rounded-shape-sm bg-accent/10 text-accent border border-accent/20 shrink-0">
+                      <Edit2 size={15} className="sm:size-[18px]" />
                     </div>
                     <div className="min-w-0">
-                      <h3 className="text-sm sm:text-base font-bold flex items-center gap-2 flex-wrap">
+                      <h3 className="text-xs sm:text-base font-bold flex items-center gap-1.5 sm:gap-2 flex-wrap">
                         <span className="truncate">
                           {composerView === 'feelings' ? (isRtl ? 'كيف تشعر؟' : 'How are you feeling?') :
                            composerView === 'location' ? (isRtl ? 'أين أنت؟' : 'Where are you?') :
@@ -5187,20 +5187,20 @@ export const BulletinBoardPage: React.FC = () => {
                            (isRtl ? 'إنشاء منشور جديد' : 'Create New Post')}
                         </span>
                         {isEditMode && composerView === 'main' && (
-                          <span className="px-2 py-0.5 rounded-shape-xs bg-amber-500/20 text-amber-500 text-[10px] font-bold uppercase tracking-wider shrink-0">
+                          <span className="px-1.5 py-0.5 rounded-shape-xs bg-amber-500/20 text-amber-500 text-[9px] sm:text-[10px] font-bold uppercase tracking-wider shrink-0">
                             {isRtl ? 'وضع التعديل' : 'Edit Mode'}
                           </span>
                         )}
                         {(adFormData.image_url || adFormData.video_url || videoMetadataInfo.localVideoUrl) && (
-                          <span className="px-2 py-0.5 rounded-shape-xs bg-[var(--fg-success)]/15 text-[var(--fg-success)] text-[10px] font-bold shrink-0">
+                          <span className="px-1.5 py-0.5 rounded-shape-xs bg-[var(--fg-success)]/15 text-[var(--fg-success)] text-[9px] sm:text-[10px] font-bold shrink-0">
                             100% {isRtl ? 'جاهز' : 'Ready'}
                           </span>
                         )}
                       </h3>
-                      <p className="text-xs text-[var(--text-muted)] font-medium pt-0.5 truncate">
+                      <p className="text-[10.5px] sm:text-xs text-[var(--text-muted)] font-medium pt-0.5 truncate hidden xs:block">
                         {isEditMode
-                          ? (isRtl ? 'تحديث نص المنشور، الوسائط، الجمهور والخيارات' : 'Modify post text, media, audience & options')
-                          : (isRtl ? 'شارِك أفكارك وصورك أو مقاطع الفيديو مع المتابعين' : 'Share your ideas, photos or videos with your audience')}
+                          ? (isRtl ? 'تحديث نص المنشور، الوسائط، والخيارات' : 'Modify post text, media & options')
+                          : (isRtl ? 'شارِك أفكارك وصورك أو مقاطع الفيديو' : 'Share ideas, photos or videos')}
                       </p>
                     </div>
                   </div>
@@ -5211,15 +5211,15 @@ export const BulletinBoardPage: React.FC = () => {
                       if (composerView === 'main') setIsAdModalOpen(false);
                       else setComposerView('main');
                     }}
-                    className="w-8 h-8 sm:w-9 sm:h-9 rounded-shape-sm bg-[var(--surface-card)] hover:bg-[var(--surface-subtle)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-all border border-[var(--border-default)] flex items-center justify-center cursor-pointer shrink-0 ms-2"
+                    className="w-7 h-7 sm:w-9 sm:h-9 rounded-shape-sm bg-[var(--surface-card)] hover:bg-[var(--surface-subtle)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-all border border-[var(--border-default)] flex items-center justify-center cursor-pointer shrink-0 ms-1.5 sm:ms-2"
                     title={isRtl ? 'إغلاق' : 'Close'}
                   >
-                    {composerView === 'main' ? <X size={17} /> : <ArrowLeft size={16} className={isRtl ? 'rotate-180' : ''} />}
+                    {composerView === 'main' ? <X size={15} className="sm:size-[17px]" /> : <ArrowLeft size={15} className={`sm:size-[16px] ${isRtl ? 'rotate-180' : ''}`} />}
                   </button>
                 </div>
               </div>
 
-              <div className="flex-1 overflow-y-auto p-2.5 sm:p-5 scrollbar-thin">
+              <div className="flex-1 overflow-y-auto p-2 sm:p-4 scrollbar-thin">
                 {composerView === 'main' && (
                   <form onSubmit={handleCreateCampaign} className="space-y-2.5 sm:space-y-4">
                     {}
@@ -5480,7 +5480,7 @@ export const BulletinBoardPage: React.FC = () => {
                             handleMixedMediaSelect({ target: { files: e.dataTransfer.files } } as any);
                           }
                         }}
-                        className={`relative rounded-2xl border-2 border-dashed p-4 sm:p-6 flex flex-col items-center justify-center text-center transition-all cursor-pointer group min-h-[130px] sm:min-h-[150px] select-none ${
+                        className={`relative rounded-xl sm:rounded-2xl border-2 border-dashed p-2.5 sm:p-6 flex flex-col items-center justify-center text-center transition-all cursor-pointer group min-h-[95px] sm:min-h-[150px] select-none ${
                           isComposerDragging
                             ? 'border-accent bg-accent/10 scale-[1.01]'
                             : 'border-[var(--border-default)] hover:border-accent/70 bg-[var(--surface-subtle)]/60 hover:bg-[var(--surface-subtle)]'
@@ -5494,23 +5494,23 @@ export const BulletinBoardPage: React.FC = () => {
                           className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
                         />
 
-                        <div className="w-12 h-12 rounded-full bg-[var(--surface-card)] border border-[var(--border-default)] flex items-center justify-center text-accent mb-2.5 shadow-xs group-hover:scale-110 group-hover:bg-accent group-hover:text-slate-950 transition-all duration-200">
-                          <ImageIcon size={22} />
+                        <div className="w-8 h-8 sm:w-12 sm:h-12 rounded-full bg-[var(--surface-card)] border border-[var(--border-default)] flex items-center justify-center text-accent mb-1 sm:mb-2.5 shadow-xs group-hover:scale-110 group-hover:bg-accent group-hover:text-slate-950 transition-all duration-200">
+                          <ImageIcon size={16} className="sm:size-[22px]" />
                         </div>
 
-                        <h4 className="text-xs sm:text-sm font-extrabold text-[var(--text-primary)] group-hover:text-accent transition-colors">
+                        <h4 className="text-[11px] sm:text-sm font-extrabold text-[var(--text-primary)] group-hover:text-accent transition-colors leading-tight">
                           {isRtl ? 'إضافة صور أو مقاطع فيديو' : 'Add Photos or Videos'}
                         </h4>
 
-                        <p className="text-[10px] sm:text-xs text-[var(--text-muted)] mt-1 font-medium max-w-xs">
-                          {isRtl ? 'اسحب وأفلت الملفات هنا أو انقر للتصفح من جهازك' : 'Drag and drop files here or click to browse'}
+                        <p className="text-[9.5px] sm:text-xs text-[var(--text-muted)] mt-0.5 sm:mt-1 font-medium max-w-xs">
+                          {isRtl ? 'اسحب وأفلت الملفات هنا أو انقر للتصفح' : 'Drag & drop files or click to browse'}
                         </p>
 
-                        <div className="flex items-center gap-1.5 mt-2.5">
-                          <span className="px-2 py-0.5 rounded-full text-[9px] sm:text-[10px] font-bold bg-[var(--surface-card)] border border-[var(--border-default)] text-[var(--text-secondary)]">
+                        <div className="flex items-center gap-1 sm:gap-1.5 mt-1.5 sm:mt-2.5">
+                          <span className="px-1.5 sm:px-2 py-0.5 rounded-full text-[8px] sm:text-[10px] font-bold bg-[var(--surface-card)] border border-[var(--border-default)] text-[var(--text-secondary)]">
                             JPG, PNG, WebP
                           </span>
-                          <span className="px-2 py-0.5 rounded-full text-[9px] sm:text-[10px] font-bold bg-[var(--surface-card)] border border-[var(--border-default)] text-[var(--text-secondary)]">
+                          <span className="px-1.5 sm:px-2 py-0.5 rounded-full text-[8px] sm:text-[10px] font-bold bg-[var(--surface-card)] border border-[var(--border-default)] text-[var(--text-secondary)]">
                             MP4, MOV (≤100MB)
                           </span>
                         </div>

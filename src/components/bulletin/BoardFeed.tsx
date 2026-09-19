@@ -169,6 +169,8 @@ export const BoardFeed: React.FC<BoardFeedProps> = ({
         hasMore={hasMoreAds}
         loadingMore={loadingMoreAds}
         onLoadMore={handleLoadMoreAds}
+        onRefresh={triggerFeedRefresh}
+        isRefreshing={isRefreshing}
         onOpenReelFeed={(adId) => {
           if (adId) {
             setActiveReelModalId(adId);

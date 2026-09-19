@@ -244,6 +244,7 @@ export async function runDatabaseMigrations(targetId?: string, type: 'additive' 
   let ledgerClient: any = null;
   let externalClient: any = null;
   let securityClient: any = null;
+  let mediaClient: any = null;
 
   const connectToPool = async (p: any, poolName: string) => {
     if (!p || p === pool || isSameDb(pool, p)) return null;
@@ -281,20 +282,52 @@ export async function runDatabaseMigrations(targetId?: string, type: 'additive' 
   ledgerClient = await connectToPool(ledgerPool, 'Ledger');
   externalClient = await connectToPool(externalPool, 'External');
   securityClient = await connectToPool(securityPool, 'Security');
+  mediaClient = await connectToPool(mediaPool, 'Media');
+
+  let lockAcquired = false;
 
   try {
-    // Acquire non-blocking advisory lock to prevent concurrent migration execution race conditions
-    await client.query('SELECT pg_try_advisory_lock(74635291)').catch((err: any) => {
-      console.warn('[Migrations] Advisory lock acquisition warning:', err.message);
-    });
+    // Attempt non-blocking advisory lock with retry polling to handle transient restart overlaps
+    const maxLockRetries = 10;
+    for (let attempt = 1; attempt <= maxLockRetries; attempt++) {
+      const lockRes = await client.query('SELECT pg_try_advisory_lock(74635291)').catch((err: any) => {
+        console.warn('[Migrations] Advisory lock acquisition attempt error:', err.message);
+        return { rows: [{ pg_try_advisory_lock: false }] };
+      });
+
+      if (lockRes.rows?.[0]?.pg_try_advisory_lock === true) {
+        lockAcquired = true;
+        break;
+      }
+
+      if (attempt < maxLockRetries) {
+        await new Promise((res) => setTimeout(res, 400));
+      }
+    }
+
+    if (!lockAcquired) {
+      console.warn('[Migrations] Global advisory lock (74635291) is currently held by another active process. Skipping redundant concurrent run.');
+      return {
+        success: true,
+        target: targetId || 'all',
+        type,
+        totalMigrations: 0,
+        skipped: true,
+        reason: 'Concurrent migration execution in progress'
+      };
+    }
 
     await client.query(`
       CREATE TABLE IF NOT EXISTS migration_history (
         id SERIAL PRIMARY KEY,
         migration_name VARCHAR(255) UNIQUE NOT NULL,
-        applied_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        checksum VARCHAR(64),
+        applied_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        executed_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
       )
     `);
+    await client.query(`ALTER TABLE migration_history ADD COLUMN IF NOT EXISTS checksum VARCHAR(64)`).catch(() => {});
+    await client.query(`ALTER TABLE migration_history ADD COLUMN IF NOT EXISTS executed_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP`).catch(() => {});
 
     await client.query(`
       CREATE TABLE IF NOT EXISTS migration_security_audit (
@@ -368,6 +401,26 @@ export async function runDatabaseMigrations(targetId?: string, type: 'additive' 
 
       if (securityClient && securityClient !== client) {
         try {
+          // Safe transition (F-05): Transfer existing compliance and audit records before cleaning duplicates
+          for (const tbl of ['token_blacklist', 'security_alerts', 'admin_audit_logs', 'registered_agents']) {
+            const hasCoreTable = await client.query(`SELECT 1 FROM information_schema.tables WHERE table_name = $1 AND table_schema = 'public'`, [tbl]).catch(() => ({ rowCount: 0 }));
+            if (hasCoreTable.rowCount > 0) {
+              const countCore = await client.query(`SELECT COUNT(*) FROM "${tbl}"`).catch(() => ({ rows: [{ count: '0' }] }));
+              const total = parseInt(countCore.rows[0]?.count || '0', 10);
+              if (total > 0) {
+                console.log(`[Migrations] Transferring ${total} legacy records for ${tbl} from Core DB to Security DB...`);
+                const rows = await client.query(`SELECT * FROM "${tbl}"`);
+                for (const row of rows.rows) {
+                  const cols = Object.keys(row).map(c => `"${c}"`).join(', ');
+                  const placeholders = Object.keys(row).map((_, i) => `$${i + 1}`).join(', ');
+                  const values = Object.values(row);
+                  await securityClient.query(`INSERT INTO "${tbl}" (${cols}) VALUES (${placeholders}) ON CONFLICT DO NOTHING`, values).catch(() => {});
+                }
+                const countSec = await securityClient.query(`SELECT COUNT(*) FROM "${tbl}"`).catch(() => ({ rows: [{ count: '0' }] }));
+                console.log(`[Migrations] Transferred ${tbl}. Security DB now has ${countSec.rows[0]?.count} records.`);
+              }
+            }
+          }
           await client.query(`DROP TABLE IF EXISTS token_blacklist, security_alerts, admin_audit_logs, registered_agents CASCADE;`);
           console.log('[Migrations] Successfully cleaned up 4 legacy duplicate security tables from Core DB.');
         } catch (dropErr: any) {
@@ -439,7 +492,7 @@ export async function runDatabaseMigrations(targetId?: string, type: 'additive' 
       }
 
       console.log('[Migrations] Scratch: Re-initializing schemas via initDb...');
-      await initDb('scratch', pool, ledgerPool || pool, externalPool || pool, securityPool || pool);
+      await initDb('scratch', pool, ledgerPool || pool, externalPool || pool, securityPool || pool, mediaPool || pool);
       console.log('[Migrations] Scratch: Schema re-initialization completed.');
     }
 
@@ -469,16 +522,18 @@ export async function runDatabaseMigrations(targetId?: string, type: 'additive' 
       await initDb('additive', pool, ledgerPool, externalPool, securityPool, mediaPool);
     }
 
-    // Run all versioned migrations (v1 - v83)
+    // Run all versioned migrations (v1 - v117)
     await runVersionedMigrations(
       client,
       externalClient,
       ledgerClient,
       securityClient,
+      mediaClient,
       pool,
       ledgerPool || pool,
       externalPool || pool,
       securityPool || pool,
+      mediaPool || pool,
       migrationMetrics
     );
 
@@ -510,10 +565,13 @@ export async function runDatabaseMigrations(targetId?: string, type: 'additive' 
     console.error('[CRITICAL] Database Migration failed:', err.message);
     if (process.env.NODE_ENV === 'production') throw err;
   } finally {
-    await client.query('SELECT pg_advisory_unlock(74635291)').catch(() => {});
+    if (lockAcquired) {
+      await client.query('SELECT pg_advisory_unlock(74635291)').catch(() => {});
+    }
     client.release();
     if (ledgerClient) ledgerClient.release();
     if (externalClient) externalClient.release();
     if (securityClient) securityClient.release();
+    if (mediaClient) mediaClient.release();
   }
 }

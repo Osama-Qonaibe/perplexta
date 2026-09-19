@@ -20,30 +20,50 @@ async function migrateAndVerifyDatabases() {
   console.log('[PERPLEXTA DB MIGRATION RUNNER] Running Sequential Migrations via Migration History...');
   console.log('================================================================');
 
-  // ===== STEP 0: BACKUP BEFORE MIGRATIONS =====
+  // ===== STEP 0: MULTI-DATABASE BACKUP BEFORE MIGRATIONS =====
   const BACKUP_DIR = process.env.BACKUP_DIR || path.join(process.cwd(), 'backups');
-  const dbUrl = process.env.DATABASE_URL;
-
-  if (dbUrl && process.env.NODE_ENV === 'production') {
-    const timestamp = Date.now();
-    const backupFile = path.join(BACKUP_DIR, `backup_${timestamp}.sql`);
-    
-    // Ensure backup dir exists
-    if (!fs.existsSync(BACKUP_DIR)) {
-      fs.mkdirSync(BACKUP_DIR, { recursive: true });
-    }
-    
-    console.log(`[Migrate] Creating backup to ${backupFile}...`);
-    await execAsync(`pg_dump "${dbUrl}" > "${backupFile}"`);
-    console.log(`[Migrate] ✅ Backup created: ${backupFile}`);
-  }
-  // ============================================
-
   const coreUrl = process.env.DATABASE_URL || '';
   const ledgerUrl = process.env.LEDGER_DATABASE_URL || coreUrl;
   const externalUrl = process.env.EXTERNAL_DATABASE_URL || coreUrl;
   const securityUrl = process.env.SECURITY_DATABASE_URL || coreUrl;
   const mediaUrl = process.env.MEDIA_DATABASE_URL || coreUrl;
+
+  if (process.env.NODE_ENV === 'production') {
+    const timestamp = Date.now();
+    if (!fs.existsSync(BACKUP_DIR)) {
+      fs.mkdirSync(BACKUP_DIR, { recursive: true });
+    }
+
+    const uniqueDbUrls: { name: string; url: string }[] = [];
+    const seenUrls = new Set<string>();
+
+    const candidateDbs = [
+      { name: 'core', url: coreUrl },
+      { name: 'ledger', url: ledgerUrl },
+      { name: 'external', url: externalUrl },
+      { name: 'security', url: securityUrl },
+      { name: 'media', url: mediaUrl }
+    ];
+
+    for (const db of candidateDbs) {
+      if (db.url && !seenUrls.has(db.url)) {
+        seenUrls.add(db.url);
+        uniqueDbUrls.push(db);
+      }
+    }
+
+    for (const db of uniqueDbUrls) {
+      const backupFile = path.join(BACKUP_DIR, `backup_${db.name}_${timestamp}.sql`);
+      try {
+        console.log(`[Migrate] Creating backup for ${db.name} DB to ${backupFile}...`);
+        await execAsync(`pg_dump "${db.url}" > "${backupFile}"`);
+        console.log(`[Migrate] ✅ Backup created for ${db.name}: ${backupFile}`);
+      } catch (bkErr: any) {
+        console.warn(`[Migrate] Backup warning for ${db.name}:`, bkErr?.message || bkErr);
+      }
+    }
+  }
+  // ============================================
 
   console.log('[DB Migration] Initializing connection pools for Core, Ledger, External, Security, and Media databases...');
   await initializePerplextaPools(coreUrl, ledgerUrl, externalUrl, securityUrl, mediaUrl);

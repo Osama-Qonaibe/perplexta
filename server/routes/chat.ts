@@ -18,7 +18,7 @@ import {
 } from '../services/chat.js';
 import { VideoResourceProvider } from '../services/videoResourceProvider.js';
 import { validatePromptLength } from '../utils/security.js';
-import { extractFollowUps } from '../utils/helpers.js';
+import { extractFollowUps, extractImmediateChatTitle } from '../utils/helpers.js';
 import { getUserWallet } from '../services/wallet.js';
 import { userLoader, subscriptionLoader } from '../db/queries.js';
 import { getCache, setCache, delCache } from '../utils/cache.js';
@@ -62,10 +62,12 @@ router.post("/", authenticateToken, chatLimiter, async (req: any, res) => {
         return res.status(400).json(JSON.parse(err.message));
       }
     }
-    const chat = await createChat(req.user.id, title);
+    const resolvedTitle = (title && title.trim()) ? title.trim() : (message ? extractImmediateChatTitle(message) : undefined);
+    const chat = await createChat(req.user.id, resolvedTitle);
+    delCache(`chats:user:${req.user.id}`);
     if (message) {
       await addChatMessage(chat.id, 'user', message, tool);
-      generateChatTitle(chat.id, message).catch(err => {
+      generateChatTitle(chat.id, message, req.user.id).catch(err => {
         console.error('[ChatRoute] Background title generation fail on chat create:', err);
       });
     }
@@ -186,6 +188,12 @@ router.delete("/:id", authenticateToken, async (req: any, res) => {
   try {
     const success = await deleteUserChat(req.params.id, req.user.id);
     if (!success) return res.status(404).json({ error: 'Chat not found' });
+    delCache(`chats:user:${req.user.id}`);
+    delCache(`chat:messages:${req.params.id}:${req.user.id}`);
+    const { io } = await import('../config/socket.js');
+    if (io) {
+      io.to(`user_${req.user.id}`).emit('chat_updated', { chatId: req.params.id, deleted: true });
+    }
     res.json({ success: true });
   } catch (error: any) {
     const status = error.message === 'Database initializing' ? 503 : 500;
@@ -218,6 +226,12 @@ router.patch("/:id", authenticateToken, async (req: any, res) => {
     }
 
     if (!success) return res.status(404).json({ error: 'Chat not found' });
+    delCache(`chats:user:${req.user.id}`);
+    const { io } = await import('../config/socket.js');
+    if (io && updatedTitle) {
+      io.to(`user_${req.user.id}`).emit('chat_title_updated', { chatId: String(req.params.id), title: updatedTitle });
+      io.to(`user_${req.user.id}`).emit('chat_updated', { chatId: String(req.params.id) });
+    }
     res.json({ success: true, title: updatedTitle, context_summary: updatedContextSummary });
   } catch (error: any) {
     const status = error.message === 'Database initializing' ? 503 : 500;
@@ -286,6 +300,12 @@ router.post("/:id/fork", authenticateToken, chatLimiter, async (req: any, res) =
       );
     }
 
+    delCache(`chats:user:${req.user.id}`);
+    const { io } = await import('../config/socket.js');
+    if (io) {
+      io.to(`user_${req.user.id}`).emit('chat_updated', { chatId: String(newChat.id) });
+    }
+
     res.json(newChat);
   } catch (error: any) {
     const status = error.message === 'Database initializing' ? 503 : 500;
@@ -319,6 +339,27 @@ router.post("/sync-message", authenticateToken, chatLimiter, verifyBillingFunds,
       [chatId, 'user', content, toolId || 'chat_fast', toolId || 'chat_fast']
     );
     userMessageId = userMsgResult.rows[0].id;
+
+    // Check if chat title needs immediate extraction/generation on first user message
+    try {
+      const chatTitleCheck = await pool.query('SELECT title FROM chats WHERE id = $1', [chatId]);
+      const currentTitle = chatTitleCheck.rows[0]?.title || '';
+      const isGenericTitle = !currentTitle || currentTitle === 'New Chat' || currentTitle === 'محادثة جديدة' || currentTitle === 'New Session' || currentTitle === 'New Conversation';
+      
+      if (isGenericTitle) {
+        const immediateTitle = extractImmediateChatTitle(content);
+        await pool.query('UPDATE chats SET title = $1, updated_at = CURRENT_TIMESTAMP WHERE id = $2', [immediateTitle, chatId]);
+        delCache(`chats:user:${req.user.id}`);
+        const { io } = await import('../config/socket.js');
+        if (io) {
+          io.to(`user_${req.user.id}`).emit('chat_title_updated', { chatId: String(chatId), title: immediateTitle });
+          io.to(`user_${req.user.id}`).emit('chat_updated', { chatId: String(chatId) });
+        }
+        generateChatTitle(chatId, content, req.user.id).catch(() => {});
+      }
+    } catch (titleErr) {
+      console.warn('[SyncMessage] Title auto-generation check non-fatal error:', titleErr);
+    }
 
     const assistantMsgResult = await pool.query(
       'INSERT INTO messages (chat_id, role, content, tool, tool_id, model) VALUES ($1, $2, $3, $4, $5, $6) RETURNING id',
@@ -381,6 +422,7 @@ router.post("/sync-message", authenticateToken, chatLimiter, verifyBillingFunds,
 
     // Post-generation hooks
     await pool.query('UPDATE chats SET updated_at = CURRENT_TIMESTAMP WHERE id = $1', [chatId]);
+    delCache(`chats:user:${req.user.id}`);
 
     if (io) {
       io.to(`user_${req.user.id}`).emit('typing', { isTyping: false, role: 'assistant', name: 'Perplexta' });

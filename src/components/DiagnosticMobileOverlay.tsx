@@ -13,8 +13,11 @@ interface ElementMetrics {
 }
 
 export const DiagnosticMobileOverlay: React.FC = () => {
+  if (!import.meta.env.DEV) {
+    return null;
+  }
+
   const [isOpen, setIsOpen] = useState<boolean>(() => {
-    // Auto-enable if ?diag=1 or ?diagnostic=true in URL
     const params = new URLSearchParams(window.location.search);
     return params.get('diag') === '1' || params.get('diagnostic') === 'true';
   });

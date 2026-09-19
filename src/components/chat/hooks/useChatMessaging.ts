@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { Message } from '../types';
 import { ChatService } from '../../../services/chatService';
+import { extractImmediateChatTitle } from '../../../utils/chatUtils';
 import { toast } from '@/design-system';
 import { useNavigate } from 'react-router-dom';
 
@@ -176,14 +177,23 @@ export const useChatMessaging = (
     
     if (!activeChatId) {
       try {
-        const smartTitle = query.trim().split('\n')[0].slice(0, 36) + (query.trim().length > 36 ? '...' : '');
-        const newChat = await ChatService.createChat(token!, smartTitle || (dir === 'rtl' ? 'محادثة جديدة' : 'New Session'));
+        const smartTitle = extractImmediateChatTitle(query.trim(), dir === 'rtl' ? 'ar' : 'en');
+        const fallbackTitle = dir === 'rtl' ? 'محادثة جديدة' : 'New Session';
+        const finalTitle = smartTitle || fallbackTitle;
+        const newChat = await ChatService.createChat(token!, finalTitle);
         activeChatId = newChat.id;
         setChatId(activeChatId);
         lastFetchedIdRef.current = String(activeChatId);
         sessionStorage.setItem('perplexta_active_chat_id', String(activeChatId));
-        window.dispatchEvent(new CustomEvent('chat-created'));
-        window.dispatchEvent(new CustomEvent('chat-updated'));
+        
+        const chatDetail = {
+          id: String(activeChatId),
+          title: finalTitle,
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString()
+        };
+        window.dispatchEvent(new CustomEvent('chat-created', { detail: chatDetail }));
+        window.dispatchEvent(new CustomEvent('chat-updated', { detail: chatDetail }));
         navigate(`/chat/${activeChatId}`, { replace: true });
       } catch (err: any) {
         toast.error(err.message || (dir === 'rtl' ? 'فشل إنشاء المحادثة' : 'Failed to create chat'));

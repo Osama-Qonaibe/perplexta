@@ -831,22 +831,22 @@ export const StoryUploadModal: React.FC<StoryUploadModalProps> = ({
                 {/* 1. Interactive 9:16 Vertical Preview */}
                 <div className="flex justify-center">
                   <div
-                    className={`relative w-48 h-80 sm:w-56 sm:h-96 rounded-2xl overflow-hidden shadow-xl border border-white/20 flex flex-col justify-between p-3.5 bg-gradient-to-br ${
+                    className={`relative w-40 h-64 xs:w-44 xs:h-72 sm:w-56 sm:h-96 rounded-2xl overflow-hidden shadow-xl border border-white/20 flex flex-col justify-between p-2.5 sm:p-3.5 bg-gradient-to-br ${
                       TEXT_STORY_GRADIENTS[textGradientIndex]?.bgClass || 'from-rose-500 to-orange-400'
                     } text-white select-none transition-all duration-300`}
                   >
                     {/* Header */}
-                    <div className="flex items-center gap-2 z-10">
+                    <div className="flex items-center gap-1.5 sm:gap-2 z-10">
                       <img
                         src={user?.avatar || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=120&q=80'}
                         alt="Avatar"
-                        className="w-7 h-7 rounded-full border border-white/40 object-cover shadow-sm"
+                        className="w-6 h-6 sm:w-7 sm:h-7 rounded-full border border-white/40 object-cover shadow-sm"
                       />
                       <div className="min-w-0 flex-1">
-                        <p className="text-[11px] font-bold truncate leading-tight">
+                        <p className="text-[10px] sm:text-[11px] font-bold truncate leading-tight">
                           {user?.name || (isRtl ? 'أنا' : 'Me')}
                         </p>
-                        <span className="text-[8px] text-white/80 flex items-center gap-0.5">
+                        <span className="text-[7.5px] sm:text-[8px] text-white/80 flex items-center gap-0.5">
                           <Clock size={8} />
                           {isRtl ? 'تستمر 24 ساعة' : '24h Story'}
                         </span>
@@ -854,10 +854,10 @@ export const StoryUploadModal: React.FC<StoryUploadModalProps> = ({
                     </div>
 
                     {/* Middle: Live Text Content */}
-                    <div className="my-auto px-2 py-4 max-h-[70%] overflow-y-auto scrollbar-none z-10">
+                    <div className="my-auto px-1.5 sm:px-2 py-2 sm:py-4 max-h-[70%] overflow-y-auto scrollbar-none z-10">
                       <p
                         className={`font-extrabold break-words text-white drop-shadow-md leading-relaxed ${
-                          textFontSize === 'huge' ? 'text-lg sm:text-xl' : textFontSize === 'large' ? 'text-base sm:text-lg' : 'text-sm'
+                          textFontSize === 'huge' ? 'text-base sm:text-xl' : textFontSize === 'large' ? 'text-sm sm:text-lg' : 'text-xs sm:text-sm'
                         } ${
                           textAlign === 'right' ? 'text-right' : textAlign === 'left' ? 'text-left' : 'text-center'
                         }`}
@@ -868,7 +868,7 @@ export const StoryUploadModal: React.FC<StoryUploadModalProps> = ({
 
                     {/* Footer note */}
                     <div className="text-center z-10">
-                      <span className="text-[8.5px] text-white/70 font-semibold bg-black/20 px-2 py-0.5 rounded-full backdrop-blur-xs">
+                      <span className="text-[8px] sm:text-[8.5px] text-white/70 font-semibold bg-black/20 px-2 py-0.5 rounded-full backdrop-blur-xs">
                         {isRtl ? 'قصة نصية ملونة' : 'Text Story'}
                       </span>
                     </div>
@@ -1000,7 +1000,7 @@ export const StoryUploadModal: React.FC<StoryUploadModalProps> = ({
                   const files = e.dataTransfer.files ? Array.from(e.dataTransfer.files) : [];
                   if (files.length > 0) handleFilesSelected(files);
                 }}
-                className={`border-2 border-dashed rounded-[var(--radius-md)] p-6 sm:p-10 flex flex-col items-center justify-center gap-3 cursor-pointer transition-all bg-[var(--surface-subtle)] group text-center select-none ${
+                className={`border-2 border-dashed rounded-[var(--radius-md)] p-4 sm:p-10 flex flex-col items-center justify-center gap-2 sm:gap-3 cursor-pointer transition-all bg-[var(--surface-subtle)] group text-center select-none ${
                   isStoryDragging
                     ? 'border-accent bg-accent/10 scale-[1.01]'
                     : 'border-[var(--border-default)] hover:border-[var(--border-accent)]'
@@ -1018,28 +1018,28 @@ export const StoryUploadModal: React.FC<StoryUploadModalProps> = ({
                   }}
                 />
 
-                <div className="w-14 h-14 rounded-[var(--radius-md)] bg-[var(--bg-accent-muted)] text-[var(--fg-accent)] flex items-center justify-center group-hover:scale-105 transition-transform shadow-sm">
-                  <Upload size={28} className="group-hover:translate-y-[-2px] transition-transform" />
+                <div className="w-10 h-10 sm:w-14 sm:h-14 rounded-[var(--radius-md)] bg-[var(--bg-accent-muted)] text-[var(--fg-accent)] flex items-center justify-center group-hover:scale-105 transition-transform shadow-sm">
+                  <Upload size={20} className="sm:size-[28px] group-hover:translate-y-[-2px] transition-transform" />
                 </div>
 
-                <div className="space-y-1">
+                <div className="space-y-0.5 sm:space-y-1">
                   <p className="text-xs sm:text-sm font-extrabold text-[var(--text-primary)]">
                     {isRtl ? 'اسحب الملفات هنا أو انقر للتصفح' : 'Drag & Drop files here or click to browse'}
                   </p>
-                  <p className="text-[10px] sm:text-xs text-[var(--text-secondary)] max-w-md mx-auto">
+                  <p className="text-[9.5px] sm:text-xs text-[var(--text-secondary)] max-w-md mx-auto line-clamp-2 sm:line-clamp-none">
                     {isRtl 
                       ? 'يمكنك اختيار حتى 10 صور ليتم تقسيمها تلقائياً إلى قصص ممتالية، أو اختيار مقطع فيديو واحد ليتم تشغيله وقصه ذكياً'
                       : 'Upload up to 10 photos to split them automatically into separate stories, or choose a video clip to trim'}
                   </p>
                 </div>
 
-                <div className="flex flex-wrap items-center justify-center gap-2 pt-1">
-                  <span className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-[var(--radius-xs)] bg-[var(--bg-accent-muted)] text-[var(--fg-accent)] text-[10.5px] font-bold border border-[var(--border-accent)]/20">
-                    <ImageIcon size={12} />
+                <div className="flex flex-wrap items-center justify-center gap-1.5 sm:gap-2 pt-0.5 sm:pt-1">
+                  <span className="inline-flex items-center gap-1 px-2 sm:px-2.5 py-1 sm:py-1.5 rounded-[var(--radius-xs)] bg-[var(--bg-accent-muted)] text-[var(--fg-accent)] text-[9.5px] sm:text-[10.5px] font-bold border border-[var(--border-accent)]/20">
+                    <ImageIcon size={11} className="sm:size-[12px]" />
                     {isRtl ? 'رفع حتى 10 صور' : 'Up to 10 Images'}
                   </span>
-                  <span className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-[var(--radius-xs)] bg-[var(--surface-card)] text-[var(--text-primary)] text-[10.5px] font-bold border border-[var(--border-default)]">
-                    <VideoIcon size={12} />
+                  <span className="inline-flex items-center gap-1 px-2 sm:px-2.5 py-1 sm:py-1.5 rounded-[var(--radius-xs)] bg-[var(--surface-card)] text-[var(--text-primary)] text-[9.5px] sm:text-[10.5px] font-bold border border-[var(--border-default)]">
+                    <VideoIcon size={11} className="sm:size-[12px]" />
                     {isRtl ? 'فيديو (حتى 30 ثانية)' : 'Video (Up to 30s)'}
                   </span>
                 </div>

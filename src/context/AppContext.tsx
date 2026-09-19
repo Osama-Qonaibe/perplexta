@@ -12,6 +12,7 @@ export type Theme = 'dark' | 'light' | 'system';
 import { ThemeSync } from '../utils/ThemeSync';
 import { applyLanguageFont, FontLoadingConfig, FontLanguageConfig } from '../utils/fontLoader';
 import { resolveImageUrl } from '../utils/imageResolver';
+import { updateDocumentHeadIcons } from '../utils/assetManager';
 import { trackLoginEvent, trackSignUpEvent } from '../utils/analytics';
 import { detectStandaloneWebview, StandaloneWebviewDetection } from '../hooks/usePwaInstall';
 
@@ -3384,16 +3385,13 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   }, [languageTransitioning]);
 
   useEffect(() => {
-    if (siteSettings.faviconBase64) {
-      let link = document.querySelector("link[rel~='icon']") as HTMLLinkElement;
-      if (!link) {
-        link = document.createElement('link');
-        link.rel = 'icon';
-        document.head.appendChild(link);
-      }
-      link.href = resolveImageUrl(siteSettings.faviconBase64, 'general');
+    const iconSource = siteSettings.faviconBase64 || siteSettings.logoBase64;
+    if (iconSource) {
+      updateDocumentHeadIcons(resolveImageUrl(iconSource, 'general'));
+    } else {
+      updateDocumentHeadIcons(null);
     }
-  }, [siteSettings.faviconBase64]);
+  }, [siteSettings.faviconBase64, siteSettings.logoBase64]);
 
   return (
     <AppContext.Provider value={{ 

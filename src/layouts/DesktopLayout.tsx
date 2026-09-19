@@ -3,6 +3,7 @@ import { Outlet, useLocation } from 'react-router-dom';
 import { Sidebar } from '../components/Sidebar';
 import { Header } from '../components/Header';
 import { AuthModal } from '../components/AuthModal';
+import { MobileChatHistoryDrawer } from '../components/mobile/MobileChatHistoryDrawer';
 import { SponsoredSidebar } from '../components/SponsoredSidebar';
 import { useAppContext } from '../context/AppContext';
 import { motion, AnimatePresence } from 'motion/react';
@@ -94,6 +95,7 @@ export const DesktopLayout: React.FC = () => {
       </div>
 
       <AuthModal />
+      <MobileChatHistoryDrawer />
     </div>
   );
 };

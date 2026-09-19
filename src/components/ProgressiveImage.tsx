@@ -28,7 +28,7 @@ export const ProgressiveImage: React.FC<ProgressiveImageProps> = ({
     }
   }, [src]);
 
-  const fallbackImage = 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=600&q=80';
+  const fallbackImage = 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="400" height="300" viewBox="0 0 400 300"><rect width="400" height="300" fill="%23161b22"/><circle cx="200" cy="150" r="40" fill="%2310b981" opacity="0.3"/><path d="M185 150 L200 135 L215 150" stroke="%2310b981" stroke-width="3" fill="none"/></svg>';
   const activeSrc = isError ? (placeholderSrc || fallbackImage) : src;
 
   return (

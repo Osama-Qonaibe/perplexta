@@ -4,6 +4,7 @@ import {
   MessageSquare, 
   Flame, 
   MessagesSquare,
+  History,
   Sparkles, 
   User, 
   Wallet,
@@ -93,13 +94,53 @@ export const MobileNavigation: React.FC = () => {
     }
   };
 
-  const navItems = [
+  const isViralbookRoute = currentPath.startsWith('/bulletin') || currentPath.startsWith('/viralbook') || currentPath.startsWith('/reels') || currentPath.startsWith('/inquiries');
+
+  const navItems = isViralbookRoute ? [
+    {
+      id: 'inquiries',
+      labelAr: 'الرسائل',
+      labelEn: 'Messages',
+      path: '/viralbook/inquiries',
+      icon: MessagesSquare,
+    },
+    {
+      id: 'discover',
+      labelAr: 'استكشاف',
+      labelEn: 'Explore',
+      path: '/discover',
+      icon: Compass,
+    },
+    {
+      id: 'studio',
+      labelAr: 'إنشاء',
+      labelEn: 'Create',
+      path: '/chat',
+      icon: Sparkles,
+    },
+    {
+      id: 'viralbook',
+      labelAr: 'بيربليكستا بورد',
+      labelEn: 'Perplexta Board',
+      path: '/bulletin',
+      icon: Flame,
+    },
+    {
+      id: 'account',
+      labelAr: 'الحساب',
+      labelEn: 'Account',
+      path: '/settings',
+      isMenuTrigger: true,
+      icon: User,
+      badge: unreadCount > 0 ? unreadCount : undefined,
+    },
+  ] : [
     {
       id: 'chat',
-      labelAr: 'المحادثة',
-      labelEn: 'Chat',
-      path: '/bulletin?tab=inquiries',
-      icon: MessageSquare,
+      labelAr: (currentPath === '/' || currentPath.startsWith('/chat')) ? 'سجل المحادثات' : 'المحادثة',
+      labelEn: (currentPath === '/' || currentPath.startsWith('/chat')) ? 'Chat History' : 'Chat',
+      path: '/chat',
+      icon: (currentPath === '/' || currentPath.startsWith('/chat')) ? History : MessageSquare,
     },
     {
       id: 'discover',
@@ -134,10 +175,11 @@ export const MobileNavigation: React.FC = () => {
   ];
 
   const isTabActive = (id: string, path?: string) => {
-    if (id === 'chat') return currentPath.startsWith('/bulletin') && (location.search.includes('tab=inquiries') || currentPath.includes('/inquiries'));
+    if (id === 'chat') return currentPath === '/' || currentPath.startsWith('/chat');
+    if (id === 'inquiries') return currentPath.includes('/inquiries') || location.search.includes('tab=inquiries');
     if (id === 'discover') return currentPath.startsWith('/discover');
-    if (id === 'studio') return currentPath === '/' || currentPath.startsWith('/chat');
-    if (id === 'viralbook') return currentPath.startsWith('/bulletin') && !location.search.includes('tab=inquiries') && !currentPath.includes('/inquiries');
+    if (id === 'studio') return false;
+    if (id === 'viralbook') return (currentPath.startsWith('/bulletin') || currentPath.startsWith('/viralbook') || currentPath.startsWith('/reels')) && !currentPath.includes('/inquiries') && !location.search.includes('tab=inquiries');
     if (id === 'account') return currentPath.startsWith('/settings');
     return path ? currentPath === path : false;
   };
@@ -149,7 +191,22 @@ export const MobileNavigation: React.FC = () => {
       window.dispatchEvent(new Event('clear-chat'));
       setIsDrawerOpen(false);
     } else if (item.id === 'chat') {
-      navigate('/bulletin?tab=inquiries');
+      if (!(currentPath === '/' || currentPath.startsWith('/chat'))) {
+        navigate('/chat');
+      }
+      setTimeout(() => {
+        window.dispatchEvent(new Event('open-mobile-chat-history'));
+      }, 50);
+      setIsDrawerOpen(false);
+    } else if (item.id === 'inquiries') {
+      navigate('/viralbook/inquiries');
+      window.dispatchEvent(new CustomEvent('open-bulletin-inquiries'));
+      setIsDrawerOpen(false);
+    } else if (item.id === 'viralbook') {
+      navigate('/bulletin');
+      setIsDrawerOpen(false);
+    } else if (item.id === 'discover') {
+      navigate('/discover');
       setIsDrawerOpen(false);
     } else if (item.id === 'account') {
       if (!user) {
@@ -167,6 +224,19 @@ export const MobileNavigation: React.FC = () => {
   };
 
   const drawerNavLinks = [
+    { 
+      icon: <History size={18} />, 
+      label: isRtl ? 'سجل المحادثات' : 'Chat History', 
+      onClick: () => {
+        setIsDrawerOpen(false);
+        if (!(currentPath === '/' || currentPath.startsWith('/chat'))) {
+          navigate('/chat');
+        }
+        setTimeout(() => {
+          window.dispatchEvent(new Event('open-mobile-chat-history'));
+        }, 50);
+      }
+    },
     { icon: <Compass size={18} />, label: t('discover') || (isRtl ? 'اكتشف' : 'Discover'), path: '/discover' },
     { icon: <Sparkles size={18} />, label: t('studio') || (isRtl ? 'الاستوديو' : 'Studio'), path: '/Studio' },
     { icon: <Sparkles size={18} />, label: t('rewards') || (isRtl ? 'المكافآت' : 'Rewards'), path: '/rewards' },
@@ -281,12 +351,26 @@ export const MobileNavigation: React.FC = () => {
                 <div className="text-[10px] font-bold uppercase tracking-wider text-[var(--text-muted)] px-2 mb-1.5">
                   {isRtl ? 'التنقل الرئيسي' : 'Main Navigation'}
                 </div>
-                {drawerNavLinks.map((item) => {
-                  const isActive = currentPath === item.path;
+                {drawerNavLinks.map((item, idx) => {
+                  const isActive = item.path ? currentPath === item.path : false;
+                  if (item.onClick) {
+                    return (
+                      <button
+                        key={`drawer-nav-btn-${idx}`}
+                        onClick={item.onClick}
+                        className="w-full flex items-center gap-3 px-3 py-2.5 rounded-[var(--radius-sm)] text-xs font-bold transition-all duration-150 border border-transparent text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--surface-subtle)] group cursor-pointer"
+                      >
+                        <span className="text-[var(--text-muted)] group-hover:text-[var(--text-primary)] transition-colors duration-150">
+                          {item.icon}
+                        </span>
+                        <span>{item.label}</span>
+                      </button>
+                    );
+                  }
                   return (
                     <NavLink
                       key={`drawer-nav-${item.path}`}
-                      to={item.path}
+                      to={item.path!}
                       onClick={() => setIsDrawerOpen(false)}
                       className={`flex items-center gap-3 px-3 py-2.5 rounded-[var(--radius-sm)] text-xs font-bold transition-all duration-150 border group ${
                         isActive

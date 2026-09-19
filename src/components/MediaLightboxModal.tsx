@@ -140,6 +140,25 @@ export const MediaLightboxModal: React.FC<MediaLightboxModalProps> = ({
   // Share Menu State
   const [isCopiedLink, setIsCopiedLink] = useState(false);
   const [showOptionsMenu, setShowOptionsMenu] = useState(false);
+  const [showMobileOptionsMenu, setShowMobileOptionsMenu] = useState(false);
+  const [showMobileControls, setShowMobileControls] = useState(true);
+
+  // Mobile Touch Gestures & Pinch Tracking
+  const touchStateRef = useRef<{
+    startX: number;
+    startY: number;
+    startTime: number;
+    initialDistance: number | null;
+    initialZoom: number;
+    lastTapTime: number;
+  }>({
+    startX: 0,
+    startY: 0,
+    startTime: 0,
+    initialDistance: null,
+    initialZoom: 1,
+    lastTapTime: 0,
+  });
 
   const handleDirectShare = async () => {
     if (!ad) return;
@@ -367,6 +386,102 @@ export const MediaLightboxModal: React.FC<MediaLightboxModalProps> = ({
       setZoom(2);
     } else {
       handleResetZoom();
+    }
+  };
+
+  // Mobile Touch Gestures (Swipe to change/close/comments, Pinch-to-zoom, Double-tap)
+  const handleTouchStart = (e: React.TouchEvent) => {
+    if (e.touches.length === 1) {
+      touchStateRef.current.startX = e.touches[0].clientX;
+      touchStateRef.current.startY = e.touches[0].clientY;
+      touchStateRef.current.startTime = Date.now();
+      touchStateRef.current.initialDistance = null;
+      if (zoom > 1) {
+        setIsDragging(true);
+        setDragStart({
+          x: e.touches[0].clientX - pan.x,
+          y: e.touches[0].clientY - pan.y,
+        });
+      }
+    } else if (e.touches.length === 2) {
+      setIsDragging(false);
+      const dist = Math.hypot(
+        e.touches[0].clientX - e.touches[1].clientX,
+        e.touches[0].clientY - e.touches[1].clientY
+      );
+      touchStateRef.current.initialDistance = dist;
+      touchStateRef.current.initialZoom = zoom;
+    }
+  };
+
+  const handleTouchMove = (e: React.TouchEvent) => {
+    if (e.touches.length === 2 && touchStateRef.current.initialDistance) {
+      const dist = Math.hypot(
+        e.touches[0].clientX - e.touches[1].clientX,
+        e.touches[0].clientY - e.touches[1].clientY
+      );
+      const scale = dist / touchStateRef.current.initialDistance;
+      const newZoom = Math.min(3, Math.max(1, +(touchStateRef.current.initialZoom * scale).toFixed(2)));
+      setZoom(newZoom);
+      if (newZoom === 1) {
+        setPan({ x: 0, y: 0 });
+      }
+    } else if (e.touches.length === 1 && zoom > 1 && isDragging) {
+      setPan({
+        x: e.touches[0].clientX - dragStart.x,
+        y: e.touches[0].clientY - dragStart.y,
+      });
+    }
+  };
+
+  const handleTouchEnd = (e: React.TouchEvent) => {
+    setIsDragging(false);
+    if (e.touches.length === 0) {
+      const now = Date.now();
+      const deltaX = (e.changedTouches[0]?.clientX || 0) - touchStateRef.current.startX;
+      const deltaY = (e.changedTouches[0]?.clientY || 0) - touchStateRef.current.startY;
+      const elapsed = now - touchStateRef.current.startTime;
+
+      // Handle double tap
+      if (Math.abs(deltaX) < 12 && Math.abs(deltaY) < 12 && elapsed < 300) {
+        if (now - touchStateRef.current.lastTapTime < 300) {
+          // Double tap detected!
+          if (zoom > 1) {
+            handleResetZoom();
+          } else {
+            setZoom(2);
+          }
+          touchStateRef.current.lastTapTime = 0;
+          return;
+        }
+        touchStateRef.current.lastTapTime = now;
+        // Single tap toggles mobile controls overlay
+        if (zoom === 1) {
+          setShowMobileControls((prev) => !prev);
+        }
+      }
+
+      // If not zoomed, handle swipe navigation and dismissal
+      if (zoom === 1) {
+        // Horizontal swipe for next/prev
+        if (Math.abs(deltaX) > 45 && Math.abs(deltaX) > Math.abs(deltaY) * 1.3 && elapsed < 500) {
+          if (deltaX > 0) {
+            if (isRtl) handleNext();
+            else handlePrev();
+          } else {
+            if (isRtl) handlePrev();
+            else handleNext();
+          }
+        }
+        // Swipe down to close modal
+        else if (deltaY > 90 && Math.abs(deltaY) > Math.abs(deltaX) * 1.5 && elapsed < 500) {
+          onClose();
+        }
+        // Swipe up to open comments / details drawer
+        else if (deltaY < -70 && Math.abs(deltaY) > Math.abs(deltaX) * 1.5 && elapsed < 500) {
+          setIsMobileDrawerOpen(true);
+        }
+      }
     }
   };
 
@@ -816,9 +931,6 @@ export const MediaLightboxModal: React.FC<MediaLightboxModalProps> = ({
                       title={isRtl ? reac.labelAr : reac.labelEn}
                     >
                       <span className="block transform-gpu shrink-0">{reac.emoji}</span>
-                              <span className="inline-block sm:hidden text-xs font-bold text-[var(--text-primary)] shrink-0">
-                                {isRtl ? reac.labelAr : reac.labelEn}
-                              </span>
                       {hoveredReactionId === reac.id && (
                         <span className="hidden sm:block absolute -top-7 left-1/2 -translate-x-1/2 bg-[var(--surface-card)] text-[var(--text-primary)] text-[10px] font-bold py-0.5 px-2 rounded-[4px] border border-[var(--border-main)] whitespace-nowrap pointer-events-none shadow-md z-50">
                           {isRtl ? reac.labelAr : reac.labelEn}
@@ -1102,12 +1214,14 @@ export const MediaLightboxModal: React.FC<MediaLightboxModalProps> = ({
           className="flex-1 h-full min-w-0 flex flex-col items-center justify-center relative overflow-hidden bg-[var(--surface-page)]"
           onClick={onClose}
         >
-          {/* Floating Top Bar (Controls & Tools) */}
+          {/* ========================================================================= */}
+          {/* TOP BAR: DESKTOP WORKSTATION TOOLS (hidden on mobile screens)            */}
+          {/* ========================================================================= */}
           <div
-            className="absolute top-0 inset-x-0 z-50 flex items-center justify-between p-3 sm:p-4 bg-[var(--surface-card)]/95 backdrop-blur-md border-b border-[var(--border-main)] pointer-events-auto shadow-sm text-[var(--text-primary)]"
+            className="hidden sm:flex absolute top-0 inset-x-0 z-50 items-center justify-between p-3 sm:p-4 bg-[var(--surface-card)]/95 backdrop-blur-md border-b border-[var(--border-main)] pointer-events-auto shadow-sm text-[var(--text-primary)]"
             onClick={(e) => e.stopPropagation()}
           >
-            {/* Left Section (Controls) */}
+            {/* Left Section (Desktop Controls) */}
             <div className="flex items-center gap-1 sm:gap-2 text-[var(--text-primary)]">
               {/* Zoom Out (-) */}
               <button
@@ -1205,7 +1319,7 @@ export const MediaLightboxModal: React.FC<MediaLightboxModalProps> = ({
 
             {/* Center Section: Photo Counter Pill */}
             {totalCount > 1 && (
-              <div className="hidden sm:flex items-center px-3 py-1.5 h-10 rounded-[var(--comp-button-radius,8px)] bg-[var(--surface-subtle)] text-[var(--text-primary)] text-xs font-mono font-bold border border-[var(--border-main)] shadow-sm">
+              <div className="flex items-center px-3 py-1.5 h-10 rounded-[var(--comp-button-radius,8px)] bg-[var(--surface-subtle)] text-[var(--text-primary)] text-xs font-mono font-bold border border-[var(--border-main)] shadow-sm">
                 {currentIndex + 1} / {totalCount}
               </div>
             )}
@@ -1242,7 +1356,119 @@ export const MediaLightboxModal: React.FC<MediaLightboxModalProps> = ({
             </div>
           </div>
 
-          {/* Floating Interactive Side Dock Attached Near Sidebar Edge */}
+          {/* ========================================================================= */}
+          {/* TOP BAR: MOBILE DEDICATED STREAMLINED HEADER (sm:hidden)                  */}
+          {/* ========================================================================= */}
+          <AnimatePresence>
+            {showMobileControls && (
+              <motion.div
+                initial={{ opacity: 0, y: -20 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -20 }}
+                transition={{ duration: 0.15 }}
+                className="sm:hidden absolute top-0 inset-x-0 z-50 flex items-center justify-between px-3 py-2.5 bg-[var(--surface-card)]/90 backdrop-blur-md border-b border-[var(--border-main)] shadow-md pointer-events-auto text-[var(--text-primary)]"
+                onClick={(e) => e.stopPropagation()}
+              >
+                {/* Mobile Close Button */}
+                <button
+                  type="button"
+                  onClick={onClose}
+                  className="w-10 h-10 min-h-[40px] min-w-[40px] rounded-[var(--comp-button-radius,8px)] bg-[var(--surface-subtle)] hover:bg-red-500/10 text-[var(--text-primary)] hover:text-red-500 flex items-center justify-center transition-all active:scale-95 cursor-pointer border border-[var(--border-main)] shadow-sm"
+                  title={isRtl ? 'إغلاق' : 'Close'}
+                >
+                  <X size={18} />
+                </button>
+
+                {/* Mobile Center Info: Author & Counter */}
+                <div className="flex items-center gap-2 max-w-[50%] min-w-0">
+                  {ad && (
+                    <div className="shrink-0">
+                      <BulletinAvatar
+                        src={ad.author_avatar}
+                        alt={ad.author_name || authorName || ''}
+                        size="sm"
+                        fallbackText={ad.author_name || authorName}
+                      />
+                    </div>
+                  )}
+                  <span className="text-xs font-bold truncate text-[var(--text-primary)]">
+                    {ad?.author_name || authorName || postTitle || (isRtl ? 'معاينة الوسائط' : 'Media Preview')}
+                  </span>
+                  {totalCount > 1 && (
+                    <span className="shrink-0 px-2 py-0.5 rounded-full bg-[var(--surface-subtle)] border border-[var(--border-main)] text-[10px] font-mono font-bold text-[var(--text-secondary)]">
+                      {currentIndex + 1}/{totalCount}
+                    </span>
+                  )}
+                </div>
+
+                {/* Mobile Actions: Download, Share, Options */}
+                <div className="flex items-center gap-1.5">
+                  <button
+                    type="button"
+                    onClick={handleDownload}
+                    className="w-10 h-10 min-h-[40px] min-w-[40px] rounded-[var(--comp-button-radius,8px)] bg-[var(--surface-subtle)] hover:bg-[var(--surface-card)] text-[var(--text-primary)] flex items-center justify-center transition-all active:scale-95 cursor-pointer border border-[var(--border-main)] shadow-sm"
+                    title={isRtl ? 'تنزيل' : 'Download'}
+                  >
+                    <Download size={16} />
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={handleDirectShare}
+                    className="w-10 h-10 min-h-[40px] min-w-[40px] rounded-[var(--comp-button-radius,8px)] bg-[var(--surface-subtle)] hover:bg-[var(--surface-card)] text-[var(--text-primary)] flex items-center justify-center transition-all active:scale-95 cursor-pointer border border-[var(--border-main)] shadow-sm"
+                    title={isRtl ? 'مشاركة' : 'Share'}
+                  >
+                    <Share2 size={16} />
+                  </button>
+
+                  <div className="relative">
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setShowMobileOptionsMenu((prev) => !prev);
+                      }}
+                      className="w-10 h-10 min-h-[40px] min-w-[40px] rounded-[var(--comp-button-radius,8px)] bg-[var(--surface-subtle)] hover:bg-[var(--surface-card)] text-[var(--text-primary)] flex items-center justify-center transition-all active:scale-95 cursor-pointer border border-[var(--border-main)] shadow-sm"
+                      title={isRtl ? 'خيارات المنشور' : 'Post options'}
+                    >
+                      <MoreHorizontal size={16} />
+                    </button>
+
+                    {ad && (
+                      <PostOptionsMenu
+                        ad={ad}
+                        user={user}
+                        token={token}
+                        isRtl={isRtl}
+                        isOpen={showMobileOptionsMenu}
+                        onClose={() => setShowMobileOptionsMenu(false)}
+                        onSaveAd={onToggleSave ? () => onToggleSave(ad) : undefined}
+                        onEditAd={onEditAd ? () => {
+                          onClose();
+                          onEditAd(ad);
+                        } : undefined}
+                        onBoostAd={onBoostAd ? () => {
+                          onClose();
+                          onBoostAd(ad);
+                        } : undefined}
+                        onArchiveAd={onArchiveAd ? () => {
+                          onClose();
+                          onArchiveAd(ad);
+                        } : undefined}
+                        onTrashAd={onTrashAd ? () => {
+                          onClose();
+                          onTrashAd(ad);
+                        } : undefined}
+                        onUpdateAd={onUpdateAd}
+                      />
+                    )}
+                  </div>
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+
+          {/* Floating Interactive Side Dock Attached Near Sidebar Edge (Desktop only) */}
           <div
             className="hidden lg:flex flex-col items-center gap-2 absolute top-1/2 -translate-y-1/2 start-4 z-40 p-2 rounded-[12px] bg-[var(--surface-card)]/90 backdrop-blur-md border border-[var(--border-main)] shadow-2xl pointer-events-auto select-none"
             onClick={(e) => e.stopPropagation()}
@@ -1356,10 +1582,10 @@ export const MediaLightboxModal: React.FC<MediaLightboxModalProps> = ({
                 if (isRtl) handleNext();
                 else handlePrev();
               }}
-              className="absolute left-3 sm:left-6 top-1/2 -translate-y-1/2 z-40 w-11 h-11 min-h-[44px] min-w-[44px] rounded-[var(--comp-button-radius,8px)] bg-[var(--surface-card)]/90 backdrop-blur-md hover:bg-[var(--surface-subtle)] hover:border-accent/60 text-[var(--text-primary)] hover:text-accent flex items-center justify-center transition-all hover:scale-110 active:scale-95 cursor-pointer border border-[var(--border-main)] shadow-xl pointer-events-auto relative before:absolute before:-inset-1.5"
+              className="absolute left-2 sm:left-6 top-1/2 -translate-y-1/2 z-40 w-9 h-9 sm:w-11 sm:h-11 min-h-[36px] min-w-[36px] sm:min-h-[44px] sm:min-w-[44px] rounded-full sm:rounded-[var(--comp-button-radius,8px)] bg-black/40 sm:bg-[var(--surface-card)]/90 text-white sm:text-[var(--text-primary)] hover:text-accent backdrop-blur-md flex items-center justify-center transition-all hover:scale-110 active:scale-95 cursor-pointer border-0 sm:border sm:border-[var(--border-main)] shadow-xl pointer-events-auto"
               title={isRtl ? 'التالي' : 'Previous'}
             >
-              {isRtl ? <ChevronRight size={24} /> : <ChevronLeft size={24} />}
+              {isRtl ? <ChevronRight size={20} className="sm:w-6 sm:h-6" /> : <ChevronLeft size={20} className="sm:w-6 sm:h-6" />}
             </button>
           )}
 
@@ -1372,21 +1598,24 @@ export const MediaLightboxModal: React.FC<MediaLightboxModalProps> = ({
                 if (isRtl) handlePrev();
                 else handleNext();
               }}
-              className="absolute right-3 sm:right-6 top-1/2 -translate-y-1/2 z-40 w-11 h-11 min-h-[44px] min-w-[44px] rounded-[var(--comp-button-radius,8px)] bg-[var(--surface-card)]/90 backdrop-blur-md hover:bg-[var(--surface-subtle)] hover:border-accent/60 text-[var(--text-primary)] hover:text-accent flex items-center justify-center transition-all hover:scale-110 active:scale-95 cursor-pointer border border-[var(--border-main)] shadow-xl pointer-events-auto relative before:absolute before:-inset-1.5"
+              className="absolute right-2 sm:right-6 top-1/2 -translate-y-1/2 z-40 w-9 h-9 sm:w-11 sm:h-11 min-h-[36px] min-w-[36px] sm:min-h-[44px] sm:min-w-[44px] rounded-full sm:rounded-[var(--comp-button-radius,8px)] bg-black/40 sm:bg-[var(--surface-card)]/90 text-white sm:text-[var(--text-primary)] hover:text-accent backdrop-blur-md flex items-center justify-center transition-all hover:scale-110 active:scale-95 cursor-pointer border-0 sm:border sm:border-[var(--border-main)] shadow-xl pointer-events-auto"
               title={isRtl ? 'السابق' : 'Next'}
             >
-              {isRtl ? <ChevronLeft size={24} /> : <ChevronRight size={24} />}
+              {isRtl ? <ChevronLeft size={20} className="sm:w-6 sm:h-6" /> : <ChevronRight size={20} className="sm:w-6 sm:h-6" />}
             </button>
           )}
 
           {/* Media Center Stage */}
           <div
-            className="w-full h-full flex items-center justify-center pt-[64px] sm:pt-[72px] pb-[64px] sm:pb-[72px] px-2 sm:px-8 select-none relative"
+            className="w-full h-full flex items-center justify-center pt-14 pb-16 px-1 sm:pt-[72px] sm:pb-[72px] sm:px-8 select-none relative"
             onClick={(e) => e.stopPropagation()}
             onMouseDown={handleMouseDown}
             onMouseMove={handleMouseMove}
             onMouseUp={handleMouseUp}
             onMouseLeave={handleMouseUp}
+            onTouchStart={handleTouchStart}
+            onTouchMove={handleTouchMove}
+            onTouchEnd={handleTouchEnd}
             style={{
               cursor: zoom > 1 ? (isDragging ? 'grabbing' : 'grab') : 'default'
             }}
@@ -1402,7 +1631,7 @@ export const MediaLightboxModal: React.FC<MediaLightboxModalProps> = ({
                   transform: `rotate(${rotation}deg)`,
                   transition: 'transform 0.25s ease'
                 }}
-                className="max-w-full max-h-[calc(100vh-160px)] rounded-[var(--comp-button-radius,8px)] shadow-2xl bg-[var(--surface-card)] object-contain outline-none border border-[var(--border-main)]"
+                className="max-w-full max-h-[calc(100dvh-120px)] sm:max-h-[calc(100vh-160px)] rounded-[var(--comp-button-radius,8px)] shadow-2xl bg-[var(--surface-card)] object-contain outline-none border border-[var(--border-main)]"
               />
             ) : (
               <img
@@ -1414,7 +1643,7 @@ export const MediaLightboxModal: React.FC<MediaLightboxModalProps> = ({
                   transform: `scale(${zoom}) translate(${pan.x / zoom}px, ${pan.y / zoom}px) rotate(${rotation}deg)`,
                   transition: isDragging ? 'none' : 'transform 0.2s cubic-bezier(0.2, 0, 0, 1)'
                 }}
-                className="max-w-full max-h-[calc(100vh-160px)] rounded-[var(--comp-button-radius,8px)] shadow-2xl object-contain select-none border border-[var(--border-main)] bg-[var(--surface-card)]"
+                className="max-w-full max-h-[calc(100dvh-120px)] sm:max-h-[calc(100vh-160px)] rounded-[var(--comp-button-radius,8px)] shadow-2xl object-contain select-none border border-[var(--border-main)] bg-[var(--surface-card)]"
                 loading="eager"
                 draggable={false}
               />
@@ -1472,20 +1701,81 @@ export const MediaLightboxModal: React.FC<MediaLightboxModalProps> = ({
             </div>
           )}
 
-          {/* Mobile Bottom Bar: Floating Pill to Open Details / Comments Drawer */}
-          <div className="lg:hidden absolute bottom-4 inset-x-0 z-40 flex justify-center pointer-events-auto">
-            <button
-              type="button"
-              onClick={() => setIsMobileDrawerOpen(true)}
-              className="px-4 py-2 rounded-[var(--comp-button-radius,8px)] bg-[var(--surface-card)] text-[var(--text-primary)] text-xs font-bold border border-[var(--border-main)] shadow-lg flex items-center gap-2 cursor-pointer transition-transform active:scale-95"
-            >
-              <MessageSquare size={15} />
-              <span>{isRtl ? 'التعليقات والتفاصيل' : 'Comments & Details'}</span>
-              <span className="px-1.5 py-0.5 rounded-[var(--comp-button-radius,8px)] bg-[var(--surface-subtle)] border border-[var(--border-main)] text-[10px] font-mono">
-                {commentsCount}
-              </span>
-            </button>
-          </div>
+          {/* Mobile Bottom Bar: Sleek Floating Engagement Bar */}
+          <AnimatePresence>
+            {showMobileControls && (
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: 20 }}
+                transition={{ duration: 0.15 }}
+                className="lg:hidden absolute bottom-3 inset-x-3 z-40 flex items-center justify-between gap-1.5 p-1.5 rounded-2xl bg-[var(--surface-card)]/90 backdrop-blur-md border border-[var(--border-main)] shadow-xl pointer-events-auto"
+                onClick={(e) => e.stopPropagation()}
+              >
+                {/* Mobile Like Button */}
+                <button
+                  type="button"
+                  onClick={handleDirectLikeClick}
+                  onTouchStart={handleTouchStartLike}
+                  onTouchEnd={handleTouchEndLike}
+                  className={`flex-1 py-2 min-h-[38px] rounded-xl flex items-center justify-center gap-1.5 font-bold text-xs transition-all active:scale-95 cursor-pointer select-none ${
+                    userReaction
+                      ? activeReactionObj?.color || 'text-red-500 bg-red-500/10'
+                      : 'text-[var(--text-secondary)] hover:bg-[var(--surface-subtle)]'
+                  }`}
+                >
+                  {activeReactionObj ? (
+                    <span className="text-base leading-none">{activeReactionObj.emoji}</span>
+                  ) : (
+                    <ThumbsUp size={15} />
+                  )}
+                  <span>{likesCount > 0 ? likesCount : (isRtl ? 'إعجاب' : 'Like')}</span>
+                </button>
+
+                {/* Mobile Comments Button (Opens bottom sheet) */}
+                <button
+                  type="button"
+                  onClick={() => setIsMobileDrawerOpen(true)}
+                  className="flex-1 py-2 min-h-[38px] rounded-xl bg-[var(--surface-subtle)] text-[var(--text-primary)] hover:bg-[var(--surface-card)] flex items-center justify-center gap-1.5 font-bold text-xs transition-all active:scale-95 cursor-pointer border border-[var(--border-main)]"
+                >
+                  <MessageSquare size={15} className="text-accent" />
+                  <span>{isRtl ? 'التعليقات' : 'Comments'}</span>
+                  {commentsCount > 0 && (
+                    <span className="px-1.5 py-0.5 rounded-full bg-accent text-white text-[10px] font-mono leading-none">
+                      {commentsCount}
+                    </span>
+                  )}
+                </button>
+
+                {/* Mobile Share Button */}
+                <button
+                  type="button"
+                  onClick={handleDirectShare}
+                  className="w-10 h-10 min-h-[38px] min-w-[38px] rounded-xl text-[var(--text-secondary)] hover:bg-[var(--surface-subtle)] flex items-center justify-center transition-all active:scale-95 cursor-pointer"
+                  title={isRtl ? 'مشاركة' : 'Share'}
+                >
+                  <Share2 size={16} />
+                </button>
+
+                {/* Mobile Bookmark Button */}
+                {onToggleSave && ad && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      onToggleSave(ad);
+                      setLocalSavedState((prev) => !prev);
+                    }}
+                    className={`w-10 h-10 min-h-[38px] min-w-[38px] rounded-xl flex items-center justify-center transition-all active:scale-95 cursor-pointer ${
+                      localSavedState ? 'text-amber-500 bg-amber-500/10' : 'text-[var(--text-secondary)] hover:bg-[var(--surface-subtle)]'
+                    }`}
+                    title={localSavedState ? (isRtl ? 'محفوظ' : 'Saved') : (isRtl ? 'حفظ' : 'Save')}
+                  >
+                    <Bookmark size={16} className={localSavedState ? 'fill-amber-500 text-amber-500' : ''} />
+                  </button>
+                )}
+              </motion.div>
+            )}
+          </AnimatePresence>
         </div>
 
         {/* ========================================================================= */}
