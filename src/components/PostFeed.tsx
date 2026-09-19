@@ -53,10 +53,10 @@ import { toast } from '@/design-system';
 const FB_REACTIONS = [
   { id: 'like', emoji: '👍', labelAr: 'أعجبني', labelEn: 'Like', color: 'text-blue-500' },
   { id: 'love', emoji: '❤️', labelAr: 'أحببته', labelEn: 'Love', color: 'text-red-500' },
-  { id: 'care', emoji: '🥰', labelAr: 'أدعمه', labelEn: 'Care', color: 'text-amber-500' },
+  { id: 'care', emoji: '🥰', labelAr: 'أدعمه', labelEn: 'Care', color: 'text-[var(--fg-warning)]' },
   { id: 'haha', emoji: '😂', labelAr: 'هاهاها', labelEn: 'Haha', color: 'text-yellow-500' },
   { id: 'wow', emoji: '😮', labelAr: 'واو', labelEn: 'Wow', color: 'text-yellow-500' },
-  { id: 'sad', emoji: '😢', labelAr: 'أحزنني', labelEn: 'Sad', color: 'text-amber-600' },
+  { id: 'sad', emoji: '😢', labelAr: 'أحزنني', labelEn: 'Sad', color: 'text-[var(--fg-warning)]' },
   { id: 'angry', emoji: '😡', labelAr: 'أغضبني', labelEn: 'Angry', color: 'text-orange-600' },
 ];
 
@@ -702,7 +702,7 @@ export const PostFeed: React.FC<PostFeedProps> = ({
                       {ad.audience === 'friends' ? (
                         <Users size={10} className="text-blue-500 shrink-0" />
                       ) : ad.audience === 'only_me' ? (
-                        <Lock size={10} className="text-amber-500 shrink-0" />
+                        <Lock size={10} className="text-[var(--fg-warning)] shrink-0" />
                       ) : (
                         <Globe size={10} className="text-[var(--text-muted)] shrink-0" />
                       )}
@@ -715,7 +715,7 @@ export const PostFeed: React.FC<PostFeedProps> = ({
                     {ad.is_boosted && (
                       <>
                         <span>•</span>
-                        <span className="text-amber-500 font-bold shrink-0">{isRtl ? 'مُموَّل' : 'Sponsored'}</span>
+                        <span className="text-[var(--fg-warning)] font-bold shrink-0">{isRtl ? 'مُموَّل' : 'Sponsored'}</span>
                       </>
                     )}
                   </div>
@@ -835,8 +835,8 @@ export const PostFeed: React.FC<PostFeedProps> = ({
 
             {/* Paid Partnership Banner if enabled */}
             {(ad.partnership_label_enabled || ad.is_partnership) && (
-              <div className="px-3.5 sm:px-4 py-2 bg-gradient-to-r from-amber-500/10 via-yellow-500/10 to-amber-500/10 border-b border-amber-500/20 flex items-center gap-2 text-xs font-bold text-amber-600 dark:text-amber-400 shrink-0">
-                <Handshake size={15} className="shrink-0 text-amber-600 dark:text-amber-400" />
+              <div className="px-3.5 sm:px-4 py-2 bg-gradient-to-r from-[var(--status-warning-subtle)]/30 via-[var(--status-warning-subtle)]/50 to-[var(--status-warning-subtle)]/30 border-b border-[var(--status-warning)]/20 flex items-center gap-2 text-xs font-bold text-[var(--fg-warning)] shrink-0">
+                <Handshake size={15} className="shrink-0 text-[var(--fg-warning)]" />
                 <span>
                   {isRtl ? 'شراكة مدفوعة' : 'Paid Partnership'}
                   {(ad.partnership_sponsor_name || ad.partnership_brand) && (
@@ -1116,8 +1116,8 @@ export const PostFeed: React.FC<PostFeedProps> = ({
                     onClick={() => onBoostAd(ad)}
                     className={`flex-1 min-w-0 min-h-[44px] flex items-center justify-center gap-1 sm:gap-1.5 transition-all duration-200 active:scale-95 cursor-pointer py-2 font-bold text-[11px] sm:text-xs select-none ${
                       ad.is_boosted
-                        ? 'text-amber-500 hover:text-amber-600'
-                        : 'text-[var(--text-muted)] hover:text-amber-500'
+                        ? 'text-[var(--fg-warning)] hover:opacity-90'
+                        : 'text-[var(--text-muted)] hover:text-[var(--fg-warning)]'
                     }`}
                     title={isRtl ? 'ترويج الإعلان' : 'Boost Ad'}
                   >

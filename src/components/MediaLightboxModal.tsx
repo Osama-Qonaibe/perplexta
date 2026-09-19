@@ -54,10 +54,10 @@ export interface MediaLightboxModalProps {
 const FB_REACTIONS = [
   { id: 'like', labelAr: 'أعجبني', labelEn: 'Like', emoji: '👍', color: 'text-accent' },
   { id: 'love', labelAr: 'أحببته', labelEn: 'Love', emoji: '❤️', color: 'text-rose-500' },
-  { id: 'care', labelAr: 'أدعمه', labelEn: 'Care', emoji: '🥰', color: 'text-amber-500' },
-  { id: 'haha', labelAr: 'هاهاها', labelEn: 'Haha', emoji: '😂', color: 'text-amber-500' },
-  { id: 'wow', labelAr: 'واو', labelEn: 'Wow', emoji: '😮', color: 'text-amber-500' },
-  { id: 'sad', labelAr: 'أحزنني', labelEn: 'Sad', emoji: '😢', color: 'text-amber-500' },
+  { id: 'care', labelAr: 'أدعمه', labelEn: 'Care', emoji: '🥰', color: 'text-[var(--fg-warning)]' },
+  { id: 'haha', labelAr: 'هاهاها', labelEn: 'Haha', emoji: '😂', color: 'text-[var(--fg-warning)]' },
+  { id: 'wow', labelAr: 'واو', labelEn: 'Wow', emoji: '😮', color: 'text-[var(--fg-warning)]' },
+  { id: 'sad', labelAr: 'أحزنني', labelEn: 'Sad', emoji: '😢', color: 'text-[var(--fg-warning)]' },
   { id: 'angry', labelAr: 'أغضبني', labelEn: 'Angry', emoji: '😡', color: 'text-orange-600' }
 ];
 
@@ -871,7 +871,7 @@ export const MediaLightboxModal: React.FC<MediaLightboxModalProps> = ({
           <div className="flex -space-x-1 rtl:space-x-reverse items-center">
             <span className="w-4 h-4 rounded-[4px] bg-accent text-[var(--fg-on-emphasis)] text-[9px] flex items-center justify-center">👍</span>
             <span className="w-4 h-4 rounded-[4px] bg-rose-500 text-white text-[9px] flex items-center justify-center">❤️</span>
-            <span className="w-4 h-4 rounded-[4px] bg-amber-500 text-white text-[9px] flex items-center justify-center">🥰</span>
+            <span className="w-4 h-4 rounded-[4px] bg-[var(--status-warning)] text-white text-[9px] flex items-center justify-center">🥰</span>
           </div>
           <span className="font-bold text-[var(--text-primary)] font-mono">{likesCount}</span>
         </div>
@@ -1001,12 +1001,12 @@ export const MediaLightboxModal: React.FC<MediaLightboxModalProps> = ({
             }}
             className={`flex-1 py-2 min-h-[40px] rounded-[var(--comp-button-radius,8px)] border border-transparent hover:border-[var(--border-main)] hover:border-accent/60 flex items-center justify-center gap-1 font-bold text-xs transition-all cursor-pointer ${
               localSavedState
-                ? 'text-amber-500 hover:bg-amber-500/10'
+                ? 'text-[var(--fg-warning)] hover:bg-[var(--status-warning-subtle)]/10'
                 : 'text-[var(--text-secondary)] hover:bg-[var(--surface-subtle)]'
             }`}
             title={localSavedState ? (isRtl ? 'إزالة من المحفوظات' : 'Saved') : (isRtl ? 'حفظ' : 'Save')}
           >
-            <Bookmark size={15} className={localSavedState ? 'fill-amber-500 text-amber-500' : ''} />
+            <Bookmark size={15} className={localSavedState ? 'fill-[var(--fg-warning)] text-[var(--fg-warning)]' : ''} />
             <span>{localSavedState ? (isRtl ? 'محفوظ' : 'Saved') : (isRtl ? 'حفظ' : 'Save')}</span>
           </button>
         )}
@@ -1528,7 +1528,7 @@ export const MediaLightboxModal: React.FC<MediaLightboxModalProps> = ({
                 className={`vb-interaction-btn ${localSavedState ? 'saved' : ''}`}
                 title={localSavedState ? (isRtl ? 'إزالة من المحفوظات' : 'Saved') : (isRtl ? 'حفظ' : 'Save')}
               >
-                <Bookmark size={14} className={localSavedState ? 'fill-amber-500 text-amber-500' : ''} />
+                <Bookmark size={14} className={localSavedState ? 'fill-[var(--fg-warning)] text-[var(--fg-warning)]' : ''} />
               </button>
             )}
 
@@ -1766,11 +1766,11 @@ export const MediaLightboxModal: React.FC<MediaLightboxModalProps> = ({
                       setLocalSavedState((prev) => !prev);
                     }}
                     className={`w-10 h-10 min-h-[38px] min-w-[38px] rounded-xl flex items-center justify-center transition-all active:scale-95 cursor-pointer ${
-                      localSavedState ? 'text-amber-500 bg-amber-500/10' : 'text-[var(--text-secondary)] hover:bg-[var(--surface-subtle)]'
+                      localSavedState ? 'text-[var(--fg-warning)] bg-[var(--status-warning-subtle)]/10' : 'text-[var(--text-secondary)] hover:bg-[var(--surface-subtle)]'
                     }`}
                     title={localSavedState ? (isRtl ? 'محفوظ' : 'Saved') : (isRtl ? 'حفظ' : 'Save')}
                   >
-                    <Bookmark size={16} className={localSavedState ? 'fill-amber-500 text-amber-500' : ''} />
+                    <Bookmark size={16} className={localSavedState ? 'fill-[var(--fg-warning)] text-[var(--fg-warning)]' : ''} />
                   </button>
                 )}
               </motion.div>

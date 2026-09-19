@@ -81,10 +81,10 @@ import {
 const FB_REACTIONS = [
   { id: 'like', labelAr: 'أعجبني', labelEn: 'Like', emoji: '👍', color: 'text-blue-500' },
   { id: 'love', labelAr: 'أحببته', labelEn: 'Love', emoji: '❤️', color: 'text-red-500' },
-  { id: 'care', labelAr: 'أدعمه', labelEn: 'Care', emoji: '🥰', color: 'text-amber-500' },
-  { id: 'haha', labelAr: 'هاهاها', labelEn: 'Haha', emoji: '😂', color: 'text-amber-500' },
-  { id: 'wow', labelAr: 'واو', labelEn: 'Wow', emoji: '😮', color: 'text-amber-500' },
-  { id: 'sad', labelAr: 'أحزنني', labelEn: 'Sad', emoji: '😢', color: 'text-amber-500' },
+  { id: 'care', labelAr: 'أدعمه', labelEn: 'Care', emoji: '🥰', color: 'text-[var(--fg-warning)]' },
+  { id: 'haha', labelAr: 'هاهاها', labelEn: 'Haha', emoji: '😂', color: 'text-[var(--fg-warning)]' },
+  { id: 'wow', labelAr: 'واو', labelEn: 'Wow', emoji: '😮', color: 'text-[var(--fg-warning)]' },
+  { id: 'sad', labelAr: 'أحزنني', labelEn: 'Sad', emoji: '😢', color: 'text-[var(--fg-warning)]' },
   { id: 'angry', labelAr: 'أغضبني', labelEn: 'Angry', emoji: '😡', color: 'text-orange-600' }
 ];
 
@@ -2309,14 +2309,14 @@ export const ReelsFeed: React.FC<ReelsFeedProps> = ({
                     <div className="flex flex-col items-center gap-0.5 select-none">
                       <button
                         onClick={(e) => handleSaveClick(e, reel.id)}
-                        className="w-9 h-9 sm:w-10 sm:h-10 rounded-shape-sm flex items-center justify-center bg-black/50 backdrop-blur-md border border-white/20 hover:bg-amber-500/15 hover:border-amber-500/40 text-white hover:text-amber-400 active:scale-95 transition-all duration-150 cursor-pointer shadow-md relative before:absolute before:-inset-1.5 before:content-['']"
+                        className="w-9 h-9 sm:w-10 sm:h-10 rounded-shape-sm flex items-center justify-center bg-black/50 backdrop-blur-md border border-white/20 hover:bg-[var(--status-warning-subtle)] hover:border-[var(--status-warning)] text-white hover:text-[var(--fg-warning)] active:scale-95 transition-all duration-150 cursor-pointer shadow-md relative before:absolute before:-inset-1.5 before:content-['']"
                         title={isSaved ? (isRtl ? 'إزالة من المحفوظات' : 'Saved') : (isRtl ? 'حفظ' : 'Save')}
                       >
                         <Bookmark
                           size={18}
                           className={`stroke-[2.2] transition-colors ${
                             isSaved
-                              ? 'fill-amber-400 text-amber-400 drop-shadow-[0_0_8px_rgba(251,191,36,0.9)]'
+                              ? 'fill-[var(--fg-warning)] text-[var(--fg-warning)] drop-shadow-[0_0_8px_rgba(210,153,34,0.9)]'
                               : 'text-white'
                           }`}
                         />

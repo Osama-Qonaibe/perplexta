@@ -298,7 +298,7 @@ export const AdminRenderMetricsView: React.FC = () => {
                     <td className="p-3 font-semibold text-[var(--accent)] font-sans">{m.componentName}</td>
                     <td className="p-3 text-[var(--text-primary)]">{m.renderCount}</td>
                     <td className="p-3">
-                      <span className={`px-2 py-0.5 rounded-[var(--radius-xs)] text-xs ${m.renderDuration > 30 ? 'bg-amber-500/10 text-amber-500 border border-amber-500/20' : 'bg-[var(--bg-accent-muted)] text-[var(--fg-accent)] border border-[var(--border-accent)]'}`}>
+                      <span className={`px-2 py-0.5 rounded-[var(--radius-xs)] text-xs ${m.renderDuration > 30 ? 'bg-[var(--status-warning-subtle)]/10 text-[var(--fg-warning)] border border-[var(--status-warning)]/20' : 'bg-[var(--bg-accent-muted)] text-[var(--fg-accent)] border border-[var(--border-accent)]'}`}>
                         {m.renderDuration} ms
                       </span>
                     </td>

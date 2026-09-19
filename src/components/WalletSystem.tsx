@@ -1207,9 +1207,9 @@ export const WalletSystem: React.FC<{ theme: string; dir: 'ltr' | 'rtl' }> = ({ 
                         </p>
                       </div>
 
-                      <div className="p-4 rounded-[var(--radius-sm)] bg-amber-500/5 border border-amber-500/15 flex gap-3 text-left rtl:text-right">
-                        <Info size={16} className="text-amber-500 shrink-0 mt-0.5" />
-                        <p className="text-[9px] font-black text-amber-500 uppercase tracking-wider leading-relaxed">
+                      <div className="p-4 rounded-[var(--radius-sm)] bg-[var(--status-warning-subtle)]/30 border border-[var(--status-warning)]/20 flex gap-3 text-left rtl:text-right">
+                        <Info size={16} className="text-[var(--fg-warning)] shrink-0 mt-0.5" />
+                        <p className="text-[9px] font-black text-[var(--fg-warning)] uppercase tracking-wider leading-relaxed">
                           {dir === 'rtl' 
                             ? 'انتبه: أرسل شبكة TRC-20 فقط. إرسال أي عملة أخرى قد يؤدي إلى فقدان أموالك نهائياً. يتم إيداع رصيد المحفظة المكافئ بعد مراجعة المشرف للعملية بشكل يدوي ودقيق.' 
                             : 'ATTENTION: Only dispatch USDT via the Tron (TRC-20) network. Your manual request will be verified by the system administrator immediately upon receipt verification.'}
@@ -1385,12 +1385,12 @@ export const WalletSystem: React.FC<{ theme: string; dir: 'ltr' | 'rtl' }> = ({ 
                   {depositMethod === 'paypal' && (
                     <div className="space-y-6">
                       {!isPaypalActive ? (
-                        <div className="p-8 rounded-[var(--radius-sm)] border border-amber-500/20 bg-amber-500/5 text-center space-y-4">
-                          <div className="w-12 h-12 rounded-full bg-amber-500/10 text-amber-500 flex items-center justify-center mx-auto">
+                        <div className="p-8 rounded-[var(--radius-sm)] border border-[var(--status-warning)]/20 bg-[var(--status-warning-subtle)]/30 text-center space-y-4">
+                          <div className="w-12 h-12 rounded-full bg-[var(--status-warning-subtle)]/50 text-[var(--fg-warning)] flex items-center justify-center mx-auto">
                             <Lock size={20} />
                           </div>
                           <div className="space-y-1">
-                            <h4 className="text-sm font-black text-amber-600 dark:text-amber-300 uppercase tracking-wider">{dir === 'rtl' ? 'بوابة الدفع غير متاحة' : 'Payment Gateway Offline'}</h4>
+                            <h4 className="text-sm font-black text-[var(--fg-warning)] uppercase tracking-wider">{dir === 'rtl' ? 'بوابة الدفع غير متاحة' : 'Payment Gateway Offline'}</h4>
                             <p className="text-[10px] text-[var(--text-muted)] font-black uppercase tracking-wide leading-relaxed">
                               {dir === 'rtl' 
                                 ? 'بوابة دفع PayPal قيد التطوير والامتثال لأعلى معايير الأمان.'
@@ -1585,7 +1585,7 @@ export const WalletSystem: React.FC<{ theme: string; dir: 'ltr' | 'rtl' }> = ({ 
 
               {currentBalance === 0 ? (
                 <div className="p-12 text-center rounded-[var(--radius-md)] border border-dashed border-[var(--border-default)] opacity-60">
-                  <AlertCircle size={40} className="mx-auto text-amber-500 mb-4" />
+                  <AlertCircle size={40} className="mx-auto text-[var(--fg-warning)] mb-4" />
                   <h4 className="text-xs font-black uppercase tracking-widest text-[var(--text-primary)] mb-2">
                     {dir === 'rtl' ? 'رصيدك الحالي فارغ بالدولار' : 'Wallet balance is currently empty'}
                   </h4>
@@ -1816,10 +1816,10 @@ export const WalletSystem: React.FC<{ theme: string; dir: 'ltr' | 'rtl' }> = ({ 
 
                 {activeTab === 'transactions' && manualDeposits.length > 0 && (
                   <div className="p-6 border-b border-[var(--border-default)] bg-[var(--surface-card)]">
-                    <p className="text-[10px] font-black uppercase tracking-widest text-amber-500 mb-4 flex items-center gap-2">
+                    <p className="text-[10px] font-black uppercase tracking-widest text-[var(--fg-warning)] mb-4 flex items-center gap-2">
                       <span className="relative flex h-2 w-2">
-                        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75"></span>
-                        <span className="relative inline-flex rounded-full h-2 w-2 bg-amber-500"></span>
+                        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[var(--status-warning)]/70 opacity-75"></span>
+                        <span className="relative inline-flex rounded-full h-2 w-2 bg-[var(--status-warning)]"></span>
                       </span>
                       {dir === 'rtl' ? 'طلبات الإيداع قيد المراجعة والتحقق المالي بالمستندات:' : 'Manual verification queue logs & pending requests:'}
                     </p>
@@ -1850,7 +1850,7 @@ export const WalletSystem: React.FC<{ theme: string; dir: 'ltr' | 'rtl' }> = ({ 
                             <div className="flex items-center gap-3 shrink-0">
                               <span className={`px-2.5 py-1 rounded text-[8px] font-black uppercase tracking-wider ${
                                 dep.status === 'pending'
-                                  ? 'bg-amber-500/10 text-amber-500 border border-amber-500/15'
+                                  ? 'bg-[var(--status-warning-subtle)]/10 text-[var(--fg-warning)] border border-[var(--status-warning)]/15'
                                   : dep.status === 'approved'
                                   ? 'bg-[var(--bg-accent-muted)] text-[var(--fg-accent)] border border-[var(--border-accent)]/20'
                                   : 'bg-rose-500/10 text-rose-400 border border-rose-500/15'
@@ -1909,7 +1909,7 @@ export const WalletSystem: React.FC<{ theme: string; dir: 'ltr' | 'rtl' }> = ({ 
                              </td>
                              <td className="px-8 py-7">
                                <div className="flex items-center gap-2">
-                                  <div className={`w-2 h-2 rounded-full ${tx.transaction_type === 'deposit' ? 'bg-[var(--accent)]' : tx.transaction_type === 'withdrawal' ? 'bg-amber-500' : 'bg-blue-500'}`} />
+                                  <div className={`w-2 h-2 rounded-full ${tx.transaction_type === 'deposit' ? 'bg-[var(--accent)]' : tx.transaction_type === 'withdrawal' ? 'bg-[var(--status-warning)]' : 'bg-blue-500'}`} />
                                   <span className="text-[11px] font-bold text-[var(--text-primary)] uppercase tracking-wider">{tx.transaction_type}</span>
                                </div>
                              </td>
@@ -1921,7 +1921,7 @@ export const WalletSystem: React.FC<{ theme: string; dir: 'ltr' | 'rtl' }> = ({ 
                                  <div className="text-[10px] text-[var(--text-muted)] tracking-wide font-sans normal-case">
                                     {tx.description || (dir === 'rtl' ? 'عملية مسجلة ومؤمنة في الدفتر المالي' : 'Registered ledger process')}
                                  </div>
-                                 <div className={`text-[9px] font-black uppercase tracking-widest ${tx.status === 'success' ? 'text-[var(--fg-accent)]' : 'text-amber-500'}`}>
+                                 <div className={`text-[9px] font-black uppercase tracking-widest ${tx.status === 'success' ? 'text-[var(--fg-accent)]' : 'text-[var(--fg-warning)]'}`}>
                                    {tx.status}
                                  </div>
                                </div>
