@@ -205,19 +205,19 @@ export const InsufficientFundsCard = ({ data, dir, t, navigate, user }: { data: 
     <motion.div 
       initial={{ opacity: 0, scale: 0.95 }}
       animate={{ opacity: 1, scale: 1 }}
-      className="mt-4 p-5 rounded-shape-md border border-red-500/20 bg-red-500/[0.03] backdrop-blur-sm self-stretch flex flex-col gap-4 relative overflow-hidden group"
+      className="mt-4 p-5 rounded-shape-md border border-[var(--status-danger)]/20 bg-[var(--status-danger-subtle)] backdrop-blur-sm self-stretch flex flex-col gap-4 relative overflow-hidden group"
     >
       <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
-        <Sparkles size={48} className="text-red-500" />
+        <Sparkles size={48} className="text-[var(--status-danger)]" />
       </div>
 
       <div className="flex items-start gap-4 relative z-10">
-        <div className="w-12 h-12 rounded-shape-sm bg-red-500/10 flex items-center justify-center text-red-500 shadow-[0_0_15px_rgba(239,68,68,0.2)]">
+        <div className="w-12 h-12 rounded-shape-sm bg-[var(--status-danger)]/10 flex items-center justify-center text-[var(--status-danger)] shadow-xs">
           <AlertCircle size={24} className="animate-pulse" />
         </div>
         <div className="flex-1">
           <div className="flex items-center gap-2 mb-1">
-            <span className="text-[10px] font-black uppercase tracking-[0.2em] text-red-500">
+            <span className="text-[10px] font-black uppercase tracking-[0.2em] text-[var(--status-danger)]">
               {dir === 'rtl' ? 'رصيد غير كافٍ' : 'Insufficient Wallet Balance'}
             </span>
           </div>
@@ -231,21 +231,21 @@ export const InsufficientFundsCard = ({ data, dir, t, navigate, user }: { data: 
       </div>
 
       {user?.referral_activated ? (
-        <div className="relative z-10 bg-[var(--bg-overlay)] border border-red-500/10 rounded-shape-sm p-3 flex items-center gap-3">
+        <div className="relative z-10 bg-[var(--bg-overlay)] border border-[var(--status-danger)]/10 rounded-shape-sm p-3 flex items-center gap-3">
           <div className="flex-1 truncate text-[10px] font-mono text-[var(--text-muted)] p-1">
             {referralLink}
           </div>
           <div className="flex items-center gap-1.5">
             <button 
               onClick={handleCopy}
-              className="w-8 h-8 flex items-center justify-center rounded-shape-sm bg-red-500/10 hover:bg-red-500/20 text-red-500 transition-theme active:scale-95 shrink-0 touch-target-44 box-border relative before:absolute before:-inset-1.5 before:content-['']"
+              className="w-8 h-8 flex items-center justify-center rounded-shape-sm bg-[var(--status-danger)]/10 hover:bg-[var(--status-danger)]/20 text-[var(--status-danger)] transition-theme active:scale-95 shrink-0 touch-target-44 box-border relative before:absolute before:-inset-1.5 before:content-['']"
               title="Copy Link"
             >
               {copied ? <Check size={14} /> : <Copy size={14} />}
             </button>
             <button 
               onClick={handleShare}
-              className="w-8 h-8 flex items-center justify-center rounded-shape-sm bg-red-500 text-white hover:bg-accent transition-theme shadow-none active:scale-95 shrink-0 touch-target-44 box-border relative before:absolute before:-inset-1.5 before:content-['']"
+              className="w-8 h-8 flex items-center justify-center rounded-shape-sm bg-[var(--status-danger)] text-white hover:opacity-90 transition-theme shadow-none active:scale-95 shrink-0 touch-target-44 box-border relative before:absolute before:-inset-1.5 before:content-['']"
               title="Share"
             >
               <Share2 size={14} />
@@ -283,13 +283,13 @@ export const InsufficientFundsCard = ({ data, dir, t, navigate, user }: { data: 
               navigate('/settings/wallet');
             }
           }}
-          className="flex-1 bg-red-500 hover:bg-red-600 text-white h-8 rounded-shape-sm flex items-center justify-center text-[11px] font-black uppercase tracking-wider transition-theme shadow-[0_10px_20px_rgba(239,68,68,0.3)] hover:translate-y-[-2px] active:translate-y-0"
+          className="flex-1 bg-[var(--status-danger)] hover:opacity-90 text-white h-8 rounded-shape-sm flex items-center justify-center text-[11px] font-black uppercase tracking-wider transition-theme hover:translate-y-[-2px] active:translate-y-0"
         >
           {dir === 'rtl' ? 'شحن رصيد المحفظة الأن' : 'Recharge Wallet Now'}
         </button>
         <button 
           onClick={() => navigate('/rewards')}
-          className="flex-1 bg-[var(--surface-card)] border border-red-500/20 hover:bg-red-500/5 text-red-500 h-8 rounded-shape-sm flex items-center justify-center text-[11px] font-black uppercase tracking-wider transition-theme hover:translate-y-[-2px] active:translate-y-0"
+          className="flex-1 bg-[var(--surface-card)] border border-[var(--status-danger)]/20 hover:bg-[var(--status-danger-subtle)] text-[var(--status-danger)] h-8 rounded-shape-sm flex items-center justify-center text-[11px] font-black uppercase tracking-wider transition-theme hover:translate-y-[-2px] active:translate-y-0"
         >
           {dir === 'rtl' ? 'صفحة المكافآت' : 'Rewards Page'}
         </button>

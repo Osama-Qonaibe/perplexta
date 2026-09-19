@@ -104,7 +104,7 @@ export const LiveStreamModal: React.FC<LiveStreamModalProps> = ({
               <div className="flex items-center gap-3 overflow-hidden">
                 <button
                   onClick={onClose}
-                  className="flex items-center gap-2 px-3 py-1.5 rounded-[var(--radius-sm)] bg-red-600/10 hover:bg-red-600/20 backdrop-blur-md border border-red-500/20 text-white transition-theme group shadow-lg shrink-0 cursor-pointer"
+                  className="flex items-center gap-2 px-3 py-1.5 rounded-[var(--radius-sm)] bg-[var(--status-danger-subtle)] hover:bg-[var(--status-danger)]/20 backdrop-blur-md border border-[var(--status-danger)]/20 text-white transition-theme group shadow-lg shrink-0 cursor-pointer"
                   title={isRtl ? 'خروج من البث' : 'Exit Stream'}
                 >
                   <ArrowRight size={16} className={isRtl ? '' : 'rotate-180'} />

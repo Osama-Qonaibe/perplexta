@@ -377,7 +377,7 @@ export const EngagementTrendsChart: React.FC<EngagementTrendsChartProps> = ({
       <button
         type="button"
         onClick={() => setIsMobileChartExpanded(prev => !prev)}
-        className="sm:hidden w-full py-2 px-3 rounded-[var(--radius-sm)] border border-[var(--border-default)] bg-[var(--surface-subtle)] text-xs font-bold text-[var(--text-primary)] hover:border-[var(--accent)]/40 transition-colors flex items-center justify-between cursor-pointer"
+        className="sm:hidden w-full py-2 px-3 rounded-[var(--radius-sm)] border border-[var(--border-default)] bg-[var(--surface-subtle)] text-xs font-bold text-[var(--text-primary)] hover:border-[var(--border-accent)] transition-colors flex items-center justify-between cursor-pointer"
       >
         <span className="flex items-center gap-2">
           <BarChart2 size={15} className="text-[var(--accent)] shrink-0" />
