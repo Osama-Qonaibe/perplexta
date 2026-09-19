@@ -99,17 +99,17 @@ export const SkeletonLoader: React.FC<SkeletonLoaderProps> = ({
       <div className={`flex flex-col items-center gap-3 pointer-events-none ${className}`}>
         {/* Avatar Placeholder */}
         <div className="relative mb-1">
-          <div className="w-10 h-10 rounded-full bg-zinc-800/80 border-2 border-white/20 animate-shimmer" />
-          <div className="absolute -bottom-1 start-1/2 -translate-x-1/2 w-4 h-4 rounded-full bg-zinc-700 animate-shimmer" />
+          <div className="w-10 h-10 rounded-full bg-[var(--surface-subtle)]/80 border-2 border-[var(--border-subtle)]/40 animate-shimmer" />
+          <div className="absolute -bottom-1 start-1/2 -translate-x-1/2 w-4 h-4 rounded-full bg-[var(--border-subtle)] animate-shimmer" />
         </div>
 
         {/* 4 Action Icons + Counter Placeholders */}
         {[...Array(4)].map((_, i) => (
           <div key={`skel-reel-act-${i}`} className="flex flex-col items-center gap-1">
-            <div className="w-11 h-11 rounded-full bg-black/60 border border-white/10 backdrop-blur-md animate-shimmer flex items-center justify-center">
-              <div className="w-5 h-5 rounded-full bg-white/20" />
+            <div className="w-11 h-11 rounded-full bg-black/60 border border-[var(--border-subtle)]/10 backdrop-blur-md animate-shimmer flex items-center justify-center">
+              <div className="w-5 h-5 rounded-full bg-[var(--surface-page)]/20" />
             </div>
-            <div className="w-7 h-2.5 rounded-full bg-white/30 backdrop-blur-sm animate-shimmer" />
+            <div className="w-7 h-2.5 rounded-full bg-[var(--surface-page)]/30 backdrop-blur-sm animate-shimmer" />
           </div>
         ))}
       </div>
@@ -122,10 +122,10 @@ export const SkeletonLoader: React.FC<SkeletonLoaderProps> = ({
       <div className={`flex flex-col items-center gap-4 pointer-events-none ${className}`}>
         {[...Array(4)].map((_, i) => (
           <div key={`skel-desk-act-${i}`} className="flex flex-col items-center gap-1">
-            <div className="w-12 h-12 rounded-full bg-zinc-900/80 border border-white/15 backdrop-blur-xl shadow-xl animate-shimmer flex items-center justify-center">
-              <div className="w-5 h-5 rounded-full bg-white/20" />
+            <div className="w-12 h-12 rounded-full bg-[var(--surface-card)]/80 border border-[var(--border-subtle)]/50 backdrop-blur-xl shadow-xl animate-shimmer flex items-center justify-center">
+              <div className="w-5 h-5 rounded-full bg-[var(--surface-page)]/20" />
             </div>
-            <div className="w-8 h-3 rounded-full bg-zinc-700/80 animate-shimmer" />
+            <div className="w-8 h-3 rounded-full bg-[var(--border-subtle)]/80 animate-shimmer" />
           </div>
         ))}
       </div>
@@ -208,24 +208,24 @@ export const SkeletonLoader: React.FC<SkeletonLoaderProps> = ({
   if (type === 'reel-card') {
     return (
       <div className={`relative w-full h-[calc(100dvh-80px)] flex items-center justify-center bg-black/95 ${className}`}>
-        <div className="relative w-full max-w-md h-full bg-zinc-950 flex flex-col justify-between p-4 animate-shimmer overflow-hidden">
+        <div className="relative w-full max-w-md h-full bg-[var(--surface-page)] flex flex-col justify-between p-4 animate-shimmer overflow-hidden">
           {/* Top Bar Skeleton */}
           <div className="flex items-center justify-between z-10">
-            <div className="w-20 h-7 rounded-full bg-zinc-800" />
-            <div className="w-8 h-8 rounded-full bg-zinc-800" />
+            <div className="w-20 h-7 rounded-full bg-[var(--surface-subtle)]" />
+            <div className="w-8 h-8 rounded-full bg-[var(--surface-subtle)]" />
           </div>
 
           {/* Bottom Captions & Action Skeleton */}
           <div className="flex items-end justify-between gap-4 z-10">
             <div className="flex-1 space-y-2">
-              <div className="h-3.5 bg-zinc-800 rounded w-1/3" />
-              <div className="h-3 bg-zinc-800/80 rounded w-3/4" />
-              <div className="h-3 bg-zinc-800/60 rounded w-1/2" />
+              <div className="h-3.5 bg-[var(--surface-subtle)] rounded w-1/3" />
+              <div className="h-3 bg-[var(--surface-subtle)]/80 rounded w-3/4" />
+              <div className="h-3 bg-[var(--surface-subtle)]/60 rounded w-1/2" />
             </div>
             <div className="space-y-3">
-              <div className="w-10 h-10 rounded-full bg-zinc-800" />
-              <div className="w-10 h-10 rounded-full bg-zinc-800" />
-              <div className="w-10 h-10 rounded-full bg-zinc-800" />
+              <div className="w-10 h-10 rounded-full bg-[var(--surface-subtle)]" />
+              <div className="w-10 h-10 rounded-full bg-[var(--surface-subtle)]" />
+              <div className="w-10 h-10 rounded-full bg-[var(--surface-subtle)]" />
             </div>
           </div>
         </div>

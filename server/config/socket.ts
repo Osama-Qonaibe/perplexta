@@ -52,13 +52,32 @@ export function initSocket(httpServer: HttpServer): Server {
     cors: {
       origin: (origin, callback) => {
         if (!origin) return callback(null, true);
-        if (process.env.NODE_ENV !== 'production' || allowedOrigins.includes(origin)) {
+        if (allowedOrigins.includes(origin)) {
           return callback(null, true);
         }
-        if (origin.endsWith('.run.app') || origin.endsWith('.aistudio.google') || origin.includes('localhost') || origin.includes('127.0.0.1')) {
+
+        try {
+          const parsedUrl = new URL(origin);
+          const hostname = parsedUrl.hostname;
+
+          // Strict match to prevent localhost.attacker.com bypasses
+          if (hostname === 'localhost' || hostname === '127.0.0.1') {
+            return callback(null, true);
+          }
+
+          // Strict suffix match on subdomains
+          if (hostname.endsWith('.run.app') || hostname.endsWith('.aistudio.google')) {
+            return callback(null, true);
+          }
+        } catch (err) {
+          // Ignore invalid URLs
+        }
+
+        if (process.env.NODE_ENV !== 'production') {
           return callback(null, true);
         }
-        return callback(null, true);
+
+        return callback(new Error('Not allowed by CORS'), false);
       },
       methods: ["GET", "POST"],
       credentials: true

@@ -1806,7 +1806,7 @@ router.get('/verify-boost-session', authenticateToken, async (req: any, res) => 
     if (eventCheck.rows.length === 0) {
       try {
         await target.query(
-          'INSERT INTO stripe_events (stripe_event_id, type, status, metadata) VALUES ($1,$2,$3,$4)',
+          'INSERT INTO stripe_events (stripe_event_id, type, status, metadata) VALUES ($1,$2,$3,$4) ON CONFLICT (stripe_event_id) DO NOTHING',
           [session.id, 'bulletin_ad_boost_paid', 'processed', JSON.stringify(session.metadata || {})]
         );
 
