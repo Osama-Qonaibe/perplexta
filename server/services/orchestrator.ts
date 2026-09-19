@@ -16,7 +16,7 @@ import { getEconomySettings } from './wallet.js';
 import { OrchestratorRegistry } from './orchestratorRegistry.js';
 import { withTimeout, safeDecrementOnFailure, safeParseResponse, AI_CALL_TIMEOUT_MS, TTS_TIMEOUT_MS, STT_TIMEOUT_MS } from './tasks/utils.js';
 import { sanitizeHTMLAndXSS, validatePromptLength, MAX_CUMULATIVE_HISTORY_CHARS, MAX_DOC_EXTRACT_SIZE } from '../utils/security.js';
-import { userLoader, getCachedOrchestratorConfig, getCachedSystemSettings, getCachedApiKeysVault, invalidateApiKeysVaultCache } from '../db/queries.js';
+import { userLoader, getCachedOrchestratorConfig, getCachedSystemSettings, getCachedApiKeysVault, invalidateApiKeysVaultCache, invalidateOrchestratorConfigCache } from '../db/queries.js';
 import { extractDirectUserMemories, updateChatContextSummary, consolidateAllUserMemories, addMemory } from './memory.js';
 import { scanForPromptInjection, redactInternalArtifacts } from './securitySanitizer.js';
 
@@ -238,7 +238,49 @@ Instruction: You MUST explicitly disclose this forensic audit to the user. Descr
     }));
   }
 
-  const route = rawRouteConfig;
+  let route = rawRouteConfig;
+
+  if (!route || !route.primary_provider || !route.primary_model) {
+    if (activeKeys.length > 0) {
+      const activeProvider = activeKeys.find((k: any) => k.models && k.models.length > 0) || activeKeys[0];
+      if (activeProvider && activeProvider.models && activeProvider.models.length > 0) {
+        const textModel = activeProvider.models.find((m: any) => {
+          const methods = m.supportedMethods || m.supportedGenerationMethods || [];
+          return methods.length === 0 || methods.includes('generateContent');
+        }) || activeProvider.models[0];
+
+        const modelId = textModel.id || textModel.name || (typeof textModel === 'string' ? textModel : '');
+        const providerName = activeProvider.provider;
+
+        if (modelId && providerName) {
+          route = {
+            tool_id: toolIdStr,
+            primary_provider: providerName,
+            primary_model: modelId,
+            is_active: true,
+            max_history_depth: 16,
+            system_prompt: '',
+            temperature: 0.7,
+            top_p: 0.95
+          };
+
+          // Dynamically persist to tool_orchestrator table in PostgreSQL
+          pool.query(`
+            INSERT INTO tool_orchestrator (tool_id, primary_provider, primary_model, is_active, updated_at)
+            VALUES ($1, $2, $3, true, CURRENT_TIMESTAMP)
+            ON CONFLICT (tool_id) DO UPDATE
+            SET primary_provider = CASE WHEN tool_orchestrator.primary_provider IS NULL OR tool_orchestrator.primary_provider = '' THEN EXCLUDED.primary_provider ELSE tool_orchestrator.primary_provider END,
+                primary_model = CASE WHEN tool_orchestrator.primary_model IS NULL OR tool_orchestrator.primary_model = '' THEN EXCLUDED.primary_model ELSE tool_orchestrator.primary_model END,
+                is_active = true,
+                updated_at = CURRENT_TIMESTAMP
+          `, [toolIdStr, providerName, modelId]).catch((dbErr: any) => {
+            console.warn('[Orchestrator] Dynamic route persistence notice:', dbErr?.message || dbErr);
+          });
+          invalidateOrchestratorConfigCache(toolIdStr);
+        }
+      }
+    }
+  }
 
   if (!route || !route.primary_provider || !route.primary_model) {
     await logSystemActivity(userId, 'INACTIVE_TOOL_ACCESS', `User attempted to access tool "${toolIdStr}" but it is currently inactive or undergoing maintenance.`, { toolId: toolIdStr });

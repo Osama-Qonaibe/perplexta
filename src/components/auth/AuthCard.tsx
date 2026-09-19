@@ -96,7 +96,13 @@ export const AuthCard: React.FC<AuthCardProps> = ({
         }
         const result = await signup(email, password, email.split('@')[0], ref);
         if (!result.success) {
-          setError(result.error || 'Signup failed');
+          let errorMsg = result.error || 'Signup failed';
+          if (errorMsg === 'User already exists' || errorMsg.includes('already exists')) {
+            errorMsg = dir === 'rtl' 
+              ? 'البريد الإلكتروني مسجل بالفعل. يرجى تسجيل الدخول أو استعادة كلمة المرور.' 
+              : 'This email is already registered. Please log in or reset your password.';
+          }
+          setError(errorMsg);
         } else {
           if (onSuccess) onSuccess();
           else navigate('/chat');
@@ -104,7 +110,13 @@ export const AuthCard: React.FC<AuthCardProps> = ({
       } else {
         const result = await login(email, password);
         if (!result.success) {
-          setError(result.error || 'Login failed');
+          let errorMsg = result.error || 'Login failed';
+          if (errorMsg === 'Invalid credentials' || errorMsg.includes('credentials')) {
+            errorMsg = dir === 'rtl' 
+              ? 'البريد الإلكتروني أو كلمة المرور غير صحيحة.' 
+              : 'Invalid email or password.';
+          }
+          setError(errorMsg);
         } else {
           if (onSuccess) onSuccess();
           else navigate('/chat');

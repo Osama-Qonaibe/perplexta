@@ -5,7 +5,7 @@ import { createUserSchema } from '../schemas/user.schemas.js';
 import { AppError } from '../middleware/errorHandler.js';
 import { ERROR_CODES } from '../utils/errorCodes.js';
 import { pool, ledgerPool, getSecurityPool, mediaPool } from '../db/index.js';
-import { authenticateAdmin, invalidateUserCache } from '../middleware/auth.js';
+import { authenticateAdmin, invalidateUserCache, invalidateAllUserCaches } from '../middleware/auth.js';
 import { syncProviderModelsInternal, checkProviderStatus, invalidateVaultCache } from '../services/ai.js';
 import { memoryCache, getCache, setCache } from '../utils/cache.js';
 import { runDatabaseMigrations } from '../db/migrations.js';
@@ -42,9 +42,11 @@ import {
   invalidateEconomySettingsCache, 
   invalidateOrchestratorConfigCache, 
   invalidatePlansCache, 
-  invalidateApiKeysVaultCache 
+  invalidateApiKeysVaultCache,
+  invalidateAllDataLoaders
 } from '../db/queries.js';
-import { invalidateFilePermissionCache } from '../services/filePermissionCache.js';
+import { invalidateFilePermissionCache, invalidateFileVersionCache } from '../services/filePermissionCache.js';
+import { invalidateGpuCache } from '../services/gpuVaultService.js';
 import { escapeHtml } from '../utils/security.js';
 import { io } from '../config/socket.js';
 
@@ -2616,11 +2618,13 @@ router.post("/cache/clear", authenticateAdmin, async (req, res) => {
     const { target } = req.body || req.query;
     const cleared: string[] = [];
 
+    // Always flush general fast memory cache
     memoryCache.clear();
     cleared.push('memory_cache');
 
     if (!target || target === 'file_permission' || target === 'global') {
       invalidateFilePermissionCache();
+      invalidateFileVersionCache();
       cleared.push('file_permission');
     }
     if (!target || target === 'route_seo' || target === 'global') {
@@ -2629,18 +2633,34 @@ router.post("/cache/clear", authenticateAdmin, async (req, res) => {
     }
     if (!target || target === 'system_settings' || target === 'global') {
       invalidateSystemSettingsCache();
-      cleared.push('system_settings');
+      invalidateSystemAssetCache();
+      cleared.push('system_settings', 'system_assets');
+    }
+    if (target === 'orchestrator' || target === 'global') {
+      invalidateOrchestratorConfigCache();
+      invalidateVaultCache();
+      invalidateApiKeysVaultCache();
+      invalidateGpuCache();
+      cleared.push('orchestrator', 'api_keys_vault', 'gpu_vault');
+    }
+    if (target === 'economy' || target === 'global') {
+      invalidateEconomySettingsCache();
+      invalidatePlansCache();
+      cleared.push('economy_settings', 'plans');
     }
     if (target === 'global') {
-      invalidateEconomySettingsCache();
-      invalidateOrchestratorConfigCache();
-      invalidatePlansCache();
-      invalidateApiKeysVaultCache();
-      cleared.push('economy', 'orchestrator', 'plans', 'api_keys');
+      invalidateStripeClient();
+      invalidateAllDataLoaders();
+      invalidateAllUserCaches();
+      cleared.push('stripe_client', 'data_loaders', 'user_cache');
     }
 
     await auditLog((req as any).user?.id, 'Clear Cache', 'system', { target: target || 'global', cleared });
-    res.json({ success: true, cleared, message: `Successfully cleared cache: ${cleared.join(', ')}` });
+    res.json({ 
+      success: true, 
+      cleared, 
+      message: `Successfully cleared cache (${cleared.length} layers): ${cleared.join(', ')}` 
+    });
   } catch (error: any) {
     console.error('[AdminCache] Failed to clear cache:', error);
     res.status(500).json({ error: error.message || 'Failed to clear cache' });

@@ -4,6 +4,7 @@ import { motion, AnimatePresence } from 'motion/react';
 import { HighlightText } from '../../HighlightText';
 import { ThinkingStep } from '../types';
 import { AssistantIcon } from '@/design-system';
+import { CognitiveOrbitRing } from '../common/CognitiveOrbitRing';
 import Markdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 
@@ -89,37 +90,14 @@ export const ThinkingSteps: React.FC<ThinkingStepsProps> = ({
               dir={dir} 
               className="text-accent shrink-0 relative z-10" 
             />
-            {isCurrentlyProcessing ? (
-              <motion.svg
-                viewBox="0 0 24 24"
-                className="absolute inset-0 w-full h-full pointer-events-none"
-                animate={{ rotate: dir === 'rtl' ? -360 : 360 }}
-                transition={{ repeat: Infinity, duration: 2.2, ease: 'linear' }}
-              >
-                <circle
-                  cx="12"
-                  cy="12"
-                  r="10"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="1.5"
-                  strokeDasharray="4.5 2.5"
-                  className="text-accent/70"
-                />
-              </motion.svg>
-            ) : (
-              <svg viewBox="0 0 24 24" className="absolute inset-0 w-full h-full pointer-events-none">
-                <circle
-                  cx="12"
-                  cy="12"
-                  r="10"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="1.2"
-                  className="text-accent/25"
-                />
-              </svg>
-            )}
+            <CognitiveOrbitRing
+              isSpinning={isCurrentlyProcessing}
+              dir={dir}
+              size={24}
+              radius={10}
+              strokeWidth={1.5}
+              strokeDasharray="4.5 2.5"
+            />
           </div>
           <span className="font-bold text-xs text-[var(--text-secondary)] group-hover:text-[var(--text-primary)] transition-colors">
             {isCurrentlyProcessing

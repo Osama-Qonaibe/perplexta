@@ -722,13 +722,12 @@ export const Header: React.FC<{ activeLanguage?: string }> = ({ activeLanguage }
         {/* Chat Interaction Toolbar: Exactly aligned with chat container boundaries (max-w-3xl) */}
         {isChatPage && chatHeaderData && chatHeaderData.hasMessages && (!isArtifactOpen || !isFullscreen) && (
           <>
-            {/* DESKTOP LAYOUT: Exactly aligned with chat container boundaries (max-w-3xl or chatWidth when artifact is open) */}
+            {/* DESKTOP LAYOUT: Fixed stable alignment matching main layout viewport (50px base offset, completely immune to sidebar expansion) */}
             <div 
-              className="absolute inset-y-0 pointer-events-none hidden sm:flex items-center z-10 inset-x-0 transition-all duration-300"
+              className="absolute inset-y-0 pointer-events-none hidden sm:flex items-center z-10 inset-x-0"
               style={{
-                paddingInlineStart: !isMobileView ? (isSidebarOpen ? '180px' : '50px') : '0px',
-                paddingInlineEnd: 0,
-                transitionTimingFunction: 'cubic-bezier(0.2, 0, 0, 1)'
+                paddingInlineStart: !isMobileView ? '50px' : '0px',
+                paddingInlineEnd: 0
               }}
             >
               <div

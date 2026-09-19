@@ -29,6 +29,11 @@ export function invalidateUserCache(userId: string | number) {
   userLoader.clear(userId);
 }
 
+export function invalidateAllUserCaches() {
+  userStatusCache.clear();
+  userLoader.clearAll();
+}
+
 export function addToBlacklistCache(token: string) {
   tokenBlacklistCache.set(token, {
     isRevoked: true,

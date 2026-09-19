@@ -111,17 +111,21 @@ export class DataLoader<K, V> {
 export const userLoader = new DataLoader<number | string, any>(async (ids) => {
   if (ids.length === 0) return [];
   if (!pool) return ids.map(() => null);
-  const uniqueIds = Array.from(new Set(ids)).map(id => typeof id === 'number' ? id : parseInt(id, 10));
+  const validIds = Array.from(new Set(ids))
+    .map(id => typeof id === 'number' ? id : parseInt(String(id), 10))
+    .filter(id => typeof id === 'number' && !isNaN(id));
   
+  if (validIds.length === 0) return ids.map(() => null);
+
   try {
     const res = await pool.query(
       'SELECT id, name, email, role, status, kyc_status, language, theme, memory, last_active_at, created_at, avatar FROM users WHERE id = ANY($1)',
-      [uniqueIds]
+      [validIds]
     );
     const userMap = new Map<number, any>();
     res.rows.forEach((row: any) => userMap.set(row.id, row));
     return ids.map(id => {
-      const idNum = typeof id === 'number' ? id : parseInt(id, 10);
+      const idNum = typeof id === 'number' ? id : parseInt(String(id), 10);
       return userMap.get(idNum) || null;
     });
   } catch (err: any) {
@@ -137,17 +141,21 @@ export const walletLoader = new DataLoader<number | string, any>(async (userIds)
   if (userIds.length === 0) return [];
   const target = ledgerPool || pool;
   if (!target) return userIds.map(() => null);
-  const uniqueIds = Array.from(new Set(userIds)).map(id => typeof id === 'number' ? id : parseInt(id, 10));
+  const validIds = Array.from(new Set(userIds))
+    .map(id => typeof id === 'number' ? id : parseInt(String(id), 10))
+    .filter(id => typeof id === 'number' && !isNaN(id));
+
+  if (validIds.length === 0) return userIds.map(() => null);
 
   try {
     const res = await target.query(
       'SELECT id, user_id, balance, usd_balance, points, referral_activated, created_at, updated_at FROM wallets WHERE user_id = ANY($1)',
-      [uniqueIds]
+      [validIds]
     );
     const walletMap = new Map<number, any>();
     res.rows.forEach((row: any) => walletMap.set(row.user_id, row));
     return userIds.map(id => {
-      const idNum = typeof id === 'number' ? id : parseInt(id, 10);
+      const idNum = typeof id === 'number' ? id : parseInt(String(id), 10);
       return walletMap.get(idNum) || null;
     });
   } catch (err: any) {
@@ -162,17 +170,21 @@ export const walletLoader = new DataLoader<number | string, any>(async (userIds)
 export const chatLoader = new DataLoader<number | string, any>(async (ids) => {
   if (ids.length === 0) return [];
   if (!pool) return ids.map(() => null);
-  const uniqueIds = Array.from(new Set(ids)).map(id => typeof id === 'number' ? id : parseInt(id, 10));
+  const validIds = Array.from(new Set(ids))
+    .map(id => typeof id === 'number' ? id : parseInt(String(id), 10))
+    .filter(id => typeof id === 'number' && !isNaN(id));
+
+  if (validIds.length === 0) return ids.map(() => null);
 
   try {
     const res = await pool.query(
       'SELECT * FROM chats WHERE id = ANY($1)',
-      [uniqueIds]
+      [validIds]
     );
     const chatMap = new Map<number, any>();
     res.rows.forEach((row: any) => chatMap.set(row.id, row));
     return ids.map(id => {
-      const idNum = typeof id === 'number' ? id : parseInt(id, 10);
+      const idNum = typeof id === 'number' ? id : parseInt(String(id), 10);
       return chatMap.get(idNum) || null;
     });
   } catch (err: any) {
@@ -180,6 +192,15 @@ export const chatLoader = new DataLoader<number | string, any>(async (ids) => {
     return ids.map(() => null);
   }
 }, { ttl: 10000 }); // 10-second cache
+
+/**
+ * Invalidate all batch DataLoader caches
+ */
+export function invalidateAllDataLoaders() {
+  userLoader.clearAll();
+  walletLoader.clearAll();
+  chatLoader.clearAll();
+}
 
 /**
  * Batched message loading for deep context retrievals

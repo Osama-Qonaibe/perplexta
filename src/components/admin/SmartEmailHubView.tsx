@@ -108,6 +108,7 @@ const SmartEmailHubView = ({
   });
   const [isSavingSettings, setIsSavingSettings] = useState(false);
   const [isTestingConnection, setIsTestingConnection] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
 
   const [templates, setTemplates] = useState<any[]>([]);
   const [isLoadingTemplates, setIsLoadingTemplates] = useState(false);
@@ -548,8 +549,9 @@ const SmartEmailHubView = ({
                     }
                     dir={dir}
                     options={[
-                      { value: "smtp", label: t("smtp") },
-                      { value: "php", label: t("phpMail") }
+                      { value: "smtp", label: t("smtp") || "Standard SMTP" },
+                      { value: "sendgrid", label: "SendGrid (SMTP/API)" },
+                      { value: "resend", label: "Resend Mailer" }
                     ]}
                   />
                 </div>
@@ -642,19 +644,30 @@ const SmartEmailHubView = ({
                         {t("smtpPassword") ||
                           (dir === "rtl" ? "كلمة سر SMTP" : "SMTP Password")}
                       </label>
-                      <input
-                        type="password"
-                        value={settings.smtp_password || ""}
-                        onChange={(e) =>
-                          setSettings({
-                            ...settings,
-                            smtp_password: e.target.value,
-                          })
-                        }
-                        placeholder="••••••••••••••••"
-                        className="w-full px-4 py-3 rounded-[var(--radius-sm)] border border-[var(--border-default)] bg-[var(--surface-subtle)] text-[var(--text-primary)] focus:outline-none focus:border-[var(--border-accent)] transition-theme text-left placeholder:text-[var(--text-muted)]"
-                        dir="ltr"
-                      />
+                      <div className="relative">
+                        <input
+                          type={showPassword ? "text" : "password"}
+                          value={settings.smtp_password || ""}
+                          onChange={(e) =>
+                            setSettings({
+                              ...settings,
+                              smtp_password: e.target.value,
+                            })
+                          }
+                          placeholder="••••••••••••••••"
+                          className="w-full px-4 py-3 pe-12 rounded-[var(--radius-sm)] border border-[var(--border-default)] bg-[var(--surface-subtle)] text-[var(--text-primary)] focus:outline-none focus:border-[var(--border-accent)] transition-theme text-left placeholder:text-[var(--text-muted)]"
+                          dir="ltr"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => setShowPassword(!showPassword)}
+                          className="absolute inset-y-0 end-0 px-3 flex items-center text-[var(--text-muted)] hover:text-[var(--text-primary)] transition-colors cursor-pointer"
+                          tabIndex={-1}
+                          aria-label={showPassword ? "Hide password" : "Show password"}
+                        >
+                          {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                        </button>
+                      </div>
                     </div>
                   </>
                 )}

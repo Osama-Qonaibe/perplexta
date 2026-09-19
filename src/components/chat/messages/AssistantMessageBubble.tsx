@@ -26,6 +26,7 @@ import { MessageActions } from './MessageActions';
 import { MarkdownLink, BlockquoteWithActions } from '../renderers/MarkdownElements';
 import { CodeBlock } from '../renderers/CodeBlock';
 import { Logo } from '../../common/Logo';
+import { CognitiveOrbitRing } from '../common/CognitiveOrbitRing';
 import { useAppContext } from '../../../context/AppContext';
 import { CollapsibleTable } from '../renderers/CollapsibleTable';
 import { ChatResponseRenderer } from '../renderers/ChatResponseRenderer';
@@ -101,6 +102,20 @@ export const AssistantMessageBubble: React.FC<AssistantMessageBubbleProps> = ({
     ? (siteSettings?.siteNameAr || siteSettings?.siteName || 'بيربليكستا') 
     : (siteSettings?.siteName || 'Perplexta');
 
+  // Parse reasoning trace vs clean response
+  const thinkingParsed = extractThinking(msg.content);
+  const rawTrace = thinkingParsed.thinkingContent || (msg.thinking_steps && msg.thinking_steps.find((s: any) => s.is_raw_trace)?.step);
+  const cleanAnswer = thinkingParsed.cleanContent;
+
+  // 1. Thinking Phase: actively generating and currently reasoning or waiting for response stream
+  const isThinkingPhase = isGenerating && isLastMessage && (
+    thinkingParsed.isThinkingActive || 
+    (!cleanAnswer && !msg.is_image_failed && !msg.is_video_failed && !msg.is_quota_error && !msg.is_insufficient_funds && !msg.is_system_inactive)
+  );
+
+  // 2. Writing Phase: actively generating and clean response text has begun streaming
+  const isWritingPhase = isGenerating && isLastMessage && !isThinkingPhase && Boolean(cleanAnswer);
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 8 }}
@@ -128,59 +143,14 @@ export const AssistantMessageBubble: React.FC<AssistantMessageBubbleProps> = ({
           <div className="flex items-center gap-2">
             <div className="relative flex items-center justify-center shrink-0 w-[26px] h-[26px]">
               <Logo size={20} fallbackType="cpu" shape="circle" />
-              {isGenerating && isLastMessage && (
-                <motion.svg
-                  viewBox="0 0 32 32"
-                  className="absolute inset-0 w-full h-full pointer-events-none text-accent"
-                  animate={{
-                    rotate: dir === 'rtl' ? [0, -170, -210, -360] : [0, 170, 210, 360]
-                  }}
-                  transition={{
-                    repeat: Infinity,
-                    duration: 1.8,
-                    times: [0, 0.38, 0.68, 1],
-                    ease: ["easeOut", "easeInOut", "easeIn"]
-                  }}
-                >
-                  {/* Subtle circular guideline track */}
-                  <circle
-                    cx="16"
-                    cy="16"
-                    r="13.5"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="1.2"
-                    strokeDasharray="3 2"
-                    className="opacity-30"
-                  />
-                  {/* Primary smooth circular arc with rounded caps */}
-                  <circle
-                    cx="16"
-                    cy="16"
-                    r="13.5"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="1.6"
-                    strokeDasharray="26 58"
-                    strokeLinecap="round"
-                    className="opacity-90"
-                  />
-                  {/* Inward directional arrow indicator embedded seamlessly on the orbit */}
-                  {dir === 'rtl' ? (
-                    <polygon
-                      points="13.8,2.2 16.5,0.8 15.8,2.2 16.5,3.6"
-                      fill="currentColor"
-                      className="opacity-95"
-                    />
-                  ) : (
-                    <polygon
-                      points="18.2,2.2 15.5,0.8 16.2,2.2 15.5,3.6"
-                      fill="currentColor"
-                      className="opacity-95"
-                    />
-                  )}
-                </motion.svg>
-              )}
+              <CognitiveOrbitRing
+                isSpinning={isWritingPhase}
+                dir={dir}
+                size={28}
+                radius={11.5}
+                strokeWidth={1.5}
+                strokeDasharray="4.5 2.5"
+              />
             </div>
             <span className="text-xs font-bold text-[var(--text-primary)] font-sans tracking-tight">
               {displayName}
@@ -195,44 +165,18 @@ export const AssistantMessageBubble: React.FC<AssistantMessageBubbleProps> = ({
         </div>
 
         {/* Unified Professional Thinking Steps */}
-        {!['image', 'video'].includes(msg.tool || '') && (() => {
-          const thinkingParsed = extractThinking(msg.content);
-          const rawTrace = thinkingParsed.thinkingContent || (msg.thinking_steps && msg.thinking_steps.find((s: any) => s.is_raw_trace)?.step);
-          const cleanAnswer = thinkingParsed.cleanContent;
-
-          // 1. If actively generating:
-          if (isGenerating && isLastMessage) {
-            // Processing while internal reasoning tag is open OR before any clean answer text appears
-            const isProcessing = thinkingParsed.isThinkingActive || !cleanAnswer;
-
-            return (
-              <div className="mb-2.5 select-none" id="assistant-thinking-block">
-                <ThinkingSteps
-                  steps={msg.thinking_steps}
-                  rawThinking={rawTrace}
-                  isProcessing={isProcessing}
-                  thinkingTime={msg.generation_time}
-                  dir={dir}
-                  query={messages.slice(0, idx).reverse().find((m) => m.role === 'user')?.content || ''}
-                />
-              </div>
-            );
-          }
-
-          // 2. Completed / historical message:
-          return (
-            <div className="mb-2.5 select-none" id="assistant-thinking-block">
-              <ThinkingSteps
-                steps={msg.thinking_steps?.map((s) => ({ ...s, status: 'completed' as const }))}
-                rawThinking={rawTrace}
-                isProcessing={false}
-                thinkingTime={msg.generation_time}
-                dir={dir}
-                query={messages.slice(0, idx).reverse().find((m) => m.role === 'user')?.content || ''}
-              />
-            </div>
-          );
-        })()}
+        {!['image', 'video'].includes(msg.tool || '') && (
+          <div className="mb-2.5 select-none" id="assistant-thinking-block">
+            <ThinkingSteps
+              steps={isGenerating && isLastMessage ? msg.thinking_steps : msg.thinking_steps?.map((s) => ({ ...s, status: 'completed' as const }))}
+              rawThinking={rawTrace}
+              isProcessing={isThinkingPhase}
+              thinkingTime={msg.generation_time}
+              dir={dir}
+              query={messages.slice(0, idx).reverse().find((m) => m.role === 'user')?.content || ''}
+            />
+          </div>
+        )}
 
       {/* Media & Quota Error Cards */}
       {msg.is_image_failed ? (

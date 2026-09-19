@@ -33,6 +33,8 @@ import {
   Palette,
   Image as ImageIcon,
   ShieldCheck,
+  Layers,
+  Server,
 } from "lucide-react";
 import { SystemSettingsViewProps } from "./adminTypes";
 import { 
@@ -3240,7 +3242,7 @@ export const SystemSettingsView: React.FC<SystemSettingsViewProps> = ({
           </div>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4">
           {/* File Permission Cache */}
           <div className="p-4 rounded-md border flex flex-col justify-between bg-[var(--surface-subtle)] border-[var(--border-default)]">
             <div>
@@ -3250,7 +3252,7 @@ export const SystemSettingsView: React.FC<SystemSettingsViewProps> = ({
               </div>
               <p className="text-xs font-bold mb-1">{dir === "rtl" ? "صلاحيات الملفات" : "File Permission Cache"}</p>
               <p className="text-[11px] text-[var(--text-muted)] mb-4">
-                {dir === "rtl" ? "مسح ذاكرة التحقق من الأمان وصلاحيات الوصول للملفات المرفوعة." : "Invalidates cached authorization checks for secure file access."}
+                {dir === "rtl" ? "مسح ذاكرة التحقق من الأمان وصلاحيات الوصول للملفات المرفوعة وإصداراتها." : "Invalidates cached authorization checks and version hashes for secure file access."}
               </p>
             </div>
             <button
@@ -3285,16 +3287,16 @@ export const SystemSettingsView: React.FC<SystemSettingsViewProps> = ({
             </button>
           </div>
 
-          {/* System Settings Cache */}
+          {/* System Settings & Assets Cache */}
           <div className="p-4 rounded-md border flex flex-col justify-between bg-[var(--surface-subtle)] border-[var(--border-default)]">
             <div>
               <div className="flex items-center justify-between mb-2">
-                <span className="text-xs font-semibold font-mono text-accent">SYSTEM CONFIG</span>
+                <span className="text-xs font-semibold font-mono text-accent">SYSTEM & ASSETS</span>
                 <Settings size={16} className="text-[var(--text-muted)]" />
               </div>
-              <p className="text-xs font-bold mb-1">{dir === "rtl" ? "إعدادات النظام" : "System Settings Cache"}</p>
+              <p className="text-xs font-bold mb-1">{dir === "rtl" ? "إعدادات النظام والأصول" : "System & Asset Cache"}</p>
               <p className="text-[11px] text-[var(--text-muted)] mb-4">
-                {dir === "rtl" ? "مسح ذاكرة إعدادات المنصة العامة (الشعارات، العناوين، الثيمات)." : "Refreshes global platform parameters and site branding configs."}
+                {dir === "rtl" ? "تفريغ إعدادات المنصة العامة والأيقونات وقوالب الشعار المحفوظة بالذاكرة." : "Refreshes global platform settings, brand icons, and in-memory asset buffers."}
               </p>
             </div>
             <button
@@ -3307,6 +3309,50 @@ export const SystemSettingsView: React.FC<SystemSettingsViewProps> = ({
             </button>
           </div>
 
+          {/* Orchestrator & AI Keys Cache */}
+          <div className="p-4 rounded-md border flex flex-col justify-between bg-[var(--surface-subtle)] border-[var(--border-default)]">
+            <div>
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-xs font-semibold font-mono text-accent">AI & ORCHESTRATOR</span>
+                <Server size={16} className="text-[var(--text-muted)]" />
+              </div>
+              <p className="text-xs font-bold mb-1">{dir === "rtl" ? "الأوركسترا والمفاتيح" : "AI & Orchestrator Cache"}</p>
+              <p className="text-[11px] text-[var(--text-muted)] mb-4">
+                {dir === "rtl" ? "مسح ذاكرة توجيه النماذج وخزينة مفاتيح الـ AI وخوادم الـ GPU المعزولة." : "Flushes cached tool orchestrator routing, API keys vault, and GPU servers."}
+              </p>
+            </div>
+            <button
+              onClick={() => handleClearCache('orchestrator')}
+              disabled={clearingCache !== null}
+              className="w-full py-2 px-3 bg-accent/10 hover:bg-accent/20 text-accent rounded text-xs font-medium transition-theme flex items-center justify-center gap-2 disabled:opacity-50"
+            >
+              {clearingCache === 'orchestrator' ? <RefreshCw size={14} className="animate-spin" /> : <RefreshCw size={14} />}
+              {dir === "rtl" ? "مسح ذاكرة الموديلات" : "Clear AI Cache"}
+            </button>
+          </div>
+
+          {/* Economy & Subscriptions Cache */}
+          <div className="p-4 rounded-md border flex flex-col justify-between bg-[var(--surface-subtle)] border-[var(--border-default)]">
+            <div>
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-xs font-semibold font-mono text-accent">ECONOMY & PLANS</span>
+                <Layers size={16} className="text-[var(--text-muted)]" />
+              </div>
+              <p className="text-xs font-bold mb-1">{dir === "rtl" ? "الاقتصاد والاشتراكات" : "Economy & Plans Cache"}</p>
+              <p className="text-[11px] text-[var(--text-muted)] mb-4">
+                {dir === "rtl" ? "مسح ذاكرة خطط الاشتراك، أسعار الرصيد، وتهيئة بوابات الدفع." : "Clears subscription plan quotas, economy credit multipliers, and pricing configs."}
+              </p>
+            </div>
+            <button
+              onClick={() => handleClearCache('economy')}
+              disabled={clearingCache !== null}
+              className="w-full py-2 px-3 bg-accent/10 hover:bg-accent/20 text-accent rounded text-xs font-medium transition-theme flex items-center justify-center gap-2 disabled:opacity-50"
+            >
+              {clearingCache === 'economy' ? <RefreshCw size={14} className="animate-spin" /> : <RefreshCw size={14} />}
+              {dir === "rtl" ? "مسح ذاكرة الخطط" : "Clear Economy Cache"}
+            </button>
+          </div>
+
           {/* Global All Caches */}
           <div className="p-4 rounded-md border flex flex-col justify-between bg-[var(--surface-subtle)] border-accent/30">
             <div>
@@ -3316,7 +3362,7 @@ export const SystemSettingsView: React.FC<SystemSettingsViewProps> = ({
               </div>
               <p className="text-xs font-bold mb-1">{dir === "rtl" ? "مسح شامل (Global)" : "Global Cache Purge"}</p>
               <p className="text-[11px] text-[var(--text-muted)] mb-4">
-                {dir === "rtl" ? "مسح جميع الذاكرات (الاقتصاد، الخطط، الموديلات والمفاتيح) دفعة واحدة." : "Clears all system, SEO, file permission, economy, and orchestrator caches."}
+                {dir === "rtl" ? "مسح جميع الذاكرات (الأصول، الاقتصاد، الخطط، الموديلات، الصلاحيات) دفعة واحدة." : "Clears all system, SEO, file permission, economy, orchestrator, and GPU caches."}
               </p>
             </div>
             <button

@@ -178,21 +178,24 @@ export async function checkAndIncrementQuota(userId: number, toolId: string): Pr
 
 export async function decrementUserUsage(userId: number, toolId: string): Promise<void> {
   try {
-    if (!pool) return;
+    const uid = Number(userId);
+    if (!uid || isNaN(uid) || !pool) return;
     await pool.query(
       `UPDATE user_usage SET usage_count = GREATEST(0, usage_count - 1), updated_at = CURRENT_TIMESTAMP WHERE user_id=$1 AND tool_id=$2 AND usage_date=CURRENT_DATE`,
-      [userId, toolId]
+      [uid, toolId]
     );
   } catch (err) { console.error('[Quota] Decrement failed:', err); }
 }
 
 export async function incrementUserUsage(userId: number, toolId: string): Promise<void> {
   try {
+    const uid = Number(userId);
+    if (!uid || isNaN(uid) || !pool) return;
     await pool.query(
       `INSERT INTO user_usage (user_id, tool_id, usage_count, usage_date) VALUES ($1,$2,1,CURRENT_DATE)
        ON CONFLICT (user_id, tool_id, usage_date)
        DO UPDATE SET usage_count = user_usage.usage_count + 1, updated_at = CURRENT_TIMESTAMP`,
-      [userId, toolId]
+      [uid, toolId]
     );
   } catch (err) { console.error('[Quota] Increment failed:', err); }
 }

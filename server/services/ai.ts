@@ -15,9 +15,9 @@ import fs from 'fs/promises';
 import path from 'path';
 import { existsSync, mkdirSync } from 'fs';
 import { pool } from '../db/index.js';
-import { decrypt } from '../utils/crypto.js';
+import { decrypt, encrypt } from '../utils/crypto.js';
 import { memoryCache } from '../utils/cache.js';
-import { invalidateApiKeysVaultCache } from '../db/queries.js';
+import { invalidateApiKeysVaultCache, invalidateOrchestratorConfigCache } from '../db/queries.js';
 
 const CUSTOM_PROVIDER_TIMEOUT_MS = 60000;
 
@@ -262,11 +262,41 @@ export async function syncProviderModelsInternal(providerId: string, apiKey: str
 
     if (count > 0) {
       await pool.query(
-        'UPDATE api_keys_vault SET models = $1, model_list = $1, is_active = true, updated_at = CURRENT_TIMESTAMP WHERE provider = $2',
-        [JSON.stringify(models), providerId]
+        `INSERT INTO api_keys_vault (provider, encrypted_key, is_active, models, model_list, updated_at)
+         VALUES ($1, $2, true, $3, $3, CURRENT_TIMESTAMP)
+         ON CONFLICT (provider) DO UPDATE
+         SET encrypted_key = CASE WHEN api_keys_vault.encrypted_key IS NULL OR api_keys_vault.encrypted_key = '' THEN EXCLUDED.encrypted_key ELSE api_keys_vault.encrypted_key END,
+             models = EXCLUDED.models,
+             model_list = EXCLUDED.model_list,
+             is_active = true,
+             updated_at = CURRENT_TIMESTAMP`,
+        [providerId, encrypt(cleanApiKey), JSON.stringify(models)]
       );
       invalidateVaultCache(providerId);
       invalidateApiKeysVaultCache();
+
+      // Auto-assign any unconfigured tools in tool_orchestrator dynamically from synced models
+      try {
+        const textModel = models.find((m: any) => {
+          const methods = m.supportedMethods || m.supportedGenerationMethods || [];
+          return methods.length === 0 || methods.includes('generateContent');
+        }) || models[0];
+
+        if (textModel) {
+          const modelId = textModel.id || textModel.name || (typeof textModel === 'string' ? textModel : '');
+          if (modelId) {
+            await pool.query(`
+              UPDATE tool_orchestrator
+              SET primary_provider = $1, primary_model = $2, updated_at = CURRENT_TIMESTAMP
+              WHERE (primary_provider IS NULL OR primary_provider = '' OR primary_model IS NULL OR primary_model = '')
+                AND tool_id IN ('chat_fast', 'chat_pro', 'chat_reasoning', 'perplexta_analysis', 'ads_copilot', 'code', 'sovereign_search', 'x402_api')
+            `, [providerId, modelId]);
+            invalidateOrchestratorConfigCache();
+          }
+        }
+      } catch (err: any) {
+        console.warn('[AI Service] Auto-route assignment notice:', err?.message || err);
+      }
     }
     return { models, count };
   } catch (error) {
@@ -647,6 +677,12 @@ function transformMessagesForGemini(messages: any[]): any[] {
     } else {
       result.push({ role, parts });
     }
+  }
+
+  if (result.length === 0) {
+    result.push({ role: 'user', parts: [{ text: ' ' }] });
+  } else if (result[0].role === 'model') {
+    result.unshift({ role: 'user', parts: [{ text: ' ' }] });
   }
 
   return result;
