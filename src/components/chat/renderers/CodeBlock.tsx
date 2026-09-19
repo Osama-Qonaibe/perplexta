@@ -318,7 +318,7 @@ export const CodeBlock: React.FC<CodeBlockProps> = ({
     if (hasGrammar) {
       try {
         rawHtml = Prism.highlight(editableCode, Prism.languages[prismLang], prismLang);
-        return DOMPurify.sanitize(rawHtml, { USE_PROFILES: { html: true } });
+        return DOMPurify.sanitize(rawHtml, { ALLOWED_TAGS: ['span'], ALLOWED_ATTR: ['class', 'style'] });
       } catch (e) {}
     }
     rawHtml = editableCode
@@ -327,7 +327,7 @@ export const CodeBlock: React.FC<CodeBlockProps> = ({
       .replace(/>/g, '&gt;')
       .replace(/"/g, '&quot;')
       .replace(/'/g, '&#039;');
-    return DOMPurify.sanitize(rawHtml, { USE_PROFILES: { html: true } });
+    return DOMPurify.sanitize(rawHtml, { ALLOWED_TAGS: ['span'], ALLOWED_ATTR: ['class', 'style'] });
   }, [editableCode, lang]);
 
   const copyToClipboard = () => {
@@ -399,7 +399,7 @@ export const CodeBlock: React.FC<CodeBlockProps> = ({
                   margin: 1rem; 
                   padding: 0;
                   color: ${isDark ? '#e2e8f0' : '#1e293b'}; 
-                  background-color: ${isDark ? '#0f0f11' : '#ffffff'}; 
+                  background-color: ${isDark ? '#0d1117' : '#ffffff'}; 
                 }
               </style>
             </head>
@@ -421,7 +421,7 @@ export const CodeBlock: React.FC<CodeBlockProps> = ({
                   margin: 1rem; 
                   padding: 0;
                   color: ${isDark ? '#e2e8f0' : '#1e293b'}; 
-                  background-color: ${isDark ? '#0f0f11' : '#ffffff'}; 
+                  background-color: ${isDark ? '#0d1117' : '#ffffff'}; 
                 }
                 ${editableCode}
               </style>

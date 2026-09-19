@@ -311,8 +311,8 @@ export const CORE_SCHEMA_TABLES: { name: string; query: string }[] = [
     name: 'system_settings',
     query: `CREATE TABLE IF NOT EXISTS system_settings (
         id SERIAL PRIMARY KEY,
-        site_name_en VARCHAR(255) DEFAULT 'Premium AI',
-        site_name_ar VARCHAR(255) DEFAULT 'منصة النخبة',
+        site_name_en VARCHAR(255) DEFAULT 'Perplexta',
+        site_name_ar VARCHAR(255) DEFAULT 'بيربليكستا',
         logo_url TEXT,
         logo_light_url TEXT,
         favicon_url TEXT,
@@ -1663,14 +1663,15 @@ export async function seedCoreDatabase(targetPool: QueryClient, targetLedgerPool
   }
 
   // Admin User Seed
-  const adminEmails = Array.from(new Set([
-    process.env.ADMIN_EMAIL,
-    process.env.VITE_ADMIN_EMAIL,
-    'admin@perplexta.com',
-    'admin@example.com'
-  ].filter(Boolean))) as string[];
+  const adminEmail = process.env.ADMIN_EMAIL || process.env.VITE_ADMIN_EMAIL;
+  const adminPassword = process.env.ADMIN_PASSWORD;
 
-  const defaultPassword = process.env.ADMIN_PASSWORD || 'Admin@123456';
+  if (!adminEmail || !adminPassword) {
+    throw new Error('FATAL CONFIGURATION ERROR: ADMIN_EMAIL and ADMIN_PASSWORD environment variables are required and must be configured in your env/environment file.');
+  }
+
+  const adminEmails = [adminEmail];
+  const defaultPassword = adminPassword;
   let sharedHash: string | null = null;
 
   for (const email of adminEmails) {

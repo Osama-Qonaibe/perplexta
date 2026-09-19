@@ -99,7 +99,7 @@ export function ArtifactCode({ artifact }: ArtifactCodeProps) {
         .replace(/</g, '&lt;')
         .replace(/>/g, '&gt;');
     }
-    return DOMPurify.sanitize(rawHtml, { USE_PROFILES: { html: true } });
+    return DOMPurify.sanitize(rawHtml, { ALLOWED_TAGS: ['span'], ALLOWED_ATTR: ['class', 'style'] });
   }, [codeValue, prismLanguage]);
 
   const lines = useMemo(() => codeValue.split('\n'), [codeValue]);

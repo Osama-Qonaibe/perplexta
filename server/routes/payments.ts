@@ -277,6 +277,19 @@ router.post("/webhook", async (req: any, res) => {
     return true;
   }
 
+  const target = ledgerTarget();
+  if (target && event && event.id) {
+    try {
+      const eventCheck = await target.query('SELECT 1 FROM stripe_events WHERE stripe_event_id = $1', [event.id]);
+      if (eventCheck.rows.length > 0) {
+        console.log(`[Stripe Webhook] Duplicate event ignored (event.id already processed): ${event.id}`);
+        return res.json({ received: true, duplicate: true });
+      }
+    } catch (dbErr) {
+      console.error('[Stripe Webhook] Replay check DB error:', dbErr);
+    }
+  }
+
   try {
     console.log(`[Stripe Webhook] Event: ${event.type}`);
 
@@ -491,6 +504,17 @@ router.post("/webhook", async (req: any, res) => {
 
       default:
         console.log(`[Stripe Webhook] Unhandled event: ${event.type}`);
+    }
+
+    if (target && event && event.id) {
+      try {
+        await target.query(
+          'INSERT INTO stripe_events (stripe_event_id, type, status, metadata) VALUES ($1,$2,$3,$4) ON CONFLICT DO NOTHING',
+          [event.id, event.type, 'processed', JSON.stringify({ type: event.type, created: event.created })]
+        );
+      } catch (insertErr) {
+        console.error('[Stripe Webhook] Failed to log processed event.id:', insertErr);
+      }
     }
 
     res.json({ received: true });

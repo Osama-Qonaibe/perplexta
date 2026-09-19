@@ -2502,7 +2502,7 @@ export async function runVersionedMigrations(
       `, [canonicalDarkTokens]);
 
       const fontConfigJson = JSON.stringify({
-        ar: { fontFamily: 'Cairo', enabled: true, url: 'https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700&display=swap' },
+        ar: { fontFamily: 'Tajawal', enabled: true, url: 'https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;900&display=swap' },
         en: { fontFamily: 'Geist', enabled: true, url: 'https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&display=swap' },
         dynamicLoading: true
       });
@@ -2514,11 +2514,11 @@ export async function runVersionedMigrations(
           font_config_ar = $2::jsonb,
           font_config_en = $3::jsonb,
           site_name_en = CASE WHEN site_name_en = 'Perplexa' THEN 'Perplexta' ELSE site_name_en END,
-          site_name_ar = CASE WHEN site_name_ar = 'بيربليكسا' THEN 'بيربلكستا' ELSE site_name_ar END
+          site_name_ar = CASE WHEN site_name_ar = 'بيربليكسا' THEN 'بيربليكستا' ELSE site_name_ar END
         WHERE id = (SELECT id FROM system_settings ORDER BY id ASC LIMIT 1)
       `, [
         fontConfigJson,
-        JSON.stringify({ fontFamily: 'Cairo', enabled: true, url: 'https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700&display=swap' }),
+        JSON.stringify({ fontFamily: 'Tajawal', enabled: true, url: 'https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;900&display=swap' }),
         JSON.stringify({ fontFamily: 'Geist', enabled: true, url: 'https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&display=swap' })
       ]).catch(() => {});
     });
@@ -2532,9 +2532,9 @@ export async function runVersionedMigrations(
         UPDATE system_settings
         SET 
           site_name_en = CASE WHEN site_name_en = 'Perplexa' OR site_name_en IS NULL OR site_name_en = '' THEN 'Perplexta' ELSE site_name_en END,
-          site_name_ar = CASE WHEN site_name_ar = 'بيربليكسا' OR site_name_ar IS NULL OR site_name_ar = '' THEN 'بيربلكستا' ELSE site_name_ar END,
+          site_name_ar = CASE WHEN site_name_ar = 'بيربليكسا' OR site_name_ar IS NULL OR site_name_ar = '' THEN 'بيربليكستا' ELSE site_name_ar END,
           seo_site_name_en = CASE WHEN seo_site_name_en = 'Perplexa' OR seo_site_name_en IS NULL OR seo_site_name_en = '' THEN 'Perplexta' ELSE seo_site_name_en END,
-          seo_site_name_ar = CASE WHEN seo_site_name_ar = 'بيربليكسا' OR seo_site_name_ar IS NULL OR seo_site_name_ar = '' THEN 'بيربلكستا' ELSE seo_site_name_ar END
+          seo_site_name_ar = CASE WHEN seo_site_name_ar = 'بيربليكسا' OR seo_site_name_ar IS NULL OR seo_site_name_ar = '' THEN 'بيربليكستا' ELSE seo_site_name_ar END
         WHERE id = (SELECT id FROM system_settings ORDER BY id ASC LIMIT 1)
       `).catch(() => {});
     });

@@ -216,6 +216,30 @@ export function validatePwa(): { isValid: boolean; results: CheckResult; manifes
     );
   }
 
+  // 8. Brand Alignment validation (Capacitor, index.html, Manifest)
+  const capacitorPath = path.join(rootDir, 'capacitor.config.ts');
+  const indexHtmlPath = path.join(rootDir, 'index.html');
+
+  if (fs.existsSync(capacitorPath) && fs.existsSync(indexHtmlPath)) {
+    const capacitorContent = fs.readFileSync(capacitorPath, 'utf-8');
+    const indexHtmlContent = fs.readFileSync(indexHtmlPath, 'utf-8');
+
+    const capAppNameMatch = capacitorContent.match(/appName:\s*['"]([^'"]+)['"]/);
+    const indexHtmlTitleMatch = indexHtmlContent.match(/<title>([^<]+)<\/title>/);
+
+    if (capAppNameMatch && indexHtmlTitleMatch) {
+      const capAppName = capAppNameMatch[1];
+      const htmlTitle = indexHtmlTitleMatch[1];
+
+      check(
+        capAppName === htmlTitle,
+        `[Brand Alignment] App name matches perfectly: Capacitor ("${capAppName}") aligns with index.html title ("${htmlTitle}")`,
+        `[Brand Alignment] App name mismatch: Capacitor has "${capAppName}" but HTML title has "${htmlTitle}"`,
+        true
+      );
+    }
+  }
+
   const isValid = results.errors.length === 0;
   return { isValid, results, manifest };
 }

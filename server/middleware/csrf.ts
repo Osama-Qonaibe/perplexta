@@ -5,9 +5,30 @@ export function csrfProtection(req: Request, res: Response, next: NextFunction) 
     return next();
   }
 
+  // If the request contains an explicit Authorization header, CSRF is mathematically impossible because
+  // browser cross-origin requests cannot inject custom HTTP headers without CORS preflight and access to the token.
+  if (req.headers.authorization) {
+    return next();
+  }
+
   const origin = (req.headers.origin as string) || (req.headers.referer as string);
 
-  if (process.env.NODE_ENV === 'production' && origin) {
+  // If no origin/referer, block untrusted state-changing request
+  if (!origin) {
+    return res.status(403).json({ error: 'CSRF protection: State-changing requests must include an Origin, Referer, or Authorization header.' });
+  }
+
+  // Allow trusted native mobile and desktop wrapper schemes (Capacitor, Ionic, Cordova, Electron, Chrome extensions)
+  const isNativeScheme = origin.startsWith('capacitor://') || 
+                         origin.startsWith('ionic://') || 
+                         origin.startsWith('app://') || 
+                         origin.startsWith('chrome-extension://');
+
+  if (isNativeScheme) {
+    return next();
+  }
+
+  if (process.env.NODE_ENV === 'production') {
     try {
       const allowed: string[] = [];
       if (process.env.APP_URL) {
@@ -37,10 +58,6 @@ export function csrfProtection(req: Request, res: Response, next: NextFunction) 
     } catch {
       return res.status(403).json({ error: 'CSRF protection: Invalid request origin format.' });
     }
-  }
-
-  if (!origin && !req.headers.authorization) {
-    return res.status(403).json({ error: 'CSRF protection: State-changing requests must include an Origin, Referer, or Authorization header.' });
   }
 
   next();

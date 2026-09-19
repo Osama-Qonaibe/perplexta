@@ -286,7 +286,7 @@ export async function getCachedSystemSettings(): Promise<any> {
 
   const defaultSettings: any = {
     site_name_en: 'Perplexta',
-    site_name_ar: 'بيربلكستا',
+    site_name_ar: 'بيربليكستا',
     site_description_en: 'Next-Generation AI Intelligence Platform',
     site_description_ar: 'منصة الذكاء الاصطناعي الفائقة',
     seo_description_en: 'Advanced AI Tools and Neural Models',
@@ -315,11 +315,11 @@ export async function getCachedSystemSettings(): Promise<any> {
     seo_site_name_en: 'Perplexta',
     seo_site_name_ar: 'بيربليكستا',
     font_loading_config: JSON.stringify({
-      ar: { fontFamily: 'Cairo', enabled: true, url: 'https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700&display=swap' },
+      ar: { fontFamily: 'Tajawal', enabled: true, url: 'https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;900&display=swap' },
       en: { fontFamily: 'Geist', enabled: true, url: 'https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&display=swap' },
       dynamicLoading: true
     }),
-    font_config_ar: JSON.stringify({ fontFamily: 'Cairo', enabled: true, url: 'https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700&display=swap' }),
+    font_config_ar: JSON.stringify({ fontFamily: 'Tajawal', enabled: true, url: 'https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;900&display=swap' }),
     font_config_en: JSON.stringify({ fontFamily: 'Geist', enabled: true, url: 'https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&display=swap' })
   };
 
@@ -339,7 +339,7 @@ export async function getCachedSystemSettings(): Promise<any> {
     if (!settings) {
       await pool.query(`
         INSERT INTO system_settings (site_name_en, site_name_ar, logo_url, logo_light_url, favicon_url)
-        VALUES ('Perplexta', 'بيربلكستا', null, null, null)
+        VALUES ('Perplexta', 'بيربليكستا', null, null, null)
       `).catch(() => {});
       settings = defaultSettings;
     }

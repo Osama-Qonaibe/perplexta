@@ -358,7 +358,9 @@ const x402Middleware = paymentMiddlewareFromConfig(
 
 const rawTrustProxy = process.env.TRUST_PROXIES?.trim() || '1';
 try {
-  if (rawTrustProxy === 'true' || rawTrustProxy === '1') {
+  if (rawTrustProxy.toLowerCase() === 'true') {
+    app.set('trust proxy', true);
+  } else if (rawTrustProxy === '1') {
     app.set('trust proxy', 1);
   } else if (!isNaN(Number(rawTrustProxy))) {
     app.set('trust proxy', Number(rawTrustProxy));
@@ -554,9 +556,13 @@ app.get(['/manifest.webmanifest', '/manifest.json'], async (req, res) => {
     const activeNameAr = settings?.site_name_ar || 'بيربليكستا';
     const description = settings?.site_description_en || 'Professional Elite AI Analytics & Strategic Intelligence Platform';
 
+    // Localize the manifest name and short_name based on language request headers or query params
+    const isArabic = !!(req.headers['accept-language']?.toLowerCase().includes('ar') || req.query.lang === 'ar');
+    const localizedName = isArabic ? activeNameAr : activeNameEn;
+
     const manifestObj = {
-      name: `${activeNameAr} - ${activeNameEn}`,
-      short_name: activeNameEn,
+      name: localizedName,
+      short_name: localizedName,
       description,
       id: '/',
       start_url: '/',
@@ -755,22 +761,23 @@ const mediaMimeTypes: Record<string, string> = {
 
 async function checkIsPublicFile(filename: string): Promise<boolean> {
   if (!filename || filename.includes('..') || filename.includes('\0')) return false;
-  const cleanName = path.basename(filename.split('?')[0].replace(/^(\/)?(uploads\/)+/i, ''));
-  if (!cleanName || cleanName.includes('..') || cleanName.includes('/') || cleanName.includes('\\')) return false;
-  const cacheKey = `public_ref:${cleanName}`;
-  const now = Date.now();
   
-  const ext = path.extname(cleanName).toLowerCase();
-  const isMediaExt = Boolean(mediaMimeTypes[ext]);
-  const diskPath = path.resolve(uploadsPath, cleanName);
-  if (!diskPath.startsWith(uploadsPath + path.sep)) return false;
-  const fileExistsOnDisk = fs.existsSync(diskPath);
+  const cleanPath = filename.split('?')[0].replace(/^(\/)?(uploads\/)+/i, '').replace(/^\/+/, '');
+  const cleanName = path.basename(cleanPath);
+  if (!cleanName || cleanName.includes('..') || cleanName.includes('/') || cleanName.includes('\\')) return false;
 
-  // If file physically exists on disk or is a media extension, it is always public/accessible
-  if (fileExistsOnDisk || isMediaExt) {
-    filePermissionCache.set(cacheKey, { authorized: true, expiresAt: now + FILE_CACHE_TTL_MS });
+  // System brand assets and default images are always public
+  if (
+    cleanPath.startsWith('brand/') || 
+    cleanPath.startsWith('brand\\') || 
+    cleanPath === 'brand' || 
+    cleanPath === 'default_video_poster.jpg'
+  ) {
     return true;
   }
+
+  const cacheKey = `public_ref:${cleanName}`;
+  const now = Date.now();
 
   if (filePermissionCache.has(cacheKey)) {
     const cached = filePermissionCache.get(cacheKey)!;
@@ -791,9 +798,7 @@ async function checkIsPublicFile(filename: string): Promise<boolean> {
       const meta = row.metadata || {};
       if (
         meta.is_public === true ||
-        meta.isPublic === true ||
-        ['image', 'video', 'audio'].includes(row.file_type) ||
-        (row.mime_type && (row.mime_type.startsWith('image/') || row.mime_type.startsWith('video/') || row.mime_type.startsWith('audio/')))
+        meta.isPublic === true
       ) {
         isPublic = true;
       }
@@ -813,7 +818,6 @@ async function checkIsPublicFile(filename: string): Promise<boolean> {
 
       if (combinedCheck.rows[0]?.is_public) {
         isPublic = true;
-      } else {
       }
     }
 
@@ -825,20 +829,9 @@ async function checkIsPublicFile(filename: string): Promise<boolean> {
     return false;
   } catch (dbErr) {
     console.error('[Upload Secure Handler] checkIsPublicFile error:', dbErr);
-    return isMediaExt || fileExistsOnDisk;
+    return false;
   }
 }
-
-// Mount uploads as static first for fast direct hits
-app.use('/uploads', express.static(uploadsPath, {
-  maxAge: '30d',
-  etag: true,
-  fallthrough: true,
-  setHeaders: (res, path) => {
-    res.setHeader('Accept-Ranges', 'bytes');
-    res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');
-  }
-}));
 
 // Safe universal middleware handler for /uploads (avoids any path-to-regexp regex parsing errors across Express 4/5)
 app.use('/uploads', async (req: express.Request, res: express.Response, next: express.NextFunction) => {
@@ -1119,10 +1112,6 @@ app.use('/uploads', async (req: express.Request, res: express.Response, next: ex
       });
       return readStream.pipe(res);
     };
-
-    if (mediaMimeTypes[actualExt] || isMedia) {
-      return await serveFile(resolvedPath);
-    }
 
     const isPublic = await checkIsPublicFile(filename);
     if (isPublic) {

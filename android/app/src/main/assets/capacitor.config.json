@@ -1,6 +1,6 @@
 {
 	"appId": "com.perplexta.app",
-	"appName": "perplexta",
+	"appName": "Perplexta",
 	"webDir": "dist",
 	"plugins": {
 		"PushNotifications": {

@@ -7,15 +7,26 @@
 
 export function validateRequiredSecrets(): void {
   const defaultDevSecret = 'perplexta_default_development_secret_key_32chars_min!';
+  const isProduction = process.env.NODE_ENV === 'production';
 
   if (!process.env.ENCRYPTION_KEY || process.env.ENCRYPTION_KEY.length < 32) {
-    console.warn('[SECURITY WARNING] ENCRYPTION_KEY is missing or <32 chars. Applying secure 32-character development fallback.');
-    process.env.ENCRYPTION_KEY = defaultDevSecret;
+    if (isProduction) {
+      console.error('[FATAL SECURITY ERROR] ENCRYPTION_KEY is missing or less than 32 characters in production mode. Terminating server.');
+      process.exit(1);
+    } else {
+      console.warn('[SECURITY WARNING] ENCRYPTION_KEY is missing or <32 chars. Applying secure 32-character development fallback.');
+      process.env.ENCRYPTION_KEY = defaultDevSecret;
+    }
   }
 
   if (!process.env.JWT_SECRET || process.env.JWT_SECRET.length < 32) {
-    console.warn('[SECURITY WARNING] JWT_SECRET is missing or <32 chars. Applying secure 32-character development fallback.');
-    process.env.JWT_SECRET = defaultDevSecret;
+    if (isProduction) {
+      console.error('[FATAL SECURITY ERROR] JWT_SECRET is missing or less than 32 characters in production mode. Terminating server.');
+      process.exit(1);
+    } else {
+      console.warn('[SECURITY WARNING] JWT_SECRET is missing or <32 chars. Applying secure 32-character development fallback.');
+      process.env.JWT_SECRET = defaultDevSecret;
+    }
   }
 
   if (!process.env.APP_URL) {

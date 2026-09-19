@@ -23,7 +23,7 @@ const router = express.Router();
 
 export const pendingOAuthSessions = new Map<string, { data: any; expiresAt: number }>();
 
-const jwtSecret = process.env.JWT_SECRET || 'perplexta_default_development_secret_key_32chars_min!';
+const jwtSecret = process.env.JWT_SECRET as string;
 
 const logAvatarProcess = (context: string, googleUser: any, url: any, isValid: boolean, error?: any) => {
   if (error) {
