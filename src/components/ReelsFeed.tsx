@@ -2274,7 +2274,7 @@ export const ReelsFeed: React.FC<ReelsFeedProps> = ({
                       <button
                         onClick={(e) => handleFollowToggle(e, reel.id, reel.author_name)}
                         className={`absolute -bottom-1 start-1/2 -translate-x-1/2 w-4 h-4 rounded-shape-xs flex items-center justify-center text-white border border-black/80 transition-all cursor-pointer shadow-xs active:scale-90 ${
-                          isFollowing ? 'bg-emerald-500' : 'bg-red-500 hover:bg-red-600'
+                          isFollowing ? 'bg-[var(--status-success)]' : 'bg-[var(--status-danger)] hover:opacity-90'
                         }`}
                         title={isFollowing ? (isRtl ? 'تتابع بالفعل' : 'Following') : (isRtl ? 'متابعة' : 'Follow')}
                       >
@@ -2516,7 +2516,7 @@ export const ReelsFeed: React.FC<ReelsFeedProps> = ({
                     <button
                       onClick={(e) => handleFollowToggle(e, reel.id, reel.author_name)}
                       className={`absolute -bottom-1 start-1/2 -translate-x-1/2 w-5 h-5 rounded-full flex items-center justify-center text-white border-2 border-black/80 transition-theme cursor-pointer shadow-md active:scale-90 ${
-                        isFollowing ? 'bg-emerald-500' : 'bg-red-500 hover:bg-red-600'
+                        isFollowing ? 'bg-[var(--status-success)]' : 'bg-[var(--status-danger)] hover:opacity-90'
                       }`}
                       title={isFollowing ? (isRtl ? 'تتابع بالفعل' : 'Following') : (isRtl ? 'متابعة' : 'Follow')}
                     >

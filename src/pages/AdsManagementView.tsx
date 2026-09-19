@@ -2426,7 +2426,7 @@ export const AdsManagementView: React.FC<{
                 {selectedBulletinIds.length > 0 && (
                   <button
                     onClick={() => handleBulkDeleteBulletinAds()}
-                    className="px-3 py-1 rounded-[var(--radius-xs)] bg-red-500 text-white font-bold text-[10px] hover:bg-red-600 transition-theme flex items-center gap-1 shadow cursor-pointer"
+                    className="px-3 py-1 rounded-[var(--radius-xs)] bg-[var(--status-danger)] text-white font-bold text-[10px] hover:opacity-90 transition-theme flex items-center gap-1 shadow cursor-pointer"
                   >
                     <Trash2 size={12} />
                     <span>{isRtl ? 'حذف المحدد' : 'Delete Selected'}</span>
@@ -2689,7 +2689,7 @@ export const AdsManagementView: React.FC<{
                   </button>
                   <button
                     onClick={() => handleRejectBulletinAd(rejectingAdId)}
-                    className="px-4 py-1.5 rounded-[var(--radius-xs)] text-xs font-bold bg-red-500 text-white hover:bg-red-600 shadow-sm cursor-pointer"
+                    className="px-4 py-1.5 rounded-[var(--radius-xs)] text-xs font-bold bg-[var(--status-danger)] text-white hover:opacity-90 shadow-sm cursor-pointer"
                   >
                     {isRtl ? 'تأكيد الرفض' : 'Confirm Rejection'}
                   </button>
@@ -2725,13 +2725,13 @@ export const AdsManagementView: React.FC<{
           {/* Ads List Table / Cards */}
           <div className="bg-[var(--surface-subtle)] border border-[var(--border-default)] rounded-[var(--radius-md)] overflow-hidden shadow-sm">
             {selectedAdIds.length > 0 && (
-              <div className="p-3 bg-red-500/10 border-b border-red-500/20 flex items-center justify-between text-xs">
-                <span className="font-bold text-red-500">
+              <div className="p-3 bg-[var(--status-danger-subtle)] border-b border-[var(--status-danger)]/20 flex items-center justify-between text-xs">
+                <span className="font-bold text-[var(--status-danger)]">
                   {isRtl ? `تم تحديد ${selectedAdIds.length} إعلان` : `${selectedAdIds.length} ads selected`}
                 </span>
                 <button
                   onClick={() => setIsBulkDeleteModalOpen(true)}
-                  className="px-3 py-1 rounded-[var(--radius-xs)] bg-red-600 text-white font-bold hover:bg-red-700 transition-colors flex items-center gap-1.5 cursor-pointer"
+                  className="px-3 py-1 rounded-[var(--radius-xs)] bg-[var(--status-danger)] text-white font-bold hover:opacity-90 transition-colors flex items-center gap-1.5 cursor-pointer"
                 >
                   <Trash2 size={14} />
                   <span>{isRtl ? 'حذف الإعلانات المحددة جماعياً' : 'Delete Selected Ads'}</span>
@@ -3330,7 +3330,7 @@ export const AdsManagementView: React.FC<{
               <button
                 onClick={handleBulkDeleteAds}
                 disabled={isSubmitting}
-                className="px-4 py-2 rounded-[var(--radius-sm)] text-xs font-bold bg-red-600 hover:bg-red-700 text-white transition-colors flex items-center gap-1.5 cursor-pointer"
+                className="px-4 py-2 rounded-[var(--radius-sm)] text-xs font-bold bg-[var(--status-danger)] hover:opacity-90 text-white transition-colors flex items-center gap-1.5 cursor-pointer"
               >
                 <Trash2 size={14} />
                 <span>{isSubmitting ? (isRtl ? 'جاري الحذف...' : 'Deleting...') : (isRtl ? 'تأكيد الحذف النهائي' : 'Confirm Delete')}</span>

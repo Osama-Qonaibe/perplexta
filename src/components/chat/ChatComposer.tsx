@@ -397,7 +397,7 @@ export const ChatComposer: React.FC<ChatComposerProps> = ({
                     const input = document.getElementById('unified-upload') as HTMLInputElement;
                     if (input) input.value = '';
                   }}
-                  className="absolute -top-1.5 -right-1.5 w-4 h-4 bg-red-500 text-white rounded-full flex items-center justify-center shadow-lg hover:bg-red-600 transition-theme z-10"
+                  className="absolute -top-1.5 -right-1.5 w-4 h-4 bg-[var(--status-danger)] text-white rounded-full flex items-center justify-center shadow-lg hover:opacity-90 transition-theme z-10"
                 >
                   <Plus size={10} className="rotate-45" />
                 </button>

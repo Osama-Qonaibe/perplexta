@@ -206,7 +206,7 @@ export const MediaManagerModal: React.FC<MediaManagerModalProps> = ({
                                 type="button"
                                 onClick={() => handleRemoveItem(idx)}
                                 aria-label={isRtl ? 'حذف هذه الوسيطة' : 'Remove this media'}
-                                className="w-6 h-6 sm:w-7 sm:h-7 rounded-shape-full bg-red-600/85 hover:bg-red-600 text-white flex items-center justify-center transition-all cursor-pointer shadow-xs"
+                                className="w-6 h-6 sm:w-7 sm:h-7 rounded-shape-full bg-[var(--status-danger)] hover:opacity-90 text-white flex items-center justify-center transition-all cursor-pointer shadow-xs"
                                 title={isRtl ? 'حذف هذا العنصر' : 'Delete item'}
                               >
                                 <Trash2 size={12} className="sm:size-[14px]" />
