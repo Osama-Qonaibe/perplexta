@@ -624,7 +624,7 @@ export const ThemeStudioView: React.FC<ThemeStudioViewProps> = ({
                     <button
                       type="button"
                       disabled={buttonState === 'disabled'}
-                      className={`font-bold text-xs flex items-center justify-center gap-2 transition-all select-none duration-150 shrink-0 ${
+                      className={`font-bold text-xs flex items-center justify-center gap-2 transition-all select-none duration-fast shrink-0 ${
                         buttonState === 'hover'
                           ? 'opacity-90 scale-98'
                           : buttonState === 'active'
@@ -652,7 +652,7 @@ export const ThemeStudioView: React.FC<ThemeStudioViewProps> = ({
                     <button
                       type="button"
                       disabled={buttonState === 'disabled'}
-                      className={`font-bold text-xs flex items-center justify-center gap-2 transition-all select-none border duration-150 shrink-0 ${
+                      className={`font-bold text-xs flex items-center justify-center gap-2 transition-all select-none border duration-fast shrink-0 ${
                         buttonState === 'hover'
                           ? 'opacity-95 scale-98'
                           : buttonState === 'active'
@@ -689,7 +689,7 @@ export const ThemeStudioView: React.FC<ThemeStudioViewProps> = ({
                     <button
                       type="button"
                       disabled={buttonState === 'disabled'}
-                      className={`font-bold text-xs flex items-center justify-center gap-2 transition-all select-none duration-150 shrink-0 ${
+                      className={`font-bold text-xs flex items-center justify-center gap-2 transition-all select-none duration-fast shrink-0 ${
                         buttonState === 'hover'
                           ? 'opacity-95 scale-98'
                           : buttonState === 'active'
@@ -731,7 +731,7 @@ export const ThemeStudioView: React.FC<ThemeStudioViewProps> = ({
                     <button
                       type="button"
                       disabled={buttonState === 'disabled'}
-                      className={`flex items-center justify-center transition-all select-none border duration-150 shrink-0 ${
+                      className={`flex items-center justify-center transition-all select-none border duration-fast shrink-0 ${
                         buttonState === 'hover' ? 'scale-105' : buttonState === 'active' ? 'scale-95' : ''
                       }`}
                       style={{

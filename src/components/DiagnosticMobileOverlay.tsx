@@ -133,7 +133,7 @@ export const DiagnosticMobileOverlay: React.FC = () => {
           <button
             type="button"
             onClick={() => setIsOpen(true)}
-            className="flex items-center gap-1 px-2.5 py-1.5 rounded-full bg-slate-900/90 dark:bg-zinc-900/90 text-[var(--fg-success)] border border-[var(--fg-success)]/40 shadow-xl backdrop-blur-md text-[11px] font-mono font-bold hover:scale-105 transition-all cursor-pointer"
+            className="flex items-center gap-1 px-2.5 py-1.5 rounded-full bg-slate-900/90 dark:bg-zinc-900/90 text-[var(--fg-success)] border border-[var(--fg-success)]/40 shadow-xl backdrop-blur-md text-[11px] font-mono font-bold hover:bg-slate-850 transition-all cursor-pointer"
             title="Open Mobile 74px Safe Area Diagnostic Overlay"
           >
             <Ruler size={13} className="text-[var(--fg-success)] animate-pulse" />
@@ -148,7 +148,7 @@ export const DiagnosticMobileOverlay: React.FC = () => {
             {/* 1. BOTTOM 74PX SAFE AREA ZONE OVERLAY */}
             {showSafeBand && (
               <div 
-                className="fixed bottom-0 left-0 right-0 z-[99997] pointer-events-none transition-all duration-200 border-t-2 border-dashed border-pink-500 bg-pink-500/15 backdrop-blur-[2px] flex flex-col items-center justify-center"
+                className="fixed bottom-0 left-0 right-0 z-[99997] pointer-events-none transition-all duration-base border-t-2 border-dashed border-pink-500 bg-pink-500/15 backdrop-blur-[2px] flex flex-col items-center justify-center"
                 style={{
                   height: `calc(20px + env(safe-area-inset-bottom, 0px))`,
                   minHeight: '36px',
@@ -182,7 +182,7 @@ export const DiagnosticMobileOverlay: React.FC = () => {
               return (
                 <div
                   key={`diag-outline-${m.type}-${idx}`}
-                  className={`fixed pointer-events-none z-[99996] border-2 border-dashed ${colorClass} transition-all duration-300 flex items-start justify-between p-1`}
+                  className={`fixed pointer-events-none z-[99996] border-2 border-dashed ${colorClass} transition-all duration-media flex items-start justify-between p-1`}
                   style={{
                     top: `${m.rect.top}px`,
                     left: `${m.rect.left}px`,
@@ -213,11 +213,11 @@ export const DiagnosticMobileOverlay: React.FC = () => {
                   <ShieldCheck size={14} className="text-[var(--fg-success)]" />
                   <span>74px Safe Area Diagnostic</span>
                 </div>
-                <div className="flex items-center gap-1">
+                <div className="flex items-center gap-1.5">
                   <button
                     type="button"
                     onClick={() => setIsMinimized(!isMinimized)}
-                    className="p-1 rounded hover:bg-slate-800 text-slate-400 hover:text-white cursor-pointer"
+                    className="w-8 h-8 flex items-center justify-center rounded hover:bg-slate-800 text-slate-400 hover:text-white cursor-pointer relative before:absolute before:-inset-1.5 before:content-[''] active:scale-95 transition-transform"
                     title={isMinimized ? 'Expand Panel' : 'Minimize Panel'}
                   >
                     {isMinimized ? <ChevronDown size={14} /> : <ChevronUp size={14} />}
@@ -225,7 +225,7 @@ export const DiagnosticMobileOverlay: React.FC = () => {
                   <button
                     type="button"
                     onClick={() => setIsOpen(false)}
-                    className="p-1 rounded hover:bg-red-950/60 text-slate-400 hover:text-red-400 cursor-pointer"
+                    className="w-8 h-8 flex items-center justify-center rounded hover:bg-red-950/60 text-slate-400 hover:text-red-400 cursor-pointer relative before:absolute before:-inset-1.5 before:content-[''] active:scale-95 transition-transform"
                     title="Close Diagnostic Overlay"
                   >
                     <EyeOff size={14} />
@@ -296,7 +296,7 @@ export const DiagnosticMobileOverlay: React.FC = () => {
                     <button
                       type="button"
                       onClick={() => setShowSafeBand(!showSafeBand)}
-                      className={`px-2 py-1 rounded border transition-all cursor-pointer ${
+                      className={`h-9 px-3 rounded border transition-all cursor-pointer relative before:absolute before:-inset-1 before:content-[''] active:scale-95 flex items-center justify-center ${
                         showSafeBand
                           ? 'bg-pink-950/50 border-pink-500/50 text-pink-300 font-bold'
                           : 'bg-slate-900 border-slate-800 text-slate-500'
@@ -308,7 +308,7 @@ export const DiagnosticMobileOverlay: React.FC = () => {
                     <button
                       type="button"
                       onClick={() => setShowElementOutlines(!showElementOutlines)}
-                      className={`px-2 py-1 rounded border transition-all cursor-pointer ${
+                      className={`h-9 px-3 rounded border transition-all cursor-pointer relative before:absolute before:-inset-1 before:content-[''] active:scale-95 flex items-center justify-center ${
                         showElementOutlines
                           ? 'bg-[var(--bg-accent-muted)] border-[var(--border-accent)] text-[var(--fg-accent)] font-bold'
                           : 'bg-slate-900 border-slate-800 text-slate-500'

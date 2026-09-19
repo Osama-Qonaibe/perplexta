@@ -641,9 +641,9 @@ export const CodeBlock: React.FC<CodeBlockProps> = ({
                   title={copied ? (dir === 'rtl' ? 'تم النسخ' : 'Copied!') : (dir === 'rtl' ? 'نسخ الكود' : 'Copy code')}
                 >
                   {copied ? (
-                    <Check size={14} className="text-emerald-500 transition-transform duration-150" />
+                    <Check size={14} className="text-emerald-500 transition-transform duration-fast" />
                   ) : (
-                    <Copy size={14} className="transition-transform duration-150" />
+                    <Copy size={14} className="transition-transform duration-fast" />
                   )}
                   {copied && (
                     <span className="absolute -top-7 left-1/2 -translate-x-1/2 bg-emerald-600 text-white text-[10px] px-1.5 py-0.5 rounded-shape-xs shadow-md whitespace-nowrap font-sans pointer-events-none z-30">

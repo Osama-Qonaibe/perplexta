@@ -70,7 +70,7 @@ export const AdminTopBar: React.FC<AdminTopBarProps> = () => {
           <NavLink
             to="/admin/dashboard"
             onClick={() => triggerHaptic('light')}
-            className="w-8 h-8 rounded-shape-sm overflow-hidden flex items-center justify-center shrink-0 border border-[var(--border-default)] bg-[var(--surface-card)] hover:border-[var(--border-accent)]/60 hover:bg-[var(--surface-subtle)] shadow-2xs transition-all duration-150 active:scale-95 cursor-pointer"
+            className="w-8 h-8 rounded-shape-sm overflow-hidden flex items-center justify-center shrink-0 border border-[var(--border-default)] bg-[var(--surface-card)] hover:border-[var(--border-accent)]/60 hover:bg-[var(--surface-subtle)] shadow-2xs transition-all duration-fast active:scale-95 cursor-pointer"
             title={language === 'ar' ? 'لوحة التحكم والقيادة' : 'Admin Dashboard'}
           >
             <Logo size={22} fallbackType="cpu" />
@@ -136,10 +136,10 @@ export const AdminTopBar: React.FC<AdminTopBarProps> = () => {
         <NavLink
           to="/chat"
           onClick={() => triggerHaptic('light')}
-          className="h-8 px-2.5 rounded-shape-sm border border-[var(--border-default)] bg-[var(--surface-card)] hover:bg-[var(--surface-subtle)] hover:border-[var(--border-accent)]/60 text-[var(--text-secondary)] hover:text-[var(--text-primary)] flex items-center gap-1.5 text-xs font-bold transition-all duration-150 active:scale-95 cursor-pointer shrink-0 shadow-2xs relative before:absolute before:-inset-1.5 before:content-[''] group"
+          className="h-8 px-2.5 rounded-shape-sm border border-[var(--border-default)] bg-[var(--surface-card)] hover:bg-[var(--surface-subtle)] hover:border-[var(--border-accent)]/60 text-[var(--text-secondary)] hover:text-[var(--text-primary)] flex items-center gap-1.5 text-xs font-bold transition-all duration-fast active:scale-95 cursor-pointer shrink-0 shadow-2xs relative before:absolute before:-inset-1.5 before:content-[''] group"
           title={language === 'ar' ? 'الخروج والعودة للتطبيق' : 'Exit Admin to App'}
         >
-          <ArrowRight size={13} className={`text-[var(--text-muted)] group-hover:text-[var(--text-primary)] transition-colors duration-150 ${dir === 'rtl' ? 'rotate-180' : ''}`} />
+          <ArrowRight size={13} className={`text-[var(--text-muted)] group-hover:text-[var(--text-primary)] transition-colors duration-fast ${dir === 'rtl' ? 'rotate-180' : ''}`} />
           <span className="hidden md:inline font-bold text-xs">{language === 'ar' ? 'العودة للمنصة' : 'Exit'}</span>
         </NavLink>
 
@@ -147,18 +147,18 @@ export const AdminTopBar: React.FC<AdminTopBarProps> = () => {
         <button
           type="button"
           onClick={toggleLanguage}
-          className="w-8 h-8 min-w-[32px] min-h-[32px] max-w-[32px] max-h-[32px] rounded-shape-sm border border-[var(--border-default)] bg-[var(--surface-card)] hover:bg-[var(--surface-subtle)] hover:border-[var(--border-accent)]/60 text-[var(--text-secondary)] hover:text-[var(--text-primary)] flex items-center justify-center cursor-pointer transition-all duration-150 active:scale-95 shadow-2xs relative before:absolute before:-inset-1.5 before:content-[''] shrink-0 group"
+          className="w-8 h-8 min-w-[32px] min-h-[32px] max-w-[32px] max-h-[32px] rounded-shape-sm border border-[var(--border-default)] bg-[var(--surface-card)] hover:bg-[var(--surface-subtle)] hover:border-[var(--border-accent)]/60 text-[var(--text-secondary)] hover:text-[var(--text-primary)] flex items-center justify-center cursor-pointer transition-all duration-fast active:scale-95 shadow-2xs relative before:absolute before:-inset-1.5 before:content-[''] shrink-0 group"
           title={language === 'ar' ? 'التبديل إلى الإنجليزية' : 'Switch to Arabic'}
           aria-label={language === 'ar' ? 'التبديل إلى الإنجليزية' : 'Switch to Arabic'}
         >
-          <Languages size={14} className="text-[var(--text-muted)] group-hover:text-[var(--text-primary)] transition-colors duration-150" />
+          <Languages size={14} className="text-[var(--text-muted)] group-hover:text-[var(--text-primary)] transition-colors duration-fast" />
         </button>
 
         {/* Theme Toggle */}
         <ThemeToggleButton 
           variant="icon-button" 
           size="sm" 
-          className="!w-8 !h-8 !min-w-[32px] !min-h-[32px] !max-w-[32px] !max-h-[32px] !rounded-shape-sm !border-[var(--border-default)] hover:!border-[var(--border-accent)]/60 !bg-[var(--surface-card)] hover:!bg-[var(--surface-subtle)] !text-[var(--text-secondary)] hover:!text-[var(--text-primary)] transition-all duration-150 shadow-2xs shrink-0 cursor-pointer" 
+          className="!w-8 !h-8 !min-w-[32px] !min-h-[32px] !max-w-[32px] !max-h-[32px] !rounded-shape-sm !border-[var(--border-default)] hover:!border-[var(--border-accent)]/60 !bg-[var(--surface-card)] hover:!bg-[var(--surface-subtle)] !text-[var(--text-secondary)] hover:!text-[var(--text-primary)] transition-all duration-fast shadow-2xs shrink-0 cursor-pointer" 
         />
       </div>
     </header>

@@ -89,7 +89,7 @@ export class ErrorBoundary extends Component<Props, State> {
           </p>
           <button
             onClick={this.handleReset}
-            className="flex items-center gap-2 px-6 py-2 bg-accent text-white font-bold rounded-[var(--radius-md)] hover:bg-accent transition-theme shadow-[0_0_15px_rgba(156,163,175,0.3)] hover:scale-105"
+            className="flex items-center gap-2 px-6 py-2 bg-accent hover:brightness-110 text-white font-bold rounded-[var(--radius-md)] active:scale-95 transition-all shadow-md cursor-pointer"
           >
             <RefreshCw size={16} />
             <span>ACTIVATE RECOVERY</span>

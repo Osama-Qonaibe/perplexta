@@ -127,12 +127,12 @@ export const UserMessageBubble: React.FC<UserMessageBubbleProps> = ({
           isArtifactOpen ? 'max-w-full' : 'max-w-[92%] sm:max-w-[85%] md:max-w-[78%]'
         } ${dir === 'rtl' ? 'flex-row' : 'flex-row-reverse'}`}>
           {/* Action Toolbar (Conforming strictly to Perplexta M3 Button Tokens & 44px Touch Targets) */}
-          <div className="flex items-center gap-1 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity duration-150 shrink-0 select-none">
+          <div className="flex items-center gap-1 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity duration-fast shrink-0 select-none">
             {/* Pin Message Button */}
             <button
               type="button"
               onClick={() => handlePinMessage(msg.id!, !msg.is_pinned)}
-              className={`w-8 h-8 rounded-shape-sm flex items-center justify-center border transition-colors duration-150 cursor-pointer relative before:absolute before:-inset-1.5 before:content-[''] active:scale-95 shrink-0 box-border ${
+              className={`w-8 h-8 rounded-shape-sm flex items-center justify-center border transition-colors duration-fast cursor-pointer relative before:absolute before:-inset-1.5 before:content-[''] active:scale-95 shrink-0 box-border ${
                 msg.is_pinned 
                   ? 'bg-[var(--surface-card)] border-[var(--border-default)] text-[var(--fg-accent)] shadow-2xs' 
                   : 'border-transparent hover:border-[var(--border-accent)]/60 bg-transparent hover:bg-[var(--surface-subtle)] text-[var(--text-muted)] hover:text-[var(--text-primary)]'
@@ -146,7 +146,7 @@ export const UserMessageBubble: React.FC<UserMessageBubbleProps> = ({
             <button
               type="button"
               onClick={() => handleCopyPrompt(msg.content, idx)}
-              className={`w-8 h-8 rounded-shape-sm flex items-center justify-center border transition-colors duration-150 cursor-pointer relative before:absolute before:-inset-1.5 before:content-[''] active:scale-95 shrink-0 box-border ${
+              className={`w-8 h-8 rounded-shape-sm flex items-center justify-center border transition-colors duration-fast cursor-pointer relative before:absolute before:-inset-1.5 before:content-[''] active:scale-95 shrink-0 box-border ${
                 copiedPromptIndex === idx
                   ? 'border-emerald-500/40 text-emerald-500 bg-emerald-500/10 shadow-2xs'
                   : 'border-transparent hover:border-[var(--border-accent)]/60 bg-transparent hover:bg-[var(--surface-subtle)] text-[var(--text-muted)] hover:text-[var(--text-primary)]'
@@ -167,7 +167,7 @@ export const UserMessageBubble: React.FC<UserMessageBubbleProps> = ({
                 setEditingMessageIndex(idx);
                 setEditValue(msg.content);
               }}
-              className="w-8 h-8 rounded-shape-sm flex items-center justify-center border border-transparent hover:border-[var(--border-accent)]/60 bg-transparent hover:bg-[var(--surface-subtle)] text-[var(--text-muted)] hover:text-[var(--text-primary)] transition-colors duration-150 cursor-pointer relative before:absolute before:-inset-1.5 before:content-[''] active:scale-95 shrink-0 box-border"
+              className="w-8 h-8 rounded-shape-sm flex items-center justify-center border border-transparent hover:border-[var(--border-accent)]/60 bg-transparent hover:bg-[var(--surface-subtle)] text-[var(--text-muted)] hover:text-[var(--text-primary)] transition-colors duration-fast cursor-pointer relative before:absolute before:-inset-1.5 before:content-[''] active:scale-95 shrink-0 box-border"
               title={dir === 'rtl' ? 'تعديل' : 'Edit'}
             >
               <Pencil size={14} />
@@ -176,9 +176,7 @@ export const UserMessageBubble: React.FC<UserMessageBubbleProps> = ({
 
           {/* Clean Compact User Message Bubble */}
           <div 
-            className={`px-3.5 py-2 sm:px-4 sm:py-2.5 rounded-[var(--radius-md)] rounded-tr-[2px] border border-[var(--border-default)] bg-[var(--surface-subtle)] text-[var(--text-primary)] shadow-2xs transition-all duration-150 min-w-0 ${
-              dir === 'rtl' ? 'text-right' : 'text-left'
-            }`}
+            className="px-3.5 py-2 sm:px-4 sm:py-2.5 rounded-[var(--radius-md)] rounded-te-[2px] border border-[var(--border-default)] bg-[var(--surface-subtle)] text-[var(--text-primary)] shadow-2xs transition-all duration-fast min-w-0 text-start"
           >
             <p
               className="text-[13.5px] sm:text-[14.5px] font-medium leading-relaxed tracking-normal font-sans break-words whitespace-pre-wrap"

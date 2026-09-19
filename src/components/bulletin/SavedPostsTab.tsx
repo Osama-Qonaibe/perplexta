@@ -91,7 +91,7 @@ export const SavedPostsTab: React.FC<SavedPostsTabProps> = ({
         </div>
         <button
           onClick={() => setActiveTab('board')}
-          className="h-8 px-3 rounded-shape-sm bg-[var(--surface-subtle)] border border-[var(--border-default)] hover:border-accent/40 hover:bg-accent/10 text-xs font-bold text-[var(--text-primary)] hover:text-accent transition-all duration-150 active:scale-95 flex items-center gap-1.5 cursor-pointer shadow-2xs"
+          className="h-8 px-3 rounded-shape-sm bg-[var(--surface-subtle)] border border-[var(--border-default)] hover:border-accent/40 hover:bg-accent/10 text-xs font-bold text-[var(--text-primary)] hover:text-accent transition-all duration-fast active:scale-95 flex items-center gap-1.5 cursor-pointer shadow-2xs"
         >
           <span>{isRtl ? 'استعراض المزيد' : 'Browse More'}</span>
           {isRtl ? <ArrowLeft size={13} /> : <ArrowRight size={13} />}
@@ -116,7 +116,7 @@ export const SavedPostsTab: React.FC<SavedPostsTabProps> = ({
           </div>
           <button
             onClick={() => setActiveTab('board')}
-            className="mt-1 h-8 px-3.5 rounded-shape-sm bg-accent text-[var(--text-primary)] hover:opacity-90 font-bold text-xs transition-all duration-150 active:scale-95 flex items-center gap-1.5 cursor-pointer shadow-2xs"
+            className="mt-1 h-8 px-3.5 rounded-shape-sm bg-accent text-[var(--text-primary)] hover:opacity-90 font-bold text-xs transition-all duration-fast active:scale-95 flex items-center gap-1.5 cursor-pointer shadow-2xs"
           >
             <Compass size={13} />
             <span>{isRtl ? 'استعراض الإعلانات' : 'Explore Ads'}</span>

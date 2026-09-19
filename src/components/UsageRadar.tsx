@@ -193,7 +193,7 @@ export const UsageRadar: React.FC = () => {
 
           return (
             <div 
-              className="rounded-[var(--radius-md)] border border-[var(--border-default)] bg-[var(--surface-card)] transition-all duration-150 overflow-hidden shadow-xs"
+              className="rounded-[var(--radius-md)] border border-[var(--border-default)] bg-[var(--surface-card)] transition-all duration-fast overflow-hidden shadow-xs"
               key={item.id}
             >
               <div className="p-3.5 sm:p-5">
@@ -209,7 +209,7 @@ export const UsageRadar: React.FC = () => {
                   <button 
                     type="button"
                     onClick={() => setExpanded(isExpanded ? null : item.id)}
-                    className="p-1.5 rounded-[var(--radius-xs)] transition-all duration-150 hover:bg-[var(--bg-accent-muted)] text-[var(--text-muted)] hover:text-[var(--fg-accent)] shrink-0 cursor-pointer"
+                    className="p-1.5 rounded-[var(--radius-xs)] transition-all duration-fast hover:bg-[var(--bg-accent-muted)] text-[var(--text-muted)] hover:text-[var(--fg-accent)] shrink-0 cursor-pointer"
                   >
                     {isExpanded ? <ChevronUp size={15} /> : <ChevronDown size={15} />}
                   </button>
@@ -230,7 +230,7 @@ export const UsageRadar: React.FC = () => {
                         style={{ 
                           width: isDailyUnlimited ? '0%' : `${Math.max(2, dailyPercent)}%`
                         }}
-                        className={`h-full rounded-[var(--radius-full)] transition-all duration-300 ${dailyPercent > 90 ? 'bg-rose-500' : 'bg-[var(--accent)]'}`}
+                        className={`h-full rounded-[var(--radius-full)] transition-all duration-base ${dailyPercent > 90 ? 'bg-rose-500' : 'bg-[var(--accent)]'}`}
                       />
                     </div>
                   </div>
@@ -258,7 +258,7 @@ export const UsageRadar: React.FC = () => {
                                 style={{ 
                                   width: isMonthlyUnlimited ? '100%' : `${Math.max(2, monthlyPercent)}%`
                                 }}
-                                className={`h-full rounded-[var(--radius-full)] transition-all duration-300 ${monthlyPercent > 90 ? 'bg-rose-500' : 'bg-[var(--accent)] opacity-80'}`}
+                                className={`h-full rounded-[var(--radius-full)] transition-all duration-base ${monthlyPercent > 90 ? 'bg-rose-500' : 'bg-[var(--accent)] opacity-80'}`}
                               />
                             </div>
                           </div>

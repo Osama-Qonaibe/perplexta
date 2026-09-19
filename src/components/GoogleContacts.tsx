@@ -458,7 +458,7 @@ export const GoogleContacts: React.FC<GoogleContactsProps> = ({ dir, theme }) =>
           <button
             onClick={handleConnect}
             disabled={isConnecting}
-            className="gsi-material-button scale-105 active:scale-95 transition-transform duration-200 cursor-pointer shadow-lg"
+            className="gsi-material-button scale-105 active:scale-95 transition-transform duration-base cursor-pointer shadow-lg"
           >
             <div className="gsi-material-button-state"></div>
             <div className="gsi-material-button-content-wrapper">

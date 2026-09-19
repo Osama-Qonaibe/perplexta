@@ -125,7 +125,7 @@ export const StudioPage: React.FC = () => {
             >
               <div className="space-y-3">
                 <div className="flex items-center justify-between">
-                  <div className="w-10 h-10 rounded-shape-sm bg-[color-mix(in_oklab,var(--accent)_10%,transparent)] border border-[color-mix(in_oklab,var(--accent)_20%,transparent)] text-[var(--accent)] flex items-center justify-center group-hover:scale-105 transition-transform">
+                  <div className="w-10 h-10 rounded-shape-sm bg-[color-mix(in_oklab,var(--accent)_10%,transparent)] border border-[color-mix(in_oklab,var(--accent)_20%,transparent)] text-[var(--accent)] flex items-center justify-center group-hover:bg-[color-mix(in_oklab,var(--accent)_15%,transparent)] transition-all duration-fast">
                     {feat.icon}
                   </div>
                   <span className="px-2.5 py-0.5 text-[10px] font-bold rounded-full bg-[var(--surface-subtle)] text-[var(--text-muted)] border border-[var(--border-default)]">

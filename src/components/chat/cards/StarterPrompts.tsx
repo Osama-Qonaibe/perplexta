@@ -93,10 +93,10 @@ export const StarterPrompts: React.FC<StarterPromptsProps> = ({ dir, onSelectPro
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.2, delay: index * 0.04 }}
               onClick={() => onSelectPrompt(isAr ? item.promptAr : item.promptEn, item.tool)}
-              className="group relative flex flex-col justify-between text-start p-3.5 min-h-[110px] rounded-shape-md bg-[var(--surface-card)] border border-[var(--border-default)] hover:border-[var(--fg-accent)]/50 hover:bg-[var(--surface-subtle)] transition-all duration-200 cursor-pointer shadow-xs"
+              className="group relative flex flex-col justify-between text-start p-3.5 min-h-[110px] rounded-shape-md bg-[var(--surface-card)] border border-[var(--border-default)] hover:border-[var(--border-accent)] hover:bg-[var(--surface-subtle)] transition-all duration-base cursor-pointer shadow-xs"
             >
               <div className="flex items-center justify-between w-full mb-2.5">
-                <div className="w-7 h-7 rounded-shape-xs flex items-center justify-center bg-[var(--surface-subtle)] text-[var(--fg-accent)] group-hover:scale-105 transition-transform duration-200">
+                <div className="w-7 h-7 rounded-shape-xs flex items-center justify-center bg-[var(--surface-subtle)] text-[var(--fg-accent)] group-hover:bg-[var(--surface-card)] transition-all duration-base">
                   <Icon size={14} className="stroke-[2.2]" />
                 </div>
                 
@@ -106,7 +106,7 @@ export const StarterPrompts: React.FC<StarterPromptsProps> = ({ dir, onSelectPro
                   </span>
                   <ArrowUpRight 
                     size={13} 
-                    className="text-[var(--text-muted)] group-hover:text-[var(--fg-accent)] group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-all duration-200 shrink-0" 
+                    className="text-[var(--text-muted)] group-hover:text-[var(--fg-accent)] group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-all duration-base shrink-0" 
                   />
                 </div>
               </div>

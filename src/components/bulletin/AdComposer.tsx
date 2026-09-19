@@ -39,7 +39,7 @@ export const AdComposer: React.FC<AdComposerProps> = ({
             }
             setIsAdModalOpen(true);
           }}
-          className="flex-1 min-w-0 text-start px-2.5 sm:px-3.5 h-8.5 sm:h-10 rounded-shape-sm bg-[var(--surface-subtle)] hover:bg-[var(--surface-card)] text-[11px] sm:text-xs text-[var(--text-muted)] font-medium transition-all duration-150 border border-[var(--border-default)] hover:border-accent/40 cursor-pointer truncate flex items-center shadow-2xs"
+          className="flex-1 min-w-0 text-start px-2.5 sm:px-3.5 h-8.5 sm:h-10 rounded-shape-sm bg-[var(--surface-subtle)] hover:bg-[var(--surface-card)] text-[11px] sm:text-xs text-[var(--text-muted)] font-medium transition-all duration-fast border border-[var(--border-default)] hover:border-accent/40 cursor-pointer truncate flex items-center shadow-2xs"
         >
           {isRtl ? 'بم تفكر اليوم؟' : "What's on your mind?"}
         </button>
@@ -55,7 +55,7 @@ export const AdComposer: React.FC<AdComposerProps> = ({
             }
             setIsStreamSetupOpen(true);
           }}
-          className="flex-1 h-7 sm:h-8 flex items-center justify-center gap-1 sm:gap-1.5 px-1 sm:px-2 rounded-shape-sm hover:bg-rose-500/10 font-bold transition-all duration-150 text-rose-500 whitespace-nowrap cursor-pointer shadow-2xs active:scale-95"
+          className="flex-1 h-7 sm:h-8 flex items-center justify-center gap-1 sm:gap-1.5 px-1 sm:px-2 rounded-shape-sm hover:bg-rose-500/10 font-bold transition-all duration-fast text-rose-500 whitespace-nowrap cursor-pointer shadow-2xs active:scale-95"
         >
           <Radio size={12} className="sm:size-[14px] text-rose-500 shrink-0" />
           <span className="truncate">{isRtl ? 'بث مباشر' : 'Live'}</span>
@@ -70,7 +70,7 @@ export const AdComposer: React.FC<AdComposerProps> = ({
             }
             openPostUploadModal();
           }}
-          className="flex-1 h-7 sm:h-8 flex items-center justify-center gap-1 sm:gap-1.5 px-1 sm:px-2 rounded-shape-sm hover:bg-accent/10 font-bold transition-all duration-150 text-accent whitespace-nowrap cursor-pointer shadow-2xs active:scale-95"
+          className="flex-1 h-7 sm:h-8 flex items-center justify-center gap-1 sm:gap-1.5 px-1 sm:px-2 rounded-shape-sm hover:bg-accent/10 font-bold transition-all duration-fast text-accent whitespace-nowrap cursor-pointer shadow-2xs active:scale-95"
         >
           <Video size={12} className="sm:size-[14px] text-accent shrink-0" />
           <span className="truncate">{isRtl ? 'فيديو/صورة' : 'Media'}</span>
@@ -85,7 +85,7 @@ export const AdComposer: React.FC<AdComposerProps> = ({
             }
             openReelUploadModal();
           }}
-          className="flex-1 h-7 sm:h-8 flex items-center justify-center gap-1 sm:gap-1.5 px-1 sm:px-2 rounded-shape-sm hover:bg-purple-500/10 font-bold transition-all duration-150 text-purple-500 whitespace-nowrap cursor-pointer shadow-2xs active:scale-95"
+          className="flex-1 h-7 sm:h-8 flex items-center justify-center gap-1 sm:gap-1.5 px-1 sm:px-2 rounded-shape-sm hover:bg-purple-500/10 font-bold transition-all duration-fast text-purple-500 whitespace-nowrap cursor-pointer shadow-2xs active:scale-95"
         >
           <Clapperboard size={12} className="sm:size-[14px] text-purple-500 shrink-0" />
           <span className="truncate">{isRtl ? 'ريلز' : 'Reels'}</span>

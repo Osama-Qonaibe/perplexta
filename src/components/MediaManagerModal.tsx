@@ -137,7 +137,7 @@ export const MediaManagerModal: React.FC<MediaManagerModalProps> = ({
                     return (
                       <div
                         key={item.id || `media-${idx}`}
-                        className="group relative flex flex-col rounded-shape-md overflow-hidden border border-[var(--border-default)] bg-[var(--surface-card)] shadow-xs hover:border-[var(--border-accent)] transition-all duration-200"
+                        className="group relative flex flex-col rounded-shape-md overflow-hidden border border-[var(--border-default)] bg-[var(--surface-card)] shadow-xs hover:border-[var(--border-accent)] transition-all duration-base"
                       >
                         {/* Media Preview Box */}
                         <div className="relative w-full aspect-video xs:aspect-square bg-[var(--surface-inset)] overflow-hidden flex items-center justify-center max-h-[140px] xs:max-h-none">
@@ -260,7 +260,7 @@ export const MediaManagerModal: React.FC<MediaManagerModalProps> = ({
               <button
                 type="button"
                 onClick={() => fileInputRef.current?.click()}
-                className="px-2.5 sm:px-4 py-1.5 sm:py-2 rounded-shape-sm font-bold text-[11px] sm:text-xs transition-all duration-200 border border-[var(--border-default)] flex items-center justify-center gap-1.5 cursor-pointer bg-[var(--surface-subtle)] hover:bg-[var(--surface-inset)] text-[var(--text-primary)] hover:border-[var(--border-accent)]/50 active:scale-95 select-none"
+                className="px-2.5 sm:px-4 py-1.5 sm:py-2 rounded-shape-sm font-bold text-[11px] sm:text-xs transition-all duration-base border border-[var(--border-default)] flex items-center justify-center gap-1.5 cursor-pointer bg-[var(--surface-subtle)] hover:bg-[var(--surface-inset)] text-[var(--text-primary)] hover:border-[var(--border-accent)]/50 active:scale-95 select-none"
               >
                 <Plus size={14} className="sm:size-[16px] text-accent" />
                 <span>{isRtl ? 'إضافة وسائط' : 'Add media'}</span>
@@ -270,7 +270,7 @@ export const MediaManagerModal: React.FC<MediaManagerModalProps> = ({
               <button
                 type="button"
                 onClick={onClose}
-                className="px-3 sm:px-4 py-1.5 sm:py-2 rounded-shape-sm font-black text-[11px] sm:text-xs transition-all duration-200 flex items-center justify-center gap-1.5 cursor-pointer bg-accent hover:bg-accent/90 text-slate-950 active:scale-95 select-none shadow-xs"
+                className="px-3 sm:px-4 py-1.5 sm:py-2 rounded-shape-sm font-black text-[11px] sm:text-xs transition-all duration-base flex items-center justify-center gap-1.5 cursor-pointer bg-accent hover:bg-accent/90 text-slate-950 active:scale-95 select-none shadow-xs"
               >
                 <Check size={14} className="sm:size-[16px]" />
                 <span>{isRtl ? 'حفظ وإغلاق' : 'Save & Close'}</span>

@@ -1708,7 +1708,7 @@ export const AdsManagementView: React.FC<{
                     <div className="flex items-center gap-3">
                       <button
                         onClick={handleBulkReject}
-                        className="px-4 py-2 rounded-[var(--radius-sm)] bg-red-500/10 text-red-500 border border-red-500/20 text-[10px] font-black hover:bg-red-500 hover:text-white transition-theme cursor-pointer"
+                        className="px-4 py-2 rounded-[var(--radius-sm)] bg-[var(--status-danger-subtle)] text-[var(--status-danger)] border border-[var(--status-danger)]/20 text-[10px] font-black hover:bg-[var(--status-danger)] hover:text-white transition-theme cursor-pointer"
                       >
                         {isRtl ? 'رفض المحدد' : 'Reject Selected'}
                       </button>
@@ -1849,7 +1849,7 @@ export const AdsManagementView: React.FC<{
                                     });
                                     if (reason && typeof reason === 'string') handleRejectApproval(req.id, reason);
                                   }}
-                                  className="p-1.5 rounded-[var(--radius-sm)] bg-red-500/10 text-red-500 hover:bg-red-500 hover:text-white transition-theme"
+                                  className="p-1.5 rounded-[var(--radius-sm)] bg-[var(--status-danger-subtle)] text-[var(--status-danger)] hover:bg-[var(--status-danger)] hover:text-white transition-theme"
                                 >
                                   <X size={14} />
                                 </button>
@@ -2277,13 +2277,13 @@ export const AdsManagementView: React.FC<{
                           });
                           setIsGiftModalOpen(true);
                         }}
-                        className="flex-1 py-1 rounded-[var(--radius-xs)] bg-blue-500/10 text-blue-500 text-[10px] font-bold hover:bg-blue-500 hover:text-white transition-theme cursor-pointer"
+                        className="flex-1 py-1 rounded-[var(--radius-xs)] bg-[var(--bg-accent-muted)] text-[var(--fg-accent)] text-[10px] font-bold hover:bg-[var(--border-accent)] hover:text-[var(--fg-on-accent)] transition-theme cursor-pointer"
                       >
                         {isRtl ? 'تعديل' : 'Edit'}
                       </button>
                       <button
                         onClick={() => handleDeleteGift(gift.id)}
-                        className="p-1 rounded-[var(--radius-xs)] text-[var(--text-muted)] hover:text-red-500 hover:bg-red-500/10 transition-colors cursor-pointer"
+                        className="p-1 rounded-[var(--radius-xs)] text-[var(--text-muted)] hover:text-[var(--status-danger)] hover:bg-[var(--status-danger-subtle)] transition-colors cursor-pointer"
                       >
                         <Trash2 size={14} />
                       </button>
@@ -2435,7 +2435,7 @@ export const AdsManagementView: React.FC<{
               </div>
               <button
                 onClick={handleDeleteAllExpiredOrRejected}
-                className="px-3 py-1 rounded-[var(--radius-xs)] border border-red-500/30 text-red-500 hover:bg-red-500/10 font-bold text-[10px] transition-theme flex items-center gap-1 cursor-pointer"
+                className="px-3 py-1 rounded-[var(--radius-xs)] border border-[var(--status-danger)]/30 text-[var(--status-danger)] hover:bg-[var(--status-danger-subtle)] font-bold text-[10px] transition-theme flex items-center gap-1 cursor-pointer"
               >
                 <Trash2 size={12} />
                 <span>{isRtl ? 'حذف جميع المنتهية والمرفوضة' : 'Delete All Expired & Rejected'}</span>
@@ -2558,7 +2558,7 @@ export const AdsManagementView: React.FC<{
                                   setRejectingAdId(ad.id);
                                   setRejectionReason('');
                                 }}
-                                className="px-2.5 py-1 rounded-[var(--radius-xs)] bg-red-500/10 text-red-500 font-bold text-[10px] hover:bg-red-500 hover:text-white transition-theme flex items-center gap-1 cursor-pointer"
+                                className="px-2.5 py-1 rounded-[var(--radius-xs)] bg-[var(--status-danger-subtle)] text-[var(--status-danger)] font-bold text-[10px] hover:bg-[var(--status-danger)] hover:text-white transition-theme flex items-center gap-1 cursor-pointer"
                               >
                                 <XCircle size={12} />
                                 <span>{isRtl ? 'رفض' : 'Reject'}</span>
@@ -2582,7 +2582,7 @@ export const AdsManagementView: React.FC<{
 
                           <button
                             onClick={() => handleDeleteBulletinAd(ad.id)}
-                            className="p-1 rounded-[var(--radius-xs)] text-[var(--text-muted)] hover:text-red-500 hover:bg-red-500/10 transition-colors cursor-pointer"
+                            className="p-1 rounded-[var(--radius-xs)] text-[var(--text-muted)] hover:text-[var(--status-danger)] hover:bg-[var(--status-danger-subtle)] transition-colors cursor-pointer"
                             title={isRtl ? 'حذف نهائي' : 'Delete'}
                           >
                             <Trash2 size={14} />

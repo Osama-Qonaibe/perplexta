@@ -111,16 +111,16 @@ export const themeConfig = {
     content: 'flex-1 flex flex-col justify-center items-center w-full text-[var(--text-primary)]',
     footer: 'w-full pt-2.5 sm:pt-4 pb-[calc(8px+env(safe-area-inset-bottom,0px))] sm:pb-3 border-t border-[var(--border-subtle)] select-none flex flex-col sm:flex-row items-center justify-between gap-2 sm:gap-3 text-[9.5px] sm:text-[11px] text-[var(--text-secondary)] px-4 sm:px-8 bg-transparent max-w-7xl mx-auto',
     footerNav: 'flex items-center gap-2 sm:gap-4 font-medium text-[10px] sm:text-xs',
-    footerLink: 'cursor-pointer hover:underline bg-transparent border-0 p-0 text-[var(--text-secondary)] hover:text-[var(--text-primary)] font-inherit transition-colors duration-150',
+    footerLink: 'cursor-pointer hover:underline bg-transparent border-0 p-0 text-[var(--text-secondary)] hover:text-[var(--text-primary)] font-inherit transition-colors duration-fast',
     footerCopyright: 'font-sans tracking-wide leading-relaxed text-[var(--text-muted)] text-[9px] sm:text-[11px]',
   },
 
   // Theme Toggle Button Styles (Modern Developer IDE Style - Single Source of Truth)
   themeToggle: {
-    buttonSm: 'flex items-center justify-center w-8 h-8 rounded-[var(--radius-sm)] bg-transparent border border-[var(--border-default)] hover:border-[var(--border-accent)]/60 hover:bg-[var(--surface-subtle)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-all duration-150 group shrink-0 cursor-pointer relative active:scale-95 before:absolute before:-inset-1.5 before:content-[\'\']',
-    buttonMd: 'flex items-center justify-center w-9 h-9 rounded-[var(--radius-sm)] bg-transparent border border-[var(--border-default)] hover:border-[var(--border-accent)]/60 hover:bg-[var(--surface-subtle)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-all duration-150 group shrink-0 cursor-pointer relative active:scale-95 before:absolute before:-inset-1.5 before:content-[\'\']',
-    buttonLg: 'flex items-center justify-center w-10 h-10 rounded-[var(--radius-sm)] bg-transparent border border-[var(--border-default)] hover:border-[var(--border-accent)]/60 hover:bg-[var(--surface-subtle)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-all duration-150 group shrink-0 cursor-pointer relative active:scale-95 before:absolute before:-inset-1.5 before:content-[\'\']',
-    icon: 'text-[var(--text-muted)] group-hover:text-[var(--text-primary)] transition-colors duration-150',
+    buttonSm: 'flex items-center justify-center w-8 h-8 rounded-[var(--radius-sm)] bg-transparent border border-[var(--border-default)] hover:border-[var(--border-accent)]/60 hover:bg-[var(--surface-subtle)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-all duration-fast group shrink-0 cursor-pointer relative active:scale-95 before:absolute before:-inset-1.5 before:content-[\'\']',
+    buttonMd: 'flex items-center justify-center w-9 h-9 rounded-[var(--radius-sm)] bg-transparent border border-[var(--border-default)] hover:border-[var(--border-accent)]/60 hover:bg-[var(--surface-subtle)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-all duration-fast group shrink-0 cursor-pointer relative active:scale-95 before:absolute before:-inset-1.5 before:content-[\'\']',
+    buttonLg: 'flex items-center justify-center w-10 h-10 rounded-[var(--radius-sm)] bg-transparent border border-[var(--border-default)] hover:border-[var(--border-accent)]/60 hover:bg-[var(--surface-subtle)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-all duration-fast group shrink-0 cursor-pointer relative active:scale-95 before:absolute before:-inset-1.5 before:content-[\'\']',
+    icon: 'text-[var(--text-muted)] group-hover:text-[var(--text-primary)] transition-colors duration-fast',
     segmentedContainer: 'flex items-center gap-1 p-1 bg-[var(--surface-subtle)] rounded-[var(--radius-sm)] border border-[var(--border-default)] transition-theme',
     segmentedItem: 'flex items-center justify-center gap-1 px-3 py-1.5 rounded-[var(--radius-xs)] text-[11px] font-bold uppercase tracking-wider transition-theme cursor-pointer select-none',
     segmentedActive: 'bg-[var(--surface-card)] text-[var(--text-primary)] border border-[var(--border-default)] font-bold shadow-2xs',

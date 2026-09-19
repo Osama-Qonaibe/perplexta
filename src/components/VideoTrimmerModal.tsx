@@ -183,7 +183,7 @@ export const VideoTrimmerModal: React.FC<VideoTrimmerModalProps> = ({
               style={{
                 filter: VIDEO_FILTERS.find(f => f.id === selectedFilter)?.filter || 'none'
               }}
-              className={`w-full h-full object-contain ${getAspectRatioClass(aspectRatio, adFormat)} transition-colors duration-150`}
+              className={`w-full h-full object-contain ${getAspectRatioClass(aspectRatio, adFormat)} transition-colors duration-fast`}
               onClick={togglePlay}
             />
 
@@ -310,7 +310,7 @@ export const VideoTrimmerModal: React.FC<VideoTrimmerModalProps> = ({
                       if (fmt.id === 'reel' || fmt.id === 'story') setAspectRatio('9:16');
                       else setAspectRatio('1:1');
                     }}
-                    className={`py-1.5 px-2 rounded-[var(--radius-sm)] text-[11px] sm:text-xs font-bold transition-colors duration-150 border cursor-pointer ${
+                    className={`py-1.5 px-2 rounded-[var(--radius-sm)] text-[11px] sm:text-xs font-bold transition-colors duration-fast border cursor-pointer ${
                       adFormat === fmt.id
                         ? 'bg-[var(--bg-accent-emphasis)] text-[var(--fg-on-emphasis)] border-[var(--border-accent)] shadow-xs'
                         : 'bg-[var(--surface-subtle)] text-[var(--text-secondary)] border-[var(--border-default)] hover:bg-[var(--surface-card)]'
@@ -332,7 +332,7 @@ export const VideoTrimmerModal: React.FC<VideoTrimmerModalProps> = ({
                     key={ratio}
                     type="button"
                     onClick={() => setAspectRatio(ratio as any)}
-                    className={`h-8 sm:h-9 rounded-[var(--radius-sm)] text-[11px] sm:text-xs font-mono font-bold transition-colors duration-150 border cursor-pointer flex items-center justify-center ${
+                    className={`h-8 sm:h-9 rounded-[var(--radius-sm)] text-[11px] sm:text-xs font-mono font-bold transition-colors duration-fast border cursor-pointer flex items-center justify-center ${
                       aspectRatio === ratio
                         ? 'text-[var(--fg-accent)] font-extrabold border-[var(--border-accent)] bg-[var(--bg-accent-muted)]'
                         : 'border-[var(--border-default)] bg-[var(--surface-subtle)] text-[var(--text-muted)] hover:text-[var(--fg-accent)] hover:bg-[var(--surface-card)]'
@@ -359,7 +359,7 @@ export const VideoTrimmerModal: React.FC<VideoTrimmerModalProps> = ({
                   key={flt.id}
                   type="button"
                   onClick={() => setSelectedFilter(flt.id)}
-                  className={`py-1.5 px-1.5 rounded-[var(--radius-sm)] text-[10px] sm:text-xs font-medium transition-colors duration-150 border flex flex-col items-center gap-1 cursor-pointer ${
+                  className={`py-1.5 px-1.5 rounded-[var(--radius-sm)] text-[10px] sm:text-xs font-medium transition-colors duration-fast border flex flex-col items-center gap-1 cursor-pointer ${
                     selectedFilter === flt.id
                       ? 'bg-[var(--bg-accent-emphasis)] text-[var(--fg-on-emphasis)] border-[var(--border-accent)] shadow-xs ring-1 ring-[var(--focus-outline)]/30'
                       : 'bg-[var(--surface-subtle)] text-[var(--text-secondary)] border-[var(--border-default)] hover:bg-[var(--surface-card)]'

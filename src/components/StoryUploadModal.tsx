@@ -833,7 +833,7 @@ export const StoryUploadModal: React.FC<StoryUploadModalProps> = ({
                   <div
                     className={`relative w-40 h-64 xs:w-44 xs:h-72 sm:w-56 sm:h-96 rounded-2xl overflow-hidden shadow-xl border border-white/20 flex flex-col justify-between p-2.5 sm:p-3.5 bg-gradient-to-br ${
                       TEXT_STORY_GRADIENTS[textGradientIndex]?.bgClass || 'from-rose-500 to-orange-400'
-                    } text-white select-none transition-all duration-300`}
+                    } text-white select-none transition-all duration-media`}
                   >
                     {/* Header */}
                     <div className="flex items-center gap-1.5 sm:gap-2 z-10">
@@ -1079,7 +1079,7 @@ export const StoryUploadModal: React.FC<StoryUploadModalProps> = ({
                       <img
                         src={mediaPreviewUrl}
                         alt="Preview"
-                        className={`w-full h-full object-cover transition-all duration-300 ${
+                        className={`w-full h-full object-cover transition-all duration-media ${
                           EFFECTS.find(e => e.id === (imageStories[activeImageIndex]?.effect || 'none'))?.class || ''
                         }`}
                       />

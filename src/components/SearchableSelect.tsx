@@ -119,7 +119,7 @@ export const SearchableSelect: React.FC<SearchableSelectProps> = ({
         tabIndex={0}
         role="button"
         aria-expanded={isOpen}
-        className={`w-full ${heightClass} px-3 rounded-[var(--radius-sm)] border flex items-center justify-between cursor-pointer select-none transition-all duration-150 ${
+        className={`w-full ${heightClass} px-3 rounded-[var(--radius-sm)] border flex items-center justify-between cursor-pointer select-none transition-all duration-fast ${
           disabled ? 'opacity-50 cursor-not-allowed pointer-events-none' : ''
         } ${
           isOpen
@@ -154,7 +154,7 @@ export const SearchableSelect: React.FC<SearchableSelectProps> = ({
         </div>
         <ChevronDown 
           size={14} 
-          className={`opacity-60 transition-transform duration-200 shrink-0 ms-1.5 text-[var(--text-muted)] ${
+          className={`opacity-60 transition-transform duration-base shrink-0 ms-1.5 text-[var(--text-muted)] ${
             isOpen ? 'rotate-180 text-[var(--fg-accent)] opacity-100' : ''
           }`} 
         />
@@ -185,7 +185,7 @@ export const SearchableSelect: React.FC<SearchableSelectProps> = ({
           <div className={`divide-y divide-[var(--border-default)]/30 ${SCROLL_STYLES.dropdown} max-h-60 p-1 space-y-0.5`}>
             {placeholder && !validOptions.some(o => o.value === '') && (
               <div 
-                className={`group px-3 py-2 text-xs rounded-[var(--radius-xs)] cursor-pointer transition-colors duration-150 flex items-center justify-between ${
+                className={`group px-3 py-2 text-xs rounded-[var(--radius-xs)] cursor-pointer transition-colors duration-fast flex items-center justify-between ${
                   !value 
                     ? 'font-bold bg-[var(--bg-accent-muted)] text-[var(--fg-accent)]' 
                     : 'text-[var(--text-secondary)] hover:bg-[var(--surface-subtle)] hover:text-[var(--text-primary)]'
@@ -201,7 +201,7 @@ export const SearchableSelect: React.FC<SearchableSelectProps> = ({
               return (
                 <div
                   key={option.value}
-                  className={`group px-3 py-2 text-xs rounded-[var(--radius-xs)] font-semibold cursor-pointer transition-colors duration-150 flex items-center justify-between ${
+                  className={`group px-3 py-2 text-xs rounded-[var(--radius-xs)] font-semibold cursor-pointer transition-colors duration-fast flex items-center justify-between ${
                     isSelected 
                       ? 'bg-[var(--bg-accent-muted)] text-[var(--fg-accent)] font-bold' 
                       : 'text-[var(--text-primary)] hover:bg-[var(--surface-subtle)] hover:text-[var(--text-primary)]'

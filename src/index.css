@@ -228,9 +228,10 @@
   --shadow-md: var(--sys-elevation-2);
   --shadow-lg: var(--sys-elevation-3);
 
-  --motion-fast: 0.12s;
-  --motion-base: 0.15s;
-  --motion-slow: 0.18s;
+  --motion-fast: 150ms;
+  --motion-base: 200ms;
+  --motion-media: 300ms;
+  --motion-slow: 500ms;
   --motion-ease: cubic-bezier(0.16, 1, 0.3, 1);
 
   --safe-top: env(safe-area-inset-top);
@@ -589,6 +590,13 @@
   --color-github-purple: var(--github-purple);
   --color-github-orange: var(--github-orange);
   --color-github-pink: var(--github-pink);
+
+  --transition-duration-fast: var(--motion-fast);
+  --transition-duration-base: var(--motion-base);
+  --transition-duration-media: var(--motion-media);
+  --transition-duration-slow: var(--motion-slow);
+
+  --transition-timing-function-ease: var(--motion-ease);
 }
 
 @layer utilities {
@@ -2210,7 +2218,7 @@ html[data-theme="dark"] .perplexta-codeblock .token.variable {
 
 /* أصناف الحركة المعيارية لجميع القوائم */
 .menu-popover {
-  @apply transition-all duration-150 ease-out;
+  @apply transition-all duration-fast ease-out;
 }
 
 /* حالة الإغلاق (قبل الفتح) */

@@ -124,6 +124,33 @@ export const UniversalMediaPlayer: React.FC<UniversalMediaPlayerProps> = ({
   const clickTimeoutRef = useRef<number | null>(null);
   const loopCountRef = useRef<number>(0);
 
+  // Proximity-based lazy loading of video resource to free up decoder memory
+  const [isNearViewport, setIsNearViewport] = useState(autoPlay);
+
+  useEffect(() => {
+    const el = containerRef.current;
+    if (!el || typeof IntersectionObserver === 'undefined') return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            setIsNearViewport(true);
+          } else {
+            // Unload if scrolled far away to free up resources
+            setIsNearViewport(false);
+          }
+        });
+      },
+      { rootMargin: '450px 0px 450px 0px', threshold: 0.01 }
+    );
+
+    observer.observe(el);
+    return () => {
+      observer.disconnect();
+    };
+  }, []);
+
   // Track media drop-off when player component is unmounted
   useEffect(() => {
     return () => {
@@ -677,7 +704,7 @@ export const UniversalMediaPlayer: React.FC<UniversalMediaPlayerProps> = ({
             {showControls ? (
               <div
                 onClick={(e) => e.stopPropagation()}
-                className={`absolute bottom-0 inset-x-0 z-20 px-3 py-2.5 bg-gradient-to-t from-black/90 via-black/60 to-transparent flex flex-col gap-2 transition-opacity duration-300 pointer-events-auto ${
+                className={`absolute bottom-0 inset-x-0 z-20 px-3 py-2.5 bg-gradient-to-t from-black/90 via-black/60 to-transparent flex flex-col gap-2 transition-opacity duration-media pointer-events-auto ${
                   showOverlayControls || !isPlaying ? 'opacity-100' : 'opacity-0 pointer-events-none'
                 }`}
               >
@@ -704,7 +731,7 @@ export const UniversalMediaPlayer: React.FC<UniversalMediaPlayerProps> = ({
                       left: `${Math.max(8, Math.min(92, hoverPosition.percent))}%`,
                       transform: 'translateX(-50%)'
                     }}
-                    className="absolute bottom-full mb-2.5 z-30 pointer-events-none flex flex-col items-center animate-in fade-in zoom-in-95 duration-150"
+                    className="absolute bottom-full mb-2.5 z-30 pointer-events-none flex flex-col items-center animate-in fade-in zoom-in-95 duration-fast"
                   >
                     <div className="px-2.5 py-1.5 rounded-[var(--radius-md)] bg-neutral-900/95 backdrop-blur-md border border-white/20 shadow-2xl text-white text-[11px] font-mono flex items-center gap-2 whitespace-nowrap">
                       <span className="font-bold text-[var(--fg-accent)]">
@@ -739,7 +766,7 @@ export const UniversalMediaPlayer: React.FC<UniversalMediaPlayerProps> = ({
                     seekSession(val, videoRef.current);
                     lastPlaybackTimeRef.current = val;
                   }}
-                  className="w-full h-1 bg-white/30 hover:h-1.5 rounded-[var(--radius-sm)] appearance-none cursor-pointer accent-[var(--accent)] transition-all duration-150"
+                  className="w-full h-1 bg-white/30 hover:h-1.5 rounded-[var(--radius-sm)] appearance-none cursor-pointer accent-[var(--accent)] transition-all duration-fast"
                 />
               </div>
 
@@ -763,7 +790,7 @@ export const UniversalMediaPlayer: React.FC<UniversalMediaPlayerProps> = ({
                     >
                       {isMuted || volume === 0 ? <VolumeX size={18} className="text-red-400" /> : <Volume2 size={18} />}
                     </button>
-                    <div className="overflow-hidden transition-all duration-200 ease-out flex items-center max-w-0 group-hover/volume:max-w-[70px] focus-within/volume:max-w-[70px] opacity-0 group-hover/volume:opacity-100 focus-within/volume:opacity-100 ps-1">
+                    <div className="overflow-hidden transition-all duration-base ease-out flex items-center max-w-0 group-hover/volume:max-w-[70px] focus-within/volume:max-w-[70px] opacity-0 group-hover/volume:opacity-100 focus-within/volume:opacity-100 ps-1">
                       <input
                         type="range"
                         min={0}
@@ -825,7 +852,7 @@ export const UniversalMediaPlayer: React.FC<UniversalMediaPlayerProps> = ({
         </>
       }
       >
-        {directVideoUrl ? (
+        {directVideoUrl && isNearViewport ? (
           <>
             <video
               ref={setVideoRef}
@@ -941,19 +968,39 @@ export const UniversalMediaPlayer: React.FC<UniversalMediaPlayerProps> = ({
               ))}
             </AnimatePresence>
           </>
-        ) : posterUrl || autoPosterUrl ? (
-          <img
-            src={posterUrl || autoPosterUrl || undefined}
-            alt="Media Poster"
-            className={`w-full h-full relative z-10 ${
-              fitMode === 'cover'
-                ? 'object-cover'
-                : fitMode === 'contain'
-                ? 'object-contain'
-                : 'object-fill'
-            }`}
-          />
-        ) : null}
+        ) : (
+          <div 
+            className="w-full h-full relative cursor-pointer flex items-center justify-center bg-black overflow-hidden" 
+            onClick={(e) => {
+              e.stopPropagation();
+              setIsNearViewport(true);
+            }}
+          >
+            {posterUrl || autoPosterUrl ? (
+              <img
+                src={posterUrl || autoPosterUrl || undefined}
+                alt={title || "Media Poster"}
+                loading="lazy"
+                className={`w-full h-full filter brightness-75 ${
+                  fitMode === 'cover'
+                    ? 'object-cover'
+                    : fitMode === 'contain'
+                    ? 'object-contain'
+                    : 'object-fill'
+                }`}
+              />
+            ) : (
+              <div className="w-full h-full bg-neutral-900 flex items-center justify-center">
+                <Loader2 size={24} className="animate-spin text-gray-500" />
+              </div>
+            )}
+            <div className="absolute inset-0 flex items-center justify-center bg-black/15 hover:bg-black/25 transition-all">
+              <div className="w-14 h-14 rounded-full bg-white/15 hover:bg-white/25 backdrop-blur-md flex items-center justify-center border border-white/20 transition-all scale-100 hover:scale-105">
+                <Play size={24} className="text-white fill-white ml-0.5" />
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* Soft Buffering Spinner Overlay (No flash / No stream abort) */}
         {isBuffering && isPlaying && !hasFatalError && (
@@ -998,7 +1045,7 @@ export const UniversalMediaPlayer: React.FC<UniversalMediaPlayerProps> = ({
         {!isPlaying && !isBuffering && !hasFatalError && directVideoUrl && (
           <button
             onClick={togglePlay}
-            className="absolute inset-0 z-20 m-auto w-16 h-16 sm:w-18 sm:h-18 rounded-[var(--radius-md)] bg-black/25 hover:bg-black/40 text-[var(--fg-accent)] border border-white/20 hover:border-[var(--border-accent)]/60 flex items-center justify-center shadow-lg backdrop-blur-xs transition-all duration-200 hover:scale-110 active:scale-90 cursor-pointer group"
+            className="absolute inset-0 z-20 m-auto w-16 h-16 sm:w-18 sm:h-18 rounded-[var(--radius-md)] bg-black/25 hover:bg-black/40 text-[var(--fg-accent)] border border-white/20 hover:border-[var(--border-accent)]/60 flex items-center justify-center shadow-lg backdrop-blur-xs transition-all duration-base hover:scale-110 active:scale-90 cursor-pointer group"
             title={isRtl ? 'تشغيل الفيديو' : 'Play Video'}
           >
             <Play size={30} className="translate-x-0.5 fill-[var(--accent)] text-[var(--accent)]  group-hover:scale-110 transition-transform" />

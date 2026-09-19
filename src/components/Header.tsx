@@ -322,12 +322,12 @@ export const Header: React.FC<{ activeLanguage?: string }> = ({ activeLanguage }
               triggerHaptic('medium');
               setIsSidebarOpen(true);
             }}
-            className="group/logo-btn relative w-8 h-8 rounded-[var(--radius-sm)] overflow-hidden border border-[var(--border-default)] hover:border-[var(--accent-foreground)]/60 bg-transparent hover:bg-[var(--surface-subtle)] transition-all duration-150 flex items-center justify-center flex-shrink-0 cursor-pointer active:scale-95 before:absolute before:-inset-1.5 before:content-['']"
+            className="group/logo-btn relative w-8 h-8 rounded-[var(--radius-sm)] overflow-hidden border border-[var(--border-default)] hover:border-[var(--accent-foreground)]/60 bg-transparent hover:bg-[var(--surface-subtle)] transition-all duration-fast flex items-center justify-center flex-shrink-0 cursor-pointer active:scale-95 before:absolute before:-inset-1.5 before:content-['']"
             title={language === 'ar' ? 'فتح الشريط الجانبي' : 'Open Sidebar'}
             aria-label="Open Sidebar"
           >
             {/* Normal Logo (Custom logo image or icon) */}
-            <div className="w-full h-full flex items-center justify-center transition-all duration-200 group-hover/logo-btn:opacity-0 group-hover/logo-btn:scale-75">
+            <div className="w-full h-full flex items-center justify-center transition-all duration-base group-hover/logo-btn:opacity-0 group-hover/logo-btn:scale-75">
               {(siteSettings.logoBase64 || siteSettings.logoLightBase64) ? (
                 <motion.div 
                   className="w-full h-full overflow-hidden flex items-center justify-center"
@@ -367,7 +367,7 @@ export const Header: React.FC<{ activeLanguage?: string }> = ({ activeLanguage }
             </div>
 
             {/* Full Glassy Outward Arrow Button Effect on Hover */}
-            <div className="absolute inset-0 flex items-center justify-center opacity-0 scale-75 group-hover/logo-btn:opacity-100 group-hover/logo-btn:scale-100 transition-all duration-150 pointer-events-none bg-[var(--surface-subtle)]">
+            <div className="absolute inset-0 flex items-center justify-center opacity-0 scale-75 group-hover/logo-btn:opacity-100 group-hover/logo-btn:scale-100 transition-all duration-fast pointer-events-none bg-[var(--surface-subtle)]">
               <div className="w-6 h-6 rounded-[var(--radius-xs)] bg-[var(--surface-card)] border border-[var(--border-default)] text-[var(--text-primary)] flex items-center justify-center shadow-2xs">
                 {language === 'ar' ? <ChevronLeft size={14} className="stroke-[2.5]" /> : <ChevronRight size={14} className="stroke-[2.5]" />}
               </div>
@@ -377,7 +377,7 @@ export const Header: React.FC<{ activeLanguage?: string }> = ({ activeLanguage }
           <NavLink 
             to="/" 
             onClick={handleNewChat} 
-            className="group/logo-link relative w-8 h-8 rounded-[var(--radius-sm)] overflow-hidden border border-[var(--border-default)] hover:border-[var(--accent-foreground)]/60 bg-transparent hover:bg-[var(--surface-subtle)] transition-all duration-150 flex items-center justify-center flex-shrink-0 active:scale-95 before:absolute before:-inset-1.5 before:content-['']"
+            className="group/logo-link relative w-8 h-8 rounded-[var(--radius-sm)] overflow-hidden border border-[var(--border-default)] hover:border-[var(--accent-foreground)]/60 bg-transparent hover:bg-[var(--surface-subtle)] transition-all duration-fast flex items-center justify-center flex-shrink-0 active:scale-95 before:absolute before:-inset-1.5 before:content-['']"
             title={brandName}
           >
             {(siteSettings.logoBase64 || siteSettings.logoLightBase64) ? (
@@ -446,7 +446,7 @@ export const Header: React.FC<{ activeLanguage?: string }> = ({ activeLanguage }
       {!isPathBlocked('/viralbook', siteSettings?.blocked_paths, isMobileView) && (
         <NavLink
           to="/viralbook"
-          className={`hidden sm:flex items-center justify-center w-8 h-8 rounded-[var(--radius-sm)] border transition-all duration-150 active:scale-95 group shrink-0 relative cursor-pointer before:absolute before:-inset-1.5 before:content-[''] ${
+          className={`hidden sm:flex items-center justify-center w-8 h-8 rounded-[var(--radius-sm)] border transition-all duration-fast active:scale-95 group shrink-0 relative cursor-pointer before:absolute before:-inset-1.5 before:content-[''] ${
             isViralbookActive
               ? 'bg-[var(--surface-card)] text-[var(--text-primary)] border-[var(--border-default)] font-bold shadow-2xs' 
               : 'bg-transparent border-[var(--border-default)] hover:border-[var(--border-accent)]/60 hover:bg-[var(--surface-subtle)] text-[var(--text-secondary)] hover:text-[var(--text-primary)]'
@@ -456,7 +456,7 @@ export const Header: React.FC<{ activeLanguage?: string }> = ({ activeLanguage }
         >
           <Megaphone 
             size={14} 
-            className={`transition-colors duration-150 ${
+            className={`transition-colors duration-fast ${
               isViralbookActive
                 ? 'text-[var(--fg-accent)]' 
                 : 'text-[var(--text-muted)] group-hover:text-[var(--text-primary)]'
@@ -467,7 +467,7 @@ export const Header: React.FC<{ activeLanguage?: string }> = ({ activeLanguage }
       {!isPathBlocked('/studio', siteSettings?.blocked_paths, isMobileView) && (
         <NavLink
           to="/Studio"
-          className={`flex items-center justify-center w-8 h-8 rounded-[var(--radius-sm)] border transition-all duration-150 active:scale-95 group shrink-0 relative cursor-pointer before:absolute before:-inset-1.5 before:content-[''] ${
+          className={`flex items-center justify-center w-8 h-8 rounded-[var(--radius-sm)] border transition-all duration-fast active:scale-95 group shrink-0 relative cursor-pointer before:absolute before:-inset-1.5 before:content-[''] ${
             location.pathname === '/Studio' || location.pathname === '/studio' 
               ? 'bg-[var(--surface-card)] text-[var(--text-primary)] border-[var(--border-default)] font-bold shadow-2xs' 
               : 'bg-transparent border-[var(--border-default)] hover:border-[var(--border-accent)]/60 hover:bg-[var(--surface-subtle)] text-[var(--text-secondary)] hover:text-[var(--text-primary)]'
@@ -477,7 +477,7 @@ export const Header: React.FC<{ activeLanguage?: string }> = ({ activeLanguage }
         >
           <Cpu 
             size={14} 
-            className={`transition-colors duration-150 ${
+            className={`transition-colors duration-fast ${
               location.pathname === '/Studio' || location.pathname === '/studio'
                 ? 'text-[var(--fg-accent)]' 
                 : 'text-[var(--text-muted)] group-hover:text-[var(--text-primary)]'
@@ -513,13 +513,13 @@ export const Header: React.FC<{ activeLanguage?: string }> = ({ activeLanguage }
           triggerHaptic('light');
           toggleLanguage();
         }}
-        className={`items-center justify-center w-8 h-8 rounded-[var(--radius-sm)] bg-transparent border border-[var(--border-default)] hover:border-[var(--border-accent)]/60 hover:bg-[var(--surface-subtle)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-all duration-150 active:scale-95 group shrink-0 cursor-pointer relative before:absolute before:-inset-1.5 before:content-[''] ${
+        className={`items-center justify-center w-8 h-8 rounded-[var(--radius-sm)] bg-transparent border border-[var(--border-default)] hover:border-[var(--border-accent)]/60 hover:bg-[var(--surface-subtle)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-all duration-fast active:scale-95 group shrink-0 cursor-pointer relative before:absolute before:-inset-1.5 before:content-[''] ${
           isChatPage && chatHeaderData && chatHeaderData.hasMessages ? 'hidden sm:flex' : 'flex'
         }`}
         title={language === 'ar' ? 'تغيير اللغة (English)' : 'Change Language (العربية)'}
         aria-label={language === 'ar' ? 'تغيير اللغة' : 'Change Language'}
       >
-        <Languages size={14} className="text-[var(--text-muted)] group-hover:text-[var(--text-primary)] transition-colors duration-150" />
+        <Languages size={14} className="text-[var(--text-muted)] group-hover:text-[var(--text-primary)] transition-colors duration-fast" />
       </button>
 
       <ThemeToggleButton 
@@ -540,7 +540,7 @@ export const Header: React.FC<{ activeLanguage?: string }> = ({ activeLanguage }
                 navigate('/viralbook/inquiries');
                 window.dispatchEvent(new CustomEvent('open-bulletin-inquiries'));
               }}
-              className={`hidden sm:flex items-center justify-center w-8 h-8 rounded-[var(--radius-sm)] border transition-all duration-150 relative active:scale-95 group shrink-0 cursor-pointer before:absolute before:-inset-1.5 before:content-[''] ${
+              className={`hidden sm:flex items-center justify-center w-8 h-8 rounded-[var(--radius-sm)] border transition-all duration-fast relative active:scale-95 group shrink-0 cursor-pointer before:absolute before:-inset-1.5 before:content-[''] ${
                 location.pathname.includes('/inquiries') || location.search.includes('tab=inquiries')
                   ? 'bg-[var(--surface-card)] text-[var(--text-primary)] border-[var(--border-default)] font-bold shadow-2xs'
                   : 'bg-transparent border-[var(--border-default)] hover:border-[var(--border-accent)]/60 hover:bg-[var(--surface-subtle)] text-[var(--text-secondary)] hover:text-[var(--text-primary)]'
@@ -550,7 +550,7 @@ export const Header: React.FC<{ activeLanguage?: string }> = ({ activeLanguage }
             >
               <MessagesSquare 
                 size={14} 
-                className={`transition-colors duration-150 ${
+                className={`transition-colors duration-fast ${
                   location.pathname.includes('/inquiries') || location.search.includes('tab=inquiries')
                     ? 'text-[var(--fg-accent)]'
                     : 'text-[var(--text-muted)] group-hover:text-[var(--text-primary)]'
@@ -566,13 +566,13 @@ export const Header: React.FC<{ activeLanguage?: string }> = ({ activeLanguage }
                 setIsNotifOpen(!isNotifOpen);
               }}
               aria-label={language === 'ar' ? 'الإشعارات' : 'Notifications'}
-              className={`flex items-center justify-center w-8 h-8 rounded-[var(--radius-sm)] bg-transparent border transition-all duration-150 relative active:scale-95 group shrink-0 cursor-pointer before:absolute before:-inset-1.5 before:content-[''] ${
+              className={`flex items-center justify-center w-8 h-8 rounded-[var(--radius-sm)] bg-transparent border transition-all duration-fast relative active:scale-95 group shrink-0 cursor-pointer before:absolute before:-inset-1.5 before:content-[''] ${
                 isNotifOpen 
                   ? 'bg-[var(--surface-card)] text-[var(--text-primary)] border-[var(--border-default)] shadow-2xs' 
                   : 'border-[var(--border-default)] hover:border-[var(--border-accent)]/60 hover:bg-[var(--surface-subtle)] text-[var(--text-secondary)] hover:text-[var(--text-primary)]'
               }`}
             >
-              <Bell size={14} className={`transition-colors duration-150 ${unreadCount > 0 ? "text-[var(--accent-foreground)]" : isNotifOpen ? "text-[var(--accent-foreground)]" : "text-[var(--text-muted)] group-hover:text-[var(--text-primary)]"}`} />
+              <Bell size={14} className={`transition-colors duration-fast ${unreadCount > 0 ? "text-[var(--accent-foreground)]" : isNotifOpen ? "text-[var(--accent-foreground)]" : "text-[var(--text-muted)] group-hover:text-[var(--text-primary)]"}`} />
               {unreadCount > 0 && (
                 <span className="absolute top-1.5 right-1.5 w-1.5 h-1.5 bg-[var(--accent)] rounded-full border border-[var(--surface-page)] shadow-[0_0_6px_var(--accent-foreground)]"></span>
               )}
@@ -595,7 +595,7 @@ export const Header: React.FC<{ activeLanguage?: string }> = ({ activeLanguage }
                       <button 
                         onClick={unreadCount > 0 ? markAllAsRead : undefined}
                         disabled={unreadCount === 0}
-                        className={`text-[9px] sm:text-[10px] font-bold flex items-center gap-1 transition-all duration-150 ${
+                        className={`text-[9px] sm:text-[10px] font-bold flex items-center gap-1 transition-all duration-fast ${
                           unreadCount > 0 
                             ? 'text-[var(--fg-accent)] hover:opacity-80 cursor-pointer' 
                             : 'text-[var(--text-muted)] opacity-40 cursor-not-allowed'
@@ -607,7 +607,7 @@ export const Header: React.FC<{ activeLanguage?: string }> = ({ activeLanguage }
                       <button 
                         onClick={notifications.length > 0 ? clearAllNotifications : undefined}
                         disabled={notifications.length === 0}
-                        className={`text-[9px] sm:text-[10px] font-bold flex items-center gap-1 transition-all duration-150 ${
+                        className={`text-[9px] sm:text-[10px] font-bold flex items-center gap-1 transition-all duration-fast ${
                           notifications.length > 0 
                             ? 'text-rose-500 hover:text-rose-400 cursor-pointer' 
                             : 'text-[var(--text-muted)] opacity-40 cursor-not-allowed'
@@ -634,12 +634,12 @@ export const Header: React.FC<{ activeLanguage?: string }> = ({ activeLanguage }
                               setIsNotifOpen(false);
                             }
                           }}
-                          className={`w-full p-2.5 sm:p-4 flex gap-2 sm:gap-3 text-right hover:bg-[var(--surface-subtle)] transition-all duration-150 border-b border-[var(--border-default)] last:border-0 group relative cursor-pointer ${
+                          className={`w-full p-2.5 sm:p-4 flex gap-2 sm:gap-3 text-right hover:bg-[var(--surface-subtle)] transition-all duration-fast border-b border-[var(--border-default)] last:border-0 group relative cursor-pointer ${
                             !notif.is_read ? 'bg-[var(--surface-subtle)]/70 border-r-2 border-r-[var(--border-accent)]' : ''
                           }`}
                           dir={dir}
                         >
-                          <div className={`mt-0.5 h-7 w-7 sm:h-8 sm:w-8 rounded-[var(--radius-sm)] flex items-center justify-center shrink-0 transition-all duration-150 overflow-hidden ${
+                          <div className={`mt-0.5 h-7 w-7 sm:h-8 sm:w-8 rounded-[var(--radius-sm)] flex items-center justify-center shrink-0 transition-all duration-fast overflow-hidden ${
                             !notif.is_read ? 'bg-[var(--bg-accent-muted)] text-[var(--fg-accent)] font-bold' : 'bg-[var(--surface-subtle)] text-[var(--text-muted)]'
                           }`}>
                             <NotificationIconRenderer 
@@ -653,15 +653,15 @@ export const Header: React.FC<{ activeLanguage?: string }> = ({ activeLanguage }
                               {!notif.is_read && (
                                 <span className="w-1.5 h-1.5 bg-[var(--accent)] rounded-full shrink-0 shadow-[0_0_6px_var(--accent-foreground)]" />
                               )}
-                              <h4 className={`text-[11px] sm:text-xs font-bold truncate transition-all duration-150 ${!notif.is_read ? 'text-[var(--fg-accent)]' : 'text-[var(--text-primary)]'}`}>
+                              <h4 className={`text-[11px] sm:text-xs font-bold truncate transition-all duration-fast ${!notif.is_read ? 'text-[var(--fg-accent)]' : 'text-[var(--text-primary)]'}`}>
                                 {language === 'ar' ? notif.title_ar : notif.title_en}
                               </h4>
                             </div>
-                            <p className="text-[9px] sm:text-[10px] text-[var(--text-muted)] mt-0.5 line-clamp-2 leading-relaxed transition-all duration-150">
+                            <p className="text-[9px] sm:text-[10px] text-[var(--text-muted)] mt-0.5 line-clamp-2 leading-relaxed transition-all duration-fast">
                               {language === 'ar' ? notif.message_ar : notif.message_en}
                             </p>
                             <div className="flex items-center justify-between mt-1.5 sm:mt-2.5">
-                              <div className="flex items-center gap-1 text-[8px] sm:text-[9px] text-[var(--text-muted)] transition-all duration-150">
+                              <div className="flex items-center gap-1 text-[8px] sm:text-[9px] text-[var(--text-muted)] transition-all duration-fast">
                                 <Clock size={9} />
                                 <span>{new Date(notif.created_at).toLocaleTimeString(language === 'ar' ? 'ar-EG' : 'en-US', { hour: '2-digit', minute: '2-digit' })}</span>
                               </div>
@@ -669,7 +669,7 @@ export const Header: React.FC<{ activeLanguage?: string }> = ({ activeLanguage }
                                 {!notif.is_read && (
                                   <button 
                                     onClick={(e) => { e.stopPropagation(); markAsRead(notif.id); }}
-                                    className="p-0.5 sm:p-1 text-[var(--fg-accent)]/70 hover:text-[var(--fg-accent)] opacity-100 sm:opacity-0 group-hover:opacity-100 transition-all duration-150 cursor-pointer"
+                                    className="p-0.5 sm:p-1 text-[var(--fg-accent)]/70 hover:text-[var(--fg-accent)] opacity-100 sm:opacity-0 group-hover:opacity-100 transition-all duration-fast cursor-pointer"
                                     title={language === 'ar' ? 'تحديد كمقروء' : 'Mark as read'}
                                   >
                                     <Check size={11} className="stroke-[3px]" />
@@ -677,7 +677,7 @@ export const Header: React.FC<{ activeLanguage?: string }> = ({ activeLanguage }
                                 )}
                                 <button 
                                   onClick={(e) => { e.stopPropagation(); deleteNotification(notif.id); }}
-                                  className="p-0.5 sm:p-1 text-rose-500/60 hover:text-rose-500 opacity-100 sm:opacity-0 group-hover:opacity-100 transition-all duration-150 cursor-pointer"
+                                  className="p-0.5 sm:p-1 text-rose-500/60 hover:text-rose-500 opacity-100 sm:opacity-0 group-hover:opacity-100 transition-all duration-fast cursor-pointer"
                                   title={language === 'ar' ? 'حذف الإشعار' : 'Delete notification'}
                                 >
                                   <Trash2 size={11} />
@@ -688,7 +688,7 @@ export const Header: React.FC<{ activeLanguage?: string }> = ({ activeLanguage }
                         </div>
                       ))
                     ) : (
-                      <div className="py-12 flex flex-col items-center justify-center text-[var(--text-muted)] opacity-30 transition-all duration-150">
+                      <div className="py-12 flex flex-col items-center justify-center text-[var(--text-muted)] opacity-30 transition-all duration-fast">
                         <Bell size={32} className="mb-2" />
                         <span className="text-xs">{language === 'ar' ? 'لا توجد إشعارات' : 'No notifications'}</span>
                       </div>
@@ -696,7 +696,7 @@ export const Header: React.FC<{ activeLanguage?: string }> = ({ activeLanguage }
                   </div>
                   
                   <div className="p-2 sm:p-3 border-t border-[var(--border-default)] text-center bg-[var(--surface-subtle)]">
-                    <span className="text-[9px] sm:text-[10px] text-[var(--text-muted)] font-medium transition-all duration-150">
+                    <span className="text-[9px] sm:text-[10px] text-[var(--text-muted)] font-medium transition-all duration-fast">
                       {language === 'ar' ? 'البروتوكول الصامت للمنصة' : 'Silent Platform Protocol'}
                     </span>
                   </div>
@@ -766,7 +766,7 @@ export const Header: React.FC<{ activeLanguage?: string }> = ({ activeLanguage }
                       triggerHaptic('light');
                       window.dispatchEvent(new CustomEvent('chat-set-tab', { detail: 'answer' }));
                     }}
-                    className={`w-8 h-8 rounded-[var(--radius-sm)] border flex items-center justify-center transition-all duration-150 cursor-pointer shrink-0 relative active:scale-95 group ${
+                    className={`w-8 h-8 rounded-[var(--radius-sm)] border flex items-center justify-center transition-all duration-fast cursor-pointer shrink-0 relative active:scale-95 group ${
                       chatHeaderData.activeChatTab === 'answer'
                         ? 'bg-[var(--surface-card)] text-[var(--text-primary)] border-[var(--border-default)] font-bold shadow-2xs'
                         : 'bg-transparent border-[var(--border-default)] hover:border-[var(--border-accent)]/60 hover:bg-[var(--surface-subtle)] text-[var(--text-secondary)] hover:text-[var(--text-primary)]'
@@ -787,7 +787,7 @@ export const Header: React.FC<{ activeLanguage?: string }> = ({ activeLanguage }
                       triggerHaptic('light');
                       window.dispatchEvent(new CustomEvent('chat-set-tab', { detail: 'links' }));
                     }}
-                    className={`h-8 min-w-[32px] px-1.5 rounded-[var(--radius-sm)] border flex items-center justify-center gap-1 transition-all duration-150 cursor-pointer shrink-0 relative active:scale-95 group ${
+                    className={`h-8 min-w-[32px] px-1.5 rounded-[var(--radius-sm)] border flex items-center justify-center gap-1 transition-all duration-fast cursor-pointer shrink-0 relative active:scale-95 group ${
                       chatHeaderData.activeChatTab === 'links'
                         ? 'bg-[var(--surface-card)] text-[var(--text-primary)] border-[var(--border-default)] font-bold shadow-2xs'
                         : 'bg-transparent border-[var(--border-default)] hover:border-[var(--border-accent)]/60 hover:bg-[var(--surface-subtle)] text-[var(--text-secondary)] hover:text-[var(--text-primary)]'
@@ -795,7 +795,7 @@ export const Header: React.FC<{ activeLanguage?: string }> = ({ activeLanguage }
                     title={globalLang === 'ar' ? `المصادر (${chatHeaderData.citationsCount})` : `Sources (${chatHeaderData.citationsCount})`}
                     aria-label={globalLang === 'ar' ? `المصادر (${chatHeaderData.citationsCount})` : `Sources (${chatHeaderData.citationsCount})`}
                   >
-                    <Globe size={14} className="text-[var(--text-muted)] group-hover:text-[var(--text-primary)] transition-colors duration-150" />
+                    <Globe size={14} className="text-[var(--text-muted)] group-hover:text-[var(--text-primary)] transition-colors duration-fast" />
                     {chatHeaderData.citationsCount > 0 && (
                       <span className="px-1.5 py-0.2 rounded-full text-[10px] bg-[var(--bg-accent-muted)] text-[var(--fg-accent)] font-mono font-bold">
                         {chatHeaderData.citationsCount}
@@ -809,7 +809,7 @@ export const Header: React.FC<{ activeLanguage?: string }> = ({ activeLanguage }
                       triggerHaptic('light');
                       window.dispatchEvent(new CustomEvent('chat-set-tab', { detail: 'images' }));
                     }}
-                    className={`h-8 min-w-[32px] px-1.5 rounded-[var(--radius-sm)] border flex items-center justify-center gap-1 transition-all duration-150 cursor-pointer shrink-0 relative active:scale-95 group ${
+                    className={`h-8 min-w-[32px] px-1.5 rounded-[var(--radius-sm)] border flex items-center justify-center gap-1 transition-all duration-fast cursor-pointer shrink-0 relative active:scale-95 group ${
                       chatHeaderData.activeChatTab === 'images'
                         ? 'bg-[var(--surface-card)] text-[var(--text-primary)] border-[var(--border-default)] font-bold shadow-2xs'
                         : 'bg-transparent border-[var(--border-default)] hover:border-[var(--border-accent)]/60 hover:bg-[var(--surface-subtle)] text-[var(--text-secondary)] hover:text-[var(--text-primary)]'
@@ -817,7 +817,7 @@ export const Header: React.FC<{ activeLanguage?: string }> = ({ activeLanguage }
                     title={globalLang === 'ar' ? `الوسائط (${chatHeaderData.imagesCount})` : `Media (${chatHeaderData.imagesCount})`}
                     aria-label={globalLang === 'ar' ? `الوسائط (${chatHeaderData.imagesCount})` : `Media (${chatHeaderData.imagesCount})`}
                   >
-                    <ImageIcon size={14} className="text-[var(--text-muted)] group-hover:text-[var(--text-primary)] transition-colors duration-150" />
+                    <ImageIcon size={14} className="text-[var(--text-muted)] group-hover:text-[var(--text-primary)] transition-colors duration-fast" />
                     {chatHeaderData.imagesCount > 0 && (
                       <span className="px-1.5 py-0.2 rounded-full text-[10px] bg-[var(--bg-accent-muted)] text-[var(--fg-accent)] font-mono font-bold">
                         {chatHeaderData.imagesCount}
@@ -835,7 +835,7 @@ export const Header: React.FC<{ activeLanguage?: string }> = ({ activeLanguage }
                         triggerHaptic('light');
                         window.dispatchEvent(new CustomEvent('chat-action-pinned'));
                       }}
-                      className="h-8 px-2.5 rounded-[var(--radius-sm)] text-amber-500 border border-amber-500/30 bg-amber-500/10 hover:bg-amber-500/20 flex items-center justify-center gap-1 transition-all duration-150 cursor-pointer shrink-0 box-border relative active:scale-95"
+                      className="h-8 px-2.5 rounded-[var(--radius-sm)] text-amber-500 border border-amber-500/30 bg-amber-500/10 hover:bg-amber-500/20 flex items-center justify-center gap-1 transition-all duration-fast cursor-pointer shrink-0 box-border relative active:scale-95"
                       title={globalLang === 'ar' ? 'الرسائل المثبتة' : 'Pinned'}
                     >
                       <Pin size={13} className="fill-amber-500 shrink-0" />
@@ -856,7 +856,7 @@ export const Header: React.FC<{ activeLanguage?: string }> = ({ activeLanguage }
                         setHeaderMenuTarget({ rect });
                       }
                     }}
-                    className={`w-8 h-8 rounded-[var(--radius-sm)] border border-[var(--border-default)] hover:border-[var(--border-accent)]/60 hover:bg-[var(--surface-subtle)] flex items-center justify-center transition-all duration-150 cursor-pointer shrink-0 relative active:scale-95 group bg-transparent ${
+                    className={`w-8 h-8 rounded-[var(--radius-sm)] border border-[var(--border-default)] hover:border-[var(--border-accent)]/60 hover:bg-[var(--surface-subtle)] flex items-center justify-center transition-all duration-fast cursor-pointer shrink-0 relative active:scale-95 group bg-transparent ${
                       headerMenuTarget 
                         ? 'bg-[var(--surface-card)] text-[var(--text-primary)] shadow-2xs' 
                         : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)]'
@@ -864,7 +864,7 @@ export const Header: React.FC<{ activeLanguage?: string }> = ({ activeLanguage }
                     title={globalLang === 'ar' ? 'خيارات' : 'Options'}
                     aria-label={globalLang === 'ar' ? 'خيارات' : 'Options'}
                   >
-                    <MoreHorizontal size={14} className={`transition-colors duration-150 ${headerMenuTarget ? 'text-[var(--fg-accent)]' : 'text-[var(--text-muted)] group-hover:text-[var(--text-primary)]'}`} />
+                    <MoreHorizontal size={14} className={`transition-colors duration-fast ${headerMenuTarget ? 'text-[var(--fg-accent)]' : 'text-[var(--text-muted)] group-hover:text-[var(--text-primary)]'}`} />
                   </button>
                 </div>
               </div>
@@ -882,7 +882,7 @@ export const Header: React.FC<{ activeLanguage?: string }> = ({ activeLanguage }
                     triggerHaptic('light');
                     window.dispatchEvent(new CustomEvent('chat-set-tab', { detail: 'answer' }));
                   }}
-                  className={`w-7 h-7 rounded-[var(--radius-sm)] border flex items-center justify-center transition-all duration-150 cursor-pointer shrink-0 relative active:scale-95 group ${
+                  className={`w-7 h-7 rounded-[var(--radius-sm)] border flex items-center justify-center transition-all duration-fast cursor-pointer shrink-0 relative active:scale-95 group ${
                     chatHeaderData.activeChatTab === 'answer'
                       ? 'bg-[var(--surface-card)] text-[var(--text-primary)] border-[var(--border-default)] font-bold shadow-2xs'
                       : 'bg-transparent border-[var(--border-default)] hover:border-[var(--border-accent)]/60 hover:bg-[var(--surface-subtle)] text-[var(--text-secondary)] hover:text-[var(--text-primary)]'
@@ -902,14 +902,14 @@ export const Header: React.FC<{ activeLanguage?: string }> = ({ activeLanguage }
                     triggerHaptic('light');
                     window.dispatchEvent(new CustomEvent('chat-set-tab', { detail: 'links' }));
                   }}
-                  className={`h-7 min-w-[28px] px-1 rounded-[var(--radius-sm)] border flex items-center justify-center gap-1 transition-all duration-150 cursor-pointer shrink-0 relative active:scale-95 group ${
+                  className={`h-7 min-w-[28px] px-1 rounded-[var(--radius-sm)] border flex items-center justify-center gap-1 transition-all duration-fast cursor-pointer shrink-0 relative active:scale-95 group ${
                     chatHeaderData.activeChatTab === 'links'
                       ? 'bg-[var(--surface-card)] text-[var(--text-primary)] border-[var(--border-default)] font-bold shadow-2xs'
                       : 'bg-transparent border-[var(--border-default)] hover:border-[var(--border-accent)]/60 hover:bg-[var(--surface-subtle)] text-[var(--text-secondary)] hover:text-[var(--text-primary)]'
                   }`}
                   title={globalLang === 'ar' ? `المصادر (${chatHeaderData.citationsCount})` : `Sources (${chatHeaderData.citationsCount})`}
                 >
-                  <Globe size={13} className="text-[var(--text-muted)] group-hover:text-[var(--text-primary)] transition-colors duration-150" />
+                  <Globe size={13} className="text-[var(--text-muted)] group-hover:text-[var(--text-primary)] transition-colors duration-fast" />
                   {chatHeaderData.citationsCount > 0 && (
                     <span className="px-1 py-0.2 rounded-full text-[9px] bg-[var(--bg-accent-muted)] text-[var(--fg-accent)] font-mono font-bold">
                       {chatHeaderData.citationsCount}
@@ -923,14 +923,14 @@ export const Header: React.FC<{ activeLanguage?: string }> = ({ activeLanguage }
                     triggerHaptic('light');
                     window.dispatchEvent(new CustomEvent('chat-set-tab', { detail: 'images' }));
                   }}
-                  className={`h-7 min-w-[28px] px-1 rounded-[var(--radius-sm)] border flex items-center justify-center gap-1 transition-all duration-150 cursor-pointer shrink-0 relative active:scale-95 group ${
+                  className={`h-7 min-w-[28px] px-1 rounded-[var(--radius-sm)] border flex items-center justify-center gap-1 transition-all duration-fast cursor-pointer shrink-0 relative active:scale-95 group ${
                     chatHeaderData.activeChatTab === 'images'
                       ? 'bg-[var(--surface-card)] text-[var(--text-primary)] border-[var(--border-default)] font-bold shadow-2xs'
                       : 'bg-transparent border-[var(--border-default)] hover:border-[var(--border-accent)]/60 hover:bg-[var(--surface-subtle)] text-[var(--text-secondary)] hover:text-[var(--text-primary)]'
                   }`}
                   title={globalLang === 'ar' ? `الوسائط (${chatHeaderData.imagesCount})` : `Media (${chatHeaderData.imagesCount})`}
                 >
-                  <ImageIcon size={13} className="text-[var(--text-muted)] group-hover:text-[var(--text-primary)] transition-colors duration-150" />
+                  <ImageIcon size={13} className="text-[var(--text-muted)] group-hover:text-[var(--text-primary)] transition-colors duration-fast" />
                   {chatHeaderData.imagesCount > 0 && (
                     <span className="px-1 py-0.2 rounded-full text-[9px] bg-[var(--bg-accent-muted)] text-[var(--fg-accent)] font-mono font-bold">
                       {chatHeaderData.imagesCount}
@@ -945,7 +945,7 @@ export const Header: React.FC<{ activeLanguage?: string }> = ({ activeLanguage }
                       triggerHaptic('light');
                       window.dispatchEvent(new CustomEvent('chat-action-pinned'));
                     }}
-                    className="h-7 px-1.5 rounded-[var(--radius-sm)] text-amber-500 border border-amber-500/30 bg-amber-500/10 hover:bg-amber-500/20 flex items-center justify-center gap-1 transition-all duration-150 cursor-pointer shrink-0 box-border relative active:scale-95"
+                    className="h-7 px-1.5 rounded-[var(--radius-sm)] text-amber-500 border border-amber-500/30 bg-amber-500/10 hover:bg-amber-500/20 flex items-center justify-center gap-1 transition-all duration-fast cursor-pointer shrink-0 box-border relative active:scale-95"
                     title={globalLang === 'ar' ? 'الرسائل المثبتة' : 'Pinned'}
                   >
                     <Pin size={12} className="fill-amber-500 shrink-0" />
@@ -966,14 +966,14 @@ export const Header: React.FC<{ activeLanguage?: string }> = ({ activeLanguage }
                       setHeaderMenuTarget({ rect });
                     }
                   }}
-                  className={`w-7 h-7 rounded-[var(--radius-sm)] border border-[var(--border-default)] hover:border-[var(--border-accent)]/60 hover:bg-[var(--surface-subtle)] flex items-center justify-center transition-all duration-150 cursor-pointer shrink-0 relative active:scale-95 group bg-transparent ${
+                  className={`w-7 h-7 rounded-[var(--radius-sm)] border border-[var(--border-default)] hover:border-[var(--border-accent)]/60 hover:bg-[var(--surface-subtle)] flex items-center justify-center transition-all duration-fast cursor-pointer shrink-0 relative active:scale-95 group bg-transparent ${
                     headerMenuTarget 
                       ? 'bg-[var(--surface-card)] text-[var(--text-primary)] shadow-2xs' 
                       : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)]'
                   }`}
                   title={globalLang === 'ar' ? 'خيارات' : 'Options'}
                 >
-                  <MoreHorizontal size={13} className={`transition-colors duration-150 ${headerMenuTarget ? 'text-[var(--fg-accent)]' : 'text-[var(--text-muted)] group-hover:text-[var(--text-primary)]'}`} />
+                  <MoreHorizontal size={13} className={`transition-colors duration-fast ${headerMenuTarget ? 'text-[var(--fg-accent)]' : 'text-[var(--text-muted)] group-hover:text-[var(--text-primary)]'}`} />
                 </button>
               </div>
             </div>
@@ -1121,7 +1121,7 @@ export const Header: React.FC<{ activeLanguage?: string }> = ({ activeLanguage }
                     e.stopPropagation();
                     item.action();
                   }}
-                  className={`group w-full h-[36px] min-h-[36px] flex items-center gap-2.5 px-3 py-2 rounded-shape-sm border border-transparent transition-all duration-150 cursor-pointer select-none text-start text-xs font-medium ${
+                  className={`group w-full h-[36px] min-h-[36px] flex items-center gap-2.5 px-3 py-2 rounded-shape-sm border border-transparent transition-all duration-fast cursor-pointer select-none text-start text-xs font-medium ${
                     isDanger
                       ? 'bg-transparent hover:bg-rose-500/10 text-rose-500'
                       : 'bg-transparent hover:bg-[var(--surface-subtle)] text-[var(--text-secondary)] hover:text-[var(--text-primary)]'
@@ -1129,14 +1129,14 @@ export const Header: React.FC<{ activeLanguage?: string }> = ({ activeLanguage }
                 >
                   <Icon
                     size={14}
-                    className={`shrink-0 transition-colors duration-150 ${
+                    className={`shrink-0 transition-colors duration-fast ${
                       isDanger
                         ? 'text-rose-500 group-hover:text-rose-400'
                         : 'text-[var(--text-muted)] group-hover:text-[var(--text-primary)]'
                     }`}
                   />
                   <span
-                    className={`truncate min-w-0 flex-1 text-xs transition-colors duration-150 ${
+                    className={`truncate min-w-0 flex-1 text-xs transition-colors duration-fast ${
                       isDanger
                         ? 'font-bold text-rose-500 group-hover:text-rose-400'
                         : 'font-medium text-[var(--text-primary)] group-hover:text-[var(--text-primary)]'

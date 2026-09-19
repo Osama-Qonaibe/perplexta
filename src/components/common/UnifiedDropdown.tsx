@@ -115,7 +115,7 @@ export const UnifiedDropdown: React.FC<UnifiedDropdownProps> = ({
               bg-[var(--surface-card)] text-[var(--text-primary)]
               backdrop-blur-xl shadow-2xl ring-1 ring-black/5 dark:ring-white/10
               overflow-hidden overscroll-contain
-              transition-colors duration-150
+              transition-colors duration-fast
               ${placementClass}
               ${className}
             `}

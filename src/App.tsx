@@ -418,7 +418,7 @@ const PWAWrapper = ({ children }: { children: React.ReactNode }) => {
       {!isAdminPath && (
         <div 
           id="platform-banners-stack"
-          className={`fixed z-[9990] flex flex-col gap-2 pointer-events-none transition-all duration-300 items-center md:items-start max-w-[calc(100vw-2rem)] md:max-w-[320px] left-1/2 -translate-x-1/2 bottom-[calc(185px+env(safe-area-inset-bottom,0px))] ${
+          className={`fixed z-[9990] flex flex-col gap-2 pointer-events-none transition-all duration-media items-center md:items-start max-w-[calc(100vw-2rem)] md:max-w-[320px] left-1/2 -translate-x-1/2 bottom-[calc(185px+env(safe-area-inset-bottom,0px))] ${
             language === 'ar' 
               ? 'md:left-6 md:right-auto md:translate-x-0 md:bottom-6' 
               : 'md:right-6 md:left-auto md:translate-x-0 md:bottom-6'

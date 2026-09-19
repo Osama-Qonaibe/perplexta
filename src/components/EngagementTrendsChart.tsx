@@ -387,13 +387,13 @@ export const EngagementTrendsChart: React.FC<EngagementTrendsChartProps> = ({
               : (isRtl ? 'عرض الرسم البياني التفاعلي (D3)' : 'Show Interactive D3 Chart')}
           </span>
         </span>
-        <ChevronDown size={15} className={`text-[var(--text-muted)] transition-transform duration-200 ${isMobileChartExpanded ? 'rotate-180 text-[var(--accent)]' : ''}`} />
+        <ChevronDown size={15} className={`text-[var(--text-muted)] transition-transform duration-base ${isMobileChartExpanded ? 'rotate-180 text-[var(--accent)]' : ''}`} />
       </button>
 
       {/* D3 Canvas Container (Always visible on desktop, toggleable on mobile) */}
       <div
         ref={containerRef}
-        className={`relative w-full rounded-[var(--radius-md)] border border-[var(--border-default)] bg-[var(--surface-card)] p-2 sm:p-4 overflow-hidden transition-all duration-300 ${
+        className={`relative w-full rounded-[var(--radius-md)] border border-[var(--border-default)] bg-[var(--surface-card)] p-2 sm:p-4 overflow-hidden transition-all duration-base ${
           isMobileChartExpanded ? 'block' : 'hidden sm:block'
         }`}
       >

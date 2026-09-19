@@ -70,7 +70,7 @@ const ActionButtonWithTooltip = ({
       onMouseLeave={() => setHoveredId(null)}
       onClick={onClick}
       disabled={disabled}
-      className={`w-8 h-8 rounded-shape-sm flex items-center justify-center transition-colors duration-150 cursor-pointer border relative before:absolute before:-inset-1.5 before:content-[''] active:scale-95 disabled:opacity-40 disabled:pointer-events-none shrink-0 box-border ${
+      className={`w-8 h-8 rounded-shape-sm flex items-center justify-center transition-colors duration-fast cursor-pointer border relative before:absolute before:-inset-1.5 before:content-[''] active:scale-95 disabled:opacity-40 disabled:pointer-events-none shrink-0 box-border ${
         active
           ? activeClass || 'border-[var(--border-default)] bg-[var(--surface-card)] text-[var(--fg-accent)] shadow-2xs'
           : 'border-transparent hover:border-[var(--border-accent)]/60 bg-transparent hover:bg-[var(--surface-subtle)] text-[var(--text-muted)] hover:text-[var(--text-primary)]'
@@ -354,10 +354,10 @@ export const MessageActions: React.FC<MessageActionsProps> = ({
                         setLocalMenuOpen(false);
                         if (setOpenMenuId) setOpenMenuId(null);
                       }}
-                      className="group w-full h-[36px] min-h-[36px] flex items-center gap-2.5 px-3 py-2 rounded-[var(--radius-xs)] border border-transparent bg-transparent hover:bg-rose-500/10 text-rose-500 transition-all duration-150 cursor-pointer select-none text-start text-xs"
+                      className="group w-full h-[36px] min-h-[36px] flex items-center gap-2.5 px-3 py-2 rounded-[var(--radius-xs)] border border-transparent bg-transparent hover:bg-rose-500/10 text-rose-500 transition-all duration-fast cursor-pointer select-none text-start text-xs"
                     >
-                      <ShieldAlert size={14} className="text-rose-500 group-hover:text-rose-400 shrink-0 transition-colors duration-150" />
-                      <span className="truncate min-w-0 flex-1 text-xs font-semibold text-rose-500 group-hover:text-rose-400 transition-colors duration-150">
+                      <ShieldAlert size={14} className="text-rose-500 group-hover:text-rose-400 shrink-0 transition-colors duration-fast" />
+                      <span className="truncate min-w-0 flex-1 text-xs font-semibold text-rose-500 group-hover:text-rose-400 transition-colors duration-fast">
                         {dir === 'rtl' ? 'الإبلاغ عن المحتوى' : 'Report Content Safety'}
                       </span>
                     </button>
@@ -372,10 +372,10 @@ export const MessageActions: React.FC<MessageActionsProps> = ({
                           key={item.id}
                           type="button"
                           onClick={item.action}
-                          className="group w-full h-[36px] min-h-[36px] flex items-center gap-2.5 px-3 py-2 rounded-[var(--radius-xs)] border border-transparent bg-transparent hover:bg-[var(--surface-subtle)] transition-all duration-150 cursor-pointer select-none text-start text-xs font-medium text-[var(--text-secondary)] hover:text-[var(--text-primary)]"
+                          className="group w-full h-[36px] min-h-[36px] flex items-center gap-2.5 px-3 py-2 rounded-[var(--radius-xs)] border border-transparent bg-transparent hover:bg-[var(--surface-subtle)] transition-all duration-fast cursor-pointer select-none text-start text-xs font-medium text-[var(--text-secondary)] hover:text-[var(--text-primary)]"
                         >
-                          <Icon size={14} className={`${item.iconColor} group-hover:text-[var(--fg-accent)] shrink-0 transition-colors duration-150`} />
-                          <span className="truncate min-w-0 flex-1 text-xs font-medium text-[var(--text-secondary)] group-hover:text-[var(--text-primary)] transition-colors duration-150">
+                          <Icon size={14} className={`${item.iconColor} group-hover:text-[var(--fg-accent)] shrink-0 transition-colors duration-fast`} />
+                          <span className="truncate min-w-0 flex-1 text-xs font-medium text-[var(--text-secondary)] group-hover:text-[var(--text-primary)] transition-colors duration-fast">
                             {item.label}
                           </span>
                         </button>
@@ -392,10 +392,10 @@ export const MessageActions: React.FC<MessageActionsProps> = ({
                         setLocalMenuOpen(false);
                         if (setOpenMenuId) setOpenMenuId(null);
                       }}
-                      className="group w-full h-[34px] min-h-[34px] flex items-center gap-2 px-2.5 rounded-shape-sm border border-transparent bg-transparent hover:bg-rose-500/10 text-rose-500 transition-colors duration-150 cursor-pointer select-none text-start"
+                      className="group w-full h-[34px] min-h-[34px] flex items-center gap-2 px-2.5 rounded-shape-sm border border-transparent bg-transparent hover:bg-rose-500/10 text-rose-500 transition-colors duration-fast cursor-pointer select-none text-start"
                     >
-                      <Trash2 size={14} className="text-rose-500 group-hover:text-rose-400 shrink-0 transition-colors duration-150" />
-                      <span className="truncate min-w-0 flex-1 text-xs font-bold text-rose-500 group-hover:text-rose-400 transition-colors duration-150">
+                      <Trash2 size={14} className="text-rose-500 group-hover:text-rose-400 shrink-0 transition-colors duration-fast" />
+                      <span className="truncate min-w-0 flex-1 text-xs font-bold text-rose-500 group-hover:text-rose-400 transition-colors duration-fast">
                         {dir === 'rtl' ? 'حذف الرد' : 'Delete Response'}
                       </span>
                     </button>

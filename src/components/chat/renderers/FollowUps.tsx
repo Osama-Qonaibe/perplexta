@@ -21,7 +21,7 @@ export const FollowUps: React.FC<FollowUpsProps> = ({ followUps, onSelect, dir }
             key={`follow-up-${idx}-${q.slice(0, 15)}`}
             onClick={() => onSelect(q)}
             id={`follow-up-${idx}`}
-            className="group flex-1 min-w-[120px] max-w-full inline-flex items-center justify-between gap-1.5 px-3 py-1.5 bg-[var(--surface-card)] hover:bg-[var(--surface-subtle)] active:bg-[var(--surface-inset)] border border-[var(--border-default)] hover:border-[var(--border-accent)]/60 rounded-[var(--radius-sm)] text-start cursor-pointer transition-colors duration-150 shadow-2xs"
+            className="group flex-1 min-w-[120px] max-w-full inline-flex items-center justify-between gap-1.5 px-3 py-1.5 bg-[var(--surface-card)] hover:bg-[var(--surface-subtle)] active:bg-[var(--surface-inset)] border border-[var(--border-default)] hover:border-[var(--border-accent)]/60 rounded-[var(--radius-sm)] text-start cursor-pointer transition-colors duration-fast shadow-2xs"
             title={q}
           >
             <span className="text-xs font-semibold text-[var(--text-secondary)] group-hover:text-[var(--text-primary)] transition-colors truncate">

@@ -468,7 +468,7 @@ export const SeoCenterView: React.FC<SeoCenterViewProps> = ({
           </div>
           <div className="w-full bg-[var(--surface-page)] h-2 rounded-[var(--radius-xs)] overflow-hidden mt-3 border border-[var(--border-default)]">
             <div
-              className={`h-full bg-[var(--accent)] transition-all duration-500`}
+              className={`h-full bg-[var(--accent)] transition-all duration-slow`}
               style={{ width: `${healthScore}%` }}
             />
           </div>
@@ -548,7 +548,7 @@ export const SeoCenterView: React.FC<SeoCenterViewProps> = ({
 
           <div className="w-full bg-[var(--surface-page)] h-3 rounded-[var(--radius-xs)] overflow-hidden border border-[var(--border-default)] p-0.5">
             <div
-              className="h-full bg-[var(--accent)] rounded-[var(--radius-xs)] transition-all duration-300 shadow-[0_0_12px_rgba(156,163,175,0.8)]"
+              className="h-full bg-[var(--accent)] rounded-[var(--radius-xs)] transition-all duration-media shadow-[0_0_12px_rgba(156,163,175,0.8)]"
               style={{ width: `${Math.min(100, Math.max(5, (syncProgress.completed / (syncProgress.total || 1)) * 100))}%` }}
             />
           </div>

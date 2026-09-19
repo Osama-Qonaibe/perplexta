@@ -66,7 +66,7 @@ export const SimpleImageLoadingPlaceholder = ({ dir, aspectRatio = '1:1' }: { di
 
         {/* Light frosted blur screen whose blur gradually softens & decreases during work without any text or circles */}
         <div 
-          className="absolute inset-0 pointer-events-none z-20 transition-[backdrop-filter,opacity] duration-150 ease-out"
+          className="absolute inset-0 pointer-events-none z-20 transition-[backdrop-filter,opacity] duration-fast ease-out"
           style={{
             backdropFilter: `blur(${currentBlur.toFixed(1)}px)`,
             WebkitBackdropFilter: `blur(${currentBlur.toFixed(1)}px)`,

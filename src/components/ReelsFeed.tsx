@@ -1782,7 +1782,7 @@ export const ReelsFeed: React.FC<ReelsFeedProps> = ({
           {onClose && (
             <button
               onClick={onClose}
-              className="w-8 h-8 sm:w-9 sm:h-9 rounded-shape-sm flex items-center justify-center bg-black/50 md:bg-[var(--surface-card)] hover:bg-[var(--bg-accent-muted)] md:hover:bg-[var(--bg-accent-muted)] text-white md:text-[var(--text-primary)] hover:text-[var(--fg-accent)] border border-white/20 md:border-[var(--border-default)] hover:border-[var(--border-accent)]/30 transition-all duration-150 active:scale-95 cursor-pointer shadow-xs relative before:absolute before:-inset-1.5 before:content-['']"
+              className="w-8 h-8 sm:w-9 sm:h-9 rounded-shape-sm flex items-center justify-center bg-black/50 md:bg-[var(--surface-card)] hover:bg-[var(--bg-accent-muted)] md:hover:bg-[var(--bg-accent-muted)] text-white md:text-[var(--text-primary)] hover:text-[var(--fg-accent)] border border-white/20 md:border-[var(--border-default)] hover:border-[var(--border-accent)]/30 transition-all duration-fast active:scale-95 cursor-pointer shadow-xs relative before:absolute before:-inset-1.5 before:content-['']"
               title={isRtl ? 'رجوع' : 'Back'}
               aria-label={isRtl ? 'رجوع' : 'Back'}
             >
@@ -1816,9 +1816,9 @@ export const ReelsFeed: React.FC<ReelsFeedProps> = ({
               setActiveTab('for_you');
               setActiveIndex(0);
             }}
-            className="relative h-full flex items-center justify-center px-1.5 sm:px-2 text-xs sm:text-sm font-bold transition-all duration-150 cursor-pointer select-none whitespace-nowrap active:opacity-75 bg-transparent border-0 outline-none hover:text-[var(--fg-accent)]"
+            className="relative h-full flex items-center justify-center px-1.5 sm:px-2 text-xs sm:text-sm font-bold transition-all duration-fast cursor-pointer select-none whitespace-nowrap active:opacity-75 bg-transparent border-0 outline-none hover:text-[var(--fg-accent)]"
           >
-            <span className={`transition-colors duration-150 ${
+            <span className={`transition-colors duration-fast ${
               activeTab === 'for_you'
                 ? 'text-[var(--fg-accent)] font-black'
                 : 'text-white/75 md:text-[var(--text-muted)]'
@@ -1840,9 +1840,9 @@ export const ReelsFeed: React.FC<ReelsFeedProps> = ({
               setActiveTab('following');
               setActiveIndex(0);
             }}
-            className="relative h-full flex items-center justify-center px-1.5 sm:px-2 text-xs sm:text-sm font-bold transition-all duration-150 cursor-pointer select-none whitespace-nowrap active:opacity-75 bg-transparent border-0 outline-none hover:text-[var(--fg-accent)]"
+            className="relative h-full flex items-center justify-center px-1.5 sm:px-2 text-xs sm:text-sm font-bold transition-all duration-fast cursor-pointer select-none whitespace-nowrap active:opacity-75 bg-transparent border-0 outline-none hover:text-[var(--fg-accent)]"
           >
-            <span className={`transition-colors duration-150 ${
+            <span className={`transition-colors duration-fast ${
               activeTab === 'following'
                 ? 'text-[var(--fg-accent)] font-black'
                 : 'text-white/75 md:text-[var(--text-muted)]'
@@ -1864,7 +1864,7 @@ export const ReelsFeed: React.FC<ReelsFeedProps> = ({
           {/* Search Button */}
           <button
             onClick={() => setIsSearchOpen(true)}
-            className="w-8 h-8 sm:w-9 sm:h-9 rounded-shape-sm flex items-center justify-center text-white md:text-[var(--text-primary)] bg-black/50 md:bg-[var(--surface-card)] hover:bg-[var(--bg-accent-muted)] md:hover:bg-[var(--bg-accent-muted)] text-[var(--text-muted)] hover:text-[var(--fg-accent)] transition-all duration-150 active:scale-95 cursor-pointer border border-white/20 md:border-[var(--border-default)] hover:border-[var(--border-accent)]/30 shadow-xs relative before:absolute before:-inset-1.5 before:content-['']"
+            className="w-8 h-8 sm:w-9 sm:h-9 rounded-shape-sm flex items-center justify-center text-white md:text-[var(--text-primary)] bg-black/50 md:bg-[var(--surface-card)] hover:bg-[var(--bg-accent-muted)] md:hover:bg-[var(--bg-accent-muted)] text-[var(--text-muted)] hover:text-[var(--fg-accent)] transition-all duration-fast active:scale-95 cursor-pointer border border-white/20 md:border-[var(--border-default)] hover:border-[var(--border-accent)]/30 shadow-xs relative before:absolute before:-inset-1.5 before:content-['']"
             title={isRtl ? 'بحث في مقاطع ريلز' : 'Search Reels'}
           >
             <Search size={14} />
@@ -1873,7 +1873,7 @@ export const ReelsFeed: React.FC<ReelsFeedProps> = ({
           {/* Upload Button */}
           <button
             onClick={handleUploadReelClick}
-            className="w-8 h-8 sm:w-9 sm:h-9 rounded-shape-sm flex items-center justify-center text-white md:text-[var(--text-primary)] bg-black/50 md:bg-[var(--surface-card)] hover:bg-[var(--bg-accent-muted)] md:hover:bg-[var(--bg-accent-muted)] text-[var(--text-muted)] hover:text-[var(--fg-accent)] transition-all duration-150 active:scale-95 cursor-pointer border border-white/20 md:border-[var(--border-default)] hover:border-[var(--border-accent)]/30 shadow-xs relative before:absolute before:-inset-1.5 before:content-['']"
+            className="w-8 h-8 sm:w-9 sm:h-9 rounded-shape-sm flex items-center justify-center text-white md:text-[var(--text-primary)] bg-black/50 md:bg-[var(--surface-card)] hover:bg-[var(--bg-accent-muted)] md:hover:bg-[var(--bg-accent-muted)] text-[var(--text-muted)] hover:text-[var(--fg-accent)] transition-all duration-fast active:scale-95 cursor-pointer border border-white/20 md:border-[var(--border-default)] hover:border-[var(--border-accent)]/30 shadow-xs relative before:absolute before:-inset-1.5 before:content-['']"
             title={isRtl ? 'رفع مقطع ريلز جديد' : 'Upload New Reel'}
           >
             <Plus size={16} />
@@ -1887,7 +1887,7 @@ export const ReelsFeed: React.FC<ReelsFeedProps> = ({
           >
             <button
               onClick={toggleMute}
-              className="w-8 h-8 sm:w-9 sm:h-9 rounded-shape-sm flex items-center justify-center text-white md:text-[var(--text-primary)] bg-black/50 md:bg-[var(--surface-card)] hover:bg-[var(--bg-accent-muted)] md:hover:bg-[var(--bg-accent-muted)] text-[var(--text-muted)] hover:text-[var(--fg-accent)] transition-all duration-150 active:scale-95 cursor-pointer border border-white/20 md:border-[var(--border-default)] hover:border-[var(--border-accent)]/30 shadow-xs relative before:absolute before:-inset-1.5 before:content-['']"
+              className="w-8 h-8 sm:w-9 sm:h-9 rounded-shape-sm flex items-center justify-center text-white md:text-[var(--text-primary)] bg-black/50 md:bg-[var(--surface-card)] hover:bg-[var(--bg-accent-muted)] md:hover:bg-[var(--bg-accent-muted)] text-[var(--text-muted)] hover:text-[var(--fg-accent)] transition-all duration-fast active:scale-95 cursor-pointer border border-white/20 md:border-[var(--border-default)] hover:border-[var(--border-accent)]/30 shadow-xs relative before:absolute before:-inset-1.5 before:content-['']"
               title={isMuted ? (isRtl ? 'تشغيل الصوت (M)' : 'Unmute (M)') : (isRtl ? 'كتم الصوت (M)' : 'Mute (M)')}
             >
               {isMuted ? (
@@ -1930,7 +1930,7 @@ export const ReelsFeed: React.FC<ReelsFeedProps> = ({
           {onClose && (
             <button
               onClick={onClose}
-              className="hidden md:flex w-8 h-8 sm:w-9 sm:h-9 rounded-shape-sm items-center justify-center text-[var(--text-primary)] bg-[var(--surface-card)] hover:bg-rose-500/15 hover:text-rose-400 hover:border-rose-500/30 transition-all duration-150 active:scale-95 cursor-pointer border border-[var(--border-default)] shadow-xs relative before:absolute before:-inset-1.5 before:content-['']"
+              className="hidden md:flex w-8 h-8 sm:w-9 sm:h-9 rounded-shape-sm items-center justify-center text-[var(--text-primary)] bg-[var(--surface-card)] hover:bg-rose-500/15 hover:text-rose-400 hover:border-rose-500/30 transition-all duration-fast active:scale-95 cursor-pointer border border-[var(--border-default)] shadow-xs relative before:absolute before:-inset-1.5 before:content-['']"
               title={isRtl ? 'إغلاق (Esc)' : 'Close (Esc)'}
             >
               <X size={15} />
@@ -2020,7 +2020,7 @@ export const ReelsFeed: React.FC<ReelsFeedProps> = ({
             <div
               key={`reel-item-${reel.id}-${index}`}
               data-reel-index={index}
-              className={`reel-snap-item relative w-full h-full snap-center shrink-0 flex items-center justify-center p-0 md:py-2 md:px-4 overflow-hidden transition-all duration-300 ease-out ${
+              className={`reel-snap-item relative w-full h-full snap-center shrink-0 flex items-center justify-center p-0 md:py-2 md:px-4 overflow-hidden transition-all duration-media ease-out ${
                 isCurrentActive ? 'scale-100 opacity-100' : 'scale-[0.985] opacity-90'
               }`}
             >
@@ -2036,64 +2036,76 @@ export const ReelsFeed: React.FC<ReelsFeedProps> = ({
                 >
                   {/* Video Player Element Container */}
                   <div className="w-full h-full flex items-center justify-center overflow-hidden bg-black">
-                    <video
-                      ref={(el) => {
-                        videoRefs.current[reel.id] = el;
-                      }}
-                      data-media-id={`reels_feed_${reel.id}`}
-                      src={reel.video_url}
-                      poster={reel.image_url}
-                      loop
-                      muted={isMuted}
-                      playsInline
-                      autoPlay={index === activeIndex}
-                      preload={Math.abs(index - activeIndex) <= 2 ? 'auto' : 'metadata'}
-                      onLoadedMetadata={(e) => {
-                        if (index === activeIndex) {
-                          playActiveVideo(e.currentTarget, reel.id, isMuted);
-                        }
-                      }}
-                      onCanPlay={(e) => {
-                        if (index === activeIndex && e.currentTarget.paused) {
-                          playActiveVideo(e.currentTarget, reel.id, isMuted);
-                        }
-                      }}
-                      onTimeUpdate={() => handleTimeUpdate(reel.id)}
-                      onPlaying={() => {
-                        setPlayingState((prev) => ({ ...prev, [reel.id]: true }));
-                      }}
-                      onPause={(e) => {
-                        const reelId = reel.id;
-                        const v = e.currentTarget;
+                    {Math.abs(index - activeIndex) <= 2 ? (
+                      <video
+                        ref={(el) => {
+                          videoRefs.current[reel.id] = el;
+                        }}
+                        data-media-id={`reels_feed_${reel.id}`}
+                        src={reel.video_url}
+                        poster={reel.image_url}
+                        loop
+                        muted={isMuted}
+                        playsInline
+                        autoPlay={index === activeIndex}
+                        preload={Math.abs(index - activeIndex) <= 2 ? 'auto' : 'metadata'}
+                        onLoadedMetadata={(e) => {
+                          if (index === activeIndex) {
+                            playActiveVideo(e.currentTarget, reel.id, isMuted);
+                          }
+                        }}
+                        onCanPlay={(e) => {
+                          if (index === activeIndex && e.currentTarget.paused) {
+                            playActiveVideo(e.currentTarget, reel.id, isMuted);
+                          }
+                        }}
+                        onTimeUpdate={() => handleTimeUpdate(reel.id)}
+                        onPlaying={() => {
+                          setPlayingState((prev) => ({ ...prev, [reel.id]: true }));
+                        }}
+                        onPause={(e) => {
+                          const reelId = reel.id;
+                          const v = e.currentTarget;
 
-                        // If it's autoplay fallback, we want to handle the retry
-                        if (isAutoplayFallbackRef.current && index === activeIndex) {
-                          v.play().then(() => {
-                            setPlayingState((prev) => ({ ...prev, [reelId]: true }));
-                          }).catch(() => {
-                            v.muted = true;
+                          // If it's autoplay fallback, we want to handle the retry
+                          if (isAutoplayFallbackRef.current && index === activeIndex) {
                             v.play().then(() => {
                               setPlayingState((prev) => ({ ...prev, [reelId]: true }));
                             }).catch(() => {
-                              setPlayingState((prev) => ({ ...prev, [reelId]: false }));
+                              v.muted = true;
+                              v.play().then(() => {
+                                setPlayingState((prev) => ({ ...prev, [reelId]: true }));
+                              }).catch(() => {
+                                setPlayingState((prev) => ({ ...prev, [reelId]: false }));
+                              });
                             });
-                          });
-                          return;
-                        }
+                            return;
+                          }
 
-                        // If we are actively toggling mute, let toggleMute handle playback synchronously inside user gesture.
-                        // Do not trigger pause state immediately to prevent flicker or premature pause states.
-                        if (isTogglingMuteRef.current && index === activeIndex) {
-                          return;
-                        }
+                          // If we are actively toggling mute, let toggleMute handle playback synchronously inside user gesture.
+                          // Do not trigger pause state immediately to prevent flicker or premature pause states.
+                          if (isTogglingMuteRef.current && index === activeIndex) {
+                            return;
+                          }
 
-                        if (!v.paused) {
-                          return;
-                        }
-                        setPlayingState((prev) => ({ ...prev, [reelId]: false }));
-                      }}
-                      className="w-full h-full object-contain md:object-cover pointer-events-none select-none max-h-full max-w-full"
-                    />
+                          if (!v.paused) {
+                            return;
+                          }
+                          setPlayingState((prev) => ({ ...prev, [reelId]: false }));
+                        }}
+                        className="w-full h-full object-contain md:object-cover pointer-events-none select-none max-h-full max-w-full"
+                      />
+                    ) : (
+                      <img
+                        src={reel.image_url}
+                        alt="Reel poster"
+                        loading="lazy"
+                        className="w-full h-full object-contain md:object-cover pointer-events-none select-none max-h-full max-w-full filter brightness-75"
+                        onError={(e) => {
+                          e.currentTarget.style.display = 'none';
+                        }}
+                      />
+                    )}
                   </div>
 
                   {/* Gradient Overlays for Enhanced Readability */}
@@ -2101,7 +2113,7 @@ export const ReelsFeed: React.FC<ReelsFeedProps> = ({
 
                   {/* Real-Time Interactive Video Progress Bar at Bottom of Card with Hover Metadata */}
                   <div
-                    className="absolute bottom-0 inset-x-0 z-30 h-2 hover:h-3 bg-white/20 backdrop-blur-sm cursor-pointer transition-all duration-150 pointer-events-auto group/timeline flex items-end"
+                    className="absolute bottom-0 inset-x-0 z-30 h-2 hover:h-3 bg-white/20 backdrop-blur-sm cursor-pointer transition-all duration-fast pointer-events-auto group/timeline flex items-end"
                     onClick={(e) => handleSeek(e, reel.id)}
                     onMouseMove={(e) => {
                       const video = videoRefs.current[reel.id];
@@ -2143,7 +2155,7 @@ export const ReelsFeed: React.FC<ReelsFeedProps> = ({
                           left: `${Math.max(10, Math.min(90, reelsHoverMeta.percent))}%`,
                           transform: 'translateX(-50%)'
                         }}
-                        className="absolute bottom-full mb-2 z-40 pointer-events-none flex flex-col items-center animate-in fade-in zoom-in-95 duration-150"
+                        className="absolute bottom-full mb-2 z-40 pointer-events-none flex flex-col items-center animate-in fade-in zoom-in-95 duration-fast"
                       >
                         <div className="px-2.5 py-1.5 rounded-[var(--radius-md)] bg-[var(--surface-card)]/95 backdrop-blur-md border border-[var(--border-default)] shadow-2xl text-[var(--text-primary)] text-[11px] font-mono flex items-center gap-2 whitespace-nowrap">
                           <span className="font-bold text-accent">
@@ -2274,7 +2286,7 @@ export const ReelsFeed: React.FC<ReelsFeedProps> = ({
                     <div className="flex flex-col items-center gap-0.5 select-none">
                       <button
                         onClick={(e) => handleLikeClick(e, reel.id)}
-                        className="w-9 h-9 sm:w-10 sm:h-10 rounded-shape-sm flex items-center justify-center bg-black/50 backdrop-blur-md border border-white/20 hover:bg-rose-500/15 hover:border-rose-500/40 text-white hover:text-rose-400 active:scale-95 transition-all duration-150 cursor-pointer shadow-md relative before:absolute before:-inset-1.5 before:content-['']"
+                        className="w-9 h-9 sm:w-10 sm:h-10 rounded-shape-sm flex items-center justify-center bg-black/50 backdrop-blur-md border border-white/20 hover:bg-rose-500/15 hover:border-rose-500/40 text-white hover:text-rose-400 active:scale-95 transition-all duration-fast cursor-pointer shadow-md relative before:absolute before:-inset-1.5 before:content-['']"
                         title={isRtl ? 'أعجبني' : 'Like'}
                       >
                         <Heart
@@ -2295,7 +2307,7 @@ export const ReelsFeed: React.FC<ReelsFeedProps> = ({
                     <div className="flex flex-col items-center gap-0.5 select-none">
                       <button
                         onClick={(e) => openCommentsDrawer(e, reel.id)}
-                        className="w-9 h-9 sm:w-10 sm:h-10 rounded-shape-sm flex items-center justify-center bg-black/50 backdrop-blur-md border border-white/20 hover:bg-[var(--bg-accent-muted)] hover:border-[var(--border-accent)]/30 text-white hover:text-[var(--fg-accent)] active:scale-95 transition-all duration-150 cursor-pointer shadow-md relative before:absolute before:-inset-1.5 before:content-['']"
+                        className="w-9 h-9 sm:w-10 sm:h-10 rounded-shape-sm flex items-center justify-center bg-black/50 backdrop-blur-md border border-white/20 hover:bg-[var(--bg-accent-muted)] hover:border-[var(--border-accent)]/30 text-white hover:text-[var(--fg-accent)] active:scale-95 transition-all duration-fast cursor-pointer shadow-md relative before:absolute before:-inset-1.5 before:content-['']"
                         title={isRtl ? 'التعليقات' : 'Comments'}
                       >
                         <MessageCircle size={18} className="stroke-[2.2]" />
@@ -2309,7 +2321,7 @@ export const ReelsFeed: React.FC<ReelsFeedProps> = ({
                     <div className="flex flex-col items-center gap-0.5 select-none">
                       <button
                         onClick={(e) => handleSaveClick(e, reel.id)}
-                        className="w-9 h-9 sm:w-10 sm:h-10 rounded-shape-sm flex items-center justify-center bg-black/50 backdrop-blur-md border border-white/20 hover:bg-[var(--status-warning-subtle)] hover:border-[var(--status-warning)] text-white hover:text-[var(--fg-warning)] active:scale-95 transition-all duration-150 cursor-pointer shadow-md relative before:absolute before:-inset-1.5 before:content-['']"
+                        className="w-9 h-9 sm:w-10 sm:h-10 rounded-shape-sm flex items-center justify-center bg-black/50 backdrop-blur-md border border-white/20 hover:bg-[var(--status-warning-subtle)] hover:border-[var(--status-warning)] text-white hover:text-[var(--fg-warning)] active:scale-95 transition-all duration-fast cursor-pointer shadow-md relative before:absolute before:-inset-1.5 before:content-['']"
                         title={isSaved ? (isRtl ? 'إزالة من المحفوظات' : 'Saved') : (isRtl ? 'حفظ' : 'Save')}
                       >
                         <Bookmark
@@ -2330,7 +2342,7 @@ export const ReelsFeed: React.FC<ReelsFeedProps> = ({
                     <div className="flex flex-col items-center gap-0.5 select-none">
                       <button
                         onClick={(e) => openShareSheet(e, reel)}
-                        className="w-9 h-9 sm:w-10 sm:h-10 rounded-shape-sm flex items-center justify-center bg-black/50 backdrop-blur-md border border-white/20 hover:bg-[var(--bg-accent-muted)] hover:border-[var(--border-accent)]/30 text-white hover:text-[var(--fg-accent)] active:scale-95 transition-all duration-150 cursor-pointer shadow-md relative before:absolute before:-inset-1.5 before:content-['']"
+                        className="w-9 h-9 sm:w-10 sm:h-10 rounded-shape-sm flex items-center justify-center bg-black/50 backdrop-blur-md border border-white/20 hover:bg-[var(--bg-accent-muted)] hover:border-[var(--border-accent)]/30 text-white hover:text-[var(--fg-accent)] active:scale-95 transition-all duration-fast cursor-pointer shadow-md relative before:absolute before:-inset-1.5 before:content-['']"
                         title={isRtl ? 'مشاركة' : 'Share'}
                       >
                         <Share2 size={18} className="stroke-[2.2]" />
@@ -2347,7 +2359,7 @@ export const ReelsFeed: React.FC<ReelsFeedProps> = ({
                           e.stopPropagation();
                           setMoreMenuReel(reel);
                         }}
-                        className="w-9 h-9 sm:w-10 sm:h-10 rounded-shape-sm flex items-center justify-center bg-black/50 backdrop-blur-md border border-white/20 hover:bg-[var(--bg-accent-muted)] hover:border-[var(--border-accent)]/30 text-white hover:text-[var(--fg-accent)] active:scale-95 transition-all duration-150 cursor-pointer shadow-md relative before:absolute before:-inset-1.5 before:content-['']"
+                        className="w-9 h-9 sm:w-10 sm:h-10 rounded-shape-sm flex items-center justify-center bg-black/50 backdrop-blur-md border border-white/20 hover:bg-[var(--bg-accent-muted)] hover:border-[var(--border-accent)]/30 text-white hover:text-[var(--fg-accent)] active:scale-95 transition-all duration-fast cursor-pointer shadow-md relative before:absolute before:-inset-1.5 before:content-['']"
                         title={isRtl ? 'خيارات إضافية' : 'More options'}
                       >
                         <MoreVertical size={18} className="stroke-[2.2]" />
@@ -2492,7 +2504,7 @@ export const ReelsFeed: React.FC<ReelsFeedProps> = ({
                   <div className="relative group mb-1 flex flex-col items-center">
                     <div
                       onClick={() => reel.page_id && onOpenPageDetail && onOpenPageDetail(reel.page_id)}
-                      className="w-12 h-12 rounded-full p-0.5 bg-gradient-to-tr from-accent to-pink-500 shadow-xl cursor-pointer hover:scale-105 active:scale-95 transition-transform overflow-hidden flex items-center justify-center bg-black/40"
+                      className="w-12 h-12 rounded-full p-0.5 bg-gradient-to-tr from-accent to-pink-500 shadow-xl cursor-pointer active:scale-95 transition-transform overflow-hidden flex items-center justify-center bg-black/40"
                     >
                       <BulletinAvatar
                         src={reel.author_avatar}
@@ -2514,7 +2526,7 @@ export const ReelsFeed: React.FC<ReelsFeedProps> = ({
 
                   {/* Like Button with Hover Reactions */}
                   <div className="flex flex-col items-center gap-0.5 group/like relative select-none">
-                    <div className="absolute bottom-full mb-2 hidden group-hover/like:flex items-center gap-1 vb-emoji-bar scale-0 group-hover/like:scale-100 origin-bottom transition-all duration-200 z-50">
+                    <div className="absolute bottom-full mb-2 hidden group-hover/like:flex items-center gap-1 vb-emoji-bar scale-0 group-hover/like:scale-100 origin-bottom transition-all duration-base z-50">
                       {['👍', '❤️', '😂', '😮', '😢', '🔥'].map((emoji) => (
                         <button
                           key={`rail-emoji-${emoji}`}

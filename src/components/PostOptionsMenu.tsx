@@ -644,7 +644,7 @@ export const PostOptionsMenu: React.FC<PostOptionsMenuProps> = ({
               onClick={(e) => e.stopPropagation()}
               onMouseDown={(e) => e.stopPropagation()}
               onTouchStart={(e) => e.stopPropagation()}
-              className={`absolute top-full mt-1.5 ${alignClass} ${alignClass === 'right-0' ? 'origin-top-right' : 'origin-top-left'} w-max min-w-[210px] sm:min-w-[230px] max-w-[calc(100vw-32px)] rounded-[var(--radius-md)] border border-[var(--border-default)] bg-[var(--surface-card)] text-[var(--text-primary)] shadow-2xl p-1.5 z-50 text-xs font-medium flex flex-col gap-0.5 backdrop-blur-2xl ring-1 ring-black/5 dark:ring-white/10 transition-colors duration-150 ${SCROLL_STYLES.dropdown} max-h-[85vh] ${className}`}
+              className={`absolute top-full mt-1.5 ${alignClass} ${alignClass === 'right-0' ? 'origin-top-right' : 'origin-top-left'} w-max min-w-[210px] sm:min-w-[230px] max-w-[calc(100vw-32px)] rounded-[var(--radius-md)] border border-[var(--border-default)] bg-[var(--surface-card)] text-[var(--text-primary)] shadow-2xl p-1.5 z-50 text-xs font-medium flex flex-col gap-0.5 backdrop-blur-2xl ring-1 ring-black/5 dark:ring-white/10 transition-colors duration-fast ${SCROLL_STYLES.dropdown} max-h-[85vh] ${className}`}
               dir={isRtl ? 'rtl' : 'ltr'}
             >
               {/* Hierarchically Sorted Main Actions */}
@@ -655,10 +655,10 @@ export const PostOptionsMenu: React.FC<PostOptionsMenuProps> = ({
                     key={item.id}
                     type="button"
                     onClick={item.action}
-                    className={`group w-full h-[36px] min-h-[36px] flex items-center gap-2.5 px-3 py-2 rounded-[var(--radius-xs)] border border-transparent transition-all duration-150 cursor-pointer select-none text-start bg-transparent ${HOVER_STYLES.dropdownItem}`}
+                    className={`group w-full h-[36px] min-h-[36px] flex items-center gap-2.5 px-3 py-2 rounded-[var(--radius-xs)] border border-transparent transition-all duration-fast cursor-pointer select-none text-start bg-transparent ${HOVER_STYLES.dropdownItem}`}
                   >
-                    <Icon size={14} className={`${item.iconColor || 'text-[var(--text-muted)]'} group-hover:text-[var(--fg-accent)] shrink-0 transition-colors duration-150`} />
-                    <span className="truncate min-w-0 flex-1 text-xs font-medium text-[var(--text-secondary)] group-hover:text-[var(--text-primary)] transition-colors duration-150">
+                    <Icon size={14} className={`${item.iconColor || 'text-[var(--text-muted)]'} group-hover:text-[var(--fg-accent)] shrink-0 transition-colors duration-fast`} />
+                    <span className="truncate min-w-0 flex-1 text-xs font-medium text-[var(--text-secondary)] group-hover:text-[var(--text-primary)] transition-colors duration-fast">
                       {item.label}
                     </span>
                   </button>
@@ -675,14 +675,14 @@ export const PostOptionsMenu: React.FC<PostOptionsMenuProps> = ({
                     key={item.id}
                     type="button"
                     onClick={item.action}
-                    className={`group w-full h-[36px] min-h-[36px] flex items-center gap-2.5 px-3 py-2 rounded-[var(--radius-xs)] border border-transparent transition-all duration-150 cursor-pointer select-none text-start ${
+                    className={`group w-full h-[36px] min-h-[36px] flex items-center gap-2.5 px-3 py-2 rounded-[var(--radius-xs)] border border-transparent transition-all duration-fast cursor-pointer select-none text-start ${
                       item.isDestructive
                         ? 'bg-transparent hover:bg-rose-500/10 text-rose-500'
                         : `bg-transparent ${HOVER_STYLES.dropdownItem}`
                     }`}
                   >
-                    <Icon size={14} className={`${item.isDestructive ? 'text-rose-500 group-hover:text-rose-400' : 'text-[var(--text-muted)] group-hover:text-[var(--fg-accent)]'} shrink-0 transition-colors duration-150`} />
-                    <span className={`truncate min-w-0 flex-1 text-xs ${item.isDestructive ? 'font-bold text-rose-500 group-hover:text-rose-400' : 'font-medium text-[var(--text-secondary)] group-hover:text-[var(--text-primary)]'} transition-colors duration-150`}>
+                    <Icon size={14} className={`${item.isDestructive ? 'text-rose-500 group-hover:text-rose-400' : 'text-[var(--text-muted)] group-hover:text-[var(--fg-accent)]'} shrink-0 transition-colors duration-fast`} />
+                    <span className={`truncate min-w-0 flex-1 text-xs ${item.isDestructive ? 'font-bold text-rose-500 group-hover:text-rose-400' : 'font-medium text-[var(--text-secondary)] group-hover:text-[var(--text-primary)]'} transition-colors duration-fast`}>
                       {item.label}
                     </span>
                   </button>
@@ -721,7 +721,7 @@ export const PostOptionsMenu: React.FC<PostOptionsMenuProps> = ({
                   type="button"
                   onClick={() => setActiveModal(null)}
                   aria-label={isRtl ? 'إغلاق' : 'Close'}
-                  className="w-7 h-7 rounded-shape-sm flex items-center justify-center text-[var(--text-muted)] hover:text-[var(--text-primary)] hover:bg-[var(--surface-subtle)] border border-transparent hover:border-[var(--border-default)] transition-all duration-150 cursor-pointer shadow-2xs"
+                  className="w-7 h-7 rounded-shape-sm flex items-center justify-center text-[var(--text-muted)] hover:text-[var(--text-primary)] hover:bg-[var(--surface-subtle)] border border-transparent hover:border-[var(--border-default)] transition-all duration-fast cursor-pointer shadow-2xs"
                 >
                   <X size={14} />
                 </button>
@@ -747,7 +747,7 @@ export const PostOptionsMenu: React.FC<PostOptionsMenuProps> = ({
                       type="button"
                       onClick={() => handleSaveWhoCanComment(opt.id)}
                       disabled={isActionLoading}
-                      className={`w-full flex items-center justify-between p-2.5 rounded-shape-sm border transition-all duration-150 text-start cursor-pointer ${
+                      className={`w-full flex items-center justify-between p-2.5 rounded-shape-sm border transition-all duration-fast text-start cursor-pointer ${
                         whoCanComment === opt.id
                           ? 'border-accent/60 bg-accent/10'
                           : 'border-[var(--border-default)] hover:bg-[var(--surface-subtle)] hover:border-accent/40'
@@ -790,7 +790,7 @@ export const PostOptionsMenu: React.FC<PostOptionsMenuProps> = ({
                         type="button"
                         onClick={() => handleSaveAudience(opt.id)}
                         disabled={isActionLoading}
-                        className={`w-full flex items-center justify-between p-2.5 rounded-shape-sm border transition-all duration-150 text-start cursor-pointer ${
+                        className={`w-full flex items-center justify-between p-2.5 rounded-shape-sm border transition-all duration-fast text-start cursor-pointer ${
                           audience === opt.id
                             ? 'border-accent/60 bg-accent/10'
                             : 'border-[var(--border-default)] hover:bg-[var(--surface-subtle)] hover:border-accent/40'
@@ -865,7 +865,7 @@ export const PostOptionsMenu: React.FC<PostOptionsMenuProps> = ({
                       <button
                         type="button"
                         onClick={copyPartnershipCode}
-                        className="h-8 px-3 rounded-shape-sm bg-[var(--surface-subtle)] border border-[var(--border-default)] hover:bg-[var(--surface-card)] hover:border-accent/40 text-[var(--text-primary)] text-xs font-bold transition-all duration-150 shrink-0 flex items-center gap-1 shadow-2xs active:scale-95 cursor-pointer"
+                        className="h-8 px-3 rounded-shape-sm bg-[var(--surface-subtle)] border border-[var(--border-default)] hover:bg-[var(--surface-card)] hover:border-accent/40 text-[var(--text-primary)] text-xs font-bold transition-all duration-fast shrink-0 flex items-center gap-1 shadow-2xs active:scale-95 cursor-pointer"
                       >
                         {copiedCode ? <Check size={13} className="text-emerald-500" /> : <Copy size={13} />}
                         <span>{copiedCode ? (isRtl ? 'تم النسخ' : 'Copied') : (isRtl ? 'نسخ' : 'Copy')}</span>
@@ -878,7 +878,7 @@ export const PostOptionsMenu: React.FC<PostOptionsMenuProps> = ({
                       type="button"
                       onClick={handleSavePartnership}
                       disabled={isActionLoading}
-                      className="w-full h-8 px-4 rounded-shape-sm bg-accent text-white hover:bg-accent/90 text-xs font-bold transition-all duration-150 shadow-2xs active:scale-95 disabled:opacity-50 cursor-pointer flex items-center justify-center gap-2"
+                      className="w-full h-8 px-4 rounded-shape-sm bg-accent text-white hover:bg-accent/90 text-xs font-bold transition-all duration-fast shadow-2xs active:scale-95 disabled:opacity-50 cursor-pointer flex items-center justify-center gap-2"
                     >
                       {isActionLoading && <Loader2 size={13} className="animate-spin" />}
                       <span>{isRtl ? 'حفظ إعدادات الشراكة' : 'Save Partnership'}</span>
@@ -935,7 +935,7 @@ export const PostOptionsMenu: React.FC<PostOptionsMenuProps> = ({
                       type="button"
                       onClick={handleSaveDate}
                       disabled={isActionLoading}
-                      className="w-full h-8 px-4 rounded-shape-sm bg-accent text-white hover:bg-accent/90 text-xs font-bold transition-all duration-150 shadow-2xs active:scale-95 disabled:opacity-50 cursor-pointer flex items-center justify-center gap-2"
+                      className="w-full h-8 px-4 rounded-shape-sm bg-accent text-white hover:bg-accent/90 text-xs font-bold transition-all duration-fast shadow-2xs active:scale-95 disabled:opacity-50 cursor-pointer flex items-center justify-center gap-2"
                     >
                       {isActionLoading && <Loader2 size={13} className="animate-spin" />}
                       <span>{isRtl ? 'حفظ التاريخ' : 'Save Date'}</span>
@@ -956,7 +956,7 @@ export const PostOptionsMenu: React.FC<PostOptionsMenuProps> = ({
                   <button
                     type="button"
                     onClick={copyEmbedCode}
-                    className="w-full h-8 px-4 rounded-shape-sm bg-accent text-white hover:bg-accent/90 text-xs font-bold transition-all duration-150 shadow-2xs active:scale-95 cursor-pointer flex items-center justify-center gap-1"
+                    className="w-full h-8 px-4 rounded-shape-sm bg-accent text-white hover:bg-accent/90 text-xs font-bold transition-all duration-fast shadow-2xs active:scale-95 cursor-pointer flex items-center justify-center gap-1"
                   >
                     {copiedEmbed ? <Check size={14} /> : <Copy size={14} />}
                     <span>{copiedEmbed ? (isRtl ? 'تم النسخ بنجاح!' : 'Copied!') : (isRtl ? 'نسخ رمز التضمين' : 'Copy Embed Code')}</span>
@@ -977,7 +977,7 @@ export const PostOptionsMenu: React.FC<PostOptionsMenuProps> = ({
                     <button
                       type="button"
                       onClick={() => setActiveModal(null)}
-                      className="flex-1 h-8 px-3 rounded-shape-sm bg-[var(--surface-subtle)] border border-[var(--border-default)] hover:bg-[var(--surface-card)] text-[var(--text-primary)] text-xs font-bold transition-all duration-150 shadow-2xs active:scale-95 cursor-pointer"
+                      className="flex-1 h-8 px-3 rounded-shape-sm bg-[var(--surface-subtle)] border border-[var(--border-default)] hover:bg-[var(--surface-card)] text-[var(--text-primary)] text-xs font-bold transition-all duration-fast shadow-2xs active:scale-95 cursor-pointer"
                     >
                       {isRtl ? 'إلغاء' : 'Cancel'}
                     </button>
@@ -985,7 +985,7 @@ export const PostOptionsMenu: React.FC<PostOptionsMenuProps> = ({
                       type="button"
                       onClick={handleConfirmArchive}
                       disabled={isActionLoading}
-                      className="flex-1 h-8 px-3 rounded-shape-sm bg-accent text-white hover:bg-accent/90 text-xs font-bold transition-all duration-150 shadow-2xs active:scale-95 disabled:opacity-50 cursor-pointer flex items-center justify-center gap-1"
+                      className="flex-1 h-8 px-3 rounded-shape-sm bg-accent text-white hover:bg-accent/90 text-xs font-bold transition-all duration-fast shadow-2xs active:scale-95 disabled:opacity-50 cursor-pointer flex items-center justify-center gap-1"
                     >
                       {isActionLoading && <Loader2 size={13} className="animate-spin" />}
                       <span>{isRtl ? 'تأكيد الأرشفة' : 'Confirm Archive'}</span>
@@ -1012,7 +1012,7 @@ export const PostOptionsMenu: React.FC<PostOptionsMenuProps> = ({
                     <button
                       type="button"
                       onClick={() => setActiveModal(null)}
-                      className="flex-1 h-8 px-3 rounded-shape-sm bg-[var(--surface-subtle)] border border-[var(--border-default)] hover:bg-[var(--surface-card)] text-[var(--text-primary)] text-xs font-bold transition-all duration-150 shadow-2xs active:scale-95 cursor-pointer"
+                      className="flex-1 h-8 px-3 rounded-shape-sm bg-[var(--surface-subtle)] border border-[var(--border-default)] hover:bg-[var(--surface-card)] text-[var(--text-primary)] text-xs font-bold transition-all duration-fast shadow-2xs active:scale-95 cursor-pointer"
                     >
                       {isRtl ? 'إلغاء' : 'Cancel'}
                     </button>
@@ -1020,7 +1020,7 @@ export const PostOptionsMenu: React.FC<PostOptionsMenuProps> = ({
                       type="button"
                       onClick={handleConfirmTrash}
                       disabled={isActionLoading}
-                      className="flex-1 h-8 px-3 rounded-shape-sm bg-rose-600 hover:bg-rose-700 text-white text-xs font-bold transition-all duration-150 shadow-2xs active:scale-95 disabled:opacity-50 cursor-pointer flex items-center justify-center gap-1"
+                      className="flex-1 h-8 px-3 rounded-shape-sm bg-rose-600 hover:bg-rose-700 text-white text-xs font-bold transition-all duration-fast shadow-2xs active:scale-95 disabled:opacity-50 cursor-pointer flex items-center justify-center gap-1"
                     >
                       {isActionLoading && <Loader2 size={13} className="animate-spin" />}
                       <span>{isRtl ? 'نقل إلى سلة المهملات' : 'Move to Trash'}</span>

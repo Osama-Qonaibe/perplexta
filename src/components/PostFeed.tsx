@@ -760,7 +760,7 @@ export const PostFeed: React.FC<PostFeedProps> = ({
                     {onEditAd && (
                       <button
                         onClick={() => onEditAd(ad)}
-                        className="w-8 h-8 rounded-shape-sm bg-[var(--surface-subtle)] border border-[var(--border-default)] hover:bg-accent/10 hover:border-accent/40 text-[var(--text-muted)] hover:text-accent transition-all duration-150 active:scale-95 flex items-center justify-center cursor-pointer shrink-0 shadow-2xs"
+                        className="w-8 h-8 rounded-shape-sm bg-[var(--surface-subtle)] border border-[var(--border-default)] hover:bg-accent/10 hover:border-accent/40 text-[var(--text-muted)] hover:text-accent transition-all duration-fast active:scale-95 flex items-center justify-center cursor-pointer shrink-0 shadow-2xs"
                         title={isRtl ? 'تعديل المنشور' : 'Edit Post'}
                       >
                         <Edit size={14} />
@@ -769,7 +769,7 @@ export const PostFeed: React.FC<PostFeedProps> = ({
                     {onDeleteAd && (
                       <button
                         onClick={() => onDeleteAd(ad)}
-                        className="w-8 h-8 rounded-shape-sm bg-[var(--surface-subtle)] border border-[var(--border-default)] hover:bg-rose-500/10 hover:border-rose-500/30 text-[var(--text-muted)] hover:text-rose-500 transition-all duration-150 active:scale-95 flex items-center justify-center cursor-pointer shrink-0 shadow-2xs"
+                        className="w-8 h-8 rounded-shape-sm bg-[var(--surface-subtle)] border border-[var(--border-default)] hover:bg-rose-500/10 hover:border-rose-500/30 text-[var(--text-muted)] hover:text-rose-500 transition-all duration-fast active:scale-95 flex items-center justify-center cursor-pointer shrink-0 shadow-2xs"
                         title={isRtl ? 'حذف المنشور' : 'Delete Post'}
                       >
                         <Trash2 size={14} />
@@ -786,7 +786,7 @@ export const PostFeed: React.FC<PostFeedProps> = ({
                       e.stopPropagation();
                       setActiveMoreMenuId(activeMoreMenuId === ad.id ? null : ad.id);
                     }}
-                    className={`w-8 h-8 rounded-shape-sm flex items-center justify-center border transition-all duration-150 active:scale-95 cursor-pointer shrink-0 shadow-2xs ${
+                    className={`w-8 h-8 rounded-shape-sm flex items-center justify-center border transition-all duration-fast active:scale-95 cursor-pointer shrink-0 shadow-2xs ${
                       activeMoreMenuId === ad.id
                         ? 'bg-accent/15 border-accent/40 text-accent font-bold'
                         : 'bg-[var(--surface-subtle)] border-[var(--border-default)] text-[var(--text-muted)] hover:text-accent hover:bg-accent/10 hover:border-accent/40'
@@ -1114,7 +1114,7 @@ export const PostFeed: React.FC<PostFeedProps> = ({
                 {onBoostAd ? (
                   <button
                     onClick={() => onBoostAd(ad)}
-                    className={`flex-1 min-w-0 min-h-[44px] flex items-center justify-center gap-1 sm:gap-1.5 transition-all duration-200 active:scale-95 cursor-pointer py-2 font-bold text-[11px] sm:text-xs select-none ${
+                    className={`flex-1 min-w-0 min-h-[44px] flex items-center justify-center gap-1 sm:gap-1.5 transition-all duration-base active:scale-95 cursor-pointer py-2 font-bold text-[11px] sm:text-xs select-none ${
                       ad.is_boosted
                         ? 'text-[var(--fg-warning)] hover:opacity-90'
                         : 'text-[var(--text-muted)] hover:text-[var(--fg-warning)]'
@@ -1131,7 +1131,7 @@ export const PostFeed: React.FC<PostFeedProps> = ({
                 {/* 2. Insights / Stats Button (الرؤى) */}
                 <button
                   onClick={() => setActiveInsightsAdId(activeInsightsAdId === ad.id ? null : ad.id)}
-                  className={`flex-1 min-w-0 min-h-[44px] flex items-center justify-center gap-1 sm:gap-1.5 transition-all duration-200 active:scale-95 cursor-pointer py-2 font-bold text-[11px] sm:text-xs select-none ${
+                  className={`flex-1 min-w-0 min-h-[44px] flex items-center justify-center gap-1 sm:gap-1.5 transition-all duration-base active:scale-95 cursor-pointer py-2 font-bold text-[11px] sm:text-xs select-none ${
                     activeInsightsAdId === ad.id
                       ? 'text-[var(--fg-accent)]'
                       : 'text-[var(--text-muted)] hover:text-[var(--text-primary)]'
@@ -1149,7 +1149,7 @@ export const PostFeed: React.FC<PostFeedProps> = ({
                     if (onMessageAdvertiser) onMessageAdvertiser(ad);
                   }}
                   disabled={messagingAdId === ad.id}
-                  className={`flex-1 min-w-0 min-h-[44px] flex items-center justify-center gap-1 sm:gap-1.5 transition-all duration-200 active:scale-95 cursor-pointer py-2 font-bold text-[11px] sm:text-xs select-none ${
+                  className={`flex-1 min-w-0 min-h-[44px] flex items-center justify-center gap-1 sm:gap-1.5 transition-all duration-base active:scale-95 cursor-pointer py-2 font-bold text-[11px] sm:text-xs select-none ${
                     activeChatAdId === ad.id
                       ? 'text-[var(--fg-accent)] font-extrabold'
                       : 'text-[var(--text-muted)] hover:text-[var(--text-primary)]'
@@ -1170,7 +1170,7 @@ export const PostFeed: React.FC<PostFeedProps> = ({
                 {(ad.whatsapp_number || ad.has_whatsapp_button) && (
                   <button
                     onClick={(e) => onWhatsApp(ad, e)}
-                    className="flex-1 min-w-0 min-h-[44px] flex items-center justify-center gap-1 sm:gap-1.5 transition-all duration-200 active:scale-95 cursor-pointer py-2 font-bold text-[11px] sm:text-xs select-none text-[#25D366]/80 hover:text-[#25D366]"
+                    className="flex-1 min-w-0 min-h-[44px] flex items-center justify-center gap-1 sm:gap-1.5 transition-all duration-base active:scale-95 cursor-pointer py-2 font-bold text-[11px] sm:text-xs select-none text-[#25D366]/80 hover:text-[#25D366]"
                     title={isRtl ? 'تواصل عبر واتساب' : 'WhatsApp'}
                   >
                     <Phone size={14} className="shrink-0" />
@@ -1183,7 +1183,7 @@ export const PostFeed: React.FC<PostFeedProps> = ({
                   <a
                     href={`tel:${ad.phone_number}`}
                     onClick={(e) => e.stopPropagation()}
-                    className="flex-1 min-w-0 min-h-[44px] flex items-center justify-center gap-1 sm:gap-1.5 transition-all duration-200 active:scale-95 cursor-pointer py-2 font-bold text-[11px] sm:text-xs select-none text-blue-500/80 hover:text-blue-500 decoration-none"
+                    className="flex-1 min-w-0 min-h-[44px] flex items-center justify-center gap-1 sm:gap-1.5 transition-all duration-base active:scale-95 cursor-pointer py-2 font-bold text-[11px] sm:text-xs select-none text-blue-500/80 hover:text-blue-500 decoration-none"
                     title={isRtl ? `اتصال: ${ad.phone_number}` : `Call: ${ad.phone_number}`}
                   >
                     <PhoneCall size={14} className="shrink-0" />
@@ -1495,12 +1495,12 @@ export const PostFeed: React.FC<PostFeedProps> = ({
                           }
                         }}
                         placeholder={replyToCommentId ? (isRtl ? 'اكتب ردك...' : 'Write a reply...') : (isRtl ? 'اكتب تعليقك هنا...' : 'Write a comment...')}
-                        className="flex-1 h-8 px-3 text-xs rounded-shape-sm bg-[var(--surface-subtle)] border border-[var(--border-default)] hover:border-accent/40 focus:border-accent/40 text-[var(--text-primary)] placeholder:text-[var(--text-muted)] focus:outline-none transition-all duration-150 shadow-2xs"
+                        className="flex-1 h-8 px-3 text-xs rounded-shape-sm bg-[var(--surface-subtle)] border border-[var(--border-default)] hover:border-accent/40 focus:border-accent/40 text-[var(--text-primary)] placeholder:text-[var(--text-muted)] focus:outline-none transition-all duration-fast shadow-2xs"
                       />
                       <button
                         onClick={() => onAddComment(ad.id, replyToCommentId || undefined)}
                         disabled={!newCommentText.trim()}
-                        className="h-8 px-3 rounded-shape-sm bg-accent text-[var(--text-primary)] hover:opacity-90 disabled:opacity-40 font-bold text-xs transition-all duration-150 shadow-2xs active:scale-95 cursor-pointer"
+                        className="h-8 px-3 rounded-shape-sm bg-accent text-[var(--text-primary)] hover:opacity-90 disabled:opacity-40 font-bold text-xs transition-all duration-fast shadow-2xs active:scale-95 cursor-pointer"
                       >
                         {isRtl ? 'إرسال' : 'Send'}
                       </button>
@@ -1569,7 +1569,7 @@ export const PostFeed: React.FC<PostFeedProps> = ({
           {onLoadMore && (
             <button
               onClick={onLoadMore}
-              className="inline-flex items-center gap-2 px-4 py-2 rounded-shape-sm bg-[var(--surface-card)] hover:bg-[var(--surface-subtle)] text-[var(--accent)] border border-[var(--border-default)] hover:border-[var(--accent)]/50 text-xs font-bold transition-all shadow-sm active:scale-95 cursor-pointer"
+              className="inline-flex items-center gap-2 px-4 py-2 rounded-shape-sm bg-[var(--surface-card)] hover:bg-[var(--surface-subtle)] text-[var(--accent)] border border-[var(--border-default)] hover:border-[var(--border-accent)] text-xs font-bold transition-all shadow-sm active:scale-95 cursor-pointer"
             >
               <RotateCcw size={14} />
               <span>{isRtl ? 'تحديث ومواصلة التصفح المستمر' : 'Reload for continuous browsing'}</span>

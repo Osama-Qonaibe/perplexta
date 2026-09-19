@@ -609,7 +609,7 @@ export const GpuInfrastructureView: React.FC<GpuInfrastructureViewProps> = ({
   });
 
   return (
-    <div className="space-y-6 animate-in fade-in duration-300" dir={dir}>
+    <div className="space-y-6 animate-in fade-in duration-media" dir={dir}>
       {/* Supreme Decree Notice Banner */}
       <div className="p-4 rounded-lg bg-surface-card border border-[var(--border-default)] shadow-sm flex items-start gap-3.5">
         <div className="w-9 h-9 rounded-md bg-accent/10 border border-accent/20 flex items-center justify-center shrink-0 mt-0.5 text-accent">
@@ -939,7 +939,7 @@ export const GpuInfrastructureView: React.FC<GpuInfrastructureViewProps> = ({
       )}
 
       {activeTab === 'jobs' && (
-        <div className="space-y-4 animate-in fade-in duration-300">
+        <div className="space-y-4 animate-in fade-in duration-media">
           {/* Filters & Actions for Jobs Queue */}
           <div className="flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3 bg-surface-card border border-[var(--border-default)] p-4 rounded-lg shadow-sm">
             <div className="flex flex-wrap items-center gap-3">
@@ -1009,7 +1009,7 @@ export const GpuInfrastructureView: React.FC<GpuInfrastructureViewProps> = ({
 
           {/* Selected Jobs Action Banner */}
           {selectedJobIds.length > 0 && (
-            <div className="p-3 bg-[var(--surface-subtle)] border border-[var(--border-accent)] rounded-lg flex items-center justify-between gap-3 animate-in fade-in slide-in-from-top-1 duration-200">
+            <div className="p-3 bg-[var(--surface-subtle)] border border-[var(--border-accent)] rounded-lg flex items-center justify-between gap-3 animate-in fade-in slide-in-from-top-1 duration-base">
               <div className="flex items-center gap-2 text-xs font-bold text-text-primary">
                 <span className="w-2 h-2 rounded-full bg-[var(--fg-accent)] animate-pulse" />
                 <span>
@@ -1175,8 +1175,8 @@ export const GpuInfrastructureView: React.FC<GpuInfrastructureViewProps> = ({
 
       {/* Add / Edit GPU Provider Modal */}
       {isAddEditOpen && (
-        <div className="fixed inset-0 z-[1000] flex items-center justify-center bg-black/60 backdrop-blur-xs p-4 animate-in fade-in duration-200">
-          <div className="w-full max-w-xl rounded-lg bg-surface-card border border-[var(--border-default)] shadow-2xl overflow-hidden animate-in zoom-in-95 duration-200">
+        <div className="fixed inset-0 z-[1000] flex items-center justify-center bg-black/60 backdrop-blur-xs p-4 animate-in fade-in duration-base">
+          <div className="w-full max-w-xl rounded-lg bg-surface-card border border-[var(--border-default)] shadow-2xl overflow-hidden animate-in zoom-in-95 duration-base">
             <div className="p-5 border-b border-[var(--border-default)] flex items-center justify-between">
               <div className="flex items-center gap-2.5">
                 <Server size={18} className="text-accent" />
@@ -1396,7 +1396,7 @@ export const GpuInfrastructureView: React.FC<GpuInfrastructureViewProps> = ({
 
       {/* Models Drawer / Management Modal */}
       {modelsModalProvider && (
-        <div className="fixed inset-0 z-[1000] flex items-center justify-center bg-black/60 backdrop-blur-xs p-4 animate-in fade-in duration-200">
+        <div className="fixed inset-0 z-[1000] flex items-center justify-center bg-black/60 backdrop-blur-xs p-4 animate-in fade-in duration-base">
           <div className="w-full max-w-2xl rounded-lg bg-surface-card border border-[var(--border-default)] shadow-2xl overflow-hidden flex flex-col max-h-[85vh]">
             <div className="p-5 border-b border-[var(--border-default)] flex items-center justify-between">
               <div>
@@ -1524,7 +1524,7 @@ export const GpuInfrastructureView: React.FC<GpuInfrastructureViewProps> = ({
 
       {/* Vision Live Test Bench Sandbox Modal */}
       {isSandboxOpen && (
-        <div className="fixed inset-0 z-[1000] flex items-center justify-center bg-black/60 backdrop-blur-xs p-4 animate-in fade-in duration-200">
+        <div className="fixed inset-0 z-[1000] flex items-center justify-center bg-black/60 backdrop-blur-xs p-4 animate-in fade-in duration-base">
           <div className="w-full max-w-3xl rounded-lg bg-surface-card border border-[var(--border-default)] shadow-2xl overflow-hidden flex flex-col max-h-[88vh]">
             <div className="p-5 border-b border-[var(--border-default)] flex items-center justify-between">
               <div className="flex items-center gap-2">
@@ -1730,8 +1730,8 @@ export const GpuInfrastructureView: React.FC<GpuInfrastructureViewProps> = ({
 
       {/* Delete Confirmation Modal */}
       {deleteModal && (
-        <div className="fixed inset-0 z-[1000] flex items-center justify-center bg-black/60 backdrop-blur-xs p-4 animate-in fade-in duration-200">
-          <div className="w-full max-w-sm rounded-lg bg-surface-card border border-[var(--border-default)] shadow-2xl p-6 text-center animate-in zoom-in-95 duration-200">
+        <div className="fixed inset-0 z-[1000] flex items-center justify-center bg-black/60 backdrop-blur-xs p-4 animate-in fade-in duration-base">
+          <div className="w-full max-w-sm rounded-lg bg-surface-card border border-[var(--border-default)] shadow-2xl p-6 text-center animate-in zoom-in-95 duration-base">
             <div className="w-12 h-12 rounded-full bg-[var(--fg-danger)]/10 text-[var(--fg-danger)] flex items-center justify-center mx-auto mb-3">
               <Trash2 size={24} />
             </div>
@@ -1763,7 +1763,7 @@ export const GpuInfrastructureView: React.FC<GpuInfrastructureViewProps> = ({
 
       {/* Inspecting Job Modal */}
       {inspectingJob && (
-        <div className="fixed inset-0 z-[1000] flex items-center justify-center bg-black/60 backdrop-blur-xs p-4 animate-in fade-in duration-200">
+        <div className="fixed inset-0 z-[1000] flex items-center justify-center bg-black/60 backdrop-blur-xs p-4 animate-in fade-in duration-base">
           <div className="w-full max-w-2xl rounded-lg bg-surface-card border border-[var(--border-default)] shadow-2xl overflow-hidden flex flex-col max-h-[85vh]">
             <div className="p-5 border-b border-[var(--border-default)] flex items-center justify-between">
               <div className="flex items-center gap-2.5">
@@ -1935,8 +1935,8 @@ export const GpuInfrastructureView: React.FC<GpuInfrastructureViewProps> = ({
 
       {/* Purge / Clean Jobs Modal */}
       {isPurgeModalOpen && (
-        <div className="fixed inset-0 z-[1000] flex items-center justify-center bg-black/60 backdrop-blur-xs p-4 animate-in fade-in duration-200">
-          <div className="w-full max-w-lg rounded-lg bg-surface-card border border-[var(--border-default)] shadow-2xl overflow-hidden animate-in zoom-in-95 duration-200 flex flex-col">
+        <div className="fixed inset-0 z-[1000] flex items-center justify-center bg-black/60 backdrop-blur-xs p-4 animate-in fade-in duration-base">
+          <div className="w-full max-w-lg rounded-lg bg-surface-card border border-[var(--border-default)] shadow-2xl overflow-hidden animate-in zoom-in-95 duration-base flex flex-col">
             <div className="p-5 border-b border-[var(--border-default)] flex items-center justify-between">
               <div className="flex items-center gap-2.5">
                 <Trash2 size={18} className="text-rose-500" />

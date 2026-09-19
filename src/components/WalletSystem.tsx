@@ -2009,7 +2009,7 @@ export const WalletSystem: React.FC<{ theme: string; dir: 'ltr' | 'rtl' }> = ({ 
                 <div className="absolute -top-24 -left-24 w-48 h-48 bg-[var(--bg-accent-muted)] rounded-full blur-3xl pointer-events-none" />
                 <div className="absolute -bottom-24 -right-24 w-48 h-48 bg-[var(--bg-accent-muted)] rounded-full blur-3xl pointer-events-none" />
 
-                <div className="w-16 h-16 bg-[var(--bg-accent-muted)] border border-[var(--border-accent)]/30 rounded-full flex items-center justify-center mx-auto mb-6 hover:scale-110 transition-transform duration-300">
+                <div className="w-16 h-16 bg-[var(--bg-accent-muted)] border border-[var(--border-accent)]/30 rounded-full flex items-center justify-center mx-auto mb-6 hover:scale-110 transition-transform duration-media">
                   <CheckCircle2 className="text-[var(--fg-accent)]" size={32} />
                 </div>
 

@@ -117,7 +117,7 @@ export const BoardFeed: React.FC<BoardFeedProps> = ({
           <button
             type="button"
             onClick={() => setIsLocationFlyoutOpen(true)}
-            className="h-8 flex items-center gap-1.5 px-3 rounded-shape-sm bg-[var(--surface-card)] hover:bg-[var(--surface-subtle)] text-[var(--text-primary)] hover:text-accent text-xs font-bold border border-[var(--border-default)] hover:border-accent/40 transition-all duration-150 shadow-2xs truncate active:scale-95 cursor-pointer"
+            className="h-8 flex items-center gap-1.5 px-3 rounded-shape-sm bg-[var(--surface-card)] hover:bg-[var(--surface-subtle)] text-[var(--text-primary)] hover:text-accent text-xs font-bold border border-[var(--border-default)] hover:border-accent/40 transition-all duration-fast shadow-2xs truncate active:scale-95 cursor-pointer"
           >
             <MapPin size={13} className="text-accent shrink-0" />
             <span className="truncate">
@@ -135,7 +135,7 @@ export const BoardFeed: React.FC<BoardFeedProps> = ({
               type="button"
               onClick={handleDetectGpsLocation}
               disabled={isDetectingGps}
-              className="h-8 px-2.5 rounded-shape-sm bg-accent/10 hover:bg-accent/20 text-accent text-xs font-bold flex items-center gap-1 border border-accent/30 transition-all duration-150 shadow-2xs active:scale-95 disabled:opacity-50 shrink-0 cursor-pointer"
+              className="h-8 px-2.5 rounded-shape-sm bg-accent/10 hover:bg-accent/20 text-accent text-xs font-bold flex items-center gap-1 border border-accent/30 transition-all duration-fast shadow-2xs active:scale-95 disabled:opacity-50 shrink-0 cursor-pointer"
               title={isRtl ? 'استخدام موقعي الحالي (GPS)' : 'GPS Location'}
             >
               {isDetectingGps ? <Loader2 size={13} className="animate-spin text-accent" /> : <Compass size={13} />}
@@ -146,7 +146,7 @@ export const BoardFeed: React.FC<BoardFeedProps> = ({
               type="button"
               onClick={triggerFeedRefresh}
               disabled={isRefreshing}
-              className="h-8 px-2.5 rounded-shape-sm bg-[var(--surface-card)] hover:bg-[var(--surface-subtle)] text-[var(--text-primary)] hover:text-accent text-xs font-bold flex items-center gap-1 border border-[var(--border-default)] hover:border-accent/40 transition-all duration-150 shadow-2xs active:scale-95 disabled:opacity-50 shrink-0 cursor-pointer"
+              className="h-8 px-2.5 rounded-shape-sm bg-[var(--surface-card)] hover:bg-[var(--surface-subtle)] text-[var(--text-primary)] hover:text-accent text-xs font-bold flex items-center gap-1 border border-[var(--border-default)] hover:border-accent/40 transition-all duration-fast shadow-2xs active:scale-95 disabled:opacity-50 shrink-0 cursor-pointer"
               title={isRtl ? 'تحديث خلاصة الإعلانات' : 'Refresh Feed'}
             >
               <RefreshCw size={13} className={isRefreshing ? 'animate-spin text-accent' : ''} />

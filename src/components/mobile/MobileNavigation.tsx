@@ -358,9 +358,9 @@ export const MobileNavigation: React.FC = () => {
                       <button
                         key={`drawer-nav-btn-${idx}`}
                         onClick={item.onClick}
-                        className="w-full flex items-center gap-3 px-3 py-2.5 rounded-[var(--radius-sm)] text-xs font-bold transition-all duration-150 border border-transparent text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--surface-subtle)] group cursor-pointer"
+                        className="w-full flex items-center gap-3 px-3 py-2.5 rounded-[var(--radius-sm)] text-xs font-bold transition-all duration-fast border border-transparent text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--surface-subtle)] group cursor-pointer"
                       >
-                        <span className="text-[var(--text-muted)] group-hover:text-[var(--text-primary)] transition-colors duration-150">
+                        <span className="text-[var(--text-muted)] group-hover:text-[var(--text-primary)] transition-colors duration-fast">
                           {item.icon}
                         </span>
                         <span>{item.label}</span>
@@ -372,13 +372,13 @@ export const MobileNavigation: React.FC = () => {
                       key={`drawer-nav-${item.path}`}
                       to={item.path!}
                       onClick={() => setIsDrawerOpen(false)}
-                      className={`flex items-center gap-3 px-3 py-2.5 rounded-[var(--radius-sm)] text-xs font-bold transition-all duration-150 border group ${
+                      className={`flex items-center gap-3 px-3 py-2.5 rounded-[var(--radius-sm)] text-xs font-bold transition-all duration-fast border group ${
                         isActive
                           ? 'bg-[var(--surface-card)] text-[var(--text-primary)] border-[var(--border-default)] border-s-2 border-s-[var(--border-accent)] font-bold shadow-2xs'
                           : 'border-transparent text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--surface-subtle)]'
                       }`}
                     >
-                      <span className={`transition-colors duration-150 ${isActive ? 'text-[var(--fg-accent)]' : 'text-[var(--text-muted)] group-hover:text-[var(--text-primary)]'}`}>
+                      <span className={`transition-colors duration-fast ${isActive ? 'text-[var(--fg-accent)]' : 'text-[var(--text-muted)] group-hover:text-[var(--text-primary)]'}`}>
                         {item.icon}
                       </span>
                       <span>{item.label}</span>
@@ -483,7 +483,7 @@ export const MobileNavigation: React.FC = () => {
                   onClick={() => handleTabPress(item)}
                   aria-label={isRtl ? item.labelAr : item.labelEn}
                   title={isRtl ? item.labelAr : item.labelEn}
-                  className={`relative flex items-center justify-center w-8 h-8 rounded-shape-sm border transition-all duration-150 active:scale-95 cursor-pointer shrink-0 before:absolute before:-inset-1.5 before:content-[''] ${
+                  className={`relative flex items-center justify-center w-8 h-8 rounded-shape-sm border transition-all duration-fast active:scale-95 cursor-pointer shrink-0 before:absolute before:-inset-1.5 before:content-[''] ${
                     isDrawerOpen
                       ? 'bg-[var(--bg-accent-muted)] border-[var(--border-accent)]/30 text-[var(--fg-accent)] shadow-xs font-bold'
                       : 'bg-transparent border-[var(--border-default)] text-[var(--text-muted)] hover:text-[var(--fg-accent)] hover:bg-[var(--bg-accent-muted)] hover:border-[var(--border-accent)]/20'
@@ -510,7 +510,7 @@ export const MobileNavigation: React.FC = () => {
                         transition={{ duration: 0.15 }}
                         className="flex items-center justify-center"
                       >
-                        <Icon size={14} className="transition-all duration-150" />
+                        <Icon size={14} className="transition-all duration-fast" />
                       </motion.div>
                     )}
                   </AnimatePresence>
@@ -531,7 +531,7 @@ export const MobileNavigation: React.FC = () => {
                 onClick={() => handleTabPress(item)}
                 aria-label={isRtl ? item.labelAr : item.labelEn}
                 title={isRtl ? item.labelAr : item.labelEn}
-                className={`relative flex items-center justify-center w-8 h-8 rounded-shape-sm border transition-all duration-150 active:scale-95 cursor-pointer shrink-0 before:absolute before:-inset-1.5 before:content-[''] ${
+                className={`relative flex items-center justify-center w-8 h-8 rounded-shape-sm border transition-all duration-fast active:scale-95 cursor-pointer shrink-0 before:absolute before:-inset-1.5 before:content-[''] ${
                   active
                     ? 'bg-[var(--bg-accent-muted)] border-[var(--border-accent)]/30 text-[var(--fg-accent)] shadow-xs font-bold'
                     : 'bg-transparent border-[var(--border-default)] text-[var(--text-muted)] hover:text-[var(--fg-accent)] hover:bg-[var(--bg-accent-muted)] hover:border-[var(--border-accent)]/20'
@@ -539,7 +539,7 @@ export const MobileNavigation: React.FC = () => {
               >
                 <Icon
                   size={14}
-                  className={`transition-all duration-150 ${
+                  className={`transition-all duration-fast ${
                     active 
                       ? 'text-[var(--fg-accent)]' 
                       : 'text-[var(--text-muted)] group-hover:text-[var(--fg-accent)]'

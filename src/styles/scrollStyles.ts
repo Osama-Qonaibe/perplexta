@@ -23,7 +23,7 @@ export const SCROLL_STYLES = {
 // Hover styles موحدة - Quiet & Professional Pattern (بدون خلفيات صاخبة)
 export const HOVER_STYLES = {
   // Sidebar items: Quiet hover (Text color shift only, no aggressive background)
-  sidebarItem: 'text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-all duration-150 border-transparent hover:border-[var(--border-subtle)] bg-transparent',
+  sidebarItem: 'text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-all duration-fast border-transparent hover:border-[var(--border-subtle)] bg-transparent',
   
   // Dropdown items: Subtle highlight
   dropdownItem: 'text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--surface-subtle)]/20 transition-colors',

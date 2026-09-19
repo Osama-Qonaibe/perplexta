@@ -512,7 +512,7 @@ export const GoogleChatManager: React.FC<GoogleChatProps> = ({ dir, theme }) => 
       {/* Confirmation Modal for Sending Message (MANDATORY per Workspace guidelines) */}
       {showSendModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4">
-          <div className="w-full max-w-md rounded-[var(--radius-lg)] bg-[var(--surface-card)] border border-[var(--border-default)] p-6 space-y-4 shadow-2xl animate-in fade-in zoom-in duration-200">
+          <div className="w-full max-w-md rounded-[var(--radius-lg)] bg-[var(--surface-card)] border border-[var(--border-default)] p-6 space-y-4 shadow-2xl animate-in fade-in zoom-in duration-base">
             <div className="flex items-center gap-3">
               <div className="w-12 h-12 rounded-[var(--radius-md)] bg-accent/20 border border-accent/30 flex items-center justify-center text-accent">
                 <Send size={22} />
@@ -564,7 +564,7 @@ export const GoogleChatManager: React.FC<GoogleChatProps> = ({ dir, theme }) => 
       {/* Create Space Modal */}
       {showCreateSpaceModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4">
-          <div className="w-full max-w-md rounded-[var(--radius-lg)] bg-[var(--surface-card)] border border-[var(--border-default)] p-6 space-y-4 shadow-2xl animate-in fade-in zoom-in duration-200">
+          <div className="w-full max-w-md rounded-[var(--radius-lg)] bg-[var(--surface-card)] border border-[var(--border-default)] p-6 space-y-4 shadow-2xl animate-in fade-in zoom-in duration-base">
             <div className="flex items-center gap-3">
               <div className="w-12 h-12 rounded-[var(--radius-md)] bg-accent/20 border border-accent/30 flex items-center justify-center text-accent">
                 <Plus size={22} />

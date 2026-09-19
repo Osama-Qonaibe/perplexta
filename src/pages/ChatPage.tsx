@@ -902,7 +902,7 @@ const ChatPage: React.FC = () => {
                   </div>
 
                   {/* Footer App Info */}
-                  <div className="text-center pt-2.5 sm:pt-4 pb-[calc(8px+env(safe-area-inset-bottom,0px))] sm:pb-3 border-none select-none text-[9.5px] sm:text-[11px] font-medium text-[var(--text-muted)] px-1 sm:px-2 bg-transparent leading-relaxed">
+                  <div className="text-center pt-2.5 sm:pt-4 pb-[calc(8px+env(safe-area-inset-bottom,0px))] sm:pb-3 border-none select-none text-[11px] font-medium text-[var(--text-muted)] px-1 sm:px-2 bg-transparent leading-relaxed">
                     <span className="sm:hidden">{t('appName')} {dir === 'rtl' ? 'قد يخطئ أحياناً. تحقق من النتائج المهمة.' : 'may be inaccurate. Verify facts.'}</span>
                     <span className="hidden sm:inline">{t('appName')} {dir === 'rtl' ? 'قد يقدم معلومات غير دقيقة أحياناً. يُرجى التحقق من النتائج المهمة.' : 'may display inaccurate info. Verify important facts.'}</span>
                   </div>
@@ -1009,7 +1009,7 @@ const ChatPage: React.FC = () => {
                                 <img
                                   src={img.url}
                                   alt={img.name}
-                                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-media"
                                   referrerPolicy="no-referrer"
                                 />
                                 <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex items-end p-2.5">
@@ -1059,7 +1059,7 @@ const ChatPage: React.FC = () => {
                 </div>
 
                 {/* Input Area */}
-                <div className="w-full bg-[var(--surface-page)] relative z-20 shrink-0 sticky bottom-0 backdrop-blur-md transition-all duration-300">
+                <div className="w-full bg-[var(--surface-page)] relative z-20 shrink-0 sticky bottom-0 backdrop-blur-md transition-all duration-base">
                   <AnimatePresence>
                     {showScrollBottom && (
                       <motion.button
@@ -1092,7 +1092,7 @@ const ChatPage: React.FC = () => {
                           animate={{ opacity: 1, height: 'auto', marginTop: 6 }}
                           exit={{ opacity: 0, height: 0, marginTop: 0 }}
                           transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
-                          className="sm:hidden overflow-hidden text-center text-[9.5px] font-medium text-[var(--text-secondary)] select-none px-2 leading-relaxed"
+                          className="sm:hidden overflow-hidden text-center text-[11px] font-medium text-[var(--text-secondary)] select-none px-2 leading-relaxed"
                         >
                           {t('appName')} {dir === 'rtl' ? 'قد يخطئ أحياناً. تحقق من النتائج.' : 'may make mistakes. Verify facts.'}
                         </motion.div>

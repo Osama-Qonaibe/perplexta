@@ -42,7 +42,7 @@ export const ProgressiveImage: React.FC<ProgressiveImageProps> = ({
         <img
           src={placeholderSrc}
           alt=""
-          className={`absolute inset-0 w-full h-full object-cover filter blur-lg scale-105 transition-opacity duration-500 ${
+          className={`absolute inset-0 w-full h-full object-cover filter blur-lg scale-105 transition-opacity duration-slow ${
             isLoaded ? 'opacity-0' : 'opacity-100'
           }`}
           aria-hidden="true"

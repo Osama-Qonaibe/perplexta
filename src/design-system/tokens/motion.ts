@@ -25,7 +25,7 @@ export const MOTION_TIMINGS = {
 } as const;
 
 export const EASING_CURVE = 'cubic-bezier(0.16, 1, 0.3, 1)';
-export const POPOVER_TRANSITION_TOKENS = 'animate-in fade-in zoom-in-95 duration-150 ease-out';
+export const POPOVER_TRANSITION_TOKENS = 'animate-in fade-in zoom-in-95 duration-fast ease-out';
 export const TOAST_TRANSITION_TOKENS = 'animate-in fade-in slide-in-from-bottom-3 duration-200 ease-out';
 
 export const MOTION_EASINGS = {

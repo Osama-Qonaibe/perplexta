@@ -118,25 +118,25 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({
                 onClick={() => {
                   if (onClose) onClose();
                 }}
-                className={`group relative flex items-center gap-2 px-2.5 py-1.5 min-h-[36px] rounded-shape-sm transition-all duration-150 border cursor-pointer select-none active:scale-[0.98] ${
+                className={`group relative flex items-center gap-2 px-2.5 py-1.5 min-h-[36px] rounded-shape-sm transition-all duration-fast border cursor-pointer select-none ${
                   isItemActive
                     ? 'text-[var(--accent)] border-[var(--border-subtle)] font-bold shadow-none bg-transparent'
-                    : HOVER_STYLES.sidebarItem
+                    : 'text-[var(--text-primary)]/85 hover:text-[var(--text-primary)] transition-all duration-fast border-transparent hover:border-[var(--border-subtle)] bg-transparent'
                 }`}
               >
                 {/* Active Side Indicator */}
                 {isItemActive && (
                   <div className={`absolute inset-y-1.5 w-1 rounded-full bg-[var(--accent)] ${dir === 'rtl' ? 'right-1' : 'left-1'}`} />
                 )}
-                <div className={`w-5 h-5 flex-shrink-0 flex items-center justify-center transition-colors duration-150 ${
+                <div className={`w-5 h-5 flex-shrink-0 flex items-center justify-center transition-colors duration-fast ${
                   isItemActive 
                     ? 'text-[var(--accent)]' 
-                    : 'text-[var(--text-muted)] group-hover:text-[var(--text-primary)]'
+                    : 'text-[var(--text-secondary)] group-hover:text-[var(--text-primary)]'
                 }`}>
                   {React.isValidElement(item.icon) ? React.cloneElement(item.icon as React.ReactElement, { size: 17 } as any) : item.icon}
                 </div>
-                <span className={`font-bold text-[12px] tracking-tight truncate whitespace-nowrap transition-colors duration-150 leading-tight ${
-                  isItemActive ? 'text-[var(--accent)]' : 'text-[var(--text-secondary)] group-hover:text-[var(--text-primary)]'
+                <span className={`font-bold text-[12px] tracking-tight truncate whitespace-nowrap transition-colors duration-fast leading-tight ${
+                  isItemActive ? 'text-[var(--accent)]' : 'text-[var(--text-primary)]/85 group-hover:text-[var(--text-primary)]'
                 }`}>
                   {item.label}
                 </span>
@@ -153,18 +153,18 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({
               triggerHaptic('medium');
               if (onClose) onClose();
             }}
-            className="group flex items-center justify-between px-2.5 py-1.5 min-h-[36px] rounded-shape-sm transition-all duration-150 border border-[var(--border-default)] bg-[var(--surface-card)] hover:bg-[var(--surface-subtle)] hover:border-[var(--border-accent)] active:scale-[0.98] shadow-2xs cursor-pointer"
+            className="group flex items-center justify-between px-2.5 py-1.5 min-h-[36px] rounded-shape-sm transition-all duration-fast border border-transparent bg-transparent hover:border-[var(--border-subtle)] cursor-pointer"
             title={language === 'ar' ? 'الخروج من لوحة التحكم والعودة للتطبيق' : 'Exit Admin to App'}
           >
             <div className="flex items-center gap-2 min-w-0">
-              <div className="w-5 h-5 flex items-center justify-center rounded-[var(--radius-xs)] text-[var(--text-muted)] group-hover:text-[var(--accent)] transition-colors shrink-0">
+              <div className="w-5 h-5 flex items-center justify-center rounded-[var(--radius-xs)] text-[var(--text-secondary)] group-hover:text-[var(--accent)] transition-colors shrink-0">
                 <ArrowRight size={14} className={dir === 'rtl' ? 'rotate-180' : ''} />
               </div>
-              <span className="font-bold text-[12px] text-[var(--text-secondary)] group-hover:text-[var(--text-primary)] truncate transition-colors">
+              <span className="font-bold text-[12px] text-[var(--text-primary)]/85 group-hover:text-[var(--text-primary)] truncate transition-colors">
                 {language === 'ar' ? 'العودة للمنصة' : 'Exit to App'}
               </span>
             </div>
-            <span className="text-[10px] font-mono font-semibold text-[var(--text-muted)] opacity-60">ESC</span>
+            <span className="text-[10px] font-mono font-semibold text-[var(--text-muted)] opacity-70">ESC</span>
           </NavLink>
         </div>
       </aside>

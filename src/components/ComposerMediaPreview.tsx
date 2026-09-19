@@ -41,7 +41,7 @@ export const ComposerMediaPreview: React.FC<ComposerMediaPreviewProps> = ({
             <video
               src={videoSrcWithTime}
               poster={posterUrl}
-              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300 pointer-events-none"
+              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-media pointer-events-none"
               muted
               playsInline
               preload="metadata"
@@ -61,7 +61,7 @@ export const ComposerMediaPreview: React.FC<ComposerMediaPreviewProps> = ({
           <img
             src={displayUrl}
             alt="Media preview"
-            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-media"
             loading="lazy"
           />
         )}

@@ -112,7 +112,7 @@ export function CanvasZoomControls({
           <span>{Math.round(zoom * 100)}%</span>
           <ChevronUp
             size={11}
-            className={`text-[var(--text-muted)] transition-transform duration-150 ${
+            className={`text-[var(--text-muted)] transition-transform duration-fast ${
               showPresetMenu ? 'rotate-180 text-[var(--fg-accent)]' : ''
             }`}
           />

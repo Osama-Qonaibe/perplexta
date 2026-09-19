@@ -46,7 +46,7 @@ export const StoriesBar: React.FC<StoriesBarProps> = ({
         <button
           type="button"
           onClick={() => setActiveTab('board')}
-          className={`h-6.5 sm:h-7 px-2 sm:px-2.5 rounded-shape-sm text-[11px] sm:text-xs font-bold transition-all duration-150 flex items-center gap-1 sm:gap-1.5 cursor-pointer shadow-2xs ${
+          className={`h-6.5 sm:h-7 px-2 sm:px-2.5 rounded-shape-sm text-[11px] sm:text-xs font-bold transition-all duration-fast flex items-center gap-1 sm:gap-1.5 cursor-pointer shadow-2xs ${
             activeTab === 'board' ? 'bg-accent/10 text-accent border border-accent/25' : 'text-[var(--text-muted)] hover:text-[var(--text-primary)] hover:bg-[var(--surface-subtle)] border border-transparent'
           }`}
         >
@@ -56,7 +56,7 @@ export const StoriesBar: React.FC<StoriesBarProps> = ({
         <button
           type="button"
           onClick={() => setActiveTab('reels')}
-          className={`h-6.5 sm:h-7 px-2 sm:px-2.5 rounded-shape-sm text-[11px] sm:text-xs font-bold transition-all duration-150 flex items-center gap-1 sm:gap-1.5 cursor-pointer shadow-2xs ${
+          className={`h-6.5 sm:h-7 px-2 sm:px-2.5 rounded-shape-sm text-[11px] sm:text-xs font-bold transition-all duration-fast flex items-center gap-1 sm:gap-1.5 cursor-pointer shadow-2xs ${
             activeTab === 'reels' ? 'bg-accent/10 text-accent border border-accent/25' : 'text-[var(--text-muted)] hover:text-[var(--text-primary)] hover:bg-[var(--surface-subtle)] border border-transparent'
           }`}
         >
@@ -67,7 +67,7 @@ export const StoriesBar: React.FC<StoriesBarProps> = ({
 
       <div className="flex items-center gap-1.5 sm:gap-2.5 overflow-x-auto scrollbar-none pb-0.5 pt-0.5 px-0.5 touch-pan-x snap-x snap-mandatory">
         {/* Partitioned Primary Create Card (Top: Story + Reel, Bottom: Text Story) */}
-        <div className="relative w-22 h-34 xs:w-24 xs:h-38 sm:w-32 sm:h-52 rounded-[var(--radius-md)] overflow-hidden bg-[var(--surface-card)] border border-[var(--border-default)] hover:border-accent/50 shrink-0 snap-start flex flex-col shadow-2xs transition-all duration-200 ease-out hover:shadow-md select-none">
+        <div className="relative w-22 h-34 xs:w-24 xs:h-38 sm:w-32 sm:h-52 rounded-[var(--radius-md)] overflow-hidden bg-[var(--surface-card)] border border-[var(--border-default)] hover:border-accent/50 shrink-0 snap-start flex flex-col shadow-2xs transition-all duration-base ease-out hover:shadow-md select-none">
           {/* Upper Section: Split into 2 equal columns (Story with + button & Reel) */}
           <div className="flex-1 flex border-b border-[var(--border-default)] divide-x rtl:divide-x-reverse divide-[var(--border-default)]">
             {/* Button 1: رفع قصة (Story upload with plus icon) */}
@@ -84,7 +84,7 @@ export const StoriesBar: React.FC<StoriesBarProps> = ({
                   setIsStoryModalOpen(true);
                 }
               }}
-              className="flex-1 flex flex-col items-center justify-center p-0.5 sm:p-1.5 hover:bg-accent/10 active:bg-accent/20 transition-all duration-150 cursor-pointer group/story focus:outline-none"
+              className="flex-1 flex flex-col items-center justify-center p-0.5 sm:p-1.5 hover:bg-accent/10 active:bg-accent/20 transition-all duration-fast cursor-pointer group/story focus:outline-none"
               title={isRtl ? 'رفع قصة (صور أو فيديو)' : 'Upload Story (Photo/Video)'}
             >
               <div className="w-6.5 h-6.5 sm:w-9 sm:h-9 rounded-full bg-accent text-white flex items-center justify-center shadow-xs group-hover/story:scale-110 active:scale-95 transition-transform mb-0.5 sm:mb-1.5">
@@ -109,7 +109,7 @@ export const StoriesBar: React.FC<StoriesBarProps> = ({
                   setActiveTab('reels');
                 }
               }}
-              className="flex-1 flex flex-col items-center justify-center p-0.5 sm:p-1.5 hover:bg-purple-500/10 active:bg-purple-500/20 transition-all duration-150 cursor-pointer group/reel focus:outline-none"
+              className="flex-1 flex flex-col items-center justify-center p-0.5 sm:p-1.5 hover:bg-purple-500/10 active:bg-purple-500/20 transition-all duration-fast cursor-pointer group/reel focus:outline-none"
               title={isRtl ? 'رفع مقطع ريلز عمودي' : 'Upload Vertical Reel'}
             >
               <div className="w-6.5 h-6.5 sm:w-9 sm:h-9 rounded-full bg-gradient-to-tr from-purple-600 to-indigo-500 text-white flex items-center justify-center shadow-xs group-hover/reel:scale-110 active:scale-95 transition-transform mb-0.5 sm:mb-1.5">
@@ -135,7 +135,7 @@ export const StoriesBar: React.FC<StoriesBarProps> = ({
                 setIsStoryModalOpen(true);
               }
             }}
-            className="h-9 sm:h-15 w-full flex items-center justify-center gap-1 sm:gap-1.5 px-1 sm:px-2 bg-[var(--surface-subtle)] hover:bg-emerald-500/10 active:bg-emerald-500/20 transition-all duration-150 cursor-pointer group/text focus:outline-none"
+            className="h-9 sm:h-15 w-full flex items-center justify-center gap-1 sm:gap-1.5 px-1 sm:px-2 bg-[var(--surface-subtle)] hover:bg-emerald-500/10 active:bg-emerald-500/20 transition-all duration-fast cursor-pointer group/text focus:outline-none"
             title={isRtl ? 'إنشاء قصة نصية بخلفية ملونة' : 'Create text story with gradient background'}
           >
             <div className="w-4.5 h-4.5 sm:w-6 sm:h-6 rounded-full bg-emerald-500/15 text-emerald-500 flex items-center justify-center shadow-2xs group-hover/text:scale-110 active:scale-95 transition-transform shrink-0">
@@ -164,7 +164,7 @@ export const StoriesBar: React.FC<StoriesBarProps> = ({
                 setSelectedStoryIndex(viewerStartIndex >= 0 ? viewerStartIndex : 0);
                 setIsStoryViewerOpen(true);
               }}
-              className="relative w-22 h-34 xs:w-24 xs:h-38 sm:w-32 sm:h-52 rounded-[var(--radius-md)] overflow-hidden bg-[var(--surface-subtle)] border border-[var(--border-default)] hover:border-accent/50 shrink-0 snap-start cursor-pointer group transition-all duration-200 ease-out hover:shadow-md flex flex-col justify-center items-center shadow-2xs"
+              className="relative w-22 h-34 xs:w-24 xs:h-38 sm:w-32 sm:h-52 rounded-[var(--radius-md)] overflow-hidden bg-[var(--surface-subtle)] border border-[var(--border-default)] hover:border-accent/50 shrink-0 snap-start cursor-pointer group transition-all duration-base ease-out hover:shadow-md flex flex-col justify-center items-center shadow-2xs"
             >
               <div className="relative w-full h-full overflow-hidden bg-[var(--surface-inset)] flex flex-col justify-center items-center">
                 {/* Ambient Blurred Background */}
@@ -178,7 +178,7 @@ export const StoriesBar: React.FC<StoriesBarProps> = ({
                 <img
                   src={getMediaUrl(story.image_url)}
                   alt={story.title || ''}
-                  className="absolute inset-0 w-full h-full object-contain transition-transform group-hover:scale-105 duration-300 opacity-85 group-hover:opacity-100 z-0"
+                  className="absolute inset-0 w-full h-full object-contain transition-transform group-hover:scale-105 duration-media opacity-85 group-hover:opacity-100 z-0"
                 />
 
                 <div className="absolute inset-0 bg-black/20 group-hover:bg-black/5 transition-colors pointer-events-none z-10" />

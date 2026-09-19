@@ -142,7 +142,7 @@ export const AccountSettings: React.FC<AccountSettingsProps> = ({ user, onUpdate
     return (
       <div className="flex flex-col md:flex-row md:items-center justify-between py-3.5 sm:py-4 border-b border-[var(--border-default)] group gap-3">
         <div className="flex items-center gap-3 sm:gap-4 flex-1 min-w-0">
-          <div className="p-2 sm:p-2.5 rounded-[var(--radius-sm)] bg-[var(--surface-subtle)] text-[var(--text-muted)] group-hover:text-[var(--fg-accent)] group-hover:bg-[var(--bg-accent-muted)] transition-all duration-150 shrink-0 border border-transparent group-hover:border-[var(--border-accent)]/20">
+          <div className="p-2 sm:p-2.5 rounded-[var(--radius-sm)] bg-[var(--surface-subtle)] text-[var(--text-muted)] group-hover:text-[var(--fg-accent)] group-hover:bg-[var(--bg-accent-muted)] transition-all duration-fast shrink-0 border border-transparent group-hover:border-[var(--border-accent)]/20">
             {React.cloneElement(icon as React.ReactNode as React.ReactElement<{ size?: number; className?: string }>, { size: 16 })}
           </div>
           <div className="flex-1 min-w-0">
@@ -185,14 +185,14 @@ export const AccountSettings: React.FC<AccountSettingsProps> = ({ user, onUpdate
               <button 
                 type="button"
                 onClick={handleSave}
-                className="p-2 text-[var(--fg-accent)] hover:bg-[var(--bg-accent-muted)] border border-[var(--border-accent)]/20 rounded-[var(--radius-sm)] transition-all duration-150 cursor-pointer"
+                className="p-2 text-[var(--fg-accent)] hover:bg-[var(--bg-accent-muted)] border border-[var(--border-accent)]/20 rounded-[var(--radius-sm)] transition-all duration-fast cursor-pointer"
               >
                 <Check size={16} />
               </button>
               <button 
                 type="button"
                 onClick={() => setEditingField(null)}
-                className="p-2 text-rose-400 hover:bg-rose-500/10 border border-rose-500/20 rounded-[var(--radius-sm)] transition-all duration-150 cursor-pointer"
+                className="p-2 text-rose-400 hover:bg-rose-500/10 border border-rose-500/20 rounded-[var(--radius-sm)] transition-all duration-fast cursor-pointer"
               >
                 <X size={16} />
               </button>
@@ -201,7 +201,7 @@ export const AccountSettings: React.FC<AccountSettingsProps> = ({ user, onUpdate
             <button 
               type="button"
               onClick={() => handleStartEdit(field, field === 'password' ? '' : value)}
-              className="text-[var(--text-primary)] text-xs font-bold flex items-center gap-1 transition-all duration-150 px-3 py-1.5 rounded-[var(--radius-sm)] bg-[var(--surface-subtle)] hover:bg-[var(--bg-accent-muted)] hover:text-[var(--fg-accent)] hover:border-[var(--border-accent)]/20 border border-[var(--border-default)] cursor-pointer"
+              className="text-[var(--text-primary)] text-xs font-bold flex items-center gap-1 transition-all duration-fast px-3 py-1.5 rounded-[var(--radius-sm)] bg-[var(--surface-subtle)] hover:bg-[var(--bg-accent-muted)] hover:text-[var(--fg-accent)] hover:border-[var(--border-accent)]/20 border border-[var(--border-default)] cursor-pointer"
             >
               <Edit2 size={13} />
               <span>{t('edit').toUpperCase()}</span>
@@ -251,13 +251,13 @@ export const AccountSettings: React.FC<AccountSettingsProps> = ({ user, onUpdate
                   src={resolveImageUrl(user.avatar, 'avatar')} 
                   alt="Avatar" 
                   onError={() => setAvatarLoadError(true)}
-                  className="w-12 h-12 sm:w-16 sm:h-16 rounded-[var(--radius-sm)] object-cover border-2 transition-all duration-150"
+                  className="w-12 h-12 sm:w-16 sm:h-16 rounded-[var(--radius-sm)] object-cover border-2 transition-all duration-fast"
                   style={{ borderColor: user.subscription?.plan_color || 'var(--border-default)' }}
                   referrerPolicy="no-referrer"
                 />
               ) : (
                 <div 
-                  className="w-12 h-12 sm:w-16 sm:h-16 rounded-[var(--radius-sm)] bg-[var(--surface-subtle)] border border-[var(--border-default)] flex items-center justify-center text-[var(--text-muted)] group-hover:text-[var(--fg-accent)] group-hover:border-[var(--border-accent)]/30 transition-all duration-150"
+                  className="w-12 h-12 sm:w-16 sm:h-16 rounded-[var(--radius-sm)] bg-[var(--surface-subtle)] border border-[var(--border-default)] flex items-center justify-center text-[var(--text-muted)] group-hover:text-[var(--fg-accent)] group-hover:border-[var(--border-accent)]/30 transition-all duration-fast"
                 >
                   {isUploading ? <Loader2 className="animate-spin" size={16} /> : <Camera size={18} />}
                 </div>
@@ -287,7 +287,7 @@ export const AccountSettings: React.FC<AccountSettingsProps> = ({ user, onUpdate
             type="button"
             onClick={() => fileInputRef.current?.click()}
             disabled={isUploading}
-            className="text-[var(--text-primary)] text-xs font-bold flex items-center gap-1 transition-all duration-150 p-2 sm:px-3 sm:py-1.5 rounded-[var(--radius-sm)] bg-[var(--surface-subtle)] hover:bg-[var(--bg-accent-muted)] hover:text-[var(--fg-accent)] hover:border-[var(--border-accent)]/20 border border-[var(--border-default)] shrink-0 cursor-pointer"
+            className="text-[var(--text-primary)] text-xs font-bold flex items-center gap-1 transition-all duration-fast p-2 sm:px-3 sm:py-1.5 rounded-[var(--radius-sm)] bg-[var(--surface-subtle)] hover:bg-[var(--bg-accent-muted)] hover:text-[var(--fg-accent)] hover:border-[var(--border-accent)]/20 border border-[var(--border-default)] shrink-0 cursor-pointer"
             title={t('edit')}
           >
             <Edit2 size={13} className="sm:hidden" />
@@ -360,14 +360,14 @@ export const AccountSettings: React.FC<AccountSettingsProps> = ({ user, onUpdate
               <button 
                 type="button"
                 onClick={() => setLanguage('ar')}
-                className={`px-3 py-1 rounded-[var(--radius-xs)] text-[10px] font-bold uppercase tracking-wider transition-all duration-150 cursor-pointer ${language === 'ar' ? 'bg-[var(--bg-accent-muted)] border border-[var(--border-accent)]/30 text-[var(--fg-accent)]' : 'text-[var(--text-muted)] hover:text-[var(--text-primary)]'}`}
+                className={`px-3 py-1 rounded-[var(--radius-xs)] text-[10px] font-bold uppercase tracking-wider transition-all duration-fast cursor-pointer ${language === 'ar' ? 'bg-[var(--bg-accent-muted)] border border-[var(--border-accent)]/30 text-[var(--fg-accent)]' : 'text-[var(--text-muted)] hover:text-[var(--text-primary)]'}`}
               >
                 العربية
               </button>
               <button 
                 type="button"
                 onClick={() => setLanguage('en')}
-                className={`px-3 py-1 rounded-[var(--radius-xs)] text-[10px] font-bold uppercase tracking-wider transition-all duration-150 cursor-pointer ${language === 'en' ? 'bg-[var(--bg-accent-muted)] border border-[var(--border-accent)]/30 text-[var(--fg-accent)]' : 'text-[var(--text-muted)] hover:text-[var(--text-primary)]'}`}
+                className={`px-3 py-1 rounded-[var(--radius-xs)] text-[10px] font-bold uppercase tracking-wider transition-all duration-fast cursor-pointer ${language === 'en' ? 'bg-[var(--bg-accent-muted)] border border-[var(--border-accent)]/30 text-[var(--fg-accent)]' : 'text-[var(--text-muted)] hover:text-[var(--text-primary)]'}`}
               >
                 English
               </button>
@@ -405,14 +405,14 @@ export const AccountSettings: React.FC<AccountSettingsProps> = ({ user, onUpdate
               <button 
                 type="button"
                 onClick={() => onUpdate({ email_notifications: true })}
-                className={`px-3 py-1 rounded-[var(--radius-xs)] text-[10px] font-bold uppercase tracking-wider transition-all duration-150 cursor-pointer ${user.email_notifications !== false ? 'bg-[var(--bg-accent-muted)] border border-[var(--border-accent)]/30 text-[var(--fg-accent)]' : 'text-[var(--text-muted)] hover:text-[var(--text-primary)]'}`}
+                className={`px-3 py-1 rounded-[var(--radius-xs)] text-[10px] font-bold uppercase tracking-wider transition-all duration-fast cursor-pointer ${user.email_notifications !== false ? 'bg-[var(--bg-accent-muted)] border border-[var(--border-accent)]/30 text-[var(--fg-accent)]' : 'text-[var(--text-muted)] hover:text-[var(--text-primary)]'}`}
               >
                 {dir === 'rtl' ? 'تفعيل' : 'Enable'}
               </button>
               <button 
                 type="button"
                 onClick={() => onUpdate({ email_notifications: false })}
-                className={`px-3 py-1 rounded-[var(--radius-xs)] text-[10px] font-bold uppercase tracking-wider transition-all duration-150 cursor-pointer ${
+                className={`px-3 py-1 rounded-[var(--radius-xs)] text-[10px] font-bold uppercase tracking-wider transition-all duration-fast cursor-pointer ${
                   user.email_notifications === false 
                     ? 'bg-rose-500/20 border border-rose-500/30 text-rose-400' 
                     : 'text-[var(--text-muted)] hover:text-[var(--text-primary)]'
@@ -452,7 +452,7 @@ export const AccountSettings: React.FC<AccountSettingsProps> = ({ user, onUpdate
                   onUpdate({ data_saver: true });
                   notify(dir === 'rtl' ? 'تم تفعيل وضع توفير البيانات والضغط الفائق' : 'Data Saver & Aggressive Compression enabled');
                 }}
-                className={`px-3 py-1 rounded-[var(--radius-xs)] text-[10px] font-bold uppercase tracking-wider transition-all duration-150 cursor-pointer ${user.data_saver ? 'bg-[var(--bg-accent-muted)] border border-[var(--border-accent)]/30 text-[var(--fg-accent)]' : 'text-[var(--text-muted)] hover:text-[var(--text-primary)]'}`}
+                className={`px-3 py-1 rounded-[var(--radius-xs)] text-[10px] font-bold uppercase tracking-wider transition-all duration-fast cursor-pointer ${user.data_saver ? 'bg-[var(--bg-accent-muted)] border border-[var(--border-accent)]/30 text-[var(--fg-accent)]' : 'text-[var(--text-muted)] hover:text-[var(--text-primary)]'}`}
               >
                 {dir === 'rtl' ? 'تفعيل' : 'Enable'}
               </button>
@@ -464,7 +464,7 @@ export const AccountSettings: React.FC<AccountSettingsProps> = ({ user, onUpdate
                   onUpdate({ data_saver: false });
                   notify(dir === 'rtl' ? 'تم إيقاف وضع توفير البيانات' : 'Data Saver disabled');
                 }}
-                className={`px-3 py-1 rounded-[var(--radius-xs)] text-[10px] font-bold uppercase tracking-wider transition-all duration-150 cursor-pointer ${
+                className={`px-3 py-1 rounded-[var(--radius-xs)] text-[10px] font-bold uppercase tracking-wider transition-all duration-fast cursor-pointer ${
                   !user.data_saver 
                     ? 'bg-rose-500/20 border border-rose-500/30 text-rose-400' 
                     : 'text-[var(--text-muted)] hover:text-[var(--text-primary)]'
@@ -517,7 +517,7 @@ export const AccountSettings: React.FC<AccountSettingsProps> = ({ user, onUpdate
           <button
             type="button"
             onClick={() => setIsDeleteDialogOpen(true)}
-            className="px-3.5 py-2 rounded-[var(--radius-sm)] text-xs font-bold uppercase tracking-wider text-white bg-rose-600 hover:bg-rose-500 active:scale-95 transition-all duration-150 shrink-0 shadow-xs cursor-pointer"
+            className="px-3.5 py-2 rounded-[var(--radius-sm)] text-xs font-bold uppercase tracking-wider text-white bg-rose-600 hover:bg-rose-500 active:scale-95 transition-all duration-fast shrink-0 shadow-xs cursor-pointer"
           >
             {dir === 'rtl' ? 'حذف الحساب' : 'Delete'}
           </button>
@@ -555,7 +555,7 @@ export const AccountSettings: React.FC<AccountSettingsProps> = ({ user, onUpdate
                   type="button"
                   disabled={isDeletingAccount}
                   onClick={() => setIsDeleteDialogOpen(false)}
-                  className="px-3.5 py-2 rounded-[var(--radius-sm)] text-xs font-bold text-[var(--text-muted)] hover:text-[var(--text-primary)] hover:bg-[var(--surface-subtle)] border border-[var(--border-default)] transition-all duration-150 cursor-pointer"
+                  className="px-3.5 py-2 rounded-[var(--radius-sm)] text-xs font-bold text-[var(--text-muted)] hover:text-[var(--text-primary)] hover:bg-[var(--surface-subtle)] border border-[var(--border-default)] transition-all duration-fast cursor-pointer"
                 >
                   {dir === 'rtl' ? 'إلغاء' : 'Cancel'}
                 </button>
@@ -563,7 +563,7 @@ export const AccountSettings: React.FC<AccountSettingsProps> = ({ user, onUpdate
                   type="button"
                   disabled={isDeletingAccount}
                   onClick={handleDeleteAccount}
-                  className="px-4 py-2 rounded-[var(--radius-sm)] text-xs font-bold text-white bg-rose-600 hover:bg-rose-500 active:scale-95 transition-all duration-150 flex items-center gap-2 disabled:opacity-50 cursor-pointer"
+                  className="px-4 py-2 rounded-[var(--radius-sm)] text-xs font-bold text-white bg-rose-600 hover:bg-rose-500 active:scale-95 transition-all duration-fast flex items-center gap-2 disabled:opacity-50 cursor-pointer"
                 >
                   {isDeletingAccount && <Loader2 size={14} className="animate-spin" />}
                   {dir === 'rtl' ? 'حذف نهائي' : 'Delete'}

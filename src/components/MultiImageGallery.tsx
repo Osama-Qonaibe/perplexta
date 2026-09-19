@@ -81,14 +81,14 @@ export const MultiImageGallery: React.FC<MultiImageGalleryProps> = ({
             <video
               src={videoSrcWithTime}
               poster={posterUrl}
-              className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105 pointer-events-none"
+              className="w-full h-full object-cover transition-transform duration-slow group-hover:scale-105 pointer-events-none"
               muted
               playsInline
               preload="metadata"
             />
             {/* Play Badge Overlay */}
             <div className="absolute inset-0 flex items-center justify-center pointer-events-none bg-black/15 group-hover:bg-black/25 transition-colors">
-              <div className="w-11 h-11 sm:w-13 sm:h-13 rounded-[var(--radius-xs)] bg-black/60 hover:bg-black/75 text-white flex items-center justify-center backdrop-blur-md border border-white/30 shadow-xl group-hover:scale-110 transition-transform duration-300">
+              <div className="w-11 h-11 sm:w-13 sm:h-13 rounded-[var(--radius-xs)] bg-black/60 hover:bg-black/75 text-white flex items-center justify-center backdrop-blur-md border border-white/30 shadow-xl group-hover:scale-110 transition-transform duration-media">
                 <Play size={22} className="fill-white translate-x-0.5" />
               </div>
             </div>
@@ -109,7 +109,7 @@ export const MultiImageGallery: React.FC<MultiImageGalleryProps> = ({
                 target.src = 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=1080&q=80';
               }
             }}
-            className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+            className="w-full h-full object-cover transition-transform duration-slow group-hover:scale-105"
             loading="lazy"
           />
         )}
@@ -173,7 +173,7 @@ export const MultiImageGallery: React.FC<MultiImageGalleryProps> = ({
               preload="metadata"
             />
             <div className="absolute inset-0 flex items-center justify-center pointer-events-none bg-black/15 group-hover:bg-black/25 transition-colors">
-              <div className="w-14 h-14 rounded-[var(--radius-xs)] bg-black/60 hover:bg-black/75 text-white flex items-center justify-center backdrop-blur-md border border-white/30 shadow-2xl group-hover:scale-110 transition-transform duration-300">
+              <div className="w-14 h-14 rounded-[var(--radius-xs)] bg-black/60 hover:bg-black/75 text-white flex items-center justify-center backdrop-blur-md border border-white/30 shadow-2xl group-hover:scale-110 transition-transform duration-media">
                 <Play size={26} className="fill-white translate-x-0.5" />
               </div>
             </div>
@@ -194,7 +194,7 @@ export const MultiImageGallery: React.FC<MultiImageGalleryProps> = ({
                 target.src = 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=1080&q=80';
               }
             }}
-            className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-[1.01] pointer-events-none"
+            className="w-full h-full object-cover transition-transform duration-slow group-hover:scale-[1.01] pointer-events-none"
             loading="lazy"
           />
         )}

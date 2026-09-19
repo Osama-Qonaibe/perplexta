@@ -954,7 +954,7 @@ export const MediaLightboxModal: React.FC<MediaLightboxModalProps> = ({
             }}
             className={`w-full py-2 min-h-[40px] rounded-[var(--comp-button-radius,8px)] flex items-center justify-center gap-1 font-bold text-xs transition-all border border-transparent hover:border-[var(--border-main)] hover:border-accent/60 cursor-pointer select-none ${
               userReaction
-                ? activeReactionObj?.color || 'text-red-500'
+                ? activeReactionObj?.color || 'text-[var(--accent)]'
                 : 'text-[var(--text-secondary)] hover:bg-[var(--surface-subtle)]'
             }`}
           >
@@ -1348,7 +1348,7 @@ export const MediaLightboxModal: React.FC<MediaLightboxModalProps> = ({
               <button
                 type="button"
                 onClick={onClose}
-                className="w-10 h-10 min-h-[40px] min-w-[40px] rounded-[var(--comp-button-radius,8px)] bg-[var(--surface-subtle)] hover:bg-red-500/10 hover:border-red-500/40 text-[var(--text-primary)] hover:text-red-500 flex items-center justify-center transition-all hover:scale-110 active:scale-95 cursor-pointer border border-[var(--border-main)] shadow-sm relative before:absolute before:-inset-1.5"
+                className="w-10 h-10 min-h-[40px] min-w-[40px] rounded-[var(--comp-button-radius,8px)] bg-[var(--surface-subtle)] hover:bg-[var(--status-danger-subtle)] hover:border-[var(--status-danger)]/40 text-[var(--text-primary)] hover:text-[var(--status-danger)] flex items-center justify-center transition-all active:scale-95 cursor-pointer border border-[var(--border-main)] shadow-sm relative before:absolute before:-inset-1.5"
                 title={isRtl ? 'إغلاق (Esc)' : 'Close (Esc)'}
               >
                 <X size={18} />
@@ -1373,7 +1373,7 @@ export const MediaLightboxModal: React.FC<MediaLightboxModalProps> = ({
                 <button
                   type="button"
                   onClick={onClose}
-                  className="w-10 h-10 min-h-[40px] min-w-[40px] rounded-[var(--comp-button-radius,8px)] bg-[var(--surface-subtle)] hover:bg-red-500/10 text-[var(--text-primary)] hover:text-red-500 flex items-center justify-center transition-all active:scale-95 cursor-pointer border border-[var(--border-main)] shadow-sm"
+                  className="w-10 h-10 min-h-[40px] min-w-[40px] rounded-[var(--comp-button-radius,8px)] bg-[var(--surface-subtle)] hover:bg-[var(--status-danger-subtle)] text-[var(--text-primary)] hover:text-[var(--status-danger)] flex items-center justify-center transition-all active:scale-95 cursor-pointer border border-[var(--border-main)] shadow-sm"
                   title={isRtl ? 'إغلاق' : 'Close'}
                 >
                   <X size={18} />
@@ -1503,7 +1503,7 @@ export const MediaLightboxModal: React.FC<MediaLightboxModalProps> = ({
               {activeReactionObj ? (
                 <span className="text-base">{activeReactionObj.emoji}</span>
               ) : (
-                <ThumbsUp size={14} className={userReaction ? 'fill-red-500 text-red-500 animate-bounce' : ''} />
+                <ThumbsUp size={14} className={userReaction ? 'fill-[var(--accent)] text-[var(--accent)] animate-bounce' : ''} />
               )}
             </button>
 
@@ -1720,7 +1720,7 @@ export const MediaLightboxModal: React.FC<MediaLightboxModalProps> = ({
                   onTouchEnd={handleTouchEndLike}
                   className={`flex-1 py-2 min-h-[38px] rounded-xl flex items-center justify-center gap-1.5 font-bold text-xs transition-all active:scale-95 cursor-pointer select-none ${
                     userReaction
-                      ? activeReactionObj?.color || 'text-red-500 bg-red-500/10'
+                      ? activeReactionObj?.color || 'text-[var(--accent)] bg-[color-mix(in_oklab,var(--accent)_10%,transparent)]'
                       : 'text-[var(--text-secondary)] hover:bg-[var(--surface-subtle)]'
                   }`}
                 >

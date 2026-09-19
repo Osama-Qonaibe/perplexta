@@ -1902,7 +1902,7 @@ export const SystemSettingsView: React.FC<SystemSettingsViewProps> = ({
               return (
                 <div
                   key={item.key}
-                  className={`p-4 rounded-lg border transition-all duration-200 flex flex-col justify-between ${
+                  className={`p-4 rounded-lg border transition-all duration-base flex flex-col justify-between ${
                     isHidden
                       ? "bg-red-500/10 border-red-500/30 text-[var(--text-primary)]"
                       : "bg-[var(--surface-subtle)] border-[var(--border-default)] hover:border-accent/40"
@@ -2054,7 +2054,7 @@ export const SystemSettingsView: React.FC<SystemSettingsViewProps> = ({
               return (
                 <div
                   key={item.key}
-                  className={`p-4 rounded-lg border transition-all duration-200 flex flex-col justify-between ${
+                  className={`p-4 rounded-lg border transition-all duration-base flex flex-col justify-between ${
                     isHidden
                       ? "bg-amber-500/10 border-amber-500/30 text-[var(--text-primary)]"
                       : "bg-[var(--surface-subtle)] border-[var(--border-default)] hover:border-accent/40"
@@ -2536,7 +2536,7 @@ export const SystemSettingsView: React.FC<SystemSettingsViewProps> = ({
                     </div>
                   ) : (
                     <div className="flex flex-col items-center p-4">
-                      <div className="mb-3 p-3 rounded-full bg-accent/10 text-accent group-hover:scale-110 transition-transform duration-300">
+                      <div className="mb-3 p-3 rounded-full bg-accent/10 text-accent group-hover:scale-110 transition-transform duration-media">
                         <Upload size={24} />
                       </div>
                       <p className="text-xs font-semibold text-[var(--text-primary)]">
@@ -3104,7 +3104,7 @@ export const SystemSettingsView: React.FC<SystemSettingsViewProps> = ({
             </h3>
             <div className="p-4 rounded-md bg-[var(--surface-inset)] border border-[var(--border-default)] text-xs font-mono text-accent/90 leading-relaxed max-h-[180px] overflow-y-auto space-y-1.5">
               {crawlAuditLogs.map((log, index) => (
-                <div key={`crawl-log-${index}`} className="flex items-start gap-2 animate-in fade-in duration-300">
+                <div key={`crawl-log-${index}`} className="flex items-start gap-2 animate-in fade-in duration-media">
                   <span className="text-[var(--text-muted)]">[{new Date().toLocaleTimeString()}]</span>
                   <span>{log}</span>
                 </div>

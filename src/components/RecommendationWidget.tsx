@@ -290,7 +290,7 @@ export const RecommendationWidget: React.FC<RecommendationWidgetProps> = ({
               if (onOpenPreferences) onOpenPreferences();
               else setIsPrefModalOpen(true);
             }}
-            className="w-8 h-8 rounded-shape-sm bg-transparent border border-[var(--border-default)] hover:bg-accent/10 hover:border-accent/20 text-[var(--text-muted)] hover:text-accent transition-all duration-150 active:scale-95 group shrink-0 cursor-pointer relative flex items-center justify-center"
+            className="w-8 h-8 rounded-shape-sm bg-transparent border border-[var(--border-default)] hover:bg-accent/10 hover:border-accent/20 text-[var(--text-muted)] hover:text-accent transition-all duration-fast active:scale-95 group shrink-0 cursor-pointer relative flex items-center justify-center"
             title={language === 'ar' ? 'تعديل تفضيلات التوصيات' : 'Customize preferences'}
           >
             <Settings size={14} className="transition-transform group-hover:rotate-45" />
@@ -299,7 +299,7 @@ export const RecommendationWidget: React.FC<RecommendationWidgetProps> = ({
           <button
             onClick={() => { fetchRecommendations(); }}
             disabled={isLoading}
-            className="w-8 h-8 rounded-shape-sm bg-transparent border border-[var(--border-default)] hover:bg-accent/10 hover:border-accent/20 text-[var(--text-muted)] hover:text-accent transition-all duration-150 active:scale-95 group shrink-0 cursor-pointer relative flex items-center justify-center"
+            className="w-8 h-8 rounded-shape-sm bg-transparent border border-[var(--border-default)] hover:bg-accent/10 hover:border-accent/20 text-[var(--text-muted)] hover:text-accent transition-all duration-fast active:scale-95 group shrink-0 cursor-pointer relative flex items-center justify-center"
             title={language === 'ar' ? 'تحديث التوصيات' : 'Refresh'}
           >
             <RefreshCw size={14} className={isLoading ? 'animate-spin text-accent' : 'transition-transform group-hover:rotate-180'} />
@@ -461,7 +461,7 @@ export const RecommendationWidget: React.FC<RecommendationWidgetProps> = ({
                 exit={{ opacity: 0, scale: 0.95 }}
                 transition={{ duration: 0.16 }}
                 onClick={() => handleItemClick(item)}
-                className="group relative rounded-[var(--radius-md)] border border-[var(--border-default)] bg-[var(--surface-card)] hover:border-[var(--accent)]/50 transition-all p-3 flex flex-col justify-between cursor-pointer overflow-hidden shadow-xs hover:shadow-md"
+                className="group relative rounded-[var(--radius-md)] border border-[var(--border-default)] bg-[var(--surface-card)] hover:border-[var(--border-accent)] transition-all p-3 flex flex-col justify-between cursor-pointer overflow-hidden shadow-xs hover:shadow-md"
               >
                 <div>
                   <div className="flex items-center justify-between gap-1 mb-2.5">

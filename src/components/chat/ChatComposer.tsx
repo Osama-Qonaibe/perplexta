@@ -600,7 +600,7 @@ export const ChatComposer: React.FC<ChatComposerProps> = ({
                                         setActiveDropdown('model');
                                         setIsModelMenuOpen(false);
                                       }}
-                                      className={`group flex items-center justify-between w-full h-[36px] min-h-[36px] px-3 py-2 rounded-shape-sm flex-nowrap transition-all duration-150 text-xs font-medium cursor-pointer ${
+                                      className={`group flex items-center justify-between w-full h-[36px] min-h-[36px] px-3 py-2 rounded-shape-sm flex-nowrap transition-all duration-fast text-xs font-medium cursor-pointer ${
                                         isLocked
                                           ? 'opacity-40 cursor-not-allowed text-[var(--text-disabled)]'
                                           : isSelected
@@ -609,7 +609,7 @@ export const ChatComposer: React.FC<ChatComposerProps> = ({
                                       }`}
                                     >
                                       <div className="flex items-center gap-2 flex-nowrap">
-                                        <span className={`shrink-0 flex items-center justify-center w-3.5 h-3.5 transition-colors duration-150 ${
+                                        <span className={`shrink-0 flex items-center justify-center w-3.5 h-3.5 transition-colors duration-fast ${
                                           isLocked 
                                             ? 'text-[var(--text-disabled)] opacity-60' 
                                             : isSelected 
@@ -619,11 +619,11 @@ export const ChatComposer: React.FC<ChatComposerProps> = ({
                                           {React.isValidElement(model.icon) 
                                             ? React.cloneElement(model.icon as React.ReactElement<{ size?: number; className?: string }>, { 
                                                 size: 14, 
-                                                className: `w-3.5 h-3.5 transition-colors duration-150 ${isSelected ? 'text-[var(--fg-accent)]' : ''}` 
+                                                className: `w-3.5 h-3.5 transition-colors duration-fast ${isSelected ? 'text-[var(--fg-accent)]' : ''}` 
                                               })
-                                            : <Zap className={`w-3.5 h-3.5 transition-colors duration-150 ${isSelected ? 'fill-[var(--fg-accent)] text-[var(--fg-accent)]' : ''}`} />}
+                                            : <Zap className={`w-3.5 h-3.5 transition-colors duration-fast ${isSelected ? 'fill-[var(--fg-accent)] text-[var(--fg-accent)]' : ''}`} />}
                                         </span>
-                                        <span className={`whitespace-nowrap transition-colors duration-150 ${
+                                        <span className={`whitespace-nowrap transition-colors duration-fast ${
                                           isLocked ? '' : 'group-hover:text-[var(--text-primary)]'
                                         }`}>
                                           {model.label}
@@ -709,7 +709,7 @@ export const ChatComposer: React.FC<ChatComposerProps> = ({
                                           setActiveDropdown('tool');
                                           setIsAdvancedToolsOpen(false);
                                         }}
-                                        className={`group flex items-center justify-between w-full h-[36px] min-h-[36px] px-3 py-2 rounded-shape-sm transition-all duration-150 text-xs font-medium cursor-pointer select-none ${
+                                        className={`group flex items-center justify-between w-full h-[36px] min-h-[36px] px-3 py-2 rounded-shape-sm transition-all duration-fast text-xs font-medium cursor-pointer select-none ${
                                           isLocked 
                                             ? 'opacity-40 cursor-not-allowed text-[var(--text-disabled)]'
                                             : isSelected 
@@ -719,7 +719,7 @@ export const ChatComposer: React.FC<ChatComposerProps> = ({
                                       >
                                         {/* Tool Label & Icon */}
                                         <div className="flex items-center gap-2.5 min-w-0">
-                                          <span className={`shrink-0 flex items-center justify-center w-3.5 h-3.5 transition-colors duration-150 ${
+                                          <span className={`shrink-0 flex items-center justify-center w-3.5 h-3.5 transition-colors duration-fast ${
                                             isLocked 
                                               ? 'text-[var(--text-disabled)] opacity-70' 
                                               : isSelected 
@@ -729,11 +729,11 @@ export const ChatComposer: React.FC<ChatComposerProps> = ({
                                             {React.isValidElement(tool.icon) 
                                               ? React.cloneElement(tool.icon as React.ReactElement<{ size?: number; className?: string }>, { 
                                                   size: 14, 
-                                                  className: `w-3.5 h-3.5 transition-colors duration-150 ${isSelected ? 'text-[var(--fg-accent)]' : ''}` 
+                                                  className: `w-3.5 h-3.5 transition-colors duration-fast ${isSelected ? 'text-[var(--fg-accent)]' : ''}` 
                                                 })
-                                              : <Sparkles className={`w-3.5 h-3.5 transition-colors duration-150 ${isSelected ? 'text-[var(--fg-accent)]' : ''}`} />}
+                                              : <Sparkles className={`w-3.5 h-3.5 transition-colors duration-fast ${isSelected ? 'text-[var(--fg-accent)]' : ''}`} />}
                                           </span>
-                                          <span className={`truncate transition-colors duration-150 ${
+                                          <span className={`truncate transition-colors duration-fast ${
                                             isLocked ? '' : 'group-hover:text-[var(--text-primary)]'
                                           }`}>
                                             {tool.label}
@@ -804,7 +804,7 @@ export const ChatComposer: React.FC<ChatComposerProps> = ({
                 handleSendOrStop();
               }}
               disabled={!query.trim() && !isGenerating}
-              className={`w-8 h-8 rounded-shape-sm flex items-center justify-center shrink-0 active:scale-[0.98] transition-all duration-150 border cursor-pointer ${
+              className={`w-8 h-8 rounded-shape-sm flex items-center justify-center shrink-0 active:scale-[0.98] transition-all duration-fast border cursor-pointer ${
                 isGenerating
                   ? 'bg-rose-500 text-white border-rose-500 hover:bg-rose-600 font-bold shadow-md shadow-rose-500/20 animate-pulse'
                   : query.trim()
@@ -847,27 +847,27 @@ export const ChatComposer: React.FC<ChatComposerProps> = ({
                         handleSelectSuggestion(item.suggestion);
                       }}
                       onMouseEnter={() => setActiveSuggestionIndex(idx)}
-                      className={`group flex items-center justify-between h-8 w-full px-2.5 rounded-shape-sm text-xs cursor-pointer transition-colors duration-150 border ${
+                      className={`group flex items-center justify-between h-8 w-full px-2.5 rounded-shape-sm text-xs cursor-pointer transition-colors duration-fast border ${
                         isHighlighted 
                           ? 'bg-[var(--surface-subtle)] text-[var(--text-primary)] font-medium border-[var(--border-default)]' 
                           : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--surface-subtle)] border-transparent'
                       }`}
                     >
                       <div className="flex items-center gap-2 min-w-0 truncate">
-                        <Search className={`w-3.5 h-3.5 shrink-0 transition-colors duration-150 ${isHighlighted ? 'text-[var(--text-primary)]' : 'text-[var(--text-muted)] group-hover:text-[var(--text-primary)]'}`} />
+                        <Search className={`w-3.5 h-3.5 shrink-0 transition-colors duration-fast ${isHighlighted ? 'text-[var(--text-primary)]' : 'text-[var(--text-muted)] group-hover:text-[var(--text-primary)]'}`} />
                         <span className="inline-flex items-center gap-1.5 text-xs truncate">
                           {item.matchedPrefix ? (
                             <span className="text-[var(--text-muted)] font-normal shrink-0">
                               {item.matchedPrefix}
                             </span>
                           ) : null}
-                          <span className="truncate text-[var(--text-primary)] transition-colors duration-150">
+                          <span className="truncate text-[var(--text-primary)] transition-colors duration-fast">
                             {item.remainingText}
                           </span>
                         </span>
                       </div>
                       {categoryText ? (
-                        <span className={`text-[10px] font-medium px-1.5 py-0.5 rounded-shape-xs border shrink-0 transition-colors duration-150 ${
+                        <span className={`text-[10px] font-medium px-1.5 py-0.5 rounded-shape-xs border shrink-0 transition-colors duration-fast ${
                           isHighlighted 
                             ? 'text-[var(--text-secondary)] border-[var(--border-default)] bg-[var(--surface-card)]' 
                             : 'text-[var(--text-muted)] border-[var(--border-default)]/60 bg-transparent'

@@ -680,7 +680,7 @@ export const About: React.FC = () => {
               >
                 <div className="space-y-4">
                   <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-[var(--radius-xs)] bg-[var(--surface-subtle)] border border-[var(--border-accent)] flex items-center justify-center text-[var(--fg-accent)] group-hover:scale-105 transition-theme">
+                    <div className="w-10 h-10 rounded-[var(--radius-xs)] bg-[var(--surface-subtle)] border border-[var(--border-accent)] flex items-center justify-center text-[var(--fg-accent)] group-hover:bg-[var(--surface-card)] transition-all duration-fast">
                       {tool.icon}
                     </div>
                     <h3 className="text-lg font-black text-[var(--text-primary)] group-hover:text-[var(--fg-accent)] transition-colors duration-300">
@@ -728,19 +728,19 @@ export const About: React.FC = () => {
               >
                 <div className="space-y-4">
                   <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-[var(--radius-xs)] bg-[var(--surface-subtle)] border border-[var(--border-accent)] flex items-center justify-center text-[var(--fg-accent)] group-hover:scale-105 transition-theme">
+                    <div className="w-10 h-10 rounded-[var(--radius-xs)] bg-[var(--surface-subtle)] border border-[var(--border-accent)] flex items-center justify-center text-[var(--fg-accent)] group-hover:bg-[var(--surface-card)] transition-all duration-fast">
                       {item.icon}
                     </div>
-                    <h3 className="text-lg font-black text-[var(--text-primary)] group-hover:text-[var(--fg-accent)] transition-colors duration-300">
+                    <h3 className="text-lg font-black text-[var(--text-primary)] group-hover:text-[var(--fg-accent)] transition-colors duration-fast">
                       {item.title}
                     </h3>
                   </div>
 
-                  <div className="relative w-full aspect-[16/10] rounded-[var(--radius-sm)] overflow-hidden border border-[var(--border-subtle)] shadow-sm bg-[var(--surface-inset)] group-hover:border-[var(--border-accent)] transition-colors duration-300">
+                  <div className="relative w-full aspect-[16/10] rounded-[var(--radius-sm)] overflow-hidden border border-[var(--border-subtle)] shadow-sm bg-[var(--surface-inset)] group-hover:border-[var(--border-accent)] transition-colors duration-fast">
                     <img 
                       src={item.imageUrl} 
                       alt={item.title}
-                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 opacity-90 group-hover:opacity-100"
+                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-slow opacity-90 group-hover:opacity-100"
                       referrerPolicy="no-referrer"
                     />
                     <div className="absolute inset-0 bg-gradient-to-t from-[var(--surface-page)]/80 to-transparent pointer-events-none" />
@@ -795,16 +795,16 @@ export const About: React.FC = () => {
                       </motion.div>
                     </div>
 
-                    <h3 className="text-base font-black text-[var(--text-primary)] group-hover:text-[var(--fg-accent)] transition-colors duration-300 leading-snug">
+                    <h3 className="text-base font-black text-[var(--text-primary)] group-hover:text-[var(--fg-accent)] transition-colors duration-fast leading-snug">
                       {item.title}
                     </h3>
 
                     {item.imageUrl && (
-                      <div className="relative w-full aspect-[16/9] rounded-[var(--radius-sm)] overflow-hidden border border-[var(--border-subtle)] shadow-sm bg-[var(--surface-inset)] group-hover:border-[var(--border-accent)] transition-colors duration-300">
+                      <div className="relative w-full aspect-[16/9] rounded-[var(--radius-sm)] overflow-hidden border border-[var(--border-subtle)] shadow-sm bg-[var(--surface-inset)] group-hover:border-[var(--border-accent)] transition-colors duration-fast">
                         <img
                           src={item.imageUrl}
                           alt={item.title}
-                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 opacity-90 group-hover:opacity-100"
+                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-slow opacity-90 group-hover:opacity-100"
                           referrerPolicy="no-referrer"
                         />
                         <div className="absolute inset-0 bg-gradient-to-t from-[var(--surface-page)]/80 to-transparent pointer-events-none" />

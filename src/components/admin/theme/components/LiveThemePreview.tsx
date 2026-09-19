@@ -221,7 +221,7 @@ export const LiveThemePreview: React.FC<LiveThemePreviewProps> = ({ tokens, mode
               <div className="space-y-3">
                 <button
                   type="button"
-                  className="w-full py-2.5 px-4 font-semibold text-xs flex items-center justify-center gap-2 cursor-pointer transition-all duration-150 active:translate-y-0"
+                  className="w-full py-2.5 px-4 font-semibold text-xs flex items-center justify-center gap-2 cursor-pointer transition-all duration-fast active:translate-y-0"
                   style={{
                     backgroundColor: btnPrimaryBg,
                     color: btnPrimaryFg,
@@ -243,7 +243,7 @@ export const LiveThemePreview: React.FC<LiveThemePreviewProps> = ({ tokens, mode
 
                 <button
                   type="button"
-                  className="w-full py-2.5 px-4 font-medium text-xs flex items-center justify-center gap-2 cursor-pointer transition-all duration-150"
+                  className="w-full py-2.5 px-4 font-medium text-xs flex items-center justify-center gap-2 cursor-pointer transition-all duration-fast"
                   style={{
                     backgroundColor: surfaceCard,
                     color: fgPrimary,
@@ -267,7 +267,7 @@ export const LiveThemePreview: React.FC<LiveThemePreviewProps> = ({ tokens, mode
 
                 <button
                   type="button"
-                  className="w-full py-2 px-3 text-xs font-semibold flex items-center justify-between cursor-pointer transition-all duration-150"
+                  className="w-full py-2 px-3 text-xs font-semibold flex items-center justify-between cursor-pointer transition-all duration-fast"
                   style={{
                     backgroundColor: `${githubPurple}18`,
                     borderColor: `${githubPurple}40`,
@@ -351,7 +351,7 @@ export const LiveThemePreview: React.FC<LiveThemePreviewProps> = ({ tokens, mode
                     onFocus={() => setIsAuthFocused(true)}
                     onBlur={() => setIsAuthFocused(false)}
                     placeholder={isAr ? 'admin@perplexta.ai' : 'Enter email address...'}
-                    className="w-full ps-9 pe-3 py-2 text-xs outline-none transition-all duration-150"
+                    className="w-full ps-9 pe-3 py-2 text-xs outline-none transition-all duration-fast"
                     style={{
                       backgroundColor: surfacePage,
                       color: fgPrimary,
@@ -395,7 +395,7 @@ export const LiveThemePreview: React.FC<LiveThemePreviewProps> = ({ tokens, mode
                         <div className="text-[10px]" style={{ color: fgMuted }}>admin@perplexta.com</div>
                       </div>
                     </div>
-                    <ChevronDown size={14} className={`transition-transform duration-150 ${isMenuOpen ? 'rotate-180' : ''}`} style={{ color: fgMuted }} />
+                    <ChevronDown size={14} className={`transition-transform duration-fast ${isMenuOpen ? 'rotate-180' : ''}`} style={{ color: fgMuted }} />
                   </button>
 
                   {isMenuOpen && (
