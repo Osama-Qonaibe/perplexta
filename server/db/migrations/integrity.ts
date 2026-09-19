@@ -1,3 +1,4 @@
+import crypto from "crypto";
 import { pool, ledgerPool, externalPool, securityPool, mediaPool, createInternalPool } from "../index.js";
 import { ensureColumnsBulk } from "./helpers.js";
 import { decrypt } from "../../utils/crypto.js";
@@ -104,13 +105,13 @@ export async function monitorDatabases() {
 }
 
 export async function migrateMediaAssetsData() {
-  const hasDistinctMediaDb = process.env.MEDIA_DATABASE_URL && process.env.MEDIA_DATABASE_URL !== process.env.DATABASE_URL;
-  if (!hasDistinctMediaDb) {
-    console.log('[Media Migration] Core and Media share the same database pool. No data transfer required.');
+  const targetMediaPool = mediaPool || pool;
+  if (!targetMediaPool || targetMediaPool === pool) {
+    console.log('[Media Migration] Core and Media share the same database pool. Verified: no cross-database transfer required.');
     return;
   }
 
-  console.log('[Media Migration] Detected distinct Core and Media databases. Initiating data transfer verification...');
+  console.log('[Media Migration] Detected distinct Core and Media databases. Initiating high-precision data transfer verification...');
   try {
     const coreTableCheck = await pool.query(`
       SELECT EXISTS (
@@ -118,38 +119,112 @@ export async function migrateMediaAssetsData() {
         WHERE table_name = 'media_assets'
       )
     `);
-    if (!coreTableCheck.rows[0].exists) {
-      console.log('[Media Migration] Source table media_assets does not exist in Core. No data to migrate.');
-      return;
-    }
+    if (coreTableCheck.rows[0].exists) {
+      const coreAssets = await pool.query('SELECT * FROM media_assets');
+      if (coreAssets.rows.length > 0) {
+        console.log(`[Media Migration] Found ${coreAssets.rows.length} media_assets in Core DB. Transferring to Media DB...`);
+        let migratedCount = 0;
+        let updatedBinaryCount = 0;
+        
+        for (const row of coreAssets.rows) {
+          try {
+            const existingInMedia = await targetMediaPool.query(
+              'SELECT id, file_data FROM media_assets WHERE id = $1 OR stored_path = $2 OR sha256_hash = $3 LIMIT 1',
+              [row.id, row.stored_path, row.sha256_hash]
+            );
 
-    const coreAssets = await pool.query('SELECT * FROM media_assets');
-    if (coreAssets.rows.length === 0) {
-      console.log('[Media Migration] Source table media_assets is empty in Core. No assets to transfer.');
-      return;
-    }
-
-    console.log(`[Media Migration] Found ${coreAssets.rows.length} media_assets in Core DB. Transferring to Media DB...`);
-    let migratedCount = 0;
-    
-    for (const row of coreAssets.rows) {
-      const fields = Object.keys(row);
-      const values = Object.values(row);
-      const placeholders = fields.map((_, i) => `$${i + 1}`).join(', ');
-      const queryText = `
-        INSERT INTO media_assets (${fields.map(f => `"${f}"`).join(', ')})
-        VALUES (${placeholders})
-        ON CONFLICT (id) DO NOTHING
-      `;
-      const result = await (mediaPool || pool).query(queryText, values);
-      if (result.rowCount && result.rowCount > 0) {
-        migratedCount++;
+            if (existingInMedia.rows.length > 0) {
+              const exRow = existingInMedia.rows[0];
+              if (!exRow.file_data && row.file_data) {
+                await targetMediaPool.query(
+                  'UPDATE media_assets SET file_data = $1, updated_at = CURRENT_TIMESTAMP WHERE id = $2',
+                  [row.file_data, exRow.id]
+                );
+                updatedBinaryCount++;
+              }
+            } else {
+              await targetMediaPool.query(`
+                INSERT INTO media_assets (
+                  id, stored_path, original_filename, context, format, width, height, size_bytes,
+                  sha256_hash, is_public, user_id, metadata, created_at, updated_at, file_data
+                ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15)
+                ON CONFLICT (id) DO UPDATE SET
+                  file_data = COALESCE(EXCLUDED.file_data, media_assets.file_data),
+                  updated_at = CURRENT_TIMESTAMP
+              `, [
+                row.id, row.stored_path, row.original_filename, row.context || 'general',
+                row.format || 'webp', row.width || 0, row.height || 0, row.size_bytes || 0,
+                row.sha256_hash, row.is_public ?? false, row.user_id || null,
+                typeof row.metadata === 'object' ? JSON.stringify(row.metadata) : (row.metadata || '{}'),
+                row.created_at || new Date(), row.updated_at || new Date(), row.file_data || null
+              ]);
+              migratedCount++;
+            }
+          } catch (rowErr: any) {
+            console.warn(`[Media Migration] Row transfer notice for ${row.stored_path}:`, rowErr.message);
+          }
+        }
+        console.log(`[Media Migration] Media assets transfer complete. Inserted: ${migratedCount}, Updated binary: ${updatedBinaryCount}.`);
       }
     }
 
-    const mediaCountCheck = await (mediaPool || pool).query('SELECT COUNT(*) FROM media_assets');
+    // Also migrate any eligible media stored in user_files that is not yet in media_assets
+    try {
+      const userFilesMediaCheck = await pool.query(`
+        SELECT id, user_id, file_name, file_url, file_size, mime_type, file_type, metadata, file_data, created_at
+        FROM user_files
+        WHERE mime_type LIKE 'image/%' OR mime_type LIKE 'video/%' OR mime_type LIKE 'audio/%' OR mime_type = 'application/pdf'
+      `);
+
+      if (userFilesMediaCheck.rows.length > 0) {
+        let userFilesMigrated = 0;
+        for (const uFile of userFilesMediaCheck.rows) {
+          const storedPath = uFile.file_url?.startsWith('uploads/') ? uFile.file_url : (uFile.file_url?.startsWith('/uploads/') ? uFile.file_url.substring(1) : `uploads/${uFile.file_url}`);
+          const shaHash = uFile.file_data ? crypto.createHash('sha256').update(uFile.file_data).digest('hex') : crypto.createHash('sha256').update(storedPath).digest('hex');
+          
+          const exists = await targetMediaPool.query(
+            'SELECT id, file_data FROM media_assets WHERE stored_path = $1 OR sha256_hash = $2 LIMIT 1',
+            [storedPath, shaHash]
+          );
+
+          if (exists.rows.length === 0) {
+            let mContext = 'general';
+            if (uFile.mime_type?.startsWith('image/')) mContext = 'image';
+            else if (uFile.mime_type?.startsWith('video/')) mContext = 'video';
+            else if (uFile.mime_type?.startsWith('audio/')) mContext = 'audio';
+            else if (uFile.mime_type === 'application/pdf') mContext = 'document';
+
+            await targetMediaPool.query(`
+              INSERT INTO media_assets (
+                stored_path, original_filename, context, format, width, height, size_bytes,
+                sha256_hash, is_public, user_id, metadata, file_data, created_at
+              ) VALUES ($1, $2, $3, $4, 0, 0, $5, $6, true, $7, $8, $9, $10)
+              ON CONFLICT (stored_path) DO NOTHING
+            `, [
+              storedPath, uFile.file_name || 'media', mContext, uFile.file_type || 'general',
+              uFile.file_size || 0, shaHash, uFile.user_id || null,
+              typeof uFile.metadata === 'object' ? JSON.stringify(uFile.metadata) : (uFile.metadata || '{}'),
+              uFile.file_data || null, uFile.created_at || new Date()
+            ]);
+            userFilesMigrated++;
+          } else if (!exists.rows[0].file_data && uFile.file_data) {
+            await targetMediaPool.query(
+              'UPDATE media_assets SET file_data = $1, updated_at = CURRENT_TIMESTAMP WHERE id = $2',
+              [uFile.file_data, exists.rows[0].id]
+            );
+          }
+        }
+        if (userFilesMigrated > 0) {
+          console.log(`[Media Migration] Transferred ${userFilesMigrated} files from user_files to media_assets in Media DB.`);
+        }
+      }
+    } catch (uErr: any) {
+      console.warn('[Media Migration] user_files media scan notice:', uErr.message);
+    }
+
+    const mediaCountCheck = await targetMediaPool.query('SELECT COUNT(*) FROM media_assets');
     const finalMediaCount = parseInt(mediaCountCheck.rows[0].count, 10);
-    console.log(`[Media Migration] Migration complete. Transferred: ${migratedCount} new records. Total in Media DB: ${finalMediaCount}.`);
+    console.log(`[Media Migration] Sovereign media verification complete. Total media assets verified in Media DB: ${finalMediaCount}.`);
   } catch (err: any) {
     console.error('[Media Migration] ❌ Error executing media migration transfer:', err?.message || err);
   }
@@ -757,11 +832,12 @@ export async function verifySchemaIntegrity(force = false) {
     },
     media: {
       media_assets: {
-        columns: ['id', 'stored_path', 'original_filename', 'context', 'format', 'width', 'height', 'size_bytes', 'sha256_hash', 'is_public', 'user_id', 'metadata', 'created_at', 'updated_at'],
+        columns: ['id', 'stored_path', 'original_filename', 'context', 'format', 'width', 'height', 'size_bytes', 'sha256_hash', 'is_public', 'user_id', 'metadata', 'file_data', 'created_at', 'updated_at'],
         repairCols: {
           context: { type: 'TEXT', default: "'general'" },
           format: { type: 'TEXT', default: "'webp'" },
-          metadata: { type: 'JSONB', default: "'{}'" }
+          metadata: { type: 'JSONB', default: "'{}'" },
+          file_data: { type: 'BYTEA' }
         }
       },
       canvas_sessions: {

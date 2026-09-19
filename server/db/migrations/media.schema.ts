@@ -57,6 +57,17 @@ export const MEDIA_SCHEMA_TABLES: { name: string; query: string }[] = [
 
 export async function applyMediaColumnEnforcements(targetMediaPool: QueryClient) {
   if (!targetMediaPool) return;
+
+  // Drop restrictive context check constraints so that all media contexts (images, video, audio, document, pwa_asset, brand, etc.) are supported without rejection
+  try {
+    await targetMediaPool.query(`
+      ALTER TABLE media_assets DROP CONSTRAINT IF EXISTS chk_media_assets_context;
+      ALTER TABLE media_assets DROP CONSTRAINT IF EXISTS media_assets_context_check;
+    `);
+  } catch (err: any) {
+    // Ignore if constraints do not exist
+  }
+
   await ensureColumnsBulk(targetMediaPool, 'media_assets', {
     id: { type: 'UUID' },
     stored_path: { type: 'TEXT' },

@@ -5,6 +5,7 @@ import { getSystemSettings, updateSystemSettings, getEconomySettings } from '../
 import { pool } from '../db/index.js';
 import { getStripe, getPayPalCredentials } from '../services/payments.js';
 import { logSystemActivity } from '../services/notifications.js';
+import { escapeHtml } from '../utils/security.js';
 
 const router = express.Router();
 
@@ -399,36 +400,36 @@ router.post("/reports", authenticateToken, async (req: any, res) => {
 
           <div style="background: #1e293b; padding: 18px; border-radius: 12px; margin-bottom: 16px; border-right: 4px solid #f43f5e;">
             <p style="margin: 0 0 8px 0; font-size: 14px; color: #94a3b8;"><strong>تصنيف المخالفة المحدد:</strong></p>
-            <p style="margin: 0; font-size: 16px; font-weight: bold; color: #fb7185;">⚠️ ${catTitle}</p>
+            <p style="margin: 0; font-size: 16px; font-weight: bold; color: #fb7185;">⚠️ ${escapeHtml(catTitle)}</p>
           </div>
 
           <div style="background: #1e293b; padding: 18px; border-radius: 12px; margin-bottom: 16px;">
             <p style="margin: 0 0 8px 0; font-size: 14px; color: #94a3b8;"><strong>بيانات مُقّدم البلاغ:</strong></p>
-            <p style="margin: 0 0 4px 0; font-size: 15px; color: #ffffff;">👤 <strong>الاسم:</strong> ${userName} (معرف: ${userId})</p>
-            <p style="margin: 0 0 4px 0; font-size: 14px; color: #38bdf8;">✉️ <strong>البريد المسجل:</strong> ${userEmail}</p>
-            ${contactInfo ? `<p style="margin: 0 0 4px 0; font-size: 14px; color: #a7f3d0;">📞 <strong>بيانات لمعاودة الاتصال:</strong> ${contactInfo}</p>` : ''}
-            ${attachmentName ? `<p style="margin: 0 0 4px 0; font-size: 14px; color: #fde047;">📎 <strong>الملف المُرفق:</strong> ${attachmentName}</p>` : ''}
+            <p style="margin: 0 0 4px 0; font-size: 15px; color: #ffffff;">👤 <strong>الاسم:</strong> ${escapeHtml(userName)} (معرف: ${escapeHtml(userId)})</p>
+            <p style="margin: 0 0 4px 0; font-size: 14px; color: #38bdf8;">✉️ <strong>البريد المسجل:</strong> ${escapeHtml(userEmail)}</p>
+            ${contactInfo ? `<p style="margin: 0 0 4px 0; font-size: 14px; color: #a7f3d0;">📞 <strong>بيانات لمعاودة الاتصال:</strong> ${escapeHtml(contactInfo)}</p>` : ''}
+            ${attachmentName ? `<p style="margin: 0 0 4px 0; font-size: 14px; color: #fde047;">📎 <strong>الملف المُرفق:</strong> ${escapeHtml(attachmentName)}</p>` : ''}
             <p style="margin: 0; font-size: 13px; color: #94a3b8;">🕒 <strong>توقيت البلاغ:</strong> ${new Date().toLocaleString('ar-SA')}</p>
           </div>
 
           ${details ? `
             <div style="background: rgba(244, 63, 94, 0.1); border: 1px solid rgba(244, 63, 94, 0.3); padding: 16px; border-radius: 12px; margin-bottom: 16px;">
               <p style="margin: 0 0 6px 0; font-size: 13px; color: #fb7185; font-weight: bold;">📝 ملاحظات وتفاصيل البلاغ الواردة من المستخدم:</p>
-              <p style="margin: 0; font-size: 14px; color: #ffffff; line-height: 1.6;">"${details}"</p>
+              <p style="margin: 0; font-size: 14px; color: #ffffff; line-height: 1.6;">"${escapeHtml(details)}"</p>
             </div>
           ` : ''}
 
           ${userPrompt ? `
             <div style="background: #1e293b; padding: 14px; border-radius: 10px; margin-bottom: 12px;">
               <p style="margin: 0 0 6px 0; font-size: 12px; color: #94a3b8;"><strong>سؤال المستخدم الأصلي:</strong></p>
-              <p style="margin: 0; font-size: 13px; color: #e2e8f0;">${userPrompt.slice(0, 300)}</p>
+              <p style="margin: 0; font-size: 13px; color: #e2e8f0;">${escapeHtml(userPrompt.slice(0, 300))}</p>
             </div>
           ` : ''}
 
           ${assistantResponse ? `
             <div style="background: #1e293b; padding: 14px; border-radius: 10px; margin-bottom: 16px;">
               <p style="margin: 0 0 6px 0; font-size: 12px; color: #f43f5e;"><strong>معاينة الرد المُبلغ عنه من المساعد الذكي:</strong></p>
-              <div style="margin: 0; font-size: 13px; color: #cbd5e1; max-height: 200px; overflow-y: auto; white-space: pre-wrap; font-family: sans-serif;">${assistantResponse.slice(0, 800)}</div>
+              <div style="margin: 0; font-size: 13px; color: #cbd5e1; max-height: 200px; overflow-y: auto; white-space: pre-wrap; font-family: sans-serif;">${escapeHtml(assistantResponse.slice(0, 800))}</div>
             </div>
           ` : ''}
 

@@ -3,6 +3,33 @@
  * strictly aligned with Google Gemini Fair Use policies.
  */
 
+/**
+ * Encodes special HTML characters into their corresponding safe HTML entities
+ * to prevent Cross-Site Scripting (XSS) when rendering user input in HTML responses or email bodies.
+ */
+export function escapeHtml(val: any): string {
+  if (val === null || val === undefined) return '';
+  return String(val)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
+/**
+ * Serializes data to JSON safely for direct inclusion within HTML <script> blocks.
+ * Escapes characters that could break out of <script> context (e.g., </script>, <!--).
+ */
+export function serializeJsonForScript(data: any): string {
+  return JSON.stringify(data)
+    .replace(/</g, '\\u003c')
+    .replace(/>/g, '\\u003e')
+    .replace(/&/g, '\\u0026')
+    .replace(/\u2028/g, '\\u2028')
+    .replace(/\u2029/g, '\\u2029');
+}
+
 export const MAX_USER_PROMPT_LIMIT = 16000;
 export const MAX_CUMULATIVE_HISTORY_CHARS = 100000;
 export const MAX_DOC_EXTRACT_SIZE = 60000;

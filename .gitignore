@@ -16,6 +16,8 @@ lerna-debug.log*
 # =============================================================================
 dist/
 build/
+ios/App/App/public/
+android/app/src/main/assets/public/
 .next/
 out/
 .nuxt/
@@ -48,6 +50,13 @@ coverage/
 *.csr
 *.jks
 *.keystore
+firebase-applet-config.json
+firebase-blueprint.json
+firebase_applet_config.xml
+google-services.json
+GoogleService-Info.plist
+*service-account*.json
+*.secret.json
 
 # =============================================================================
 # DOCUMENTATION, GUIDES & NON-RUNTIME BLOAT

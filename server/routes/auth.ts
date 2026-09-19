@@ -17,6 +17,7 @@ import { deductFromWallet, getEconomySettings } from '../services/wallet.js';
 import { hashToken } from '../utils/tokenHash.js';
 import { issueTokenPair, parseRemember } from '../utils/issueTokenPair.js';
 import { getBaseUrl, getRedirectUri } from '../utils/request.js';
+import { escapeHtml, serializeJsonForScript } from '../utils/security.js';
 
 const router = express.Router();
 
@@ -838,23 +839,24 @@ router.get("/google/callback", async (req, res) => {
     }
 
     const isPopupMode = storedState.mode === 'popup';
-    const titleText = lang === 'ar' ? 'جاري التحقق...' : 'Authenticating...';
-    const successText = lang === 'ar' ? 'تم تسجيل الدخول بنجاح' : 'Login Successful';
-    const secureText = lang === 'ar' ? 'اتصال آمن' : 'SECURE SESSION';
-    const closeBtnText = lang === 'ar' ? 'إغلاق ومتابعة' : 'Close and Continue';
-    const direction = lang === 'ar' ? 'rtl' : 'ltr';
-    const allowedOriginJson = JSON.stringify(allowedOrigin);
-    const targetRefJson = JSON.stringify(targetRef);
+    const safeTitleText = escapeHtml(lang === 'ar' ? 'جاري التحقق...' : 'Authenticating...');
+    const safeSuccessText = escapeHtml(lang === 'ar' ? 'تم تسجيل الدخول بنجاح' : 'Login Successful');
+    const safeSecureText = escapeHtml(lang === 'ar' ? 'اتصال آمن' : 'SECURE SESSION');
+    const safeCloseBtnText = escapeHtml(lang === 'ar' ? 'إغلاق ومتابعة' : 'Close and Continue');
+    const safeDirection = lang === 'ar' ? 'rtl' : 'ltr';
+    const allowedOriginJson = serializeJsonForScript(allowedOrigin);
+    const targetRefJson = serializeJsonForScript(targetRef);
+    const safeNonce = escapeHtml(res.locals.nonce || '');
 
-    res.send(`<!DOCTYPE html>
+    res.type('html').send(`<!DOCTYPE html>
       <html>
         <head>
-          <title>${titleText}</title>
+          <title>${safeTitleText}</title>
           <meta name="viewport" content="width=device-width, initial-scale=1">
           <link rel="preconnect" href="https://fonts.googleapis.com">
           <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
           <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700&display=swap" rel="stylesheet">
-          <style nonce="${res.locals.nonce}">
+          <style nonce="${safeNonce}">
             :root {
               --radius-xl: 32px;
               --radius-lg: 20px;
@@ -881,7 +883,7 @@ router.get("/google/callback", async (req, res) => {
               margin: 0;
               font-family: 'Tajawal', sans-serif;
               overflow: hidden;
-              direction: ${direction};
+              direction: ${safeDirection};
             }
             .auth-card {
               text-align: center;
@@ -980,16 +982,16 @@ router.get("/google/callback", async (req, res) => {
                 </svg>
               </div>
             </div>
-            <h2 class="title">${successText}</h2>
+            <h2 class="title">${safeSuccessText}</h2>
             <div class="status-badge" style="display: flex; align-items: center; justify-content: center; gap: 8px; margin-top: 12px; color: #334155; font-weight: 700; font-size: 0.75rem; letter-spacing: 0.1em; opacity: 0.8;">
               <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
-              <span>${secureText}</span>
+              <span>${safeSecureText}</span>
             </div>
-            <button id="closeBtn" class="btn" style="margin-top: 2rem;">${closeBtnText}</button>
+            <button id="closeBtn" class="btn" style="margin-top: 2rem;">${safeCloseBtnText}</button>
           </div>
 
           <script id="__auth_data__" type="application/base64">${pagePayload}</script>
-          <script nonce="${res.locals.nonce}">
+          <script nonce="${safeNonce}">
             (function() {
               const closeBtn = document.getElementById('closeBtn');
               if (closeBtn) closeBtn.onclick = function() { try { window.close(); } catch(e) {} };
@@ -1041,7 +1043,10 @@ router.get("/google/callback", async (req, res) => {
                 }, 150);
               } catch (err) {
                 console.error('Auth processing failed', err);
-                document.body.innerHTML += '<div style="color:red; margin-top:20px;">Error: ' + err.message + '</div>';
+                var errDiv = document.createElement('div');
+                errDiv.style.cssText = 'color:red; margin-top:20px;';
+                errDiv.textContent = 'Error: ' + (err && err.message ? err.message : String(err));
+                document.body.appendChild(errDiv);
                 if (typeof isPopup !== "undefined" && !isPopup) { window.location.href = '/?oauth_error=1'; }
               }
             })();

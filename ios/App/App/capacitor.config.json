@@ -12,6 +12,7 @@
 		}
 	},
 	"packageClassList": [
+		"HapticsPlugin",
 		"PreferencesPlugin",
 		"PushNotificationsPlugin"
 	]

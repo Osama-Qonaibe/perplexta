@@ -56,6 +56,7 @@ const activePoolsList = [
   { name: 'ledger', poolInstance: ledgerPool },
   { name: 'external', poolInstance: externalPool },
   { name: 'security', poolInstance: securityPool },
+  { name: 'media', poolInstance: mediaPool },
 ];
 activePoolsList.forEach(({ poolInstance }) => ensureSaturationListener(poolInstance));
 
@@ -355,11 +356,18 @@ const x402Middleware = paymentMiddlewareFromConfig(
   false // syncFacilitatorOnStart = false to avoid startup crashes
 );
 
-const trustProxyVal = process.env.TRUST_PROXIES || '1';
-if (trustProxyVal === 'true' || trustProxyVal === '1') {
+const rawTrustProxy = process.env.TRUST_PROXIES?.trim() || '1';
+try {
+  if (rawTrustProxy === 'true' || rawTrustProxy === '1') {
+    app.set('trust proxy', 1);
+  } else if (!isNaN(Number(rawTrustProxy))) {
+    app.set('trust proxy', Number(rawTrustProxy));
+  } else {
+    app.set('trust proxy', rawTrustProxy.split(',').map(s => s.trim()));
+  }
+} catch (err) {
+  console.warn('[Proxy] Invalid TRUST_PROXIES config, falling back to 1:', rawTrustProxy);
   app.set('trust proxy', 1);
-} else {
-  app.set('trust proxy', isNaN(Number(trustProxyVal)) ? trustProxyVal.split(',').map(s => s.trim()) : Number(trustProxyVal));
 }
 
 app.use((req, res, next) => {
@@ -402,7 +410,7 @@ app.use(helmet({
       fontSrc: ["'self'", "https://fonts.gstatic.com", "https://cdn.jsdelivr.net", "data:"],
       imgSrc: ["'self'", "data:", "https:", "blob:", "*"],
       scriptSrc: ["'self'", "'unsafe-inline'", "'unsafe-eval'", "https://*.googleapis.com", "https://*.googletagmanager.com"],
-      connectSrc: ["'self'", "https://api.perplexta.online", "wss:", "ws:", "https:", "*"],
+      connectSrc: ["'self'", "https://api.perplexta.com", "wss:", "ws:", "https:", "*"],
       frameAncestors: ["'self'", "https://*.google.com", "https://ai.studio", "https://*.run.app", "https://*.aistudio.google"],
       frameSrc: ["'self'", "https:", "*"],
       objectSrc: ["'none'"]
@@ -416,11 +424,14 @@ app.use(helmet({
 // Note: Global compression is already handled by the normalCompression/aggressiveCompression middleware stack.
 // ====================================
 
-const allowedOrigins = process.env.ALLOWED_ORIGINS?.split(',') || [
-  'https://perplexta.online',
-  'https://www.perplexta.online',
-  'http://localhost:5173'
-];
+const allowedOrigins = [
+  ...(process.env.CORS_ALLOWED_ORIGINS ? process.env.CORS_ALLOWED_ORIGINS.split(',').map(o => o.trim()) : []),
+  ...(process.env.ALLOWED_ORIGINS ? process.env.ALLOWED_ORIGINS.split(',').map(o => o.trim()) : []),
+  'http://localhost:3000',
+  'http://localhost:5173',
+  'https://perplexta.com',
+  'https://www.perplexta.com'
+].filter(Boolean);
 
 app.use(cors({
   origin: (origin, callback) => {
@@ -469,22 +480,30 @@ app.use((req, res, next) => {
 
 app.use(uploadValidator);
 
-const publicPath = path.join(process.cwd(), 'public');
-const uploadsPath = path.join(process.cwd(), 'uploads');
+const publicPath = path.resolve(process.cwd(), 'public');
+const uploadsPath = path.resolve(process.cwd(), 'uploads');
 // Robust distPath resolution supporting both local development and bundled production execution
-const distPath = fs.existsSync(path.join(process.cwd(), 'dist'))
-  ? path.join(process.cwd(), 'dist')
-  : (typeof __dirname !== 'undefined' ? __dirname : path.join(process.cwd()));
+const distPath = fs.existsSync(path.resolve(process.cwd(), 'dist'))
+  ? path.resolve(process.cwd(), 'dist')
+  : (typeof __dirname !== 'undefined' ? path.resolve(__dirname) : path.resolve(process.cwd()));
 
 const isProduction = process.env.NODE_ENV === 'production';
-const indexPath = path.join(distPath, 'index.html');
-const fallbackPath = path.join(process.cwd(), 'index.html');
+const indexPath = path.resolve(distPath, 'index.html');
+const fallbackPath = path.resolve(process.cwd(), 'index.html');
 
 const serveStaticResource = (fileName: string, fallbackFileName?: string) => {
   return (req: express.Request, res: express.Response) => {
-    // Determine the actual file to serve
-    const distFile = path.join(distPath, fileName);
-    const publicFile = path.join(publicPath, fileName);
+    // Validate fileName to prevent path traversal
+    if (!fileName || fileName.includes('..') || fileName.includes('/') || fileName.includes('\\') || fileName.includes('\0')) {
+      return res.status(400).type('text/plain').send('Invalid file name');
+    }
+    const safeName = path.basename(fileName);
+    const distFile = path.resolve(distPath, safeName);
+    const publicFile = path.resolve(publicPath, safeName);
+
+    if (!distFile.startsWith(distPath + path.sep) || !publicFile.startsWith(publicPath + path.sep)) {
+      return res.status(400).type('text/plain').send('Invalid file path');
+    }
     
     let fileToServe: string | null = null;
     if (fs.existsSync(distFile)) {
@@ -492,10 +511,14 @@ const serveStaticResource = (fileName: string, fallbackFileName?: string) => {
     } else if (fs.existsSync(publicFile)) {
       fileToServe = publicFile;
     } else if (fallbackFileName) {
-      const distFallback = path.join(distPath, fallbackFileName);
-      const publicFallback = path.join(publicPath, fallbackFileName);
-      if (fs.existsSync(distFallback)) fileToServe = distFallback;
-      else if (fs.existsSync(publicFallback)) fileToServe = publicFallback;
+      if (fallbackFileName.includes('..') || fallbackFileName.includes('/') || fallbackFileName.includes('\\') || fallbackFileName.includes('\0')) {
+        return res.status(400).type('text/plain').send('Invalid fallback file name');
+      }
+      const safeFallback = path.basename(fallbackFileName);
+      const distFallback = path.resolve(distPath, safeFallback);
+      const publicFallback = path.resolve(publicPath, safeFallback);
+      if (distFallback.startsWith(distPath + path.sep) && fs.existsSync(distFallback)) fileToServe = distFallback;
+      else if (publicFallback.startsWith(publicPath + path.sep) && fs.existsSync(publicFallback)) fileToServe = publicFallback;
     }
 
     if (!fileToServe) {
@@ -731,13 +754,16 @@ const mediaMimeTypes: Record<string, string> = {
 };
 
 async function checkIsPublicFile(filename: string): Promise<boolean> {
+  if (!filename || filename.includes('..') || filename.includes('\0')) return false;
   const cleanName = path.basename(filename.split('?')[0].replace(/^(\/)?(uploads\/)+/i, ''));
+  if (!cleanName || cleanName.includes('..') || cleanName.includes('/') || cleanName.includes('\\')) return false;
   const cacheKey = `public_ref:${cleanName}`;
   const now = Date.now();
   
   const ext = path.extname(cleanName).toLowerCase();
   const isMediaExt = Boolean(mediaMimeTypes[ext]);
-  const diskPath = path.join(uploadsPath, cleanName);
+  const diskPath = path.resolve(uploadsPath, cleanName);
+  if (!diskPath.startsWith(uploadsPath + path.sep)) return false;
   const fileExistsOnDisk = fs.existsSync(diskPath);
 
   // If file physically exists on disk or is a media extension, it is always public/accessible
@@ -823,20 +849,29 @@ app.use('/uploads', async (req: express.Request, res: express.Response, next: ex
 
   try {
     const rawFilename = (req.path || '').toString();
+    if (rawFilename.includes('..') || rawFilename.includes('\0')) {
+      return res.status(400).json({ error: 'Invalid file path' });
+    }
     const cleanRaw = rawFilename.replace(/^(\/)?(uploads\/)+/i, '').replace(/^\/+/, '');
     const cleanPathOnly = cleanRaw.split('?')[0];
+    if (cleanPathOnly.includes('..') || cleanPathOnly.includes('\0')) {
+      return res.status(400).json({ error: 'Invalid file path' });
+    }
     const filename = path.basename(cleanPathOnly);
 
-    if (!filename) {
+    if (!filename || filename.includes('..') || filename.includes('/') || filename.includes('\\')) {
       return next();
     }
     
     // Check primary uploads directory, then nested, then public/uploads
-    let candidatePaths = [
-      path.join(uploadsPath, cleanPathOnly),
-      path.join(uploadsPath, filename),
-      path.join(process.cwd(), 'public', 'uploads', filename),
-      path.join(process.cwd(), 'public', filename),
+    const resolvedUploads = path.resolve(uploadsPath);
+    const resolvedPublic = path.resolve(process.cwd(), 'public');
+    const resolvedPublicUploads = path.resolve(resolvedPublic, 'uploads');
+
+    const candidatePaths = [
+      path.resolve(resolvedUploads, filename),
+      path.resolve(resolvedPublicUploads, filename),
+      path.resolve(resolvedPublic, filename),
     ];
 
     let resolvedPath = candidatePaths[0];
@@ -844,7 +879,11 @@ app.use('/uploads', async (req: express.Request, res: express.Response, next: ex
 
     for (const cp of candidatePaths) {
       const resolved = path.resolve(cp);
-      if (fs.existsSync(resolved)) {
+      if (
+        (resolved.startsWith(resolvedUploads + path.sep) ||
+         resolved.startsWith(resolvedPublic + path.sep)) &&
+        fs.existsSync(resolved)
+      ) {
         resolvedPath = resolved;
         foundFile = true;
         break;
@@ -857,19 +896,19 @@ app.use('/uploads', async (req: express.Request, res: express.Response, next: ex
       const cleanBaseName = nameWithoutExt.replace(/(_opt|_optimized)+$/i, '');
 
       const candidates = Array.from(new Set([
-        path.join(uploadsPath, `${cleanBaseName}_opt.webp`),
-        path.join(uploadsPath, `${cleanBaseName}.webp`),
-        path.join(uploadsPath, `${cleanBaseName}.png`),
-        path.join(uploadsPath, `${cleanBaseName}.jpg`),
-        path.join(uploadsPath, `${cleanBaseName}.jpeg`),
-        path.join(uploadsPath, `${cleanBaseName}.gif`),
-        path.join(uploadsPath, `${cleanBaseName}.svg`),
-        path.join(uploadsPath, `${nameWithoutExt}.png`),
-        path.join(uploadsPath, `${nameWithoutExt}.jpg`)
+        path.resolve(resolvedUploads, `${cleanBaseName}_opt.webp`),
+        path.resolve(resolvedUploads, `${cleanBaseName}.webp`),
+        path.resolve(resolvedUploads, `${cleanBaseName}.png`),
+        path.resolve(resolvedUploads, `${cleanBaseName}.jpg`),
+        path.resolve(resolvedUploads, `${cleanBaseName}.jpeg`),
+        path.resolve(resolvedUploads, `${cleanBaseName}.gif`),
+        path.resolve(resolvedUploads, `${cleanBaseName}.svg`),
+        path.resolve(resolvedUploads, `${nameWithoutExt}.png`),
+        path.resolve(resolvedUploads, `${nameWithoutExt}.jpg`)
       ]));
 
       for (const cand of candidates) {
-        if (fs.existsSync(cand)) {
+        if (cand.startsWith(resolvedUploads + path.sep) && fs.existsSync(cand)) {
           resolvedPath = cand;
           foundFile = true;
           break;
@@ -923,7 +962,14 @@ app.use('/uploads', async (req: express.Request, res: express.Response, next: ex
     const isMedia = ['.png', '.jpg', '.jpeg', '.gif', '.webp', '.svg', '.ico', '.mp4', '.webm', '.mp3', '.wav', '.mov', '.ogg'].includes(actualExt);
 
     const serveFile = async (pathToSend: string) => {
-      const stat = fs.statSync(pathToSend);
+      const resolvedToSend = path.resolve(pathToSend);
+      if (
+        !resolvedToSend.startsWith(resolvedUploads + path.sep) &&
+        !resolvedToSend.startsWith(resolvedPublic + path.sep)
+      ) {
+        return res.status(403).json({ error: 'Access denied' });
+      }
+      const stat = fs.statSync(resolvedToSend);
       const mtime = stat.mtime.toUTCString();
       const fileSize = stat.size;
 
@@ -1269,7 +1315,8 @@ app.get('/api/health', (req, res) => res.json({
     core: getPoolMetrics(pool, 'core'),
     ledger: getPoolMetrics(ledgerPool, 'ledger'),
     external: getPoolMetrics(externalPool, 'external'),
-    security: getPoolMetrics(securityPool, 'security')
+    security: getPoolMetrics(securityPool, 'security'),
+    media: getPoolMetrics(mediaPool, 'media')
   }
 }));
 
@@ -1278,7 +1325,8 @@ app.get(['/api/diagnostics/db', '/api/health/db', '/api/db-health'], (req, res) 
     core: getPoolMetrics(pool, 'core'),
     ledger: getPoolMetrics(ledgerPool, 'ledger'),
     external: getPoolMetrics(externalPool, 'external'),
-    security: getPoolMetrics(securityPool, 'security')
+    security: getPoolMetrics(securityPool, 'security'),
+    media: getPoolMetrics(mediaPool, 'media')
   };
   const isSaturated = Object.values(pools).some(p => p.saturated);
 
@@ -1833,24 +1881,35 @@ async function injectSEOTags(
       return '';
     }
 
+    if (url.includes('..') || url.includes('\0')) {
+      return '';
+    }
+
     let cleanUrl = url;
     if (!cleanUrl.startsWith('/') && !cleanUrl.startsWith('http://') && !cleanUrl.startsWith('https://')) {
       cleanUrl = '/' + cleanUrl;
     }
 
     if (cleanUrl.startsWith('/')) {
+      const cleanPath = cleanUrl.split('?')[0];
+      const filename = path.basename(cleanPath);
+      if (!filename || filename.includes('..')) return '';
+
+      const uploadsDir = path.resolve(process.cwd(), 'uploads');
+      const publicDir = path.resolve(process.cwd(), 'public');
+
       if (cleanUrl.startsWith('/uploads/')) {
-        const localPath = path.join(process.cwd(), cleanUrl);
-        if (!fs.existsSync(localPath)) {
-          const publicPath = path.join(process.cwd(), 'public', cleanUrl);
-          if (!fs.existsSync(publicPath)) {
+        const localPath = path.resolve(uploadsDir, filename);
+        if (localPath.startsWith(uploadsDir + path.sep) && !fs.existsSync(localPath)) {
+          const publicUploadsPath = path.resolve(publicDir, 'uploads', filename);
+          if (publicUploadsPath.startsWith(publicDir + path.sep) && !fs.existsSync(publicUploadsPath)) {
             // Return URL even if physical file check fails to maintain static/CDN hosting support
             return cleanUrl;
           }
         }
       } else if (cleanUrl.startsWith('/images/')) {
-        const publicPath = path.join(process.cwd(), 'public', cleanUrl);
-        if (!fs.existsSync(publicPath)) {
+        const publicImagesPath = path.resolve(publicDir, 'images', filename);
+        if (publicImagesPath.startsWith(publicDir + path.sep) && !fs.existsSync(publicImagesPath)) {
           return cleanUrl;
         }
       }

@@ -2,6 +2,7 @@ import nodemailer from 'nodemailer';
 import { pool } from '../db/index.js';
 import { systemTemplates } from '../config/templates.js';
 import { logSystemActivity } from './notifications.js';
+import { escapeHtml } from '../utils/security.js';
 
 export async function sendEmail(to: string, subject: string, html: string, adminId: number | null = null, preloadedSettings: any = null) {
   try {
@@ -108,8 +109,10 @@ export const sendSmartEmail = async (userId: number | null, toEmail: string, tem
 
     Object.entries(variables).forEach(([key, value]) => {
       const regex = new RegExp(`{{${key}}}`, 'g');
-      subject = subject.replace(regex, value);
-      body = body.replace(regex, value);
+      const safeSubjectVal = String(value ?? '').replace(/[\r\n]+/g, ' ');
+      subject = subject.replace(regex, safeSubjectVal);
+      const safeBodyVal = key.startsWith('raw_') ? String(value ?? '') : escapeHtml(value);
+      body = body.replace(regex, safeBodyVal);
     });
 
     const result = await sendEmail(toEmail, subject, body, userId);

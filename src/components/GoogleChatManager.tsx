@@ -1,25 +1,17 @@
 import { safeStorageGet, safeStorageSet, safeStorageRemove } from "@/utils/safeStorage";
 import React, { useState, useEffect } from 'react';
-import { auth } from '../lib/firebase';
-import { signInWithPopup, GoogleAuthProvider, onAuthStateChanged, User } from 'firebase/auth';
+import { 
+  googleSignIn, 
+  googleSignOut, 
+  initGoogleAuth, 
+  GOOGLE_CHAT_SCOPES, 
+  GoogleUser as User 
+} from '../lib/googleAuth';
 import { 
   MessageSquare, Send, Plus, Users, Hash, RefreshCw, 
   LogIn, LogOut, CheckCircle2, AlertCircle, ShieldCheck, Loader2 
 } from 'lucide-react';
 import { toast, useConfirm } from '@/design-system';
-
-
-const chatProvider = new GoogleAuthProvider();
-[
-  'https://www.googleapis.com/auth/chat.spaces',
-  'https://www.googleapis.com/auth/chat.spaces.readonly',
-  'https://www.googleapis.com/auth/chat.messages',
-  'https://www.googleapis.com/auth/chat.messages.readonly',
-  'https://www.googleapis.com/auth/chat.memberships',
-  'https://www.googleapis.com/auth/chat.memberships.readonly'
-].forEach(scope => chatProvider.addScope(scope));
-
-chatProvider.setCustomParameters({ prompt: 'select_account' });
 
 let cachedChatToken: string | null = null;
 let isSigningIn = false;
@@ -76,20 +68,25 @@ export const GoogleChatManager: React.FC<GoogleChatProps> = ({ dir, theme }) => 
       cachedChatToken = savedToken;
     }
 
-    const unsubscribe = onAuthStateChanged(auth, async (user) => {
-      if (user && cachedChatToken) {
-        setIsConnected(true);
-        setGoogleUser(user);
-        fetchSpaces(cachedChatToken);
-      } else {
-        setIsConnected(false);
-        setGoogleUser(null);
-        cachedChatToken = null;
-        setSpaces([]);
-        setSelectedSpace(null);
-        setMessages([]);
+    const unsubscribe = initGoogleAuth(
+      (user, token) => {
+        const activeToken = cachedChatToken || token;
+        if (activeToken) {
+          setIsConnected(true);
+          setGoogleUser(user);
+          fetchSpaces(activeToken);
+        }
+      },
+      () => {
+        if (!cachedChatToken) {
+          setIsConnected(false);
+          setGoogleUser(null);
+          setSpaces([]);
+          setSelectedSpace(null);
+          setMessages([]);
+        }
       }
-    });
+    );
     return () => unsubscribe();
   }, []);
 
@@ -97,13 +94,12 @@ export const GoogleChatManager: React.FC<GoogleChatProps> = ({ dir, theme }) => 
     try {
       setIsConnecting(true);
       isSigningIn = true;
-      const result = await signInWithPopup(auth, chatProvider);
-      const credential = GoogleAuthProvider.credentialFromResult(result);
-      if (!credential?.accessToken) {
+      const result = await googleSignIn(GOOGLE_CHAT_SCOPES);
+      if (!result?.accessToken) {
         throw new Error('Failed to obtain Google Chat access token.');
       }
-      cachedChatToken = credential.accessToken;
-      safeStorageSet('google_chat_token', credential.accessToken);
+      cachedChatToken = result.accessToken;
+      safeStorageSet('google_chat_token', result.accessToken);
       setIsConnected(true);
       setGoogleUser(result.user);
       toast.success(isAr ? 'تم الاتصال بجوجل شات بنجاح' : 'Connected to Google Chat successfully');
@@ -134,7 +130,7 @@ export const GoogleChatManager: React.FC<GoogleChatProps> = ({ dir, theme }) => 
   };
 
   const handleSignOut = async () => {
-    await auth.signOut();
+    await googleSignOut();
     cachedChatToken = null;
     safeStorageRemove('google_chat_token');
     setIsConnected(false);

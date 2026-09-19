@@ -196,6 +196,26 @@ export function isLocalhost(urlStr?: string): boolean {
   }
 }
 
+/** Check if database URL is a mock/placeholder/dummy or unreachable host (e.g. host:5432, example.com, user:pass) */
+export function isPlaceholderOrUnreachableUrl(urlStr?: string): boolean {
+  if (!urlStr) return true;
+  if (isLocalhost(urlStr)) return true;
+  try {
+    const u = new URL(urlStr);
+    const host = u.hostname?.toLowerCase() || '';
+    if (!host || host === 'localhost' || host === '127.0.0.1' || host === 'host' || host === 'example.com' || host === 'base') {
+      return true;
+    }
+    // Check dummy user:pass credentials commonly set in demo/placeholder envs
+    if (u.username === 'user' && u.password === 'pass') {
+      return true;
+    }
+    return false;
+  } catch {
+    return true;
+  }
+}
+
 /** Normalize database URL to ensure sslmode=verify-full and strip unsupported params */
 export function normalizeDatabaseUrl(url: string): string {
   if (!url) return url;
@@ -324,12 +344,9 @@ export async function initializePerplextaPools(
   const findRemoteDatabase = (...candidates: (string | undefined)[]): string | null => {
     for (const c of candidates) {
       if (c && typeof c === 'string' && /^postgres(ql)?:\/\//.test(c)) {
-        try {
-          const u = new URL(c);
-          if (u.hostname && u.hostname !== 'localhost' && u.hostname !== '127.0.0.1') {
-            return c;
-          }
-        } catch {}
+        if (!isPlaceholderOrUnreachableUrl(c)) {
+          return c;
+        }
       }
     }
     return null;
@@ -349,25 +366,25 @@ export async function initializePerplextaPools(
   );
 
   let effectiveCoreUrl = coreUrl;
-  if ((!effectiveCoreUrl || isLocalhost(effectiveCoreUrl)) && detectedRemote) {
-    console.log(`[DB] Notice: Core DB URL is localhost/missing; adopting detected active remote cloud database: ${redactUrl(detectedRemote)}`);
+  if ((!effectiveCoreUrl || isPlaceholderOrUnreachableUrl(effectiveCoreUrl)) && detectedRemote) {
+    console.log(`[DB] Notice: Core DB URL is localhost/missing/placeholder; adopting detected active remote cloud database: ${redactUrl(detectedRemote)}`);
     effectiveCoreUrl = detectedRemote;
   }
 
   let finalLedgerUrl = ledgerUrl || effectiveCoreUrl;
-  if (isLocalhost(finalLedgerUrl) && !isLocalhost(effectiveCoreUrl)) {
+  if (isPlaceholderOrUnreachableUrl(finalLedgerUrl) && !isPlaceholderOrUnreachableUrl(effectiveCoreUrl)) {
     finalLedgerUrl = effectiveCoreUrl;
   }
   let finalExternalUrl = externalUrl || effectiveCoreUrl;
-  if (isLocalhost(finalExternalUrl) && !isLocalhost(effectiveCoreUrl)) {
+  if (isPlaceholderOrUnreachableUrl(finalExternalUrl) && !isPlaceholderOrUnreachableUrl(effectiveCoreUrl)) {
     finalExternalUrl = effectiveCoreUrl;
   }
   let finalSecurityUrl = securityUrl || effectiveCoreUrl;
-  if (isLocalhost(finalSecurityUrl) && !isLocalhost(effectiveCoreUrl)) {
+  if (isPlaceholderOrUnreachableUrl(finalSecurityUrl) && !isPlaceholderOrUnreachableUrl(effectiveCoreUrl)) {
     finalSecurityUrl = effectiveCoreUrl;
   }
   let finalMediaUrl = mediaUrl || process.env.MEDIA_DATABASE_URL || effectiveCoreUrl;
-  if (isLocalhost(finalMediaUrl) && !isLocalhost(effectiveCoreUrl)) {
+  if (isPlaceholderOrUnreachableUrl(finalMediaUrl) && !isPlaceholderOrUnreachableUrl(effectiveCoreUrl)) {
     finalMediaUrl = effectiveCoreUrl;
   }
 
@@ -561,8 +578,8 @@ export async function initializePerplextaPools(
       }
 
       if (rawLedgerPool !== rawPool) {
-        if (!await verify(rawLedgerPool, 'Ledger DB', 2)) {
-          console.warn('[DB] Ledger DB unreachable — falling back to Core pool.');
+        if (isPlaceholderOrUnreachableUrl(finalLedgerUrl) || !await verify(rawLedgerPool, 'Ledger DB', 2)) {
+          console.warn('[DB] Ledger DB unreachable or placeholder — falling back to Core pool.');
           const oldLedger = rawLedgerPool;
           rawLedgerPool = rawPool;
           currentLedgerUrl = currentCoreUrl;
@@ -585,8 +602,8 @@ export async function initializePerplextaPools(
       } else { console.log('[DB] Ledger DB sharing Core pool.'); }
 
       if (rawExternalPool !== rawPool) {
-        if (!await verify(rawExternalPool, 'External DB', 2)) {
-          console.warn('[DB] External DB unreachable — falling back to Core pool.');
+        if (isPlaceholderOrUnreachableUrl(finalExternalUrl) || !await verify(rawExternalPool, 'External DB', 2)) {
+          console.warn('[DB] External DB unreachable or placeholder — falling back to Core pool.');
           const oldExternal = rawExternalPool;
           rawExternalPool = rawPool;
           currentExternalUrl = currentCoreUrl;
@@ -609,8 +626,8 @@ export async function initializePerplextaPools(
       } else { console.log('[DB] External DB sharing Core pool.'); }
 
       if (rawSecurityPool !== rawPool) {
-        if (!await verify(rawSecurityPool, 'Security DB', 2)) {
-          console.warn('[DB] Security DB unreachable — falling back to Core pool.');
+        if (isPlaceholderOrUnreachableUrl(finalSecurityUrl) || !await verify(rawSecurityPool, 'Security DB', 2)) {
+          console.warn('[DB] Security DB unreachable or placeholder — falling back to Core pool.');
           const oldSecurity = rawSecurityPool;
           rawSecurityPool = rawPool;
           currentSecurityUrl = currentCoreUrl;
@@ -633,8 +650,8 @@ export async function initializePerplextaPools(
       } else { console.log('[DB] Security DB sharing Core pool.'); }
 
       if (rawMediaPool !== rawPool) {
-        if (!await verify(rawMediaPool, 'Media DB', 2)) {
-          console.warn('[DB] Media DB unreachable — falling back to Core pool.');
+        if (isPlaceholderOrUnreachableUrl(finalMediaUrl) || !await verify(rawMediaPool, 'Media DB', 2)) {
+          console.warn('[DB] Media DB unreachable or placeholder — falling back to Core pool.');
           const oldMedia = rawMediaPool;
           rawMediaPool = rawPool;
           currentMediaUrl = currentCoreUrl;
@@ -682,10 +699,7 @@ export async function synchronizePerplextaPoolsFromRegistry() {
     const findCloudRemote = (...candidates: (string | undefined)[]) => {
       for (const c of candidates) {
         if (c && typeof c === 'string' && /^postgres(ql)?:\/\//.test(c)) {
-          try {
-            const u = new URL(c);
-            if (u.hostname && u.hostname !== 'localhost' && u.hostname !== '127.0.0.1') return c;
-          } catch {}
+          if (!isPlaceholderOrUnreachableUrl(c)) return c;
         }
       }
       return null;
@@ -698,26 +712,26 @@ export async function synchronizePerplextaPoolsFromRegistry() {
       process.env.MEDIA_DATABASE_URL
     );
     const rawDefaultCore  = process.env.DATABASE_URL || '';
-    const defaultCore     = (isLocalhost(rawDefaultCore) || !rawDefaultCore) && detectedCloudDb ? detectedCloudDb : rawDefaultCore;
-    const defaultLedger   = (process.env.LEDGER_DATABASE_URL && !isLocalhost(process.env.LEDGER_DATABASE_URL)) ? process.env.LEDGER_DATABASE_URL : defaultCore;
-    const defaultExternal = (process.env.EXTERNAL_DATABASE_URL && !isLocalhost(process.env.EXTERNAL_DATABASE_URL)) ? process.env.EXTERNAL_DATABASE_URL : defaultCore;
-    const defaultSecurity = (process.env.SECURITY_DATABASE_URL && !isLocalhost(process.env.SECURITY_DATABASE_URL)) ? process.env.SECURITY_DATABASE_URL : defaultCore;
-    const defaultMedia    = (process.env.MEDIA_DATABASE_URL && !isLocalhost(process.env.MEDIA_DATABASE_URL)) ? process.env.MEDIA_DATABASE_URL : defaultCore;
+    const defaultCore     = (isPlaceholderOrUnreachableUrl(rawDefaultCore) || !rawDefaultCore) && detectedCloudDb ? detectedCloudDb : rawDefaultCore;
+    const defaultLedger   = (process.env.LEDGER_DATABASE_URL && !isPlaceholderOrUnreachableUrl(process.env.LEDGER_DATABASE_URL)) ? process.env.LEDGER_DATABASE_URL : defaultCore;
+    const defaultExternal = (process.env.EXTERNAL_DATABASE_URL && !isPlaceholderOrUnreachableUrl(process.env.EXTERNAL_DATABASE_URL)) ? process.env.EXTERNAL_DATABASE_URL : defaultCore;
+    const defaultSecurity = (process.env.SECURITY_DATABASE_URL && !isPlaceholderOrUnreachableUrl(process.env.SECURITY_DATABASE_URL)) ? process.env.SECURITY_DATABASE_URL : defaultCore;
+    const defaultMedia    = (process.env.MEDIA_DATABASE_URL && !isPlaceholderOrUnreachableUrl(process.env.MEDIA_DATABASE_URL)) ? process.env.MEDIA_DATABASE_URL : defaultCore;
 
-    // Self-healing: If Core is cloud/remote, ensure registry rows do not store stale/unreachable localhost URLs
-    if (defaultCore && !isLocalhost(defaultCore)) {
+    // Self-healing: If Core is cloud/remote, ensure registry rows do not store stale/unreachable localhost or placeholder URLs
+    if (defaultCore && !isPlaceholderOrUnreachableUrl(defaultCore)) {
       const encryptedCore = encrypt(defaultCore);
       const regRows = await pool.query(
         "SELECT id, connection_string, host FROM db_connections_registry WHERE id IN ('ledger', 'external', 'security', 'media')"
       );
       for (const row of regRows.rows) {
         let isStaleLocal = false;
-        if (row.host === 'localhost' || row.host === '127.0.0.1') {
+        if (row.host === 'localhost' || row.host === '127.0.0.1' || row.host === 'host' || row.host === 'base') {
           isStaleLocal = true;
         } else if (row.connection_string) {
           try {
             const decrypted = decrypt(row.connection_string);
-            if (decrypted && isLocalhost(decrypted)) isStaleLocal = true;
+            if (decrypted && isPlaceholderOrUnreachableUrl(decrypted)) isStaleLocal = true;
           } catch {}
         }
         if (isStaleLocal) {
@@ -835,8 +849,8 @@ export async function synchronizePerplextaPoolsFromRegistry() {
       const normCore = normalizeDatabaseUrl(coreUrl);
       if (normUrl === normCore) return coreUrl;
 
-      // If core is remote and url is localhost/127.0.0.1, skip test and immediately use defaultUrl/coreUrl
-      if (!isLocalhost(normCore) && isLocalhost(normUrl)) {
+      // If core is remote and url is localhost/placeholder/unreachable, skip test and immediately use defaultUrl/coreUrl
+      if (!isPlaceholderOrUnreachableUrl(normCore) && isPlaceholderOrUnreachableUrl(normUrl)) {
         if (pool) {
           try {
             const encryptedCore = encrypt(coreUrl);

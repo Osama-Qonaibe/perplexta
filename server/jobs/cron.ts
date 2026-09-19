@@ -26,7 +26,7 @@ export const cronTracker: Record<string, CronJobInfo> = {
 async function cleanupOrphanedPhysicalFiles() {
   console.log('[Cron] 🧹 Starting physical files audit and purge...');
   try {
-    const uploadDir = path.join(process.cwd(), 'uploads');
+    const uploadDir = path.resolve(process.cwd(), 'uploads');
     
     try {
       await fs.access(uploadDir);
@@ -49,7 +49,10 @@ async function cleanupOrphanedPhysicalFiles() {
       if (filename.startsWith('.')) continue;
 
       if (!validFilenames.has(filename)) {
-        const filePath = path.join(uploadDir, filename);
+        const safeName = path.basename(filename);
+        if (!safeName || safeName.includes('..')) continue;
+        const filePath = path.resolve(uploadDir, safeName);
+        if (!filePath.startsWith(uploadDir + path.sep)) continue;
         await fs.unlink(filePath).catch(() => {});
         purgedCount++;
       }
@@ -68,7 +71,7 @@ async function cleanupOrphanedPhysicalFiles() {
 async function purgeGeneratedFilesOlderThan48Hours() {
   console.log('[Cron] ⏰ Starting automated cleanup of media files older than 48 hours to enforce 48h retention policy...');
   try {
-    const uploadDir = path.join(process.cwd(), 'uploads');
+    const uploadDir = path.resolve(process.cwd(), 'uploads');
     
     try {
       await fs.access(uploadDir);
@@ -92,7 +95,10 @@ async function purgeGeneratedFilesOlderThan48Hours() {
         filename = filename.replace('/uploads/', '');
       }
 
-      const filePath = path.join(uploadDir, filename);
+      const safeFilename = path.basename(filename);
+      if (!safeFilename || safeFilename.includes('..')) continue;
+      const filePath = path.resolve(uploadDir, safeFilename);
+      if (!filePath.startsWith(uploadDir + path.sep)) continue;
 
       try {
         await fs.unlink(filePath).catch(() => {});
@@ -118,7 +124,10 @@ async function purgeGeneratedFilesOlderThan48Hours() {
 
     for (const filename of filesOnDisk) {
       if (filename.startsWith('.') || filename.startsWith('system_')) continue;
-      const filePath = path.join(uploadDir, filename);
+      const safeFilename = path.basename(filename);
+      if (!safeFilename || safeFilename.includes('..')) continue;
+      const filePath = path.resolve(uploadDir, safeFilename);
+      if (!filePath.startsWith(uploadDir + path.sep)) continue;
       try {
         const stats = await fs.stat(filePath);
         if (stats.isFile() && (now - stats.mtimeMs > FORTY_EIGHT_HOURS_MS)) {
@@ -140,7 +149,7 @@ async function purgeExpiredStories() {
   console.log('[Cron] 🎬 Starting automated purge of expired stories (older than 24h)...');
   cronTracker.storyPurge = { lastRun: new Date().toISOString(), status: 'running', error: null };
   try {
-    const uploadDir = path.join(process.cwd(), 'uploads');
+    const uploadDir = path.resolve(process.cwd(), 'uploads');
     
     // 1. Find expired stories
     const result = await pool.query(
@@ -173,7 +182,10 @@ async function purgeExpiredStories() {
           continue; 
         }
 
-        const filePath = path.join(uploadDir, filename);
+        const safeFilename = path.basename(filename.split('?')[0]);
+        if (!safeFilename || safeFilename.includes('..')) continue;
+        const filePath = path.resolve(uploadDir, safeFilename);
+        if (!filePath.startsWith(uploadDir + path.sep)) continue;
         try {
           await fs.unlink(filePath).catch(() => {});
           purgedFilesCount++;

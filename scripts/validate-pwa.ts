@@ -177,8 +177,17 @@ export function validatePwa(): { isValid: boolean; results: CheckResult; manifes
       );
 
       if (icon.src && !icon.src.startsWith('/uploads/') && !icon.src.startsWith('/api/')) {
+        if (icon.src.includes('..') || icon.src.includes('\0')) {
+          check(false, '', `  ❌ ${label} contains illegal path traversal sequences: "${icon.src}"`);
+          return;
+        }
         const cleanSrc = icon.src.startsWith('/') ? icon.src.slice(1) : icon.src;
-        const filePath = path.join(rootDir, 'public', cleanSrc);
+        const publicDir = path.resolve(rootDir, 'public');
+        const filePath = path.resolve(publicDir, cleanSrc);
+        if (!filePath.startsWith(publicDir + path.sep)) {
+          check(false, '', `  ❌ ${label} path escapes public directory: "${icon.src}"`);
+          return;
+        }
         check(
           fs.existsSync(filePath),
           `  ✓ ${label} exists on disk at public/${cleanSrc}`,

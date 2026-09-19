@@ -50,7 +50,7 @@ pm2 startup
 ## Step 6: Verify
 
 ```bash
-curl https://perplexta.online/api/health
+curl https://perplexta.com/api/health
 # Expected: {"status":"ok","timestamp":"..."}
 ```
 

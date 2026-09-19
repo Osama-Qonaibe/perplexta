@@ -24,7 +24,7 @@ const CONTEXT_CONSTRAINTS: Record<string, { maxWidth: number; maxHeight: number;
   general: { maxWidth: 1920, maxHeight: 1080, quality: 85 }
 };
 
-const uploadsDir = path.join(process.cwd(), 'uploads');
+const uploadsDir = path.resolve(process.cwd(), 'uploads');
 if (!existsSync(uploadsDir)) {
   mkdirSync(uploadsDir, { recursive: true });
 }
@@ -45,7 +45,8 @@ export async function optimizeUploadedImage(
   associations?: { userId?: number }
 ): Promise<ImageOptimizationResult> {
   const ext = path.extname(originalFilename).toLowerCase();
-  const baseName = path.basename(filePath, ext);
+  const safeBase = path.basename(filePath, ext).replace(/[^a-zA-Z0-9_-]/g, '');
+  const baseName = safeBase || 'img';
   const constraints = CONTEXT_CONSTRAINTS[context] || CONTEXT_CONSTRAINTS.general;
 
   try {
@@ -61,18 +62,18 @@ export async function optimizeUploadedImage(
         );
         if (existingAsset.rows.length > 0) {
           const row = existingAsset.rows[0];
-          const fullDiskPath = path.join(process.cwd(), row.stored_path);
-          if (existsSync(fullDiskPath)) {
+          const filename = path.basename(row.stored_path);
+          const fullDiskPath = path.resolve(uploadsDir, filename);
+          if (fullDiskPath.startsWith(uploadsDir + path.sep) && existsSync(fullDiskPath)) {
             // Delete the temporary uploaded file
-            if (filePath !== fullDiskPath) {
+            if (path.resolve(filePath) !== fullDiskPath) {
               await fs.unlink(filePath).catch(() => {});
             }
-            const filename = path.basename(row.stored_path);
             return {
               assetId: row.id,
               filename,
               fileUrl: `/uploads/${filename}`,
-              storedPath: row.stored_path,
+              storedPath: `uploads/${filename}`,
               width: row.width,
               height: row.height,
               size: row.size_bytes,
@@ -99,11 +100,17 @@ export async function optimizeUploadedImage(
     if (ext === '.svg' || ext === '.gif') {
       targetFormat = ext.replace('.', '');
       optimizedFilename = `${baseName}_opt${ext}`;
-      optimizedFilePath = path.join(uploadsDir, optimizedFilename);
+      optimizedFilePath = path.resolve(uploadsDir, optimizedFilename);
+      if (!optimizedFilePath.startsWith(uploadsDir + path.sep)) {
+        throw new Error('Path traversal detected');
+      }
       await fs.copyFile(filePath, optimizedFilePath);
     } else {
       optimizedFilename = `${baseName}_opt.webp`;
-      optimizedFilePath = path.join(uploadsDir, optimizedFilename);
+      optimizedFilePath = path.resolve(uploadsDir, optimizedFilename);
+      if (!optimizedFilePath.startsWith(uploadsDir + path.sep)) {
+        throw new Error('Path traversal detected');
+      }
 
       let pipeline = sharp(fileBuffer).rotate(); // auto-rotate based on EXIF before stripping
 
@@ -134,17 +141,25 @@ export async function optimizeUploadedImage(
 
     let assetId: string | undefined;
 
-    // Register in media_assets table
-    if (mediaPool) {
+    // Register in media_assets table in target media pool
+    const targetMediaDb = mediaPool || pool;
+    if (targetMediaDb) {
       try {
-        const insertRes = await mediaPool.query(`
+        const optBuffer = await fs.readFile(optimizedFilePath).catch(() => null);
+        const insertRes = await targetMediaDb.query(`
           INSERT INTO media_assets (
             stored_path, original_filename, context, format, width, height, size_bytes, sha256_hash, is_public,
-            user_id, metadata
-          ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
+            user_id, metadata, file_data
+          ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)
           ON CONFLICT (stored_path) DO UPDATE SET
             context = EXCLUDED.context,
+            format = EXCLUDED.format,
+            width = EXCLUDED.width,
+            height = EXCLUDED.height,
+            size_bytes = EXCLUDED.size_bytes,
+            sha256_hash = EXCLUDED.sha256_hash,
             user_id = COALESCE(EXCLUDED.user_id, media_assets.user_id),
+            file_data = COALESCE(EXCLUDED.file_data, media_assets.file_data),
             updated_at = CURRENT_TIMESTAMP
           RETURNING id
         `, [
@@ -158,7 +173,8 @@ export async function optimizeUploadedImage(
           sha256Hash,
           isPublic,
           associations?.userId || null,
-          JSON.stringify({ originalWidth: origWidth, originalHeight: origHeight })
+          JSON.stringify({ originalWidth: origWidth, originalHeight: origHeight }),
+          optBuffer
         ]);
         if (insertRes.rows.length > 0) {
           assetId = insertRes.rows[0].id;
@@ -320,8 +336,11 @@ export async function deleteMediaAsset(id: string): Promise<boolean> {
     const res = await mediaPool.query('DELETE FROM media_assets WHERE id = $1 RETURNING stored_path', [id]);
     if (res.rows.length > 0) {
       const storedPath = res.rows[0].stored_path;
-      const absPath = path.join(process.cwd(), storedPath);
-      await fs.unlink(absPath).catch(() => {});
+      const filename = path.basename(storedPath);
+      const absPath = path.resolve(uploadsDir, filename);
+      if (absPath.startsWith(uploadsDir + path.sep)) {
+        await fs.unlink(absPath).catch(() => {});
+      }
       return true;
     }
     return false;

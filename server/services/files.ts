@@ -338,14 +338,19 @@ export async function saveGeneratedImageToDisk(userId: string, imageData: string
   mimeType = validation.mimeType;
   fileExtension = validation.fileExtension;
 
-  const randomFilename = `${Date.now()}-${crypto.randomUUID()}.${fileExtension}`;
-  const filePath = path.join(uploadDir, randomFilename);
+  const safeExt = (fileExtension || 'png').replace(/[^a-z0-9]/gi, '').toLowerCase() || 'png';
+  const randomFilename = `${Date.now()}-${crypto.randomUUID()}.${safeExt}`;
+  const safeUploadDir = path.resolve(process.cwd(), 'uploads');
+  const filePath = path.resolve(safeUploadDir, randomFilename);
+  if (!filePath.startsWith(safeUploadDir + path.sep)) {
+    throw new Error('Path traversal detected');
+  }
 
   await fs.writeFile(filePath, buffer);
 
   // Register the file metadata
   await saveFileMetadata(userId, {
-    file_name: `Perplexta_Gen_${Date.now()}.${fileExtension}`,
+    file_name: `Perplexta_Gen_${Date.now()}.${safeExt}`,
     file_url: randomFilename,
     file_size: buffer.length,
     mime_type: mimeType,
@@ -485,14 +490,19 @@ export async function saveGeneratedVideoToDisk(userId: string, videoData: string
   mimeType = validation.mimeType;
   fileExtension = validation.fileExtension;
 
-  const randomFilename = `${Date.now()}-${crypto.randomUUID()}.${fileExtension}`;
-  const filePath = path.join(uploadDir, randomFilename);
+  const safeExt = (fileExtension || 'mp4').replace(/[^a-z0-9]/gi, '').toLowerCase() || 'mp4';
+  const randomFilename = `${Date.now()}-${crypto.randomUUID()}.${safeExt}`;
+  const safeUploadDir = path.resolve(process.cwd(), 'uploads');
+  const filePath = path.resolve(safeUploadDir, randomFilename);
+  if (!filePath.startsWith(safeUploadDir + path.sep)) {
+    throw new Error('Path traversal detected');
+  }
 
   await fs.writeFile(filePath, buffer);
 
   // Register the file metadata
   await saveFileMetadata(userId, {
-    file_name: `Perplexta_Video_${Date.now()}.${fileExtension}`,
+    file_name: `Perplexta_Video_${Date.now()}.${safeExt}`,
     file_url: randomFilename,
     file_size: buffer.length,
     mime_type: mimeType,
@@ -507,7 +517,7 @@ export async function saveGeneratedVideoToDisk(userId: string, videoData: string
 }
 
 export async function saveGeneratedAudioToDisk(userId: string, audioBase64: string, mimeType = 'audio/wav', prompt = 'AI_Track', lyrics = ''): Promise<string> {
-  const uploadDir = path.join(process.cwd(), 'uploads');
+  const uploadDir = path.resolve(process.cwd(), 'uploads');
   // Confirm uploads directory exists
   await fs.mkdir(uploadDir, { recursive: true }).catch(() => {});
 
@@ -517,8 +527,12 @@ export async function saveGeneratedAudioToDisk(userId: string, audioBase64: stri
   else if (mimeType.includes('mpeg')) fileExtension = 'mp3';
   else if (mimeType.includes('ogg')) fileExtension = 'ogg';
 
-  const randomFilename = `${Date.now()}-${crypto.randomUUID()}.${fileExtension}`;
-  const filePath = path.join(uploadDir, randomFilename);
+  const safeExt = (fileExtension || 'wav').replace(/[^a-z0-9]/gi, '').toLowerCase() || 'wav';
+  const randomFilename = `${Date.now()}-${crypto.randomUUID()}.${safeExt}`;
+  const filePath = path.resolve(uploadDir, randomFilename);
+  if (!filePath.startsWith(uploadDir + path.sep)) {
+    throw new Error('Path traversal detected');
+  }
 
   await fs.writeFile(filePath, buffer);
 

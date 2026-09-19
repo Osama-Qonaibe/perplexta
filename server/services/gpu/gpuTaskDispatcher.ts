@@ -5,6 +5,7 @@ import { io } from '../../config/socket.js';
 import { pool } from '../../db/index.js';
 import crypto from 'crypto';
 import fs from 'fs/promises';
+import { existsSync } from 'fs';
 import path from 'path';
 
 function cleanAndPadBase64(input: any): string {
@@ -34,10 +35,30 @@ async function resolveImageToRawBase64(imgUrl: any): Promise<string> {
 
   if (imgUrl.startsWith('/uploads/') || (!imgUrl.startsWith('http://') && !imgUrl.startsWith('https://'))) {
     try {
-      const cleanPath = imgUrl.startsWith('/') ? imgUrl.slice(1) : imgUrl;
-      const fullPath = path.join(process.cwd(), cleanPath);
-      const buf = await fs.readFile(fullPath);
-      return buf.toString('base64');
+      if (imgUrl.includes('..') || imgUrl.includes('\0')) {
+        return '';
+      }
+      const filename = path.basename(imgUrl.split('?')[0]);
+      if (!filename || filename.includes('..')) return '';
+
+      const uploadsDir = path.resolve(process.cwd(), 'uploads');
+      const publicDir = path.resolve(process.cwd(), 'public');
+
+      let candidatePath = path.resolve(uploadsDir, filename);
+      if (!existsSync(candidatePath)) {
+        const publicCandidate = path.resolve(publicDir, filename);
+        if (publicCandidate.startsWith(publicDir + path.sep) && existsSync(publicCandidate)) {
+          candidatePath = publicCandidate;
+        }
+      }
+
+      if (
+        (candidatePath.startsWith(uploadsDir + path.sep) || candidatePath.startsWith(publicDir + path.sep)) &&
+        existsSync(candidatePath)
+      ) {
+        const buf = await fs.readFile(candidatePath);
+        return buf.toString('base64');
+      }
     } catch (e) {
       console.warn('[resolveImageToRawBase64] Could not read local file:', e);
     }

@@ -1,5 +1,5 @@
 import express from 'express';
-import { pool, ledgerPool, getExternalPool } from '../db/index.js';
+import { pool, ledgerPool, getExternalPool, mediaPool } from '../db/index.js';
 import { authenticateToken, authenticateAdmin, authenticateTokenOptional } from '../middleware/auth.js';
 import { createNotification } from '../services/notifications.js';
 import { createChat, addChatMessage } from '../services/chat.js';
@@ -9,7 +9,10 @@ import { upload, handleMulterError } from '../middleware/upload.js';
 import { uploadValidator } from '../middleware/uploadValidator.js';
 import { optimizeUploadedImage } from '../services/mediaOptimizationService.js';
 import { processUploadedVideo } from '../services/videoProcessor.js';
+import { escapeHtml } from '../utils/security.js';
 import path from 'path';
+import fs from 'fs/promises';
+import crypto from 'crypto';
 
 const router = express.Router();
 
@@ -163,6 +166,7 @@ router.post('/upload', authenticateToken, (upload.single('file') as any), handle
     let thumbnailUrl = '';
     let duration = 0;
     let resolution = '';
+    let optImageResult: any = null;
 
     const videoExtensions = ['mp4', 'mov', 'avi', 'webm', 'mkv', 'wmv', 'flv', '3gp'];
     const isVideo = mimetype.startsWith('video/') || videoExtensions.some(ext => originalname.toLowerCase().endsWith('.' + ext));
@@ -170,6 +174,7 @@ router.post('/upload', authenticateToken, (upload.single('file') as any), handle
     if (mimetype.startsWith('image/')) {
       try {
         const optResult = await optimizeUploadedImage(filePath, originalname);
+        optImageResult = optResult;
         finalFilename = optResult.filename;
         processedFileSize = optResult.size;
         resolution = `${optResult.width}x${optResult.height}`;
@@ -193,6 +198,66 @@ router.post('/upload', authenticateToken, (upload.single('file') as any), handle
     }
 
     const fileUrl = `/uploads/${finalFilename}`;
+
+    // Ensure bulletin/reels/stories media is registered in media_assets in the Media DB
+    const safeFinalFilename = path.basename(finalFilename);
+    const uploadsDir = path.resolve(process.cwd(), 'uploads');
+    const finalFilePath = path.resolve(uploadsDir, safeFinalFilename);
+    if (!finalFilePath.startsWith(uploadsDir + path.sep)) {
+      throw new Error('Path traversal detected in bulletin media path');
+    }
+    const targetMediaPool = mediaPool || pool;
+    if (targetMediaPool) {
+      try {
+        const fileBuf = await fs.readFile(finalFilePath).catch(() => null);
+        if (fileBuf) {
+          const sha256Hash = crypto.createHash('sha256').update(fileBuf).digest('hex');
+          const storedPath = `uploads/${finalFilename}`;
+          const mContext = isVideo ? 'video' : 'bulletin';
+          const mFormat = isVideo ? 'mp4' : 'webp';
+
+          const existing = await targetMediaPool.query(
+            'SELECT id FROM media_assets WHERE stored_path = $1 OR sha256_hash = $2 LIMIT 1',
+            [storedPath, sha256Hash]
+          );
+
+          if (existing.rows.length > 0) {
+            await targetMediaPool.query(`
+              UPDATE media_assets SET
+                stored_path = $1,
+                original_filename = $2,
+                context = $3,
+                format = $4,
+                size_bytes = $5,
+                file_data = COALESCE($6, file_data),
+                user_id = COALESCE($7, user_id),
+                updated_at = CURRENT_TIMESTAMP
+              WHERE id = $8
+            `, [storedPath, originalname, mContext, mFormat, processedFileSize, fileBuf, (req as any).user?.id || null, existing.rows[0].id]);
+          } else {
+            await targetMediaPool.query(`
+              INSERT INTO media_assets (
+                stored_path, original_filename, context, format, width, height, size_bytes, sha256_hash, is_public,
+                user_id, metadata, file_data
+              ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, true, $9, $10, $11)
+              ON CONFLICT (stored_path) DO UPDATE SET
+                context = EXCLUDED.context,
+                user_id = COALESCE(EXCLUDED.user_id, media_assets.user_id),
+                file_data = COALESCE(EXCLUDED.file_data, media_assets.file_data),
+                updated_at = CURRENT_TIMESTAMP
+            `, [
+              storedPath, originalname, mContext, mFormat,
+              optImageResult?.width || 0, optImageResult?.height || 0,
+              processedFileSize, sha256Hash, (req as any).user?.id || null,
+              JSON.stringify({ duration, resolution, isVideo, thumbnailUrl }), fileBuf
+            ]);
+          }
+          console.log(`[Bulletin Upload] Successfully registered asset in media_assets for ${finalFilename}`);
+        }
+      } catch (mediaErr: any) {
+        console.warn('[Bulletin Upload] media_assets registration warning:', mediaErr.message);
+      }
+    }
 
     return res.status(201).json({
       success: true,
@@ -3433,9 +3498,9 @@ router.post('/admin/:id/reject', authenticateAdmin, async (req, res) => {
           user.email,
           'bulletin_ad_rejected',
           {
-            userName: user.name || 'User',
-            adTitle: ad.title,
-            rejectionReason: reason || (user.language === 'ar' ? 'غير مطابق للشروط والتعليمات الإرشادية للنشر' : 'Does not meet our community guidelines and publishing rules'),
+            userName: escapeHtml(user.name || 'User'),
+            adTitle: escapeHtml(ad.title),
+            rejectionReason: escapeHtml(reason || (user.language === 'ar' ? 'غير مطابق للشروط والتعليمات الإرشادية للنشر' : 'Does not meet our community guidelines and publishing rules')),
             actionUrl: `${getBaseUrl(req)}/bulletin/ads/manage`,
             baseUrl: getBaseUrl(req)
           },
@@ -3532,11 +3597,11 @@ router.post('/admin/:id/stop', authenticateAdmin, async (req, res) => {
           emailBody: (user) => `
             <div style="font-family: sans-serif; padding: 20px; color: #111; max-width: 600px; margin: 0 auto; border: 1px solid #e5e7eb; border-radius: 8px;">
               <h2 style="color: #EF4444; border-bottom: 2px solid #EF4444; padding-bottom: 10px;">Advertisement Stoppage Notice</h2>
-              <p>Dear <strong>${user.name || 'Advertiser'}</strong>,</p>
-              <p>We are writing to inform you that your active bulletin ad <strong>"${ad.title}"</strong> (ID: #${ad.id}) has been stopped by the platform administration.</p>
+              <p>Dear <strong>${escapeHtml(user.name || 'Advertiser')}</strong>,</p>
+              <p>We are writing to inform you that your active bulletin ad <strong>"${escapeHtml(ad.title)}"</strong> (ID: #${escapeHtml(ad.id)}) has been stopped by the platform administration.</p>
               <div style="background-color: #fef2f2; border: 1px solid #fca5a5; padding: 15px; border-radius: 8px; margin: 20px 0; color: #991b1b;">
                 <p style="margin: 0 0 5px 0;"><strong>Reason for Stoppage:</strong></p>
-                <p style="margin: 0; font-weight: bold;">${stopReason}</p>
+                <p style="margin: 0; font-weight: bold;">${escapeHtml(stopReason)}</p>
               </div>
               <p>If you believe this was an error or would like to request clarification, please contact our support team.</p>
               <hr style="border: 0; border-top: 1px solid #e5e7eb; margin: 20px 0;" />

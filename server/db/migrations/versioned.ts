@@ -437,13 +437,20 @@ export async function runVersionedMigrations(
         }
 
         if (needsUpdate) {
-          const fieldsArray = Object.keys(updates);
-          const fieldsSql = fieldsArray.map((k, i) => `${k} = $${i + 1}`).join(', ');
-          const values = Object.values(updates);
-          values.push(row.id);
-          const idParamIdx = values.length;
-
-          await tx.query(`UPDATE system_settings SET ${fieldsSql}, updated_at = CURRENT_TIMESTAMP WHERE id = $${idParamIdx}`, values);
+          await tx.query(
+            `UPDATE system_settings 
+             SET stripe_publishable_key = COALESCE($1, stripe_publishable_key),
+                 stripe_secret_key = COALESCE($2, stripe_secret_key),
+                 stripe_webhook_secret = COALESCE($3, stripe_webhook_secret),
+                 updated_at = CURRENT_TIMESTAMP 
+             WHERE id = $4`,
+            [
+              updates['stripe_publishable_key'] ?? null,
+              updates['stripe_secret_key'] ?? null,
+              updates['stripe_webhook_secret'] ?? null,
+              row.id
+            ]
+          );
         }
       }
     });
@@ -2525,6 +2532,15 @@ export async function runVersionedMigrations(
     } else {
       console.log('[Migration] Suspension state of v113: Preserving legacy wallet cost and point columns in tool_orchestrator.');
     }
+
+    await runVersioned('v114_unrestrict_media_assets_context', 'Drop restrictive context check constraints on media_assets to allow all media types and contexts', async (tx) => {
+      await tx.query(`
+        ALTER TABLE media_assets DROP CONSTRAINT IF EXISTS chk_media_assets_context;
+        ALTER TABLE media_assets DROP CONSTRAINT IF EXISTS media_assets_context_check;
+      `).catch((err) => {
+        console.warn('[Migration v114] Warning dropping media_assets context check on primary pool:', err.message);
+      });
+    });
     
   console.log("[Migrations] All versioned migrations completed successfully.");
 }

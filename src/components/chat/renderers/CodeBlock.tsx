@@ -46,6 +46,7 @@ import 'prismjs/components/prism-nginx';
 import 'prismjs/components/prism-makefile';
 import 'prismjs/components/prism-wasm';
 import 'prismjs/components/prism-elixir';
+import DOMPurify from 'dompurify';
 import { toast } from '@/design-system';
 import { getCSPNonce } from '../../../utils/csp';
 import { useArtifact, ArtifactTab } from '../../../context/ArtifactContext';
@@ -313,17 +314,20 @@ export const CodeBlock: React.FC<CodeBlockProps> = ({
     else if (['json5'].includes(l)) prismLang = 'json';
 
     const hasGrammar = Prism.languages[prismLang];
+    let rawHtml = '';
     if (hasGrammar) {
       try {
-        return Prism.highlight(editableCode, Prism.languages[prismLang], prismLang);
+        rawHtml = Prism.highlight(editableCode, Prism.languages[prismLang], prismLang);
+        return DOMPurify.sanitize(rawHtml, { USE_PROFILES: { html: true } });
       } catch (e) {}
     }
-    return editableCode
+    rawHtml = editableCode
       .replace(/&/g, '&amp;')
       .replace(/</g, '&lt;')
       .replace(/>/g, '&gt;')
       .replace(/"/g, '&quot;')
       .replace(/'/g, '&#039;');
+    return DOMPurify.sanitize(rawHtml, { USE_PROFILES: { html: true } });
   }, [editableCode, lang]);
 
   const copyToClipboard = () => {

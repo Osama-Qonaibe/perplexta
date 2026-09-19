@@ -82,4 +82,3 @@ class PureMemoryCache {
 }
 
 export const memoryCache = new PureMemoryCache();
-export const redisClient = null;

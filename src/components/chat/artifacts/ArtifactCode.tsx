@@ -4,6 +4,7 @@ import { useAppContext } from '../../../context/AppContext';
 import { useArtifact } from '../../../context/ArtifactContext';
 import { toast } from '@/design-system';
 import { Search } from 'lucide-react';
+import DOMPurify from 'dompurify';
 import Prism from 'prismjs';
 import 'prismjs/themes/prism-tomorrow.css';
 import 'prismjs/components/prism-javascript';
@@ -89,14 +90,16 @@ export function ArtifactCode({ artifact }: ArtifactCodeProps) {
   // Highlighted code output
   const highlightedCode = useMemo(() => {
     const grammar = Prism.languages[prismLanguage] || Prism.languages.markup;
+    let rawHtml = '';
     try {
-      return Prism.highlight(codeValue, grammar, prismLanguage);
+      rawHtml = Prism.highlight(codeValue, grammar, prismLanguage);
     } catch (e) {
-      return codeValue
+      rawHtml = codeValue
         .replace(/&/g, '&amp;')
         .replace(/</g, '&lt;')
         .replace(/>/g, '&gt;');
     }
+    return DOMPurify.sanitize(rawHtml, { USE_PROFILES: { html: true } });
   }, [codeValue, prismLanguage]);
 
   const lines = useMemo(() => codeValue.split('\n'), [codeValue]);

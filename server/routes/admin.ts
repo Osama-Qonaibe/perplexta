@@ -11,7 +11,6 @@ import { memoryCache, getCache, setCache } from '../utils/cache.js';
 import { runDatabaseMigrations } from '../db/migrations.js';
 import { encrypt, decrypt } from '../utils/crypto.js';
 import { invalidateStripeClient } from '../services/payments.js';
-import { invalidateFirebaseApp } from '../firebase-admin.js';
 import { sendEmail } from '../services/email.js';
 import { createNotification, logSystemActivity } from '../services/notifications.js';
 import { consolidateAllUserMemories } from '../services/memory.js';
@@ -46,6 +45,7 @@ import {
   invalidateApiKeysVaultCache 
 } from '../db/queries.js';
 import { invalidateFilePermissionCache } from '../services/filePermissionCache.js';
+import { escapeHtml } from '../utils/security.js';
 import { io } from '../config/socket.js';
 
 const router = express.Router();
@@ -1893,9 +1893,9 @@ async function notifyUserAccountModification(
       sendEmail: true,
       emailBody: (user) => `
       <div style="font-family: sans-serif; background-color: #ffffff; padding: 25px; border-radius: 8px; border: 1px solid #f1f5f9;">
-        <h2 style="color: #334155; font-size: 20px; font-weight: 800; border-bottom: 2px solid #f1f5f9; padding-bottom: 10px;">${titleEn}</h2>
-        <p style="color: #334155; font-size: 15px; line-height: 1.8;">Hello <strong>${user.name || 'Valued User'}</strong>,</p>
-        <p style="color: #475569; font-size: 14px; line-height: 1.8;">${msgEn}</p>
+        <h2 style="color: #334155; font-size: 20px; font-weight: 800; border-bottom: 2px solid #f1f5f9; padding-bottom: 10px;">${escapeHtml(titleEn)}</h2>
+        <p style="color: #334155; font-size: 15px; line-height: 1.8;">Hello <strong>${escapeHtml(user.name || 'Valued User')}</strong>,</p>
+        <p style="color: #475569; font-size: 14px; line-height: 1.8;">${escapeHtml(msgEn)}</p>
         <div style="background-color: #f8fafc; border: 1px solid #e2e8f0; padding: 15px; border-radius: 6px; margin: 20px 0;">
           <span style="color: #64748b; font-size: 13px;">Automated notification from Perplexta Core Platform Engine.</span>
         </div>
@@ -1903,9 +1903,9 @@ async function notifyUserAccountModification(
     `,
       emailBodyAr: (user) => `
       <div style="font-family: Tajawal, sans-serif; direction: rtl; text-align: right; background-color: #ffffff; padding: 25px; border-radius: 8px; border: 1px solid #f1f5f9;">
-        <h2 style="color: #334155; font-size: 20px; font-weight: 800; border-bottom: 2px solid #f1f5f9; padding-bottom: 10px;">${titleAr}</h2>
-        <p style="color: #334155; font-size: 15px; line-height: 1.8;">مرحباً <strong>${user.name || 'عزيزنا المستخدم'}</strong>،</p>
-        <p style="color: #475569; font-size: 14px; line-height: 1.8;">${msgAr}</p>
+        <h2 style="color: #334155; font-size: 20px; font-weight: 800; border-bottom: 2px solid #f1f5f9; padding-bottom: 10px;">${escapeHtml(titleAr)}</h2>
+        <p style="color: #334155; font-size: 15px; line-height: 1.8;">مرحباً <strong>${escapeHtml(user.name || 'عزيزنا المستخدم')}</strong>،</p>
+        <p style="color: #475569; font-size: 14px; line-height: 1.8;">${escapeHtml(msgAr)}</p>
         <div style="background-color: #f8fafc; border: 1px solid #e2e8f0; padding: 15px; border-radius: 6px; margin: 20px 0;">
           <span style="color: #64748b; font-size: 13px;">تنبيه آلي صادق عن نظام إدارة المنصة (Perplexta Core Engine).</span>
         </div>
@@ -2168,7 +2168,7 @@ router.post("/users/:id/balance", authenticateAdmin, async (req, res) => {
               Statement of Ledger Adjustment
             </h2>
             <p style="color: #475569; font-size: 15px; line-height: 1.8;">
-              Hello <strong>${user.name || 'Valued User'}</strong>,
+              Hello <strong>${escapeHtml(user.name || 'Valued User')}</strong>,
             </p>
             <p style="color: #475569; font-size: 15px; line-height: 1.8;">
               Please be advised that an official adjustment has been performed on your wallet by the system administrators:
@@ -2185,7 +2185,7 @@ router.post("/users/:id/balance", authenticateAdmin, async (req, res) => {
                 </tr>
                 <tr>
                   <td style="color: #64748b; padding: 6px 0;"><strong>Approved Reason:</strong></td>
-                  <td style="color: #334155; text-align: right;">${reason || 'Administrative adjustment'}</td>
+                  <td style="color: #334155; text-align: right;">${escapeHtml(reason || 'Administrative adjustment')}</td>
                 </tr>
               </table>
             </div>
@@ -2209,7 +2209,7 @@ router.post("/users/:id/balance", authenticateAdmin, async (req, res) => {
               تنبيه كشف الحساب المالي
             </h2>
             <p style="color: #475569; font-size: 15px; line-height: 1.8;">
-              أهلاً <strong>${user.name || 'عزيزنا العميل'}</strong>، مزار توازن وحسابات المحفظة تم تحديثه بنجاح.
+              أهلاً <strong>${escapeHtml(user.name || 'عزيزنا العميل')}</strong>، مزار توازن وحسابات المحفظة تم تحديثه بنجاح.
             </p>
             <p style="color: #475569; font-size: 15px; line-height: 1.8;">
               يرجى العلم بأنه تم إجراء تعديل رسمي على رصيد محفظتك المعتمد من قِبل إدارة النظام كالتالي:
@@ -2226,7 +2226,7 @@ router.post("/users/:id/balance", authenticateAdmin, async (req, res) => {
                 </tr>
                 <tr>
                   <td style="color: #64748b; padding: 6px 0;"><strong>السبب المعتمد:</strong></td>
-                  <td style="color: #334155; text-align: left;">${reason || 'تعديل إداري'}</td>
+                  <td style="color: #334155; text-align: left;">${escapeHtml(reason || 'تعديل إداري')}</td>
                 </tr>
               </table>
             </div>
@@ -2499,11 +2499,10 @@ router.post("/activity/batch-delete", authenticateAdmin, async (req, res) => {
       await ledgerPool.query('DELETE FROM ledger_transactions WHERE id = ANY($1)', [ids]);
     } else if (type === 'alert') {
       await getSecurityPool().query('DELETE FROM security_alerts WHERE id = ANY($1)', [ids]);
+    } else if (type === 'log') {
+      await pool.query('DELETE FROM system_logs WHERE id = ANY($1)', [ids]);
     } else {
-      const validTables: Record<string, string> = { log: 'system_logs' };
-      const table = validTables[type];
-      if (!table) return res.status(400).json({ error: 'Invalid type' });
-      await pool.query(`DELETE FROM ${table} WHERE id = ANY($1)`, [ids]);
+      return res.status(400).json({ error: 'Invalid type' });
     }
     await auditLog((req as any).user?.id, 'Batch Delete Activity', 'system', { type, count: ids.length });
     res.json({ success: true, count: ids.length });
@@ -2940,7 +2939,6 @@ router.post("/settings/firebase", authenticateAdmin, async (req, res) => {
 
     await pool.query(query, params);
     invalidateSystemSettingsCache();
-    invalidateFirebaseApp();
     
     await auditLog((req as any).user?.id, 'Update Firebase Settings', 'system', { projectId: firebaseProjectId });
     res.json({ success: true, message: 'Firebase Admin settings updated successfully' });
@@ -3654,14 +3652,19 @@ router.post("/maintenance/cleanup", authenticateAdmin, async (req, res) => {
         [idsToDelete]
       );
 
-      const uploadDir = path.join(process.cwd(), 'uploads');
+      const uploadDir = path.resolve(process.cwd(), 'uploads');
       for (const fileRow of orphanedFilesRes.rows) {
         if (fileRow.file_url) {
           try {
             if (!fileRow.file_url.startsWith('http://') && !fileRow.file_url.startsWith('https://')) {
-              const filePath = path.join(uploadDir, fileRow.file_url);
-              await fs.unlink(filePath).catch(() => {});
-              physicalFilesDeleted++;
+              const safeFilename = path.basename(fileRow.file_url);
+              if (safeFilename && !safeFilename.includes('..')) {
+                const filePath = path.resolve(uploadDir, safeFilename);
+                if (filePath.startsWith(uploadDir + path.sep)) {
+                  await fs.unlink(filePath).catch(() => {});
+                  physicalFilesDeleted++;
+                }
+              }
             }
           } catch (itemErr: any) {
             console.error(`[Admin Cleanup] Failed physical unlinking for ${fileRow.file_url}:`, itemErr.message);
@@ -3676,11 +3679,17 @@ router.post("/maintenance/cleanup", authenticateAdmin, async (req, res) => {
       const mediaIds = orphanedMediaAssets.map((m: any) => m.id);
       const targetMediaPool = mediaPool || pool;
       await targetMediaPool.query('DELETE FROM media_assets WHERE id = ANY($1::uuid[])', [mediaIds]);
+      const uploadDir = path.resolve(process.cwd(), 'uploads');
       for (const m of orphanedMediaAssets) {
         if (m.stored_path) {
-          const absPath = path.join(process.cwd(), m.stored_path);
-          await fs.unlink(absPath).catch(() => {});
-          physicalFilesDeleted++;
+          const safeFilename = path.basename(m.stored_path);
+          if (safeFilename && !safeFilename.includes('..')) {
+            const absPath = path.resolve(uploadDir, safeFilename);
+            if (absPath.startsWith(uploadDir + path.sep)) {
+              await fs.unlink(absPath).catch(() => {});
+              physicalFilesDeleted++;
+            }
+          }
         }
         orphanedMediaDeletedCount++;
       }
@@ -3799,13 +3808,27 @@ router.post("/settings/upload-asset", authenticateAdmin, checkDiskSpace, (upload
     const optResult = await optimizeUploadedImage(req.file.path, req.file.originalname);
     
     // Read the optimized file into a base64 string to persist across container reboots
-    const optimizedPath = path.join(process.cwd(), optResult.fileUrl.replace(/^\//, ''));
+    const relFile = optResult.fileUrl.replace(/^\//, '');
+    if (relFile.includes('..') || relFile.includes('\0')) {
+      throw new Error('Invalid file path from optimization.');
+    }
+    const uploadsDir = path.resolve(process.cwd(), 'uploads');
+    const optimizedPath = path.resolve(process.cwd(), relFile);
+    if (!optimizedPath.startsWith(uploadsDir + path.sep) && !optimizedPath.startsWith(path.resolve(process.cwd(), 'public') + path.sep)) {
+      throw new Error('Path traversal detected in optimized path.');
+    }
     const fileBuffer = await fs.readFile(optimizedPath);
     const base64Str = `data:image/${optResult.format || 'webp'};base64,${fileBuffer.toString('base64')}`;
     
     // Clean up temporary raw upload file if distinct from the optimized output file
-    if (req.file.path && path.resolve(req.file.path) !== path.resolve(optimizedPath)) {
-      await fs.unlink(req.file.path).catch(() => {});
+    if (req.file.path) {
+      const resolvedReqPath = path.resolve(req.file.path);
+      if (
+        (resolvedReqPath.startsWith(uploadsDir + path.sep) || resolvedReqPath.startsWith(path.resolve(process.cwd()) + path.sep)) &&
+        resolvedReqPath !== path.resolve(optimizedPath)
+      ) {
+        await fs.unlink(resolvedReqPath).catch(() => {});
+      }
     }
 
     const assetType = req.body?.assetType || req.query?.assetType;
@@ -3857,13 +3880,27 @@ router.post("/settings/upload-seo-image", authenticateAdmin, checkDiskSpace, (up
     const optResult = await optimizeUploadedImage(req.file.path, req.file.originalname);
     
     // Read the optimized file into a base64 string to persist across container reboots
-    const optimizedPath = path.join(process.cwd(), optResult.fileUrl.replace(/^\//, ''));
+    const relFile = optResult.fileUrl.replace(/^\//, '');
+    if (relFile.includes('..') || relFile.includes('\0')) {
+      throw new Error('Invalid file path from optimization.');
+    }
+    const uploadsDir = path.resolve(process.cwd(), 'uploads');
+    const optimizedPath = path.resolve(process.cwd(), relFile);
+    if (!optimizedPath.startsWith(uploadsDir + path.sep) && !optimizedPath.startsWith(path.resolve(process.cwd(), 'public') + path.sep)) {
+      throw new Error('Path traversal detected in optimized path.');
+    }
     const fileBuffer = await fs.readFile(optimizedPath);
     const base64Str = `data:image/${optResult.format || 'webp'};base64,${fileBuffer.toString('base64')}`;
     
     // Clean up temporary raw upload file if distinct from the optimized output file
-    if (req.file.path && path.resolve(req.file.path) !== path.resolve(optimizedPath)) {
-      await fs.unlink(req.file.path).catch(() => {});
+    if (req.file.path) {
+      const resolvedReqPath = path.resolve(req.file.path);
+      if (
+        (resolvedReqPath.startsWith(uploadsDir + path.sep) || resolvedReqPath.startsWith(path.resolve(process.cwd()) + path.sep)) &&
+        resolvedReqPath !== path.resolve(optimizedPath)
+      ) {
+        await fs.unlink(resolvedReqPath).catch(() => {});
+      }
     }
 
     res.json({ success: true, imageUrl: base64Str, fileUrl: optResult.fileUrl });
@@ -4016,7 +4053,6 @@ router.get("/seo-audit", authenticateAdmin, async (req, res) => {
     const stripeConfigured = !!settings?.stripe_secret_key || !!process.env.STRIPE_SECRET_KEY;
     const paypalConfigured = !!(settings?.paypal_client_id && settings?.paypal_client_secret) || !!(process.env.PAYPAL_CLIENT_ID && process.env.PAYPAL_CLIENT_SECRET);
     const googleOauthConfigured = !!settings?.google_client_id || !!process.env.GOOGLE_CLIENT_ID;
-    const firebaseConfigured = !!settings?.firebase_project_id || !!process.env.FIREBASE_PROJECT_ID;
 
     let complianceScore = 100;
     if (!jwtSafe) complianceScore -= 20;
