@@ -144,9 +144,13 @@ export const googleSignIn = async (
     // Attempt standard GSI token client if available
     await loadGsiScript().catch(() => {});
 
-    // First check system settings / meta tag for Google Client ID
+    // Check meta tag, window global, or Vite environment variable for Google Client ID
     const metaClientId = document.querySelector('meta[name="google-signin-client_id"]')?.getAttribute('content');
-    const clientId = metaClientId || (window as any).__GOOGLE_CLIENT_ID__ || 'default-perplexta-client-id';
+    const clientId = metaClientId || (window as any).__GOOGLE_CLIENT_ID__ || (import.meta as any).env?.VITE_GOOGLE_CLIENT_ID || '';
+
+    if (!clientId) {
+      throw new Error('Google Client ID is not configured. Please set GOOGLE_CLIENT_ID in Control Panel or .env');
+    }
 
     if ((window as any).google?.accounts?.oauth2) {
       const token = await new Promise<string>((resolve, reject) => {

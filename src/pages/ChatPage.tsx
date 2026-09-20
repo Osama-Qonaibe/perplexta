@@ -624,10 +624,10 @@ const ChatPage: React.FC = () => {
     }
   }, [query, activeDraftKey]);
 
-  // Session protection protocol: prevent accidental exit / loss on refresh
+  // Session protection protocol: prevent accidental exit / loss during active generation
   useEffect(() => {
     const handleBeforeUnload = (e: BeforeUnloadEvent) => {
-      if (isGenerating || (query && query.trim().length > 0)) {
+      if (isGenerating) {
         e.preventDefault();
         e.returnValue = '';
         return '';
@@ -635,7 +635,7 @@ const ChatPage: React.FC = () => {
     };
     window.addEventListener('beforeunload', handleBeforeUnload);
     return () => window.removeEventListener('beforeunload', handleBeforeUnload);
-  }, [isGenerating, query]);
+  }, [isGenerating]);
 
   // Listen to clear-chat event to reset state and clear thread
   useEffect(() => {

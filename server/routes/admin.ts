@@ -1747,6 +1747,7 @@ router.post("/users", authenticateAdmin, async (req, res, next) => {
       );
 
       await client.query('COMMIT');
+      memoryCache.deletePattern('admin:users');
       await auditLog((req as any).user?.id, 'Create User Manually', 'system', { targetUser: userId, email });
       if (io) {
         io.to('admin_room').emit('user_management_update', { action: 'user_created', userId });
@@ -1790,6 +1791,8 @@ router.delete("/users/:id", authenticateAdmin, async (req, res) => {
       await client.query('DELETE FROM users WHERE id = $1', [id]);
 
       await client.query('COMMIT');
+      invalidateUserCache(id);
+      memoryCache.deletePattern('admin:users');
       await auditLog(adminId, 'Delete User', 'system', { targetUser: id });
       if (io) {
         io.to('admin_room').emit('user_management_update', { action: 'user_deleted', userId: id });
@@ -1994,6 +1997,7 @@ router.patch("/users/:id/permissions", authenticateAdmin, async (req, res) => {
       }, client);
       await client.query('COMMIT');
       invalidateUserCache(userIdNum);
+      memoryCache.deletePattern('admin:users');
       await auditLog((req as any).user?.id, 'Update User Permissions', 'system', { targetUser: userIdNum, changes: { role, status, kyc_status } });
       if (io) {
         io.to('admin_room').emit('user_management_update', { action: 'permissions_updated', userId: userIdNum, role, status, kyc_status });
@@ -2059,6 +2063,7 @@ router.patch("/users/:id/kyc-verification", authenticateAdmin, async (req, res) 
       }, client);
       await client.query('COMMIT');
       invalidateUserCache(userIdNum);
+      memoryCache.deletePattern('admin:users');
       if (io) {
         io.to('admin_room').emit('user_management_update', { action: 'kyc_updated', userId: userIdNum, kyc_status });
         io.to(`user_${userIdNum}`).emit('user_profile_updated', { userId: userIdNum, kyc_status });
