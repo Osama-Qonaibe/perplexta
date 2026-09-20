@@ -199,11 +199,10 @@ export function isLocalhost(urlStr?: string): boolean {
 /** Check if database URL is a mock/placeholder/dummy or unreachable host (e.g. host:5432, example.com, user:pass) */
 export function isPlaceholderOrUnreachableUrl(urlStr?: string): boolean {
   if (!urlStr) return true;
-  if (isLocalhost(urlStr)) return true;
   try {
     const u = new URL(urlStr);
     const host = u.hostname?.toLowerCase() || '';
-    if (!host || host === 'localhost' || host === '127.0.0.1' || host === 'host' || host === 'example.com' || host === 'base') {
+    if (!host || host === 'host' || host === 'example.com' || host === 'base') {
       return true;
     }
     // Check dummy user:pass credentials commonly set in demo/placeholder envs
@@ -718,15 +717,15 @@ export async function synchronizePerplextaPoolsFromRegistry() {
     const defaultSecurity = (process.env.SECURITY_DATABASE_URL && !isPlaceholderOrUnreachableUrl(process.env.SECURITY_DATABASE_URL)) ? process.env.SECURITY_DATABASE_URL : defaultCore;
     const defaultMedia    = (process.env.MEDIA_DATABASE_URL && !isPlaceholderOrUnreachableUrl(process.env.MEDIA_DATABASE_URL)) ? process.env.MEDIA_DATABASE_URL : defaultCore;
 
-    // Self-healing: If Core is cloud/remote, ensure registry rows do not store stale/unreachable localhost or placeholder URLs
-    if (defaultCore && !isPlaceholderOrUnreachableUrl(defaultCore)) {
+    // Self-healing: If Core is cloud/remote, ensure registry rows do not store stale/unreachable placeholder URLs
+    if (defaultCore && !isPlaceholderOrUnreachableUrl(defaultCore) && !isLocalhost(defaultCore)) {
       const encryptedCore = encrypt(defaultCore);
       const regRows = await pool.query(
         "SELECT id, connection_string, host FROM db_connections_registry WHERE id IN ('ledger', 'external', 'security', 'media')"
       );
       for (const row of regRows.rows) {
         let isStaleLocal = false;
-        if (row.host === 'localhost' || row.host === '127.0.0.1' || row.host === 'host' || row.host === 'base') {
+        if (row.host === 'host' || row.host === 'base' || row.host === 'example.com') {
           isStaleLocal = true;
         } else if (row.connection_string) {
           try {
