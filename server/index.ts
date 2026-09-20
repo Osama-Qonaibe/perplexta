@@ -45,17 +45,23 @@ const DB_RETRY_DELAY_MS = 4_000;
  * so the server can continue in Degraded Mode instead of crashing.
  */
 async function initDatabase(): Promise<boolean> {
+  const coreUrl = process.env.DATABASE_URL?.trim();
+  if (!coreUrl) {
+    console.log('[Server] Operating in Degraded Mode (no DATABASE_URL configured). Safe in-memory fallbacks active.');
+    return false;
+  }
+
   for (let attempt = 1; attempt <= MAX_DB_ATTEMPTS; attempt++) {
     try {
       await initializePerplextaPools(
-        process.env.DATABASE_URL        || '',
+        coreUrl,
         process.env.LEDGER_DATABASE_URL  || '',
         process.env.EXTERNAL_DATABASE_URL || '',
         process.env.SECURITY_DATABASE_URL || '',
         process.env.MEDIA_DATABASE_URL   || ''
       );
       if (!isDatabaseConnected()) {
-        throw new Error('Database operating in Degraded Mode (unreachable or missing credentials).');
+        throw new Error('Database connection could not be established.');
       }
       await synchronizePerplextaPoolsFromRegistry();
       await runDatabaseMigrations();
@@ -71,14 +77,14 @@ async function initDatabase(): Promise<boolean> {
       return true;
     } catch (err) {
       const msg = err instanceof Error ? err.message : String(err);
-      console.error(`[Server] DB init attempt ${attempt}/${MAX_DB_ATTEMPTS} failed: ${msg}`);
       if (attempt < MAX_DB_ATTEMPTS) {
-        console.log(`[Server] Retrying in ${DB_RETRY_DELAY_MS / 1000}s...`);
+        console.warn(`[Server] DB connection attempt ${attempt}/${MAX_DB_ATTEMPTS}: ${msg}. Retrying in ${DB_RETRY_DELAY_MS / 1000}s...`);
         await new Promise(resolve => setTimeout(resolve, DB_RETRY_DELAY_MS));
+      } else {
+        console.warn(`[Server] All DB init attempts exhausted (${msg}). Continuing in Degraded Mode.`);
       }
     }
   }
-  console.error('[Server] All DB init attempts exhausted. Entering Degraded Mode.');
   return false;
 }
 

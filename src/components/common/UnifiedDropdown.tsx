@@ -1,5 +1,6 @@
 import React from 'react';
 import { motion, AnimatePresence, type Variants } from 'motion/react';
+import { UNIFIED_DROPDOWN_VARIANTS } from '../../styles/scrollStyles';
 
 export type DropdownPlacement = 
   | 'bottom-start'
@@ -22,18 +23,7 @@ interface UnifiedDropdownProps {
   onClose?: () => void;
 }
 
-const menuVariants: Variants = {
-  closed: {
-    opacity: 0,
-    scale: 0.94,
-    transition: { duration: 0.12, ease: [0.16, 1, 0.3, 1] as [number, number, number, number] }
-  },
-  open: {
-    opacity: 1,
-    scale: 1,
-    transition: { duration: 0.16, ease: [0.16, 1, 0.3, 1] as [number, number, number, number] }
-  }
-};
+const menuVariants: Variants = UNIFIED_DROPDOWN_VARIANTS;
 
 export const UnifiedDropdown: React.FC<UnifiedDropdownProps> = ({ 
   isOpen, 

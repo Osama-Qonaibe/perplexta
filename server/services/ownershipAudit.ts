@@ -23,12 +23,13 @@ export async function logOwnershipAudit(
     };
 
     await pool.query(
-      `INSERT INTO user_activity_logs (user_id, action, details, ip_address) VALUES ($1, $2, $3, $4)`,
+      `INSERT INTO user_activity_logs (user_id, event_type, event_details, ip_address, user_agent) VALUES ($1, $2, $3, $4, $5)`,
       [
         userId || null,
         `IMMUTABLE_${actionType.toUpperCase()}`,
         JSON.stringify(payload),
-        ipAddress || 'system-internal'
+        ipAddress || 'system-internal',
+        'ownership-audit-service'
       ]
     );
   } catch (err: any) {

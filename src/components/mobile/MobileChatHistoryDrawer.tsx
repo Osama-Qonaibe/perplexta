@@ -22,6 +22,7 @@ import { useAppContext } from '../../context/AppContext';
 import { triggerHaptic } from '../../utils/haptics';
 import { safeStorageGet, safeStorageSet } from '../../utils/safeStorage';
 import { toast } from '@/design-system';
+import { SCROLL_STYLES } from '../../styles/scrollStyles';
 
 export const MobileChatHistoryDrawer: React.FC = () => {
   const { language, token, user, socket } = useAppContext();
@@ -299,7 +300,7 @@ export const MobileChatHistoryDrawer: React.FC = () => {
             {/* Header */}
             <div className="px-4 py-3 border-b border-[var(--border-default)] bg-[var(--surface-card)] flex items-center justify-between shrink-0">
               <div className="flex items-center gap-2.5">
-                <div className="w-8 h-8 rounded-xl bg-[var(--bg-accent-muted)] border border-[var(--border-accent)]/30 text-[var(--fg-accent)] flex items-center justify-center shadow-xs">
+                <div className="w-8 h-8 rounded-shape-sm bg-[var(--bg-accent-muted)] border border-[var(--border-accent)]/30 text-[var(--fg-accent)] flex items-center justify-center">
                   <History size={18} />
                 </div>
                 <div>
@@ -315,7 +316,7 @@ export const MobileChatHistoryDrawer: React.FC = () => {
               <div className="flex items-center gap-2">
                 <button
                   onClick={handleStartNewChat}
-                  className="h-8 px-3 rounded-xl bg-[var(--bg-accent-emphasis)] text-[var(--fg-on-emphasis)] text-xs font-bold flex items-center gap-1.5 shadow-xs active:scale-95 transition-transform"
+                  className="h-8 px-3 rounded-shape-sm bg-[var(--bg-accent-emphasis)] text-[var(--fg-on-emphasis)] text-xs font-semibold flex items-center gap-1.5 active:scale-95 transition-transform"
                 >
                   <Plus size={14} />
                   <span>{isRtl ? 'محادثة جديدة' : 'New Chat'}</span>
@@ -323,7 +324,7 @@ export const MobileChatHistoryDrawer: React.FC = () => {
 
                 <button
                   onClick={() => setIsOpen(false)}
-                  className="w-8 h-8 rounded-xl bg-[var(--surface-subtle)] border border-[var(--border-default)] text-[var(--text-muted)] hover:text-[var(--text-primary)] flex items-center justify-center active:scale-95"
+                  className="w-8 h-8 rounded-shape-sm bg-[var(--surface-subtle)] border border-[var(--border-default)] text-[var(--text-muted)] hover:text-[var(--text-primary)] flex items-center justify-center active:scale-95 transition-colors"
                 >
                   <X size={16} />
                 </button>
@@ -353,7 +354,7 @@ export const MobileChatHistoryDrawer: React.FC = () => {
             </div>
 
             {/* Content List */}
-            <div className="flex-1 overflow-y-auto p-3 space-y-4 overscroll-contain">
+            <div className={`p-3 space-y-4 ${SCROLL_STYLES.drawer}`}>
               {isLoading && recentChats.length === 0 ? (
                 <div className="py-12 flex flex-col items-center justify-center gap-2 text-[var(--text-muted)]">
                   <Loader2 size={24} className="animate-spin text-[var(--fg-accent)]" />
@@ -374,14 +375,14 @@ export const MobileChatHistoryDrawer: React.FC = () => {
                         return (
                           <div
                             key={`mobile-history-chat-${chat.id}`}
-                            className={`p-2.5 rounded-2xl border transition-all flex items-center gap-2.5 ${
+                            className={`p-2.5 rounded-shape-md border transition-all duration-fast flex items-center gap-2.5 ${
                               isActive
-                                ? 'bg-[var(--bg-accent-muted)]/70 border-[var(--border-accent)] text-[var(--text-primary)] shadow-xs'
-                                : 'bg-[var(--surface-card)] border-[var(--border-default)] hover:bg-[var(--surface-subtle)] text-[var(--text-secondary)]'
+                                ? 'bg-[var(--bg-accent-muted)] border-[var(--border-accent)]/40 text-[var(--text-primary)]'
+                                : 'bg-transparent border-transparent hover:bg-[var(--surface-subtle)]/20 text-[var(--text-secondary)] hover:text-[var(--text-primary)]'
                             }`}
                           >
-                            <div className={`w-8 h-8 rounded-xl flex items-center justify-center shrink-0 ${
-                              isActive ? 'bg-[var(--bg-accent-emphasis)] text-[var(--fg-on-emphasis)]' : 'bg-[var(--surface-subtle)] text-[var(--text-muted)]'
+                            <div className={`w-8 h-8 rounded-shape-sm flex items-center justify-center shrink-0 ${
+                              isActive ? 'bg-[var(--bg-accent-emphasis)] text-[var(--fg-on-emphasis)]' : 'bg-[var(--surface-subtle)]/40 text-[var(--text-muted)]'
                             }`}>
                               <MessageSquare size={15} />
                             </div>

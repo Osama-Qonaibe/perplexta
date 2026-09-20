@@ -15,7 +15,7 @@ async function runMediaAssetsMigration() {
         id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
         stored_path TEXT NOT NULL UNIQUE,
         original_filename TEXT NOT NULL,
-        context TEXT NOT NULL DEFAULT 'general' CHECK (context IN ('avatar', 'bulletin', 'ad', 'system', 'general', 'video')),
+        context TEXT NOT NULL DEFAULT 'general',
         format TEXT NOT NULL DEFAULT 'webp',
         width INT NOT NULL DEFAULT 0,
         height INT NOT NULL DEFAULT 0,
@@ -31,15 +31,10 @@ async function runMediaAssetsMigration() {
     `);
     console.log('[Migration: media_assets] media_assets table ensured.');
 
-    const chkExists = await targetMediaPool.query(`SELECT 1 FROM pg_constraint WHERE conname = 'chk_media_assets_context'`);
-    if (chkExists.rowCount === 0) {
-      await targetMediaPool.query(`
-        ALTER TABLE media_assets 
-        ADD CONSTRAINT chk_media_assets_context 
-        CHECK (context IN ('avatar', 'bulletin', 'ad', 'system', 'general', 'video'))
-      `);
-    }
-    console.log('[Migration: media_assets] Context check constraint ensured.');
+    await targetMediaPool.query(`
+      ALTER TABLE media_assets DROP CONSTRAINT IF EXISTS chk_media_assets_context;
+      ALTER TABLE media_assets DROP CONSTRAINT IF EXISTS media_assets_context_check;
+    `).catch(() => {});
 
     await targetMediaPool.query(`ALTER TABLE media_assets ADD COLUMN IF NOT EXISTS user_id INTEGER`);
     await targetMediaPool.query(`ALTER TABLE media_assets ADD COLUMN IF NOT EXISTS metadata JSONB DEFAULT '{}'`);

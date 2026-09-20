@@ -134,12 +134,19 @@ export async function syncProviderModelsInternal(providerId: string, apiKey: str
       });
       await handleApiError(response, 'Google AI');
       const data: any = await response.json();
-      models = (data.models || []).map((m: any) => ({
-        ...m,
-        id: m.name,
-        name: m.displayName || m.name.replace('models/', ''),
-        supportedMethods: m.supportedGenerationMethods || []
-      }));
+      models = (data.models || [])
+        .map((m: any) => ({
+          ...m,
+          id: m.name,
+          name: m.displayName || m.name.replace('models/', ''),
+          supportedMethods: m.supportedGenerationMethods || []
+        }))
+        .sort((a: any, b: any) => {
+          const aSupports = (a.supportedMethods || []).includes('generateContent') ? 1 : 0;
+          const bSupports = (b.supportedMethods || []).includes('generateContent') ? 1 : 0;
+          if (bSupports !== aSupports) return bSupports - aSupports;
+          return (a.name || '').localeCompare(b.name || '');
+        });
     } else if (provider === 'together') {
       const response = await fetch('https://api.together.xyz/v1/models', {
         headers: { 'Authorization': `Bearer ${cleanApiKey}`, 'Accept': 'application/json' },
@@ -278,8 +285,15 @@ export async function syncProviderModelsInternal(providerId: string, apiKey: str
       // Auto-assign any unconfigured tools in tool_orchestrator dynamically from synced models
       try {
         const textModel = models.find((m: any) => {
+          const id = (m.id || m.name || '').toLowerCase();
           const methods = m.supportedMethods || m.supportedGenerationMethods || [];
-          return methods.length === 0 || methods.includes('generateContent');
+          const supportsText = methods.length === 0 || methods.includes('generateContent');
+          return supportsText && (id.includes('3.6-flash') || id.includes('3.8-flash'));
+        }) || models.find((m: any) => {
+          const id = (m.id || m.name || '').toLowerCase();
+          const methods = m.supportedMethods || m.supportedGenerationMethods || [];
+          const supportsText = methods.length === 0 || methods.includes('generateContent');
+          return supportsText && !id.includes('tts') && !id.includes('image') && !id.includes('embedding') && !id.includes('transcribe') && !id.includes('robotics') && !id.includes('computer-use');
         }) || models[0];
 
         if (textModel) {
@@ -337,7 +351,7 @@ export async function getProviderKey(provider: string): Promise<string | null> {
     }
   } catch (_) {}
 
-  if (decryptedKey !== null) {
+  if (decryptedKey && decryptedKey.trim().length > 0) {
     vaultCache.set(normProvider, { value: decryptedKey, expiresAt: now + CACHE_TTL_MS });
     return decryptedKey;
   }
@@ -878,6 +892,10 @@ export async function callAIProvider(
   let body: any = {};
   let fetchSignal: AbortSignal | undefined;
 
+  const effectiveTemperature = typeof options?.temperature === 'number' ? options.temperature : (options?.toolId === 'code' ? 0.15 : undefined);
+  const effectiveTopP = typeof options?.topP === 'number' ? options.topP : (options?.toolId === 'code' ? 0.95 : undefined);
+  const effectiveMaxTokens = typeof options?.maxOutputTokens === 'number' ? options.maxOutputTokens : (options?.toolId === 'code' ? 16384 : 8192);
+
   if (normProvider === 'openai' || normProvider === 'deepseek' || normProvider === 'together' || normProvider === 'openrouter' || normProvider === 'xai' || normProvider === 'grok' || normProvider === 'groq' || normProvider === 'mistral') {
     if (normProvider === 'openai') url = 'https://api.openai.com/v1/chat/completions';
     else if (normProvider === 'deepseek') url = 'https://api.deepseek.com/chat/completions';
@@ -894,7 +912,14 @@ export async function callAIProvider(
       // OpenRouter sometimes hangs on standard streaming parsing if provider doesn't support it well, but stream is true here
     }
     const mappedMessages = transformMessagesForOpenAI(messages);
-    body = { model: cleanModel, messages: mappedMessages, stream: isStreaming, max_tokens: 8192 };
+    body = { 
+      model: cleanModel, 
+      messages: mappedMessages, 
+      stream: isStreaming, 
+      max_tokens: effectiveMaxTokens,
+      ...(effectiveTemperature !== undefined ? { temperature: effectiveTemperature } : {}),
+      ...(effectiveTopP !== undefined ? { top_p: effectiveTopP } : {})
+    };
     
     // OpenRouter Optimization: Prevent aggressive upstream fallback chaining which causes 30s+ latency
     if (normProvider === 'openrouter') {
@@ -906,7 +931,14 @@ export async function callAIProvider(
     headers['anthropic-version'] = '2023-06-01';
     headers['anthropic-beta'] = 'pdfs-2024-09-25';
     const mappedMessages = transformMessagesForAnthropic(messages);
-    body = { model: cleanModel, max_tokens: 8192, stream: isStreaming, messages: mappedMessages.filter(m => m.role !== 'system') };
+    body = { 
+      model: cleanModel, 
+      max_tokens: effectiveMaxTokens, 
+      stream: isStreaming, 
+      messages: mappedMessages.filter(m => m.role !== 'system'),
+      ...(effectiveTemperature !== undefined ? { temperature: effectiveTemperature } : {}),
+      ...(effectiveTopP !== undefined ? { top_p: effectiveTopP } : {})
+    };
     if (systemPrompt) body.system = systemPrompt;
   } else if (normProvider.includes('google') || normProvider.includes('gemini')) {
     const method = isStreaming ? 'streamGenerateContent' : 'generateContent';
@@ -922,7 +954,9 @@ export async function callAIProvider(
     body = { 
       contents: geminiContents,
       generationConfig: {
-        maxOutputTokens: 8192
+        maxOutputTokens: effectiveMaxTokens,
+        ...(effectiveTemperature !== undefined ? { temperature: effectiveTemperature } : {}),
+        ...(effectiveTopP !== undefined ? { topP: effectiveTopP } : {})
       }
     };
     if (systemPrompt) {

@@ -599,10 +599,10 @@ export const CodeBlock: React.FC<CodeBlockProps> = ({
     <div
       dir="ltr"
       style={{ direction: 'ltr', unicodeBidi: 'isolate', textAlign: 'left' }}
-      className="relative group mx-auto my-3 w-full rounded-shape-md shadow-2xs overflow-hidden border border-[var(--border-default)] bg-[var(--surface-card)] transition-colors perplexta-codeblock"
+      className="relative group mx-auto my-3 w-full max-w-full min-w-0 rounded-shape-md shadow-2xs overflow-hidden border border-[var(--border-default)] bg-[var(--surface-card)] transition-colors perplexta-codeblock"
     >
       {/* Code Container Header */}
-      <div className="sticky top-0 z-20 h-10 flex items-center justify-between px-3.5 border-b border-[var(--border-default)] bg-[var(--surface-subtle)] text-[var(--text-secondary)] perplexta-codeblock-header select-none">
+      <div className="sticky top-0 z-20 h-10 w-full flex items-center justify-between px-3.5 border-b border-[var(--border-default)] bg-[var(--surface-subtle)] text-[var(--text-secondary)] perplexta-codeblock-header select-none">
         <div className="flex items-center gap-2 min-w-0">
           <div className="flex items-center gap-1.5 h-7 px-2.5 rounded-shape-sm bg-[var(--surface-card)] border border-[var(--border-default)] text-[var(--text-primary)] text-xs font-mono font-semibold shrink-0 shadow-2xs">
             <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 shrink-0" />
@@ -666,10 +666,10 @@ export const CodeBlock: React.FC<CodeBlockProps> = ({
         </div>
       </div>
 
-      <div className={`relative ${!isExpanded && lineCount > 25 ? 'max-h-[500px] overflow-hidden' : ''} transition-all duration-300`}>
+      <div className={`relative w-full max-w-full min-w-0 ${!isExpanded && lineCount > 25 ? 'max-h-[500px] overflow-hidden' : ''} transition-all duration-300`}>
         {sandboxMode ? (
-          <div className="flex flex-col md:flex-row h-[600px] bg-[var(--surface-card)] transition-theme">
-            <div className="flex-1 flex flex-col border-r border-[var(--border-default)]">
+          <div className="flex flex-col md:flex-row h-[600px] bg-[var(--surface-card)] transition-theme w-full max-w-full min-w-0">
+            <div className="flex-1 flex flex-col border-r border-[var(--border-default)] min-w-0">
               <div className="flex items-center justify-between px-3 py-1.5 bg-[var(--surface-inset)] border-b border-[var(--border-default)]">
                 <span className="text-[9px] font-black text-accent uppercase tracking-widest">{dir === 'rtl' ? 'محرر الكود الحي' : 'LIVE CODE EDITOR'}</span>
                 <div className="flex items-center gap-2">
@@ -686,11 +686,12 @@ export const CodeBlock: React.FC<CodeBlockProps> = ({
                 onChange={(e) => setEditableCode(e.target.value)}
                 onKeyDown={handleKeyDown}
                 spellCheck={false}
-                className="flex-1 w-full p-4 font-mono text-sm bg-transparent resize-none focus:outline-none text-[var(--text-primary)] text-left dir-ltr"
+                wrap="off"
+                className="flex-1 w-full p-4 font-mono text-sm bg-transparent resize-none focus:outline-none text-[var(--text-primary)] text-left dir-ltr overflow-x-auto whitespace-pre"
               />
             </div>
 
-            <div className="flex-1 flex flex-col bg-[var(--surface-inset)]">
+            <div className="flex-1 flex flex-col bg-[var(--surface-inset)] min-w-0">
               <div className="flex items-center justify-between px-3 py-1.5 bg-[var(--surface-inset)] border-b border-[var(--border-default)]">
                 <div className="flex items-center gap-2">
                   <span className="text-[9px] font-black text-accent uppercase tracking-widest">{dir === 'rtl' ? 'نتيجة التنفيذ' : 'SANDBOX EXECUTION'}</span>
@@ -711,7 +712,7 @@ export const CodeBlock: React.FC<CodeBlockProps> = ({
                 </div>
               </div>
 
-              <div className="flex-1 relative overflow-hidden">
+              <div className="flex-1 relative overflow-hidden min-w-0">
                 {!isPlaying ? (
                   <div className="absolute inset-0 flex flex-col items-center justify-center text-center p-6 bg-[var(--surface-inset)] transition-theme">
                     <Terminal size={40} className="text-accent/20 mb-3" />
@@ -758,12 +759,12 @@ export const CodeBlock: React.FC<CodeBlockProps> = ({
           <pre 
             dir="ltr"
             style={{ direction: 'ltr', unicodeBidi: 'isolate', textAlign: 'left' }}
-            className="p-4 overflow-x-auto custom-scrollbar bg-transparent transition-theme text-left dir-ltr"
+            className="p-4 overflow-x-auto custom-scrollbar bg-transparent transition-theme text-left dir-ltr w-full max-w-full min-w-0 m-0 select-text"
           >
             <code 
               dir="ltr"
               style={{ direction: 'ltr', unicodeBidi: 'isolate', textAlign: 'left' }}
-              className={`language-${lang} block font-mono text-sm leading-relaxed text-left dir-ltr`}
+              className={`language-${lang} inline-block min-w-full w-max font-mono text-sm leading-relaxed text-left dir-ltr pr-6 whitespace-pre`}
               dangerouslySetInnerHTML={{ __html: highlightedCode }}
             />
           </pre>

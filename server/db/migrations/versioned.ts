@@ -17,8 +17,11 @@ export async function runVersionedMigrations(
   targetExternalPool: QueryClient,
   targetSecurityPool: QueryClient,
   targetMediaPool: QueryClient,
-  migrationMetrics: MigrationMetrics
+  migrationMetrics: MigrationMetrics = { total: 0, successful: 0, failed: 0, totalDuration: 0, perMigration: new Map() }
 ) {
+  if (!migrationMetrics) {
+    migrationMetrics = { total: 0, successful: 0, failed: 0, totalDuration: 0, perMigration: new Map() };
+  }
   const extTarget = externalClient || client;
   const ledgerTarget = ledgerClient || client;
   const secTarget = securityClient || client;
@@ -1538,15 +1541,9 @@ export async function runVersionedMigrations(
         )
       `);
 
-      // Ensure constraint for context values
-      const chkExists = await tx.query(`SELECT 1 FROM pg_constraint WHERE conname = 'chk_media_assets_context'`);
-      if (chkExists.rowCount === 0) {
-        await tx.query(`
-          ALTER TABLE media_assets 
-          ADD CONSTRAINT chk_media_assets_context 
-          CHECK (context IN ('avatar', 'blog', 'marketplace', 'bulletin', 'ad', 'system', 'general'))
-        `);
-      }
+      // Ensure any legacy restrictive constraint for context values is dropped so all contexts (pwa_asset, brand, video, etc.) are valid
+      await tx.query(`ALTER TABLE media_assets DROP CONSTRAINT IF EXISTS chk_media_assets_context`).catch(() => {});
+      await tx.query(`ALTER TABLE media_assets DROP CONSTRAINT IF EXISTS media_assets_context_check`).catch(() => {});
 
       // Ensure columns exist on media_assets if table already existed previously
       await tx.query(`ALTER TABLE media_assets ADD COLUMN IF NOT EXISTS user_id INTEGER`);
@@ -2100,9 +2097,9 @@ export async function runVersionedMigrations(
             IF EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'media_assets' AND column_name = 'blog_article_id') THEN
               ALTER TABLE media_assets DROP COLUMN blog_article_id;
             END IF;
-            -- Update context check constraint if exists
+            -- Ensure restrictive context check constraints are dropped so all media contexts are accepted
             ALTER TABLE media_assets DROP CONSTRAINT IF EXISTS media_assets_context_check;
-            ALTER TABLE media_assets ADD CONSTRAINT media_assets_context_check CHECK (context IN ('avatar', 'bulletin', 'ad', 'system', 'general', 'video'));
+            ALTER TABLE media_assets DROP CONSTRAINT IF EXISTS chk_media_assets_context;
           END IF;
         END $$;
       `).catch(() => {});
@@ -2585,6 +2582,48 @@ export async function runVersionedMigrations(
       const ext = externalClient || tx;
       await ext.query(`DROP TABLE IF EXISTS external_sync_logs, external_categories, external_articles CASCADE`).catch((err: any) => {
         console.warn('[Migration v117] Notice during external ghost tables cleanup:', err.message);
+      });
+    });
+
+    await runVersioned('v118_migrate_deprecated_orchestrator_gemini_models', 'Migrate deprecated Gemini models in tool_orchestrator to active models (gemini-3.6-flash / gemini-3.1-pro-preview)', async (tx) => {
+      await tx.query(`
+        UPDATE tool_orchestrator
+        SET primary_model = 'models/gemini-3.6-flash'
+        WHERE primary_model IN ('models/gemini-2.5-flash', 'gemini-2.5-flash', 'models/gemini-2.0-flash', 'gemini-2.0-flash', 'models/gemini-1.5-flash', 'gemini-1.5-flash');
+
+        UPDATE tool_orchestrator
+        SET primary_model = 'models/gemini-3.1-pro-preview'
+        WHERE primary_model IN ('models/gemini-2.5-pro', 'gemini-2.5-pro', 'models/gemini-2.0-pro', 'gemini-2.0-pro', 'models/gemini-1.5-pro', 'gemini-1.5-pro');
+
+        UPDATE tool_orchestrator
+        SET fallback_1_model = 'models/gemini-3.6-flash'
+        WHERE fallback_1_model IN ('models/gemini-2.5-flash', 'gemini-2.5-flash', 'models/gemini-2.0-flash', 'gemini-2.0-flash', 'models/gemini-1.5-flash', 'gemini-1.5-flash');
+
+        UPDATE tool_orchestrator
+        SET fallback_2_model = 'models/gemini-3.6-flash'
+        WHERE fallback_2_model IN ('models/gemini-2.5-flash', 'gemini-2.5-flash', 'models/gemini-2.0-flash', 'gemini-2.0-flash', 'models/gemini-1.5-flash', 'gemini-1.5-flash');
+      `).catch((err: any) => {
+        console.warn('[Migration v118] Notice migrating deprecated models:', err.message);
+      });
+    });
+
+    await runVersioned('v119_isolate_gpu_tools_and_clean_orchestrator', 'Enforce absolute GPU and media compute isolation by purging text LLM fallbacks from media/vision tools', async (tx) => {
+      await tx.query(`
+        UPDATE tool_orchestrator
+        SET fallback_1_provider = '', fallback_1_model = '',
+            fallback_2_provider = '', fallback_2_model = '',
+            fallback_3_provider = '', fallback_3_model = ''
+        WHERE tool_id IN ('vision', 'perplexta_vision', 'image', 'video', 'canvas', 'stt', 'tts', 'perplexta_music')
+          AND (fallback_1_provider IN ('google', 'openai', 'anthropic', 'deepseek', 'groq')
+               OR fallback_2_provider IN ('google', 'openai', 'anthropic', 'deepseek', 'groq')
+               OR fallback_3_provider IN ('google', 'openai', 'anthropic', 'deepseek', 'groq'));
+
+        UPDATE tool_orchestrator
+        SET primary_provider = '', primary_model = ''
+        WHERE tool_id IN ('vision', 'perplexta_vision', 'image', 'video')
+          AND primary_provider IN ('google', 'openai', 'anthropic', 'deepseek', 'groq');
+      `).catch((err: any) => {
+        console.warn('[Migration v119] Notice isolating GPU tools:', err.message);
       });
     });
     

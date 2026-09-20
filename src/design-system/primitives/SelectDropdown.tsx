@@ -277,17 +277,17 @@ export function SelectDropdown<T extends string | number = string>({
       <AnimatePresence>
         {isOpen && (
           <motion.div
-            initial={{ opacity: 0, scale: 0.97, y: placement === 'bottom' ? 4 : -4 }}
-            animate={{ opacity: 1, scale: 1, y: 0 }}
-            exit={{ opacity: 0, scale: 0.97, y: placement === 'bottom' ? 4 : -4 }}
-            transition={{ duration: 0.14, ease: [0.16, 1, 0.3, 1] }}
+            initial={{ opacity: 0, scale: 0.98 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.98 }}
+            transition={{ duration: 0.10, ease: [0.16, 1, 0.3, 1] }}
             style={{
               transformOrigin: placement === 'bottom' ? 'top center' : 'bottom center',
             }}
             className={`
               absolute z-[250] left-0 right-0 p-1 rounded-shape-md
               bg-[var(--surface-card)] border border-[var(--border-default)]
-              shadow-2xl backdrop-blur-xl flex flex-col gap-0.5 overflow-hidden
+              shadow-2xl backdrop-blur-xl flex flex-col gap-0.5 overflow-hidden overscroll-contain
               ${placement === 'bottom' ? 'top-full mt-1.5' : 'bottom-full mb-1.5'}
               ${popoverClassName}
             `}
@@ -317,7 +317,7 @@ export function SelectDropdown<T extends string | number = string>({
             {/* Options List Container */}
             <div 
               ref={listRef}
-              className={`flex flex-col gap-0.5 overflow-y-auto custom-scrollbar ${maxHeight}`}
+              className={`flex flex-col gap-0.5 overflow-y-auto custom-scrollbar scroll-smooth overscroll-contain ${maxHeight}`}
             >
               {filteredOptions.length === 0 ? (
                 <div className="py-3 px-2 text-center text-[11px] text-[var(--text-muted)]">

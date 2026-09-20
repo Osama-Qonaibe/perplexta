@@ -3,7 +3,6 @@ import { pool, ledgerPool, externalPool, securityPool, mediaPool, createInternal
 import { ensureColumnsBulk } from "./helpers.js";
 import { decrypt } from "../../utils/crypto.js";
 import { getIo } from "./maintenance.js";
-import { initDb } from "./index.js";
 import { CORE_INDEXES } from "./core.schema.js";
 import { LEDGER_INDEXES } from "./ledger.schema.js";
 import { EXTERNAL_INDEXES } from "./external.schema.js";
@@ -881,6 +880,7 @@ export async function verifySchemaIntegrity(force = false) {
 
           try {
             console.log(`[Schema Integrity] Attempting table reconstruction for ${tableName}...`);
+            const { initDb } = await import("./index.js");
             await initDb('additive', pool, ledgerPool, externalPool, securityPool, mediaPool);
             report.repairedTables.push(tableName);
             repairedSomething = true;

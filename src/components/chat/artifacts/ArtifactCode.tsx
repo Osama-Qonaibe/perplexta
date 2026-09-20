@@ -189,12 +189,12 @@ export function ArtifactCode({ artifact }: ArtifactCodeProps) {
             <pre 
               dir="ltr" 
               style={{ direction: 'ltr', unicodeBidi: 'isolate', textAlign: 'left' }}
-              className="flex-1 p-4 font-mono text-[12px] leading-5 text-slate-100 overflow-auto custom-scrollbar m-0 select-text text-left dir-ltr"
+              className="flex-1 p-4 font-mono text-[12px] leading-5 text-slate-100 overflow-x-auto overflow-y-auto custom-scrollbar m-0 select-text text-left dir-ltr w-full max-w-full min-w-0"
             >
               <code
                 dir="ltr"
                 style={{ direction: 'ltr', unicodeBidi: 'isolate', textAlign: 'left' }}
-                className={`language-${prismLanguage}`}
+                className={`language-${prismLanguage} inline-block min-w-full w-max whitespace-pre font-mono pr-6`}
                 dangerouslySetInnerHTML={{ __html: highlightedCode }}
               />
             </pre>

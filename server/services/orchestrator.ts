@@ -230,27 +230,41 @@ Instruction: You MUST explicitly disclose this forensic audit to the user. Descr
 
   const memoryLimit = systemSettings?.memory_limit_per_user || 48;
 
-  if (activeKeys.length === 0) {
-    throw new Error(JSON.stringify({
-      error: "The intelligence core is currently undergoing a scheduled synchronization. Operations will resume momentarily.",
-      error_ar: "نظام الذكاء الاصطناعي يخضع حالياً لمزامنة مبرمجة. ستستأنف العمليات خلال لحظات.",
-      type: "SYSTEM_INACTIVE"
-    }));
-  }
+  const isGpuComputeTool = ['vision', 'perplexta_vision', 'image', 'video'].includes(toolIdStr);
 
   let route = rawRouteConfig;
 
-  if (!route || !route.primary_provider || !route.primary_model) {
-    if (activeKeys.length > 0) {
-      const activeProvider = activeKeys.find((k: any) => k.models && k.models.length > 0) || activeKeys[0];
-      if (activeProvider && activeProvider.models && activeProvider.models.length > 0) {
-        const textModel = activeProvider.models.find((m: any) => {
-          const methods = m.supportedMethods || m.supportedGenerationMethods || [];
-          return methods.length === 0 || methods.includes('generateContent');
-        }) || activeProvider.models[0];
+  if (isGpuComputeTool) {
+    if (!route || !route.primary_provider || !route.primary_model || !route.is_active) {
+      await logSystemActivity(userId, 'INACTIVE_GPU_TOOL_ACCESS', `User attempted to access GPU tool "${toolIdStr}" but it is currently unconfigured or inactive in the Tool Orchestrator.`, { toolId: toolIdStr });
+      throw new Error(JSON.stringify({
+        error: `Specialized GPU tool "${toolIdStr}" is currently unconfigured or inactive. Please configure a designated GPU node and model in the Orchestrator via GPU Infrastructure.`,
+        error_ar: `أداة الـ GPU المتخصصة "${toolIdStr}" غير مهيأة أو معطلة حالياً. يرجى تعيين خادم GPU ونموذج مناسب في موجه النماذج (الأوركسترا) من لوحة التحكم.`,
+        type: "SYSTEM_INACTIVE"
+      }));
+    }
+  } else {
+    if (activeKeys.length === 0) {
+      throw new Error(JSON.stringify({
+        error: "The intelligence core is currently undergoing a scheduled synchronization. Operations will resume momentarily.",
+        error_ar: "نظام الذكاء الاصطناعي يخضع حالياً لمزامنة مبرمجة. ستستأنف العمليات خلال لحظات.",
+        type: "SYSTEM_INACTIVE"
+      }));
+    }
 
-        const modelId = textModel.id || textModel.name || (typeof textModel === 'string' ? textModel : '');
-        const providerName = activeProvider.provider;
+    if (!route || !route.primary_provider || !route.primary_model) {
+      if (activeKeys.length > 0) {
+        const activeProvider = activeKeys.find((k: any) => k.models && k.models.length > 0) || activeKeys[0];
+        if (activeProvider && activeProvider.models && activeProvider.models.length > 0) {
+          const textModel = activeProvider.models.find((m: any) => {
+            const id = (m.id || m.name || (typeof m === 'string' ? m : '')).toLowerCase();
+            const methods = m.supportedMethods || m.supportedGenerationMethods || [];
+            const supportsText = methods.length === 0 || methods.includes('generateContent');
+            return supportsText && !id.includes('tts') && !id.includes('image') && !id.includes('embedding') && !id.includes('transcribe') && !id.includes('robotics') && !id.includes('computer-use');
+          }) || activeProvider.models[0];
+
+          const modelId = textModel.id || textModel.name || (typeof textModel === 'string' ? textModel : '');
+          const providerName = activeProvider.provider;
 
         if (modelId && providerName) {
           route = {
@@ -281,6 +295,7 @@ Instruction: You MUST explicitly disclose this forensic audit to the user. Descr
       }
     }
   }
+}
 
   if (!route || !route.primary_provider || !route.primary_model) {
     await logSystemActivity(userId, 'INACTIVE_TOOL_ACCESS', `User attempted to access tool "${toolIdStr}" but it is currently inactive or undergoing maintenance.`, { toolId: toolIdStr });
@@ -556,6 +571,13 @@ Instruction: You MUST explicitly disclose this forensic audit to the user. Descr
 Structure: [I. Cover & Mood Art], [II. Audio Suite Environment], [III. Sonic Orchestration].`.trim();
   } else if (toolIdStr === 'perplexta_analysis') {
     refinedSystemPromptSegment = '[ANALYSIS_MODE]: Perform elite file audit and deep analysis.';
+  } else if (toolIdStr === 'code') {
+    refinedSystemPromptSegment = `
+[DEDICATED CODE & SOFTWARE ENGINEERING DIRECTIVE - MANDATORY COMPLETENESS & ACCURACY]:
+1. 100% EXHAUSTIVE IMPLEMENTATION: Deliver complete, production-grade code without any placeholders. NEVER omit code blocks with comments like "// TODO", "// ...", "// implement here", or "// remaining logic".
+2. METICULOUS ACCURACY TO REQUEST: Strictly implement every feature, data model, state variable, calculation, edge case, and constraint explicitly or implicitly requested by the user.
+3. PRODUCTION STANDARDS: Provide full TypeScript types, robust error handling, edge-case guards, and complete import/export statements.
+4. EXPLICIT FILE PATHS & LTR CODE: Every code block MUST have an explicit language fence (\`\`\`typescript, \`\`\`tsx, \`\`\`python, etc.) and begin with the exact file path on line 1 as a comment.`.trim();
   }
 
   if (chatWantsSearch && searchCitations.length > 0) {
@@ -701,9 +723,21 @@ ${refinedSystemPromptSegment}`.trim();
           if (onChunk) onChunk(sanitizedChunk);
         };
 
+        const customTimeoutMs = route.timeout_seconds ? route.timeout_seconds * 1000 : (toolIdStr === 'code' ? 180000 : AI_CALL_TIMEOUT_MS);
+        const effectiveTimeoutMs = Math.max(customTimeoutMs, toolIdStr === 'code' ? 180000 : 45000);
+
+        const routeProtoConfig = (route.protocol_config && typeof route.protocol_config === 'object') ? route.protocol_config : {};
+        const callOptions = {
+          fileData: file_data,
+          temperature: typeof routeProtoConfig.temperature === 'number' ? routeProtoConfig.temperature : (toolIdStr === 'code' ? 0.15 : (route.temperature ?? 0.7)),
+          topP: typeof routeProtoConfig.top_p === 'number' ? routeProtoConfig.top_p : (route.top_p ?? 0.95),
+          maxOutputTokens: typeof routeProtoConfig.max_tokens === 'number' ? routeProtoConfig.max_tokens : (toolIdStr === 'code' ? 16384 : 8192),
+          toolId: toolIdStr
+        };
+
         generatedText = await withTimeout(
-          callAIProvider(target.provider, target.model, apiKey, finalPrompt, finalSystemPrompt, wrappedOnChunk, history, { fileData: file_data }, urlKey ?? undefined),
-          AI_CALL_TIMEOUT_MS,
+          callAIProvider(target.provider, target.model, apiKey, finalPrompt, finalSystemPrompt, wrappedOnChunk, history, callOptions, urlKey ?? undefined),
+          effectiveTimeoutMs,
           `${target.provider}/${displayModel}`
         );
         successfulModel = target;

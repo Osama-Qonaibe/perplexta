@@ -828,10 +828,10 @@ export const ChatComposer: React.FC<ChatComposerProps> = ({
           {shouldShowSuggestions && suggestions.length > 0 && (
             <motion.div 
               ref={suggestionsRef}
-              initial={{ opacity: 0, scale: 0.97, y: 4 }}
-              animate={{ opacity: 1, scale: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.97, y: 4 }}
-              transition={{ duration: 0.14, ease: [0.16, 1, 0.3, 1] }}
+              initial={{ opacity: 0, scale: 0.98 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.98 }}
+              transition={{ duration: 0.10, ease: [0.16, 1, 0.3, 1] }}
               className="absolute top-full mt-2 left-0 right-0 z-50 pointer-events-auto box-border overflow-hidden rounded-shape-md border border-[var(--border-default)] bg-[var(--surface-card)] shadow-2xl backdrop-blur-xl p-1.5 space-y-0.5 text-[var(--text-primary)]"
             >
               <div className={`w-full ${SCROLL_STYLES.limited('260px')} space-y-0.5`}>

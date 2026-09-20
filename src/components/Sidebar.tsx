@@ -512,8 +512,8 @@ export const Sidebar: React.FC<{ activeLanguage?: string }> = ({ activeLanguage 
             {/* Header / Logo Zone Spacer */}
             <div className="h-[calc(50px+env(safe-area-inset-top,0px))] lg:h-[calc(56px+env(safe-area-inset-top,0px))] flex-shrink-0 border-b border-[var(--border-default)] w-full transition-all duration-fast" />
 
-            <div className="flex-shrink-0 pt-2">
-              <nav className="space-y-0.5">
+            <div className="flex-shrink-0 pt-2 px-1.5">
+              <nav className="flex flex-col gap-0.5">
                 {navItems.map((item, index) => (
                   <NavLink
                     key={`nav-${item.path}-${index}`}
@@ -526,23 +526,16 @@ export const Sidebar: React.FC<{ activeLanguage?: string }> = ({ activeLanguage 
                       const active = isActive;
                       return (
                         <div 
-                          className={`${(item as any).className || 'flex'} items-center transition-all duration-fast w-full h-[34px] overflow-hidden flex-shrink-0 group relative rounded-[var(--radius-sm)] border cursor-pointer ${
+                          className={`${(item as any).className || 'flex'} items-center transition-all duration-fast w-full h-[34px] min-h-[34px] overflow-hidden flex-shrink-0 group relative rounded-shape-sm border cursor-pointer select-none ${
                             active 
-                              ? 'text-[var(--accent)] border-[var(--border-subtle)] font-bold shadow-none bg-transparent'
+                              ? 'bg-[var(--bg-accent-muted)] text-[var(--fg-accent)] font-semibold border-[var(--border-accent)]/30'
                               : HOVER_STYLES.sidebarItem
                           }`}
-                          style={{ paddingInlineStart: '10px', paddingInlineEnd: '8px' }}
+                          style={{ paddingInlineStart: '8px', paddingInlineEnd: '8px' }}
                         >
-                          {/* Active Side Indicator */}
-                          {active && (
-                            <motion.div 
-                              layoutId="active-nav-indicator"
-                              className="absolute inset-y-1.5 w-1 rounded-full bg-[var(--accent)] start-1"
-                            />
-                          )}
-                          <div className={`w-7 h-7 flex-shrink-0 flex items-center justify-center transition-colors duration-fast ${
+                          <div className={`w-6 h-6 flex-shrink-0 flex items-center justify-center transition-colors duration-fast ${
                             active 
-                              ? 'text-[var(--accent)]' 
+                              ? 'text-[var(--fg-accent)]' 
                               : 'text-[var(--text-muted)] group-hover:text-[var(--text-primary)]'
                           }`}>
                             {React.cloneElement(item.icon as React.ReactElement, { size: 16 } as any)}
@@ -551,10 +544,10 @@ export const Sidebar: React.FC<{ activeLanguage?: string }> = ({ activeLanguage 
                             {isSidebarOpen && (
                               <motion.span
                                 {...sidebarTextMotion}
-                                className={`font-bold text-xs tracking-tight whitespace-nowrap overflow-hidden transition-colors duration-fast leading-normal ${
+                                className={`text-xs tracking-tight whitespace-nowrap overflow-hidden transition-colors duration-fast leading-normal ${
                                   active 
-                                    ? 'text-[var(--accent)]' 
-                                    : 'text-[var(--text-secondary)] group-hover:text-[var(--text-primary)]'
+                                    ? 'font-semibold text-[var(--fg-accent)]' 
+                                    : 'font-medium text-[var(--text-secondary)] group-hover:text-[var(--text-primary)]'
                                 } ms-1.5`}
                                 style={{ display: 'inline-block' }}
                               >
@@ -569,20 +562,20 @@ export const Sidebar: React.FC<{ activeLanguage?: string }> = ({ activeLanguage 
                 ))}
 
                   {user && token && (
-                  <div className="my-1 pt-1 pb-1 border-t border-[var(--border-default)] transition-theme">
+                  <div className="my-1 pt-1 pb-0.5 border-t border-[var(--border-default)] transition-theme">
                     <button 
                       onClick={handleNewChat}
-                      className="flex items-center transition-all duration-fast w-full h-[34px] overflow-hidden flex-shrink-0 group cursor-pointer border border-transparent rounded-[var(--radius-sm)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--surface-subtle)]"
-                      style={{ paddingInlineStart: '10px', paddingInlineEnd: '8px' }}
+                      className="flex items-center transition-all duration-fast w-full h-[34px] min-h-[34px] overflow-hidden flex-shrink-0 group cursor-pointer border border-transparent rounded-shape-sm text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--surface-subtle)]/20 select-none"
+                      style={{ paddingInlineStart: '8px', paddingInlineEnd: '8px' }}
                     >
-                      <div className={`w-7 h-7 flex-shrink-0 flex items-center justify-center transition-colors duration-fast text-[var(--text-muted)] group-hover:text-[var(--text-primary)] ${isSidebarOpen ? 'my-auto' : '-translate-y-[0.5px]'}`}>
+                      <div className={`w-6 h-6 flex-shrink-0 flex items-center justify-center transition-colors duration-fast text-[var(--text-muted)] group-hover:text-[var(--text-primary)] ${isSidebarOpen ? 'my-auto' : '-translate-y-[0.5px]'}`}>
                         <Plus size={16} />
                       </div>
                       <AnimatePresence initial={false}>
                         {isSidebarOpen && (
                           <motion.span
                             {...sidebarTextMotion}
-                            className={`font-bold text-xs text-[var(--text-secondary)] group-hover:text-[var(--text-primary)] whitespace-nowrap overflow-hidden transition-colors duration-fast leading-normal ms-1.5`}
+                            className={`font-medium text-xs text-[var(--text-secondary)] group-hover:text-[var(--text-primary)] whitespace-nowrap overflow-hidden transition-colors duration-fast leading-normal ms-1.5`}
                             style={{ display: 'inline-block' }}
                           >
                             {t('newChat')}
@@ -619,7 +612,7 @@ export const Sidebar: React.FC<{ activeLanguage?: string }> = ({ activeLanguage 
                   </div>
                 </div>
 
-                <div className={`flex-1 pb-2 min-h-0 ${SCROLL_STYLES.sidebar}`}>
+                <div className={`flex-1 pb-2 min-h-0 px-1.5 ${SCROLL_STYLES.sidebar}`}>
                   <div className="min-h-[85px]">
                     {isChatsLoading ? (
                       <SkeletonLoader 
@@ -630,7 +623,7 @@ export const Sidebar: React.FC<{ activeLanguage?: string }> = ({ activeLanguage 
                         isRtl={dir === 'rtl'} 
                       />
                     ) : groupedChats.length > 0 ? (
-                      <div className="space-y-0.5">
+                      <div className="flex flex-col gap-0.5">
                         {groupedChats.map((group) => (
                           <React.Fragment key={group.id || group.label}>
                             {group.chats.map((chat) => {
@@ -648,17 +641,13 @@ export const Sidebar: React.FC<{ activeLanguage?: string }> = ({ activeLanguage 
                                     repeat: Infinity,
                                     ease: "easeInOut"
                                   }}
-                                  className={`flex items-center w-full h-[32px] ${isMenuOpen ? 'overflow-visible z-30' : 'overflow-hidden'} flex-shrink-0 transition-all duration-fast group relative border rounded-[var(--radius-sm)] cursor-pointer ${
+                                  className={`flex items-center w-full h-[34px] min-h-[34px] ${isMenuOpen ? 'overflow-visible z-30' : 'overflow-hidden'} flex-shrink-0 transition-all duration-fast group relative border rounded-shape-sm cursor-pointer select-none ${
                                     isActive 
-                                      ? 'text-[var(--accent)] border-[var(--border-subtle)] font-bold shadow-none bg-transparent' 
+                                      ? 'bg-[var(--bg-accent-muted)] text-[var(--fg-accent)] font-semibold border-[var(--border-accent)]/30' 
                                       : HOVER_STYLES.sidebarItem
                                   }`}
-                                  style={{ paddingInlineStart: '10px', paddingInlineEnd: '6px' }}
+                                  style={{ paddingInlineStart: '8px', paddingInlineEnd: '6px' }}
                                 >
-                                  {/* Active Side Indicator */}
-                                  {isActive && (
-                                    <div className="absolute inset-y-1.5 w-0.5 rounded-full bg-[var(--accent)] start-1" />
-                                  )}
                                   <div
                                     onClick={() => {
                                       navigate(`/chat/${chat.id}`);
@@ -666,11 +655,11 @@ export const Sidebar: React.FC<{ activeLanguage?: string }> = ({ activeLanguage 
                                     }}
                                     className="flex items-center h-full flex-1 min-w-0"
                                   >
-                                    <div className={`w-7 h-full flex-shrink-0 flex items-center justify-center transition-colors duration-fast ${
+                                    <div className={`w-6 h-full flex-shrink-0 flex items-center justify-center transition-colors duration-fast ${
                                       isActive 
-                                        ? 'text-[var(--accent)]' 
+                                        ? 'text-[var(--fg-accent)]' 
                                         : streamingChatId === chat.id 
-                                          ? 'text-[var(--accent)]' 
+                                          ? 'text-[var(--fg-accent)]' 
                                           : 'text-[var(--text-muted)] group-hover:text-[var(--text-primary)]'
                                     }`}>
                                       <MessageSquare size={15} />
@@ -679,10 +668,10 @@ export const Sidebar: React.FC<{ activeLanguage?: string }> = ({ activeLanguage 
                                       {isSidebarOpen && (
                                         <motion.span
                                           {...sidebarTextMotion}
-                                          className={`font-bold text-xs truncate whitespace-nowrap overflow-hidden text-start transition-colors duration-fast leading-normal ms-1.5 ${
+                                          className={`text-xs truncate whitespace-nowrap overflow-hidden text-start transition-colors duration-fast leading-normal ms-1.5 ${
                                             isActive 
-                                              ? 'text-[var(--text-primary)]' 
-                                              : 'text-[var(--text-secondary)] group-hover:text-[var(--text-primary)]'
+                                              ? 'font-semibold text-[var(--fg-accent)]' 
+                                              : 'font-medium text-[var(--text-secondary)] group-hover:text-[var(--text-primary)]'
                                           }`}
                                           style={{ display: 'inline-block' }}
                                         >
@@ -696,7 +685,7 @@ export const Sidebar: React.FC<{ activeLanguage?: string }> = ({ activeLanguage 
                                     {isSidebarOpen && (
                                       <motion.div 
                                         {...sidebarTextMotion}
-                                        className={`flex items-center gap-1 ${optionsMenuTarget?.chatId === chat.id ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'} transition-opacity duration-fast ms-auto pe-1`}
+                                        className={`flex items-center gap-1 ${optionsMenuTarget?.chatId === chat.id ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'} transition-opacity duration-fast ms-auto pe-0.5`}
                                       >
                                         <button 
                                           type="button"
@@ -711,8 +700,8 @@ export const Sidebar: React.FC<{ activeLanguage?: string }> = ({ activeLanguage 
                                           }}
                                           className={`w-6 h-6 flex items-center justify-center rounded-[var(--radius-xs)] border transition-all duration-fast cursor-pointer ${
                                             optionsMenuTarget?.chatId === chat.id 
-                                              ? 'border-[var(--border-default)] bg-[var(--surface-card)] text-[var(--text-primary)] shadow-2xs' 
-                                              : 'border-transparent text-[var(--text-muted)] hover:text-[var(--text-primary)] hover:bg-[var(--surface-card)]'
+                                              ? 'border-[var(--border-default)] bg-[var(--surface-card)] text-[var(--text-primary)]' 
+                                              : 'border-transparent text-[var(--text-muted)] hover:text-[var(--text-primary)] hover:bg-[var(--surface-subtle)]/30'
                                           }`}
                                           title={language === 'ar' ? 'خيارات' : 'Options'}
                                         >
@@ -733,7 +722,7 @@ export const Sidebar: React.FC<{ activeLanguage?: string }> = ({ activeLanguage 
 
                 {/* Context Summary Box in Sidebar */}
                 {isSidebarOpen && activeChatId && (
-                  <div className={`${isMobile ? 'mx-2 mb-1.5 p-2 rounded-[var(--radius-sm)]' : 'mx-2.5 mb-2 p-2.5 rounded-[var(--radius-md)]'} border border-[var(--border-default)] bg-[var(--surface-subtle)] flex flex-col transition-all duration-fast shadow-sm`}>
+                  <div className="mx-1.5 mb-1.5 p-2 rounded-shape-sm border border-[var(--border-default)] bg-[var(--surface-subtle)]/50 flex flex-col transition-all duration-fast">
                     <div className="flex items-center justify-between cursor-pointer" onClick={() => setIsContextCollapsed(!isContextCollapsed)}>
                       <div className="flex items-center gap-1 min-w-0">
                         <BrainCircuit size={isMobile ? 12 : 14} className="text-[var(--accent)] flex-shrink-0" />
@@ -842,7 +831,7 @@ export const Sidebar: React.FC<{ activeLanguage?: string }> = ({ activeLanguage 
               </div>
             )}
 
-            <div className={`mt-auto ${isMobile ? 'pt-1.5 pb-1.5 space-y-0.5' : 'pt-1.5 pb-2 space-y-0.5'} border-t border-[var(--border-default)] transition-all duration-fast flex-shrink-0 relative`}>
+            <div className={`mt-auto ${isMobile ? 'pt-1.5 pb-1.5 px-1.5 space-y-0.5' : 'pt-1.5 pb-2 px-1.5 space-y-0.5'} border-t border-[var(--border-default)] transition-all duration-fast flex-shrink-0 relative`}>
               {user ? (
                 <div 
                   onClick={(e) => {
@@ -850,17 +839,17 @@ export const Sidebar: React.FC<{ activeLanguage?: string }> = ({ activeLanguage 
                     const rect = e.currentTarget.getBoundingClientRect();
                     setProfileMenuTarget(profileMenuTarget ? null : { rect });
                   }}
-                  className={`flex items-center group cursor-pointer w-full h-[36px] overflow-hidden flex-shrink-0 rounded-[var(--radius-sm)] border transition-all duration-fast ${
+                  className={`flex items-center group cursor-pointer w-full h-[36px] overflow-hidden flex-shrink-0 rounded-shape-sm border transition-all duration-fast select-none ${
                     profileMenuTarget
-                      ? 'bg-[var(--surface-card)] text-[var(--text-primary)] border-[var(--border-default)] shadow-2xs' 
-                      : 'border-transparent text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--surface-subtle)]'
+                      ? 'bg-[var(--surface-card)] text-[var(--text-primary)] border-[var(--border-default)]' 
+                      : 'border-transparent text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--surface-subtle)]/20'
                   }`}
-                  style={{ paddingInlineStart: '10px', paddingInlineEnd: '8px' }}
+                  style={{ paddingInlineStart: '8px', paddingInlineEnd: '8px' }}
                 >
                   <div className="flex items-center h-full overflow-hidden w-full relative text-[var(--text-primary)]">
                     <div className="w-7 h-[34px] flex-shrink-0 flex items-center justify-center relative">
                       <div 
-                        className="w-7 h-7 rounded-[var(--radius-xs)] bg-[var(--surface-subtle)] flex items-center justify-center flex-shrink-0 overflow-hidden border transition-all duration-fast relative z-10 group-hover:border-[var(--border-accent)] shadow-2xs"
+                        className="w-7 h-7 rounded-shape-xs bg-[var(--surface-subtle)] flex items-center justify-center flex-shrink-0 overflow-hidden border transition-all duration-fast relative z-10 group-hover:border-[var(--border-accent)]"
                         style={{ 
                           borderColor: user.subscription?.plan_color || 'var(--border-default)'
                         }}
@@ -887,8 +876,8 @@ export const Sidebar: React.FC<{ activeLanguage?: string }> = ({ activeLanguage 
                             {...sidebarTextMotion}
                             className="flex flex-col overflow-hidden text-start"
                           >
-                            <span className="font-bold text-xs truncate whitespace-nowrap leading-tight text-[var(--text-primary)] transition-colors duration-fast">{user.name}</span>
-                            <span className="text-[9px] text-[var(--text-muted)] truncate whitespace-nowrap uppercase tracking-wider font-bold leading-tight mt-0.5">
+                            <span className="font-semibold text-xs truncate whitespace-nowrap leading-tight text-[var(--text-primary)] transition-colors duration-fast">{user.name}</span>
+                            <span className="text-[9px] text-[var(--text-muted)] truncate whitespace-nowrap uppercase tracking-wider font-medium leading-tight mt-0.5">
                               {t(`role_${(user.role || 'user').toLowerCase()}`) || (user.subscription?.plan_id 
                                 ? (plans.find((p: any) => p.id.toString() === user.subscription?.plan_id.toString())?.name || t('activePlan'))
                                 : t('noPlan'))}
@@ -901,8 +890,8 @@ export const Sidebar: React.FC<{ activeLanguage?: string }> = ({ activeLanguage 
                 </div>
               ) : (
                 <div 
-                  className="flex items-center group cursor-pointer w-full h-[36px] overflow-hidden flex-shrink-0 transition-all duration-fast rounded-[var(--radius-sm)] border border-transparent text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--surface-subtle)]"
-                  style={{ paddingInlineStart: '10px', paddingInlineEnd: '8px' }}
+                  className="flex items-center group cursor-pointer w-full h-[36px] overflow-hidden flex-shrink-0 transition-all duration-fast rounded-shape-sm border border-transparent text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--surface-subtle)]/20 select-none"
+                  style={{ paddingInlineStart: '8px', paddingInlineEnd: '8px' }}
                   onClick={() => {
                     setIsAuthModalOpen(true);
                     if (isMobile) {
@@ -911,7 +900,7 @@ export const Sidebar: React.FC<{ activeLanguage?: string }> = ({ activeLanguage 
                   }}
                 >
                   <div className="w-7 h-[34px] flex-shrink-0 flex items-center justify-center relative">
-                    <div className="w-7 h-7 rounded-[var(--radius-xs)] bg-[var(--surface-subtle)] flex items-center justify-center flex-shrink-0 relative z-10 transition-colors duration-fast border border-[var(--border-default)] group-hover:border-[var(--border-accent)]">
+                    <div className="w-7 h-7 rounded-shape-xs bg-[var(--surface-subtle)] flex items-center justify-center flex-shrink-0 relative z-10 transition-colors duration-fast border border-[var(--border-default)] group-hover:border-[var(--border-accent)]">
                       <User size={15} className="text-[var(--text-muted)] group-hover:text-[var(--text-primary)] transition-colors duration-fast" />
                     </div>
                   </div>
@@ -922,8 +911,8 @@ export const Sidebar: React.FC<{ activeLanguage?: string }> = ({ activeLanguage 
                           {...sidebarTextMotion}
                           className="flex flex-col overflow-hidden text-start"
                         >
-                          <span className="text-[9px] text-[var(--text-muted)] truncate whitespace-nowrap font-bold uppercase tracking-wider mb-0.5">{t('createAccount')}</span>
-                          <span className="font-bold text-xs truncate whitespace-nowrap text-[var(--text-primary)] transition-colors duration-fast">{t('login')}</span>
+                          <span className="text-[9px] text-[var(--text-muted)] truncate whitespace-nowrap font-medium uppercase tracking-wider mb-0.5">{t('createAccount')}</span>
+                          <span className="font-semibold text-xs truncate whitespace-nowrap text-[var(--text-primary)] transition-colors duration-fast">{t('login')}</span>
                         </motion.div>
                       )}
                     </AnimatePresence>

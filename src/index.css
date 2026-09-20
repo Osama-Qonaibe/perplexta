@@ -1531,7 +1531,7 @@ body.layout-locked {
    ========================================================================== */
 .custom-scrollbar {
   scrollbar-width: thin;
-  scrollbar-color: var(--ref-neutral-400) transparent;
+  scrollbar-color: color-mix(in oklab, var(--ref-neutral-400) 25%, transparent) transparent;
 }
 
 .custom-scrollbar::-webkit-scrollbar {
@@ -1994,6 +1994,19 @@ body,
 /* ==========================================================================
    PERPLEXTA THEMED CODEBLOCKS (Pristine Light/Dark Adaptability & LTR Isolation)
    ========================================================================== */
+.perplexta-codeblock {
+  width: 100% !important;
+  max-width: 100% !important;
+  min-width: 0 !important;
+  overflow: hidden !important;
+  background-color: var(--surface-card) !important;
+  border: 1px solid var(--border-default) !important;
+  color: var(--text-primary) !important;
+  border-radius: var(--rounded-shape-lg, 12px) !important;
+  box-sizing: border-box !important;
+  position: relative !important;
+}
+
 .perplexta-codeblock,
 .perplexta-codeblock pre,
 .perplexta-codeblock code,
@@ -2003,14 +2016,36 @@ body,
   unicode-bidi: isolate !important;
 }
 
-.perplexta-codeblock {
-  background-color: var(--surface-card) !important;
-  border: 1px solid var(--border-default) !important;
-  color: var(--text-primary) !important;
-  border-radius: var(--rounded-shape-lg, 12px) !important;
+.perplexta-codeblock pre {
+  margin: 0 !important;
+  width: 100% !important;
+  max-width: 100% !important;
+  min-width: 0 !important;
+  overflow-x: auto !important;
+  white-space: pre !important;
+  word-break: normal !important;
+  word-wrap: normal !important;
+  overflow-wrap: normal !important;
+  box-sizing: border-box !important;
+  -webkit-overflow-scrolling: touch !important;
+}
+
+.perplexta-codeblock pre code {
+  display: inline-block !important;
+  min-width: 100% !important;
+  width: max-content !important;
+  white-space: pre !important;
+  word-break: normal !important;
+  word-wrap: normal !important;
+  overflow-wrap: normal !important;
+  box-sizing: border-box !important;
+  padding-right: 1.5rem !important; /* Preserves end-of-line breathing room so long lines are never cut off */
 }
 
 .perplexta-codeblock-header {
+  width: 100% !important;
+  max-width: 100% !important;
+  box-sizing: border-box !important;
   background-color: var(--surface-subtle) !important;
   border-bottom: 1px solid var(--border-default) !important;
   color: var(--text-secondary) !important;
@@ -2018,6 +2053,10 @@ body,
 
 .perplexta-codeblock .token {
   background: none !important;
+  white-space: pre !important;
+  word-break: normal !important;
+  word-wrap: normal !important;
+  overflow-wrap: normal !important;
 }
 
 /* High-contrast overrides for Dark Mode */

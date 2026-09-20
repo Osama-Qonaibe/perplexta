@@ -1,4 +1,4 @@
-import { pool } from '../db/index.js';
+import { getSecurityPool } from '../db/index.js';
 
 export async function logFinancialAudit(
   userId: number,
@@ -7,13 +7,18 @@ export async function logFinancialAudit(
   metadata: Record<string, any> = {}
 ) {
   try {
-    await pool.query(
-      `INSERT INTO admin_audit_logs (admin_id, action, details, metadata, created_at)
-       VALUES (NULL, $1, $2, $3, NOW())`,
+    const secPool = getSecurityPool();
+    await secPool.query(
+      `INSERT INTO admin_audit_logs (admin_id, admin_email, action, target_resource, details, ip_address, user_agent, created_at)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, NOW())`,
       [
+        null,
+        `system-financial-audit`,
         `financial:${action}`,
-        `User ${userId} ${action}d ${amount}`,
-        JSON.stringify({ userId, action, amount, ...metadata })
+        `wallet:user:${userId}`,
+        JSON.stringify({ userId, action, amount, ...metadata }),
+        metadata.ip_address || 'system-internal',
+        'financial-audit-service'
       ]
     );
   } catch (err) {

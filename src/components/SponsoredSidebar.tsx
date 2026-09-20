@@ -5,6 +5,7 @@ import { useNavigate } from 'react-router-dom';
 import { ProgressiveImage } from './ProgressiveImage';
 import { getMediaUrl } from '../utils/mediaUtils';
 import { motion, AnimatePresence } from 'motion/react';
+import { SCROLL_STYLES } from '../styles/scrollStyles';
 
 export interface Advertisement {
   id: number;
@@ -123,7 +124,7 @@ export const SponsoredSidebar: React.FC<{ className?: string }> = ({ className =
   const isRtl = language === 'ar';
 
   return (
-    <div className={`hidden xl:flex flex-col h-full w-72 p-4 pt-16 space-y-4 shrink-0 overflow-y-auto scrollbar-none transition-theme ${className}`}>
+    <div className={`hidden xl:flex flex-col h-full w-72 p-4 pt-16 space-y-4 shrink-0 ${SCROLL_STYLES.sidebar} transition-theme ${className}`}>
       <div className="flex items-center justify-between px-1 mb-1">
         <span className="text-[11px] font-bold tracking-wider text-[var(--text-muted)] uppercase">
           {isRtl ? 'إعلانات ممولة مقترحة' : 'Sponsored Ads'}

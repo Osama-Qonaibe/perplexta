@@ -5,7 +5,7 @@ import { getSystemSettings, updateSystemSettings, getEconomySettings } from '../
 import { pool } from '../db/index.js';
 import { getStripe, getPayPalCredentials } from '../services/payments.js';
 import { logSystemActivity } from '../services/notifications.js';
-import { escapeHtml } from '../utils/security.js';
+import { escapeHtml, isSafeExternalUrl } from '../utils/security.js';
 
 const router = express.Router();
 
@@ -146,11 +146,11 @@ router.get("/fonts", handleGetFontConfig);
 router.get("/font-config", handleGetFontConfig);
 router.get("/settings/font-config", handleGetFontConfig);
 
-router.post("/settings/fonts", handlePostFontConfig);
-router.post("/fonts", handlePostFontConfig);
-router.post("/font-config", handlePostFontConfig);
-router.post("/settings/font-config", handlePostFontConfig);
-router.put("/settings/font-config", handlePostFontConfig);
+router.post("/settings/fonts", authenticateAdmin, handlePostFontConfig);
+router.post("/fonts", authenticateAdmin, handlePostFontConfig);
+router.post("/font-config", authenticateAdmin, handlePostFontConfig);
+router.post("/settings/font-config", authenticateAdmin, handlePostFontConfig);
+router.put("/settings/font-config", authenticateAdmin, handlePostFontConfig);
 
 router.get("/economy", async (req, res) => {
   try {
@@ -181,6 +181,11 @@ router.get("/link-metadata", async (req, res) => {
   let cleanUrl = targetUrl.trim();
   if (!/^https?:\/\//i.test(cleanUrl)) {
     cleanUrl = 'https://' + cleanUrl;
+  }
+
+  // SSRF Protection: Reject private/internal IP ranges, localhost, and cloud metadata endpoints
+  if (!isSafeExternalUrl(cleanUrl)) {
+    return res.status(400).json({ error: 'Invalid or restricted URL destination' });
   }
 
   if (urlMetadataCache.has(cleanUrl)) {
