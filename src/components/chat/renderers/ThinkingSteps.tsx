@@ -15,6 +15,7 @@ interface ThinkingStepsProps {
   dir: 'ltr' | 'rtl';
   query?: string;
   thinkingTime?: number | string | null;
+  tool?: string;
 }
 
 export const ThinkingSteps: React.FC<ThinkingStepsProps> = ({ 
@@ -23,7 +24,8 @@ export const ThinkingSteps: React.FC<ThinkingStepsProps> = ({
   isProcessing = false, 
   dir, 
   query, 
-  thinkingTime 
+  thinkingTime,
+  tool
 }) => {
   const [isCollapsed, setIsCollapsed] = useState(true);
   const [liveSeconds, setLiveSeconds] = useState(0);
@@ -56,12 +58,25 @@ export const ThinkingSteps: React.FC<ThinkingStepsProps> = ({
   // Check if raw thinking trace is available either via prop or inside steps
   const extractedRaw = rawThinking || (steps && steps.find((s: any) => s.is_raw_trace)?.step);
 
-  const hasExplicitSteps = steps && steps.length > 0 && !steps[0]?.is_raw_trace;
-  const displaySteps = hasExplicitSteps ? steps : [
+  const isImageTool = tool === 'image';
+  const isVideoTool = tool === 'video';
+
+  const defaultSteps = isImageTool ? [
+    { step: dir === 'rtl' ? 'تحليل التوجيه الفني وتحديد التكوين البصري' : 'Prompt & Visual Composition Analysis', status: 'completed' as const },
+    { step: dir === 'rtl' ? 'معالجة الترددات والطبقات التوليدية العصبونية' : 'Neural Latent Diffusion & Sampling', status: 'completed' as const },
+    { step: dir === 'rtl' ? 'الرندرة النهائية وتطبيق فلاتر الدقة والوضوح' : 'High-Resolution Rendering & Polish', status: 'completed' as const }
+  ] : isVideoTool ? [
+    { step: dir === 'rtl' ? 'تحليل المشهد الزمني وتوليد الإطارات المفتاحية' : 'Keyframe Synthesis & Temporal Planning', status: 'completed' as const },
+    { step: dir === 'rtl' ? 'رندرة وتنعيم الحركة الحركية العصبونية' : 'Motion Flow Interpolation & Physics', status: 'completed' as const },
+    { step: dir === 'rtl' ? 'الترميز النهائي للملف عالي الوضوح' : 'High-Definition Video Encoding', status: 'completed' as const }
+  ] : [
     { step: dir === 'rtl' ? 'تحليل وسياق الاستفسار وتحديد المتطلبات' : 'Context & Query Requirement Analysis', status: 'completed' as const },
     { step: dir === 'rtl' ? 'البحث والتحقق من المعارف والمصادر المتخصصة' : 'Deep Knowledge & Fact Retrieval', status: 'completed' as const },
     { step: dir === 'rtl' ? 'صياغة الاستجابة الدقيقة وتنظيم التنسيق النهائي' : 'Synthesizing Precise Structured Response', status: 'completed' as const }
   ];
+
+  const hasExplicitSteps = steps && steps.length > 0 && !steps[0]?.is_raw_trace;
+  const displaySteps = hasExplicitSteps ? steps : defaultSteps;
 
   const isCurrentlyProcessing = isProcessing || (steps ? steps.some(s => s.status === 'processing') : false);
 
@@ -72,6 +87,18 @@ export const ThinkingSteps: React.FC<ThinkingStepsProps> = ({
         : (maxObservedTimeRef.current > 0 ? maxObservedTimeRef.current.toFixed(1) : (displaySteps.length * 0.4).toFixed(1)));
 
   const formattedTime = `${displayedTimeVal}s`;
+
+  const headerLabel = isCurrentlyProcessing
+    ? (isImageTool 
+        ? (dir === 'rtl' ? 'جاري إنشاء وتوليد الصورة...' : 'Synthesizing & Rendering Image...') 
+        : isVideoTool 
+          ? (dir === 'rtl' ? 'جاري توليد الفيديو والمشاهد...' : 'Rendering Video Sequences...') 
+          : (dir === 'rtl' ? 'جاري التفكير والتحليل...' : 'Reasoning & Analyzing...'))
+    : (isImageTool 
+        ? (dir === 'rtl' ? 'تم إنشاء وتوليد الصورة بنجاح' : 'Image Generated Successfully') 
+        : isVideoTool 
+          ? (dir === 'rtl' ? 'تم توليد الفيديو بنجاح' : 'Video Generated Successfully') 
+          : (dir === 'rtl' ? 'تم التفكير والتحليل' : 'Reasoning & Analysis'));
 
   return (
     <div className="mb-3 bg-transparent border-0 overflow-hidden transition-all duration-200 select-none" id="thinking-steps-container">
@@ -100,9 +127,7 @@ export const ThinkingSteps: React.FC<ThinkingStepsProps> = ({
             />
           </div>
           <span className="font-bold text-xs text-[var(--text-secondary)] group-hover:text-[var(--text-primary)] transition-colors">
-            {isCurrentlyProcessing
-              ? (dir === 'rtl' ? 'جاري التفكير والتحليل...' : 'Reasoning & Analyzing...')
-              : (dir === 'rtl' ? 'تم التفكير والتحليل' : 'Reasoning & Analysis')}
+            {headerLabel}
           </span>
           <span className="text-[10.5px] font-mono font-semibold text-[var(--text-muted)]">
             ({formattedTime})

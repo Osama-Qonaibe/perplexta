@@ -12,8 +12,7 @@ import {
   Play, 
   Pause, 
   Volume2, 
-  VolumeX,
-  Sparkles
+  VolumeX
 } from 'lucide-react';
 import { createPortal } from 'react-dom';
 import { useAppContext } from '../../../../context/AppContext';
@@ -27,24 +26,33 @@ export const SimpleVideoLoadingPlaceholder = ({ dir, aspectRatio = '9:16' }: { d
   return (
     <div className="w-full flex flex-col my-2 items-start">
       <div 
-        className={`relative overflow-hidden rounded-[var(--radius-md)] border border-[var(--border-default)] bg-[var(--surface-subtle)] ${containerAspectClass} w-full flex items-center justify-center`}
+        className={`relative overflow-hidden rounded-[var(--radius-md)] border border-[var(--border-default)] bg-[var(--surface-subtle)]/70 backdrop-blur-xl ${containerAspectClass} w-full`}
       >
-        <div className="absolute inset-0 backdrop-blur-md bg-zinc-950/30 flex flex-col items-center justify-center gap-2 z-10">
-          <Logo size={28} fallbackType="cpu" className="animate-pulse" />
-          <span className="text-[11px] font-bold text-white tracking-wide select-none">
-            {dir === 'rtl' ? 'جارٍ إنتاج الفيديو...' : 'Generating video...'}
-          </span>
-        </div>
+        {/* Calm, serene ambient breathing pulse */}
         <motion.div
           animate={{
-            x: dir === 'rtl' ? ['150%', '-150%'] : ['-150%', '150%']
+            opacity: [0.35, 0.65, 0.35],
+            scale: [1, 1.02, 1],
           }}
           transition={{
-            duration: 2.0,
+            duration: 4.0,
             repeat: Infinity,
             ease: "easeInOut"
           }}
-          className="absolute inset-0 bg-gradient-to-r from-transparent via-white/[0.04] to-transparent skew-x-12 pointer-events-none z-0"
+          className="absolute inset-0 bg-gradient-to-br from-accent/10 via-[var(--surface-card)]/50 to-accent/5 pointer-events-none"
+        />
+
+        {/* Gentle, subtle light sheen sweep */}
+        <motion.div
+          animate={{
+            x: dir === 'rtl' ? ['160%', '-160%'] : ['-160%', '160%']
+          }}
+          transition={{
+            duration: 3.2,
+            repeat: Infinity,
+            ease: "easeInOut"
+          }}
+          className="absolute inset-0 bg-gradient-to-r from-transparent via-white/[0.06] dark:via-white/[0.03] to-transparent skew-x-12 pointer-events-none z-10"
         />
       </div>
     </div>

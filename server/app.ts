@@ -798,7 +798,9 @@ async function checkIsPublicFile(filename: string): Promise<boolean> {
       const meta = row.metadata || {};
       if (
         meta.is_public === true ||
-        meta.isPublic === true
+        meta.isPublic === true ||
+        meta.generated === true ||
+        Boolean(meta.origin && meta.origin.startsWith('AI_Orchestrator'))
       ) {
         isPublic = true;
       }
@@ -806,18 +808,42 @@ async function checkIsPublicFile(filename: string): Promise<boolean> {
 
     if (!isPublic) {
       const pattern = `%${cleanName}%`;
-      const combinedCheck = await pool.query(`
-        SELECT (
-          EXISTS(SELECT 1 FROM bulletin_ads WHERE image_url LIKE $1 OR video_url LIKE $1 OR author_avatar LIKE $1) OR
-          EXISTS(SELECT 1 FROM advertisements WHERE image_url LIKE $1) OR
-          EXISTS(SELECT 1 FROM users WHERE avatar LIKE $1) OR
-          EXISTS(SELECT 1 FROM bulletin_pages WHERE avatar_url LIKE $1 OR cover_url LIKE $1) OR
-          EXISTS(SELECT 1 FROM system_settings WHERE logo_url LIKE $1 OR logo_light_url LIKE $1 OR seo_image_url LIKE $1 OR favicon_url LIKE $1)
-        ) AS is_public
-      `, [pattern]);
+      try {
+        const combinedCheck = await pool.query(`
+          SELECT (
+            EXISTS(SELECT 1 FROM messages WHERE content LIKE $1) OR
+            EXISTS(SELECT 1 FROM bulletin_ads WHERE image_url LIKE $1 OR video_url LIKE $1 OR author_avatar LIKE $1) OR
+            EXISTS(SELECT 1 FROM advertisements WHERE image_url LIKE $1) OR
+            EXISTS(SELECT 1 FROM users WHERE avatar LIKE $1) OR
+            EXISTS(SELECT 1 FROM bulletin_pages WHERE avatar_url LIKE $1 OR cover_url LIKE $1) OR
+            EXISTS(SELECT 1 FROM system_settings WHERE logo_url LIKE $1 OR logo_light_url LIKE $1 OR seo_image_url LIKE $1 OR favicon_url LIKE $1)
+          ) AS is_public
+        `, [pattern]);
 
-      if (combinedCheck.rows[0]?.is_public) {
-        isPublic = true;
+        if (combinedCheck.rows[0]?.is_public) {
+          isPublic = true;
+        }
+      } catch (checkErr: any) {
+        console.warn('[Upload Secure Handler] Public reference query warning:', checkErr.message);
+      }
+    }
+
+    if (!isPublic) {
+      const targetMediaPool = mediaPool || pool;
+      if (targetMediaPool) {
+        try {
+          const mediaCheck = await targetMediaPool.query(`
+            SELECT EXISTS(
+              SELECT 1 FROM media_assets 
+              WHERE stored_path LIKE $1 OR original_filename = $2 OR (metadata->>'generated')::boolean = true OR (metadata->>'is_public')::boolean = true
+            ) AS is_public
+          `, [`%${cleanName}%`, cleanName]);
+          if (mediaCheck.rows[0]?.is_public) {
+            isPublic = true;
+          }
+        } catch (_) {
+          // Table media_assets might not exist or be on separate pool, ignore gracefully
+        }
       }
     }
 

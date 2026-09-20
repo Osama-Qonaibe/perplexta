@@ -1,5 +1,6 @@
 import ffmpeg from 'fluent-ffmpeg';
 import ffmpegStatic from 'ffmpeg-static';
+import ffprobeStatic from 'ffprobe-static';
 import path from 'path';
 import fs from 'fs';
 
@@ -10,6 +11,21 @@ if (ffmpegStatic) {
   } catch (e) {
     console.warn('[VideoProcessor] Could not set ffmpeg-static path:', e);
   }
+}
+
+if (ffprobeStatic && ffprobeStatic.path) {
+  try {
+    ffmpeg.setFfprobePath(ffprobeStatic.path);
+    console.log('[VideoProcessor] FFprobe path configured successfully using ffprobe-static:', ffprobeStatic.path);
+  } catch (e) {
+    try {
+      ffmpeg.setFfprobePath('/usr/bin/ffprobe');
+    } catch {}
+  }
+} else if (fs.existsSync('/usr/bin/ffprobe')) {
+  try {
+    ffmpeg.setFfprobePath('/usr/bin/ffprobe');
+  } catch {}
 }
 
 export interface VideoProcessingResult {

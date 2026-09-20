@@ -6,7 +6,6 @@ import {
   RefreshCw, 
   Maximize2, 
   Download, 
-  Sparkles,
   Palette
 } from 'lucide-react';
 import { toast } from '@/design-system';
@@ -17,61 +16,36 @@ import { ASPECT_RATIO_CLASSES } from '../../../../constants/chat';
 export const SimpleImageLoadingPlaceholder = ({ dir, aspectRatio = '1:1' }: { dir: 'ltr' | 'rtl'; aspectRatio?: string }) => {
   const containerAspectClass = ASPECT_RATIO_CLASSES[aspectRatio] || ASPECT_RATIO_CLASSES['1:1'];
 
-  // Progressive blur relaxation over time (decreases gradually as image generates)
-  const [elapsed, setElapsed] = useState(0);
-
-  useEffect(() => {
-    const startTime = Date.now();
-    const interval = setInterval(() => {
-      setElapsed((Date.now() - startTime) / 1000);
-    }, 80);
-    return () => clearInterval(interval);
-  }, []);
-
-  // Blur starts at a gentle 14px and gradually clarifies down to 1.5px as work progresses
-  const currentBlur = Math.max(1.5, 14 - Math.min(12.5, elapsed * 0.85));
-  const frostedOpacity = Math.max(0.15, 0.45 - Math.min(0.3, elapsed * 0.025));
-
   return (
     <div className="w-full flex flex-col my-2 items-start">
       <div 
-        className={`relative overflow-hidden rounded-shape-md border border-[var(--border-default)] bg-[var(--surface-subtle)] ${containerAspectClass} w-full flex items-center justify-center`}
+        className={`relative overflow-hidden rounded-shape-md border border-[var(--border-default)] bg-[var(--surface-subtle)]/70 backdrop-blur-xl ${containerAspectClass} w-full`}
       >
-        {/* Soft, calm ambient latent luminous gradient */}
+        {/* Calm, serene ambient breathing pulse */}
         <motion.div
           animate={{
-            opacity: [0.25, 0.5, 0.25],
-            scale: [1, 1.03, 1],
+            opacity: [0.35, 0.65, 0.35],
+            scale: [1, 1.02, 1],
           }}
           transition={{
-            duration: 3.5,
+            duration: 4.0,
             repeat: Infinity,
             ease: "easeInOut"
           }}
-          className="absolute inset-0 bg-gradient-to-br from-accent/10 via-[var(--surface-container-high)] to-accent/5 pointer-events-none"
+          className="absolute inset-0 bg-gradient-to-br from-accent/10 via-[var(--surface-card)]/50 to-accent/5 pointer-events-none"
         />
 
-        {/* Gentle linear sheen sweep */}
+        {/* Gentle, subtle light sheen sweep */}
         <motion.div
           animate={{
-            x: dir === 'rtl' ? ['150%', '-150%'] : ['-150%', '150%']
+            x: dir === 'rtl' ? ['160%', '-160%'] : ['-160%', '160%']
           }}
           transition={{
-            duration: 2.5,
+            duration: 3.2,
             repeat: Infinity,
             ease: "easeInOut"
           }}
-          className="absolute inset-0 bg-gradient-to-r from-transparent via-white/[0.06] to-transparent skew-x-12 pointer-events-none z-10"
-        />
-
-        {/* Light frosted blur screen whose blur gradually softens & decreases during work without any text or circles */}
-        <div 
-          className="absolute inset-0 pointer-events-none z-20 transition-[backdrop-filter,opacity] duration-fast ease-out"
-          style={{
-            backdropFilter: `blur(${currentBlur.toFixed(1)}px)`,
-            WebkitBackdropFilter: `blur(${currentBlur.toFixed(1)}px)`,
-            backgroundColor: `rgba(255, 255, 255, ${frostedOpacity.toFixed(2)})`
-          }}
+          className="absolute inset-0 bg-gradient-to-r from-transparent via-white/[0.06] dark:via-white/[0.03] to-transparent skew-x-12 pointer-events-none z-10"
         />
       </div>
     </div>
@@ -114,14 +88,22 @@ export const ShareableImageOutput = ({ src, dir: propDir, alt }: { src?: string;
   const { dir: contextDir } = useAppContext();
   const artifactContext = useContext(ArtifactContext);
   const dir = propDir || contextDir || (document.documentElement.dir === 'rtl' ? 'rtl' : 'ltr');
-  const rawSrc = src || '';
-  const cleanUrl = rawSrc.split('#')[0];
+  
+  const rawSrc = (src || '').trim();
+  const unescapedSrc = rawSrc.replace(/^!\[.*?\]\((.*?)\)$/, '$1').trim();
+  const withoutHash = unescapedSrc.split('#')[0].trim();
+  
+  const cleanUrl = withoutHash.startsWith('http://') || withoutHash.startsWith('https://') || withoutHash.startsWith('data:') || withoutHash.startsWith('blob:')
+    ? withoutHash
+    : (withoutHash.startsWith('/') ? withoutHash : (withoutHash ? `/${withoutHash}` : ''));
+
   const aspectMatch = rawSrc.match(/#aspect=([0-9]+:[0-9]+)/);
   const selectedRatio = aspectMatch ? aspectMatch[1] : '1:1';
   const containerAspectClass = ASPECT_RATIO_CLASSES[selectedRatio] || ASPECT_RATIO_CLASSES['1:1'];
 
-  const [isImageFocused, setIsImageFocused] = useState(() => loadedImageCache.has(cleanUrl));
+  const [isImageFocused, setIsImageFocused] = useState(() => Boolean(cleanUrl && loadedImageCache.has(cleanUrl)));
   const [imageError, setImageError] = useState(false);
+  const [retryCount, setRetryCount] = useState(0);
   const [isPreviewOpen, setIsPreviewOpen] = useState(false);
   const imgRef = useRef<HTMLImageElement>(null);
 
@@ -136,10 +118,26 @@ export const ShareableImageOutput = ({ src, dir: propDir, alt }: { src?: string;
     const timer = setTimeout(() => {
       setIsImageFocused(true);
       if (cleanUrl) loadedImageCache.add(cleanUrl);
-    }, 600);
+    }, 400);
 
     return () => clearTimeout(timer);
   }, [cleanUrl]);
+
+  const handleImageError = () => {
+    if (retryCount < 3 && cleanUrl && !cleanUrl.startsWith('data:')) {
+      const nextRetry = retryCount + 1;
+      setRetryCount(nextRetry);
+      setTimeout(() => {
+        if (imgRef.current) {
+          const sep = cleanUrl.includes('?') ? '&' : '?';
+          imgRef.current.src = `${cleanUrl}${sep}_r=${Date.now()}`;
+        }
+      }, 500 * nextRetry);
+    } else {
+      setIsImageFocused(true);
+      setImageError(true);
+    }
+  };
 
   const handleEditImage = () => {
     if (!cleanUrl) return;
@@ -194,17 +192,15 @@ export const ShareableImageOutput = ({ src, dir: propDir, alt }: { src?: string;
       <div 
         className={`relative group overflow-hidden rounded-shape-md border border-[var(--border-default)] bg-[var(--surface-subtle)] ${containerAspectClass} w-full transition-all duration-300 shadow-sm`}
       >
-        {!imageError && (
+        {!imageError && cleanUrl && (
           <img 
             ref={imgRef}
             onLoad={() => {
               setIsImageFocused(true);
+              setImageError(false);
               if (cleanUrl) loadedImageCache.add(cleanUrl);
             }}
-            onError={() => {
-              setIsImageFocused(true);
-              setImageError(true);
-            }}
+            onError={handleImageError}
             src={cleanUrl}
             alt={alt || "Generated Image"}
             className="block w-full h-full object-cover select-none cursor-pointer"
@@ -264,6 +260,19 @@ export const ShareableImageOutput = ({ src, dir: propDir, alt }: { src?: string;
             <span className="text-[11px] font-bold text-rose-500">
               {dir === 'rtl' ? 'تعذر تحميل الصورة' : 'Failed to load image'}
             </span>
+            <button
+              onClick={() => {
+                setImageError(false);
+                setRetryCount(0);
+                if (imgRef.current) {
+                  const sep = cleanUrl.includes('?') ? '&' : '?';
+                  imgRef.current.src = `${cleanUrl}${sep}_t=${Date.now()}`;
+                }
+              }}
+              className="mt-2 text-[11px] underline font-bold cursor-pointer text-rose-500 hover:text-rose-600"
+            >
+              {dir === 'rtl' ? 'إعادة المحاولة' : 'Retry'}
+            </button>
           </div>
         )}
       </div>
