@@ -26,7 +26,7 @@ export async function validateProviderCapacity(
     };
   }
 
-  const { is_active, daily_budget, used_today } = vaultConfig;
+  const { is_active, daily_budget, used_today, last_reset_date } = vaultConfig;
 
   if (!is_active) {
     return { 
@@ -36,16 +36,22 @@ export async function validateProviderCapacity(
   }
 
   const budget = parseFloat(daily_budget || '0');
-  const used = parseFloat(used_today || '0');
+  let used = parseFloat(used_today || '0');
+  const todayStr = new Date().toISOString().split('T')[0];
+  const resetDateStr = last_reset_date ? new Date(last_reset_date).toISOString().split('T')[0] : '';
+
+  if (resetDateStr && resetDateStr !== todayStr) {
+    used = 0;
+  }
   
   const settings = await getEconomySettings();
   const pointsPerDollar = parseFloat(settings.points_per_dollar || '1000');
   const estimatedCost = (costPerUsage || 0) / pointsPerDollar;
 
-  if (budget > 0 && (used + estimatedCost) > budget) {
+  if (budget > 0 && (used >= budget || (used + estimatedCost) > budget)) {
     return { 
       valid: false, 
-      warning: `Provider check: '${providerId}' daily budget of $${budget} exceeded (spent $${used.toFixed(4)}, next run expects $${estimatedCost.toFixed(4)}).` 
+      warning: `Provider check: '${providerId}' daily budget of $${budget} reached/exceeded (spent $${used.toFixed(4)}, next run expects $${estimatedCost.toFixed(4)}). Request BLOCKED before server call.` 
     };
   }
 

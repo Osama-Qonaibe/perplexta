@@ -340,12 +340,29 @@ export async function getProviderKey(provider: string): Promise<string | null> {
 
   let decryptedKey: string | null = null;
   try {
-    const result = await pool.query('SELECT encrypted_key, url_key, is_active FROM api_keys_vault WHERE provider = $1', [normProvider]);
+    const result = await pool.query('SELECT encrypted_key, url_key, is_active, daily_budget, used_today, last_reset_date FROM api_keys_vault WHERE provider = $1', [normProvider]);
     if (result.rows.length > 0) {
       const row = result.rows[0];
       if (row.is_active === false) {
         return null;
       }
+
+      // Strict Daily Budget Limit Enforcement
+      const dailyBudget = parseFloat(String(row.daily_budget || '0'));
+      let usedToday = parseFloat(String(row.used_today || '0'));
+      const todayStr = new Date().toISOString().split('T')[0];
+      const resetDateStr = row.last_reset_date ? new Date(row.last_reset_date).toISOString().split('T')[0] : '';
+
+      if (resetDateStr && resetDateStr !== todayStr) {
+        usedToday = 0;
+        pool.query('UPDATE api_keys_vault SET used_today = 0, last_reset_date = CURRENT_DATE WHERE provider = $1', [normProvider]).catch(() => {});
+      }
+
+      if (dailyBudget > 0 && usedToday >= dailyBudget) {
+        console.warn(`[AI Service] Provider '${normProvider}' reached daily budget limit ($${usedToday.toFixed(4)} / $${dailyBudget}). Request BLOCKED before server dispatch.`);
+        return null;
+      }
+
       if (row.encrypted_key) {
         decryptedKey = decrypt(row.encrypted_key);
       }

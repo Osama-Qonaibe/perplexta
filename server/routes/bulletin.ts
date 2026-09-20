@@ -915,8 +915,9 @@ router.post('/ads', authenticateToken, async (req: any, res) => {
       const pageInfo = await pool.query('SELECT slug, name FROM bulletin_pages WHERE id = $1', [validPageId]);
       authorUsername = pageInfo.rows[0]?.slug || pageInfo.rows[0]?.name?.toLowerCase().replace(/[^\w\u0600-\u06FF]/g, '') || 'page';
     } else {
-      const userInfo = await pool.query('SELECT username, name FROM users WHERE id = $1', [userId]);
-      authorUsername = userInfo.rows[0]?.username || userInfo.rows[0]?.name?.toLowerCase().replace(/[^\w\u0600-\u06FF]/g, '') || 'user';
+      const userInfo = await pool.query('SELECT email, name FROM users WHERE id = $1', [userId]);
+      const userRow = userInfo.rows[0];
+      authorUsername = (userRow?.email ? userRow.email.split('@')[0] : null) || userRow?.name?.toLowerCase().replace(/[^\w\u0600-\u06FF]/g, '') || 'user';
     }
 
     const insertRes = await pool.query(`

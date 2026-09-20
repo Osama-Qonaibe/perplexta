@@ -16,7 +16,14 @@ const uploadsDir = path.resolve(process.cwd(), 'uploads');
  * Then updates all referencing database tables (user_files, bulletin_ads, advertisements, users)
  * with the optimized file paths and sizes to maximize page-load efficiency.
  */
+let isScanningUploads = false;
+
 export async function auditAndOptimizeUploadsFolder(): Promise<{ scanned: number; optimized: number; errors: number }> {
+  if (isScanningUploads) {
+    return { scanned: 0, optimized: 0, errors: 0 };
+  }
+  isScanningUploads = true;
+
   let scanned = 0;
   let optimized = 0;
   let errors = 0;
@@ -217,6 +224,8 @@ export async function auditAndOptimizeUploadsFolder(): Promise<{ scanned: number
     }
   } catch (err: any) {
     console.error('[Uploads Monitor] Error reading uploads directory:', err?.message || err);
+  } finally {
+    isScanningUploads = false;
   }
 
   return { scanned, optimized, errors };

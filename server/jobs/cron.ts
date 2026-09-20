@@ -225,56 +225,73 @@ async function purgeExpiredTrashAds() {
   }
 }
 
+const activeJobLocks = new Set<string>();
+
+async function runGuardedCron(jobName: string, trackerKey: string | null, fn: () => Promise<void>) {
+  if (activeJobLocks.has(jobName)) {
+    console.warn(`[Cron] ${jobName} is already running in another tick. Skipping overlapping execution to preserve server health.`);
+    return;
+  }
+  activeJobLocks.add(jobName);
+  
+  if (trackerKey && cronTracker[trackerKey]) {
+    cronTracker[trackerKey] = { lastRun: new Date().toISOString(), status: 'running', error: null };
+  }
+  
+  try {
+    await fn();
+    if (trackerKey && cronTracker[trackerKey]) {
+      cronTracker[trackerKey] = { lastRun: new Date().toISOString(), status: 'success', error: null };
+    }
+  } catch (err: any) {
+    console.error(`[Cron] ${jobName} failed:`, err?.message || err);
+    if (trackerKey && cronTracker[trackerKey]) {
+      cronTracker[trackerKey] = { lastRun: new Date().toISOString(), status: 'error', error: err?.message || 'Unknown error' };
+    }
+  } finally {
+    activeJobLocks.delete(jobName);
+  }
+}
+
 export function initCronJobs() {
+  // 1. Daily Maintenance - Runs every day at 03:00 AM
   cron.schedule('0 3 * * *', async () => {
-    console.log('[Cron] 🕒 Running daily system maintenance...');
-    cronTracker.dailyMaintenance = { lastRun: new Date().toISOString(), status: 'running', error: null };
-    try {
+    await runGuardedCron('Daily Maintenance', 'dailyMaintenance', async () => {
+      console.log('[Cron] 🕒 Running daily system maintenance...');
       await runSystemMaintenance();
       await pool.query('UPDATE api_keys_vault SET used_today = 0, last_reset_date = CURRENT_DATE, updated_at = CURRENT_TIMESTAMP');
-      console.log('[Cron] API keys usage reset completed.');
+      await pool.query('UPDATE gpu_providers SET used_today = 0, last_reset_date = CURRENT_DATE, updated_at = CURRENT_TIMESTAMP');
+      console.log('[Cron] API keys & GPU providers usage reset completed.');
       
       await purgeGeneratedFilesOlderThan48Hours();
       await purgeExpiredStories();
       await purgeExpiredTrashAds();
-
       await cleanupOrphanedPhysicalFiles();
-      cronTracker.dailyMaintenance = { lastRun: new Date().toISOString(), status: 'success', error: null };
-    } catch (err: any) {
-      console.error('[Cron] Maintenance failed:', err);
-      cronTracker.dailyMaintenance = { lastRun: new Date().toISOString(), status: 'error', error: err.message || 'Unknown error' };
-    }
+    });
   });
 
-  // Dedicated 48-Hour Media Purge Cron - Runs every 6 hours
+  // 2. Dedicated 48-Hour Media Purge Cron - Runs every 6 hours
   cron.schedule('0 */6 * * *', async () => {
-    console.log('[Cron] 🧹 Executing 6-hour interval check for 48h media storage cleanup...');
-    cronTracker.mediaCleanup48h = { lastRun: new Date().toISOString(), status: 'running', error: null };
-    try {
+    await runGuardedCron('48h Media Purge', 'mediaCleanup48h', async () => {
+      console.log('[Cron] 🧹 Executing 6-hour interval check for 48h media storage cleanup...');
       await purgeGeneratedFilesOlderThan48Hours();
-      cronTracker.mediaCleanup48h = { lastRun: new Date().toISOString(), status: 'success', error: null };
-    } catch (err: any) {
-      cronTracker.mediaCleanup48h = { lastRun: new Date().toISOString(), status: 'error', error: err.message };
-    }
+    });
   });
 
+  // 3. Database Heartbeat - Runs every 5 minutes
   cron.schedule('*/5 * * * *', async () => {
-    if (process.env.NODE_ENV !== 'production') {
-      console.log('[Cron] 💓 Running database heartbeat check...');
-    }
-    cronTracker.databaseHeartbeat = { lastRun: new Date().toISOString(), status: 'running', error: null };
-    try {
+    await runGuardedCron('Database Heartbeat', 'databaseHeartbeat', async () => {
+      if (process.env.NODE_ENV !== 'production') {
+        console.log('[Cron] 💓 Running database heartbeat check...');
+      }
       await monitorDatabases();
-      cronTracker.databaseHeartbeat = { lastRun: new Date().toISOString(), status: 'success', error: null };
-    } catch (err: any) {
-      cronTracker.databaseHeartbeat = { lastRun: new Date().toISOString(), status: 'error', error: err.message || 'Unknown error' };
-    }
+    });
   });
 
+  // 4. Subscription Audit - Runs daily at 03:05 AM
   cron.schedule('5 3 * * *', async () => {
-    console.log('[Cron] 🔍 Checking for expiring subscriptions...');
-    cronTracker.subscriptionAudit = { lastRun: new Date().toISOString(), status: 'running', error: null };
-    try {
+    await runGuardedCron('Subscription Renewal Check', 'subscriptionAudit', async () => {
+      console.log('[Cron] 🔍 Checking for expiring subscriptions...');
       const expiringRes = await pool.query(`
         SELECT s.user_id, u.email, u.name, u.language, p.name_en, p.name_ar, s.current_period_end 
         FROM subscriptions s
@@ -292,61 +309,45 @@ export function initCronJobs() {
         const msgAr = `سيتم تجديد/انتهاء اشتراكك في ${sub.name_ar} خلال 3 أيام.`;
         await createNotification(sub.user_id, 'system', titleEn, titleAr, msgEn, msgAr);
       }
-      cronTracker.subscriptionAudit = { lastRun: new Date().toISOString(), status: 'success', error: null };
-    } catch (err: any) {
-      console.error('[Cron] Subscription check failed:', err);
-      cronTracker.subscriptionAudit = { lastRun: new Date().toISOString(), status: 'error', error: err.message || 'Unknown error' };
-    }
+    });
   });
 
+  // 5. Daily SEO Metadata Sync - Runs daily at 02:00 AM
   cron.schedule('0 2 * * *', async () => {
-    console.log('[Cron] 🔍 Running daily automated SEO metadata scan for missing content fields...');
-    cronTracker.dailySeoScan = { lastRun: new Date().toISOString(), status: 'running', error: null };
-    try {
+    await runGuardedCron('Daily SEO Scan', 'dailySeoScan', async () => {
+      console.log('[Cron] 🔍 Running daily automated SEO metadata scan for missing content fields...');
       const { syncAllContentSeoMetadata } = await import('../services/seoSync.js');
       const result = await syncAllContentSeoMetadata();
       console.log('[Cron] Daily SEO metadata routine completed successfully:', result);
-      cronTracker.dailySeoScan = { lastRun: new Date().toISOString(), status: 'success', error: null };
-    } catch (err: any) {
-      console.error('[Cron] Daily SEO metadata routine failed:', err.message);
-      cronTracker.dailySeoScan = { lastRun: new Date().toISOString(), status: 'error', error: err.message || 'Unknown error' };
-    }
+    });
   });
 
+  // 6. Monthly Memory Compaction - Runs on the 1st of every month at 04:30 AM
   cron.schedule('30 4 1 * *', async () => {
-    console.log('[Cron] 🧠 Running monthly memory distillation (coherence compaction)...');
-    cronTracker.memoryCompaction = { lastRun: new Date().toISOString(), status: 'running', error: null };
-    try {
+    await runGuardedCron('Monthly Memory Compaction', 'memoryCompaction', async () => {
+      console.log('[Cron] 🧠 Running monthly memory distillation (coherence compaction)...');
       const result = await consolidateAllUserMemories({ threshold: 45 });
       console.log('[Cron] Inactive memory distillation completed successfully:', result);
-      cronTracker.memoryCompaction = { lastRun: new Date().toISOString(), status: 'success', error: null };
-    } catch (err: any) {
-      console.error('[Cron] Monthly memory distillation failed:', err.message);
-      cronTracker.memoryCompaction = { lastRun: new Date().toISOString(), status: 'error', error: err.message || 'Unknown error' };
-    }
+    });
   });
 
+  // 7. Monthly Financial Ledger Audit - Runs on the 1st of every month at 05:00 AM
   cron.schedule('0 5 1 * *', async () => {
-    console.log('[Cron] 💸 Running monthly ledger transaction purge...');
-    cronTracker.monthlyLedgerCleanup = { lastRun: new Date().toISOString(), status: 'running', error: null };
-    try {
-      const { ledgerPool } = await import('../db/index.js');
-      if (ledgerPool) {
-        const deleteRes = await ledgerPool.query("DELETE FROM ledger_transactions WHERE created_at < CURRENT_TIMESTAMP - INTERVAL '30 days'");
-        console.log(`[Cron] Purged historical transactions from ledger_transactions: ${deleteRes.rowCount} rows deleted.`);
-      }
-      cronTracker.monthlyLedgerCleanup = { lastRun: new Date().toISOString(), status: 'success', error: null };
-    } catch (err: any) {
-      console.error('[Cron] Monthly ledger purge failed:', err.message);
-      cronTracker.monthlyLedgerCleanup = { lastRun: new Date().toISOString(), status: 'error', error: err.message || 'Unknown error' };
-    }
+    await runGuardedCron('Monthly Ledger Audit', 'monthlyLedgerCleanup', async () => {
+      console.log('[Cron] 💸 Running monthly ledger audit & integrity check...');
+      const { reconcileAllWallets } = await import('../services/wallet.js');
+      const report = await reconcileAllWallets();
+      console.log(`[Cron] Monthly ledger audit completed: audited ${report.audited} wallets with ${report.discrepancies} discrepancies.`);
+    });
   });
 
+  // 8. Search Engine Sitemap Pinger - Runs every 30 minutes
   cron.schedule('*/30 * * * *', async () => {
-    console.log('[Cron] 🌐 Checking for newly inserted items to ping search engine sitemaps...');
-    try {
+    await runGuardedCron('Sitemap Pinger', null, async () => {
       if (pool) {
-        const newBulletin = await pool.query("SELECT id FROM bulletin_ads WHERE created_at >= CURRENT_TIMESTAMP - INTERVAL '30 minutes' AND status = 'active' LIMIT 1");
+        const newBulletin = await pool.query(
+          "SELECT id FROM bulletin_ads WHERE created_at >= CURRENT_TIMESTAMP - INTERVAL '30 minutes' AND status = 'active' LIMIT 1"
+        );
 
         if (newBulletin.rowCount && newBulletin.rowCount > 0) {
           console.log('[Cron] Found newly inserted items. Triggering sitemap ping...');
@@ -354,20 +355,20 @@ export function initCronJobs() {
           await pingSearchEngines();
         }
       }
-    } catch (err: any) {
-      console.error('[Cron] Sitemap pinger failed:', err.message);
-    }
+    });
   });
 
+  // 9. Weekly Wallet Reconciliation - Runs every Sunday at 04:00 AM
   cron.schedule('0 4 * * 0', async () => {
-    try {
+    await runGuardedCron('Weekly Wallet Reconciliation', null, async () => {
+      console.log('[Cron] ⚖️ Running weekly wallet ledger reconciliation...');
       const { reconcileAllWallets } = await import('../services/wallet.js');
       const report = await reconcileAllWallets();
       if (report.discrepancies > 0) {
         console.warn(`[Cron] Ledger reconciliation found ${report.discrepancies} discrepancies across ${report.audited} wallets.`);
+      } else {
+        console.log(`[Cron] Ledger reconciliation verified all ${report.audited} wallets with 0 discrepancies.`);
       }
-    } catch (err: any) {
-      console.error('[Cron] Weekly ledger reconciliation failed:', err.message);
-    }
+    });
   });
 }
