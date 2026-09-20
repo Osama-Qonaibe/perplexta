@@ -65,6 +65,8 @@ if ('serviceWorker' in navigator) {
     });
 
     navigator.serviceWorker.register('/sw.js').then((registration) => {
+      // Check for updates on every page load
+      registration.update().catch(() => {});
       registration.addEventListener('updatefound', () => {
         const installingWorker = registration.installing;
         if (installingWorker) {

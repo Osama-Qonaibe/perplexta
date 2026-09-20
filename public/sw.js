@@ -1,5 +1,5 @@
-// Perplexta Platform PWA Service Worker (v2.0.0)
-const CACHE_NAME = 'perplexta-pwa-v2';
+// Perplexta Platform PWA Service Worker (v2.2.0)
+const CACHE_NAME = 'perplexta-pwa-v2.2';
 const STATIC_ASSETS = [
   '/',
   '/index.html',
@@ -63,10 +63,12 @@ self.addEventListener('fetch', (event) => {
         .catch(async () => {
           const cached = await caches.match(event.request);
           if (cached) return cached;
-          const fallback = await caches.match('/index.html');
+          const fallback = await caches.match('/index.html') || await caches.match('/');
           if (fallback) return fallback;
-          return new Response('<h1>Perplexta Offline</h1><p>You are currently offline. Please check your network connection.</p>', {
-            headers: { 'Content-Type': 'text/html; charset=utf-8' }
+          return fetch('/index.html').catch(() => {
+            return new Response('<h1>Perplexta Offline</h1><p>You are currently offline. Please check your network connection.</p>', {
+              headers: { 'Content-Type': 'text/html; charset=utf-8' }
+            });
           });
         })
     );
