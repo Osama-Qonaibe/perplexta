@@ -146,11 +146,12 @@ export async function optimizeUploadedImage(
     if (targetMediaDb) {
       try {
         const optBuffer = await fs.readFile(optimizedFilePath).catch(() => null);
+        const generatedAssetId = crypto.randomUUID();
         const insertRes = await targetMediaDb.query(`
           INSERT INTO media_assets (
-            stored_path, original_filename, context, format, width, height, size_bytes, sha256_hash, is_public,
+            id, stored_path, original_filename, context, format, width, height, size_bytes, sha256_hash, is_public,
             user_id, metadata, file_data
-          ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)
+          ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)
           ON CONFLICT (stored_path) DO UPDATE SET
             context = EXCLUDED.context,
             format = EXCLUDED.format,
@@ -163,6 +164,7 @@ export async function optimizeUploadedImage(
             updated_at = CURRENT_TIMESTAMP
           RETURNING id
         `, [
+          generatedAssetId,
           storedPath,
           originalFilename,
           context,

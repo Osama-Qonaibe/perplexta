@@ -2626,6 +2626,33 @@ export async function runVersionedMigrations(
         console.warn('[Migration v119] Notice isolating GPU tools:', err.message);
       });
     });
+
+    await runVersioned('v120_add_post_code_and_ownership_metadata', 'Add post_code and author_username to bulletin_ads and page slug/owner columns for privacy and ownership', async (tx) => {
+      await tx.query(`ALTER TABLE bulletin_ads ADD COLUMN IF NOT EXISTS post_code VARCHAR(50)`);
+      await tx.query(`ALTER TABLE bulletin_ads ADD COLUMN IF NOT EXISTS author_username VARCHAR(100)`);
+      await tx.query(`CREATE UNIQUE INDEX IF NOT EXISTS idx_bulletin_ads_post_code ON bulletin_ads(post_code) WHERE post_code IS NOT NULL`);
+      
+      await tx.query(`ALTER TABLE bulletin_pages ADD COLUMN IF NOT EXISTS slug VARCHAR(120)`);
+      await tx.query(`CREATE UNIQUE INDEX IF NOT EXISTS idx_bulletin_pages_slug ON bulletin_pages(slug) WHERE slug IS NOT NULL`);
+
+      // Auto-generate post_code for existing ads where post_code is NULL
+      const existingAds = await tx.query(`SELECT id FROM bulletin_ads WHERE post_code IS NULL OR post_code = ''`);
+      for (const ad of existingAds.rows) {
+        const code = 'PX-' + Math.random().toString(36).substring(2, 8).toUpperCase();
+        await tx.query(`UPDATE bulletin_ads SET post_code = $1 WHERE id = $2 AND (post_code IS NULL OR post_code = '')`, [code, ad.id]).catch(() => {});
+      }
+
+      // Auto-generate slug for existing bulletin_pages where slug is NULL
+      const existingPages = await tx.query(`SELECT id, name FROM bulletin_pages WHERE slug IS NULL OR slug = ''`);
+      for (const pg of existingPages.rows) {
+        const cleanSlug = (pg.name || 'page')
+          .toLowerCase()
+          .trim()
+          .replace(/[^\w\u0600-\u06FF\s-]/g, '')
+          .replace(/[\s_]+/g, '-') + '-' + pg.id;
+        await tx.query(`UPDATE bulletin_pages SET slug = $1 WHERE id = $2 AND (slug IS NULL OR slug = '')`, [cleanSlug, pg.id]).catch(() => {});
+      }
+    });
     
   console.log("[Migrations] All versioned migrations completed successfully.");
 }

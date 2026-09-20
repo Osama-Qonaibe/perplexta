@@ -7,6 +7,15 @@ export interface User {
   language: string;
   theme: 'light' | 'dark';
   avatar: string | null;
+  cover_image?: string | null;
+  bio?: string;
+  occupation?: string;
+  location?: string;
+  website_url?: string;
+  custom_domain?: string;
+  is_domain_verified?: boolean;
+  social_links?: Record<string, string>;
+  verified_links?: string[];
   referral_code: string | null;
   created_at: string | Date;
   updated_at: string | Date;

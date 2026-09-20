@@ -465,8 +465,8 @@ export default function App() {
               <Route path="rewards" element={<SectionRouteGuard pathKey="/rewards"><ProtectedRoute><RewardsPage /></ProtectedRoute></SectionRouteGuard>} />
               <Route path="subscription" element={<SectionRouteGuard pathKey="/subscription"><SubscriptionPage /></SectionRouteGuard>} />
               <Route path="chat/:id?" element={<ChatPage />} />
-              <Route path="viralbook/:id?/:subPath?/:subId?" element={<SectionRouteGuard pathKey="/viralbook"><BulletinBoardPage /></SectionRouteGuard>} />
-              <Route path="bulletin/:id?/:subPath?/:subId?" element={<SectionRouteGuard pathKey="/viralbook"><BulletinBoardPage /></SectionRouteGuard>} />
+              <Route path="viralbook/*" element={<SectionRouteGuard pathKey="/viralbook"><BulletinBoardPage /></SectionRouteGuard>} />
+              <Route path="bulletin/*" element={<SectionRouteGuard pathKey="/viralbook"><BulletinBoardPage /></SectionRouteGuard>} />
               <Route path="google-hub" element={<SectionRouteGuard pathKey="/google-hub"><GoogleHubPage /></SectionRouteGuard>} />
               <Route path="discover" element={<SectionRouteGuard pathKey="/explore"><RecommendationsPage /></SectionRouteGuard>} />
               <Route path="studio" element={<SectionRouteGuard pathKey="/studio"><StudioPage /></SectionRouteGuard>} />

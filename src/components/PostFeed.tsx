@@ -1,4 +1,5 @@
 import { safeStorageGet, safeStorageSet } from "@/utils/safeStorage";
+import { getPostShareUrl, getPostShareText } from "@/utils/shareUtils";
 import React, { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import {
@@ -163,6 +164,7 @@ export interface PostFeedProps {
   onWhatsApp: (ad: BulletinAd, e: React.MouseEvent) => void;
   onShare: (ad: BulletinAd) => void;
   onOpenPageDetail?: (pageId: number) => void;
+  onOpenUserDetail?: (userId: number) => void;
   onOpenLightbox: (imgUrl: string, mediaItems?: any[], initialIndex?: number, postTitle?: string, authorName?: string, ad?: BulletinAd) => void;
   onCreateAdClick: () => void;
   onBoostAd?: (ad: BulletinAd) => void;
@@ -207,6 +209,7 @@ export const PostFeed: React.FC<PostFeedProps> = ({
   onWhatsApp,
   onShare,
   onOpenPageDetail,
+  onOpenUserDetail,
   onOpenLightbox,
   onCreateAdClick,
   onBoostAd,
@@ -406,7 +409,7 @@ export const PostFeed: React.FC<PostFeedProps> = ({
   const sentinelRef = useRef<HTMLDivElement | null>(null);
 
   const handleCopyLink = (ad: BulletinAd) => {
-    const shareUrl = `${window.location.origin}/viralbook/${ad.id}`;
+    const shareUrl = getPostShareUrl(ad);
     
     if (navigator.clipboard && navigator.clipboard.writeText) {
       navigator.clipboard.writeText(shareUrl).then(() => {
@@ -451,12 +454,7 @@ export const PostFeed: React.FC<PostFeedProps> = ({
   };
 
   const handleWhatsAppShare = (ad: BulletinAd) => {
-    const shareUrl = `${window.location.origin}/viralbook/${ad.id}`;
-    const text = encodeURIComponent(
-      isRtl
-        ? `شاهِد هذا المنشور على بيربليكستا بورد (Perplexta Board): "${ad.title}"\n${shareUrl}`
-        : `Check out this Perplexta Board post: "${ad.title}"\n${shareUrl}`
-    );
+    const text = encodeURIComponent(getPostShareText(ad, isRtl));
     window.open(`https://wa.me/?text=${text}`, '_blank');
     fetch(`/api/bulletin/ads/${ad.id}/share`, {
       method: 'POST',
@@ -660,20 +658,26 @@ export const PostFeed: React.FC<PostFeedProps> = ({
                   alt={ad.page_id ? (ad.page_name || ad.author_name) : ad.author_name}
                   size="sm"
                   isPage={Boolean(ad.page_id)}
-                  onClick={() =>
-                    ad.page_id && onOpenPageDetail && onOpenPageDetail(ad.page_id)
-                  }
+                  onClick={() => {
+                    if (ad.page_id && onOpenPageDetail) {
+                      onOpenPageDetail(ad.page_id);
+                    } else if (ad.user_id && onOpenUserDetail) {
+                      onOpenUserDetail(ad.user_id);
+                    }
+                  }}
                 />
 
                 <div className="min-w-0 flex-1">
                   <div className="flex items-center gap-1">
                     <h4
-                      onClick={() =>
-                        ad.page_id && onOpenPageDetail && onOpenPageDetail(ad.page_id)
-                      }
-                      className={`text-xs font-extrabold truncate text-[var(--text-primary)] ${
-                        ad.page_id ? 'cursor-pointer hover:text-[var(--fg-accent)] transition-colors' : ''
-                      }`}
+                      onClick={() => {
+                        if (ad.page_id && onOpenPageDetail) {
+                          onOpenPageDetail(ad.page_id);
+                        } else if (ad.user_id && onOpenUserDetail) {
+                          onOpenUserDetail(ad.user_id);
+                        }
+                      }}
+                      className="text-xs font-extrabold truncate text-[var(--text-primary)] cursor-pointer hover:text-[var(--fg-accent)] transition-colors"
                     >
                       {ad.page_id ? (ad.page_name || ad.author_name) : ad.author_name}
                     </h4>
@@ -1429,11 +1433,23 @@ export const PostFeed: React.FC<PostFeedProps> = ({
                               alt={comment.author_name}
                               size="sm"
                               fallbackText={comment.author_name}
+                              onClick={() => {
+                                if (comment.user_id && onOpenUserDetail) {
+                                  onOpenUserDetail(comment.user_id);
+                                }
+                              }}
                             />
                           </div>
                           <div className="flex-1 min-w-0">
                             <div className="bg-[var(--surface-card)] p-2.5 rounded-[var(--radius-md)] text-[var(--text-primary)] border border-[var(--border-default)] shadow-2xs">
-                              <span className="font-extrabold text-xs block truncate text-[var(--text-primary)]">
+                              <span
+                                onClick={() => {
+                                  if (comment.user_id && onOpenUserDetail) {
+                                    onOpenUserDetail(comment.user_id);
+                                  }
+                                }}
+                                className="font-extrabold text-xs block truncate text-[var(--text-primary)] cursor-pointer hover:text-[var(--fg-accent)] transition-colors"
+                              >
                                 {comment.author_name}
                               </span>
                               <p className={`mt-0.5 whitespace-pre-wrap break-words leading-relaxed text-[var(--text-secondary)] ${comment.parent_id ? 'pl-4 border-l-2 border-[var(--border-accent)]/20' : ''}`}>

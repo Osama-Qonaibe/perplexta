@@ -58,17 +58,19 @@ export async function registerMediaAsset(data: {
         existing.rows[0].id
       ]);
     } else {
+      const newAssetId = crypto.randomUUID();
       await targetMediaPool.query(`
         INSERT INTO media_assets (
-          stored_path, original_filename, context, format, width, height, size_bytes, sha256_hash, is_public,
+          id, stored_path, original_filename, context, format, width, height, size_bytes, sha256_hash, is_public,
           user_id, metadata, file_data
-        ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)
+        ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)
         ON CONFLICT (stored_path) DO UPDATE SET
           context = EXCLUDED.context,
           user_id = COALESCE(EXCLUDED.user_id, media_assets.user_id),
           file_data = COALESCE(EXCLUDED.file_data, media_assets.file_data),
           updated_at = CURRENT_TIMESTAMP
       `, [
+        newAssetId,
         cleanStoredPath,
         data.originalFilename,
         data.context,

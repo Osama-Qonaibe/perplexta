@@ -137,15 +137,17 @@ export class VideoResourceProvider {
         const fileBuf = await fs.readFile(diskPath).catch(() => null);
         const shaHash = fileBuf ? crypto.createHash('sha256').update(fileBuf).digest('hex') : crypto.createHash('sha256').update(storedPath).digest('hex');
 
+        const vidAssetUuid = crypto.randomUUID();
         await targetMediaPool.query(`
           INSERT INTO media_assets (
-            stored_path, original_filename, context, format, width, height, size_bytes, sha256_hash, is_public, user_id, metadata, file_data
-          ) VALUES ($1, $2, 'video', 'mp4', 0, 0, $3, $4, true, $5, $6, $7)
+            id, stored_path, original_filename, context, format, width, height, size_bytes, sha256_hash, is_public, user_id, metadata, file_data
+          ) VALUES ($1, $2, $3, 'video', 'mp4', 0, 0, $4, $5, true, $6, $7, $8)
           ON CONFLICT (stored_path) DO UPDATE SET
             file_data = COALESCE(EXCLUDED.file_data, media_assets.file_data),
             user_id = COALESCE(EXCLUDED.user_id, media_assets.user_id),
             updated_at = CURRENT_TIMESTAMP
         `, [
+          vidAssetUuid,
           storedPath,
           `AI_Video_${Date.now()}.mp4`,
           1024 * 1024 * (duration || 5),

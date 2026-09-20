@@ -674,7 +674,13 @@ app.get([
   return res.status(404).end();
 });
 
-app.get('/sw.js', serveStaticResource('sw.js'));
+app.get('/sw.js', (req, res) => {
+  res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
+  res.setHeader('Pragma', 'no-cache');
+  res.setHeader('Expires', '0');
+  res.setHeader('Content-Type', 'application/javascript');
+  res.sendFile(path.join(process.cwd(), 'public', 'sw.js'));
+});
 app.get('/version.json', (req, res) => {
   res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
   res.setHeader('Pragma', 'no-cache');
@@ -2082,23 +2088,75 @@ async function injectSEOTags(
         console.error('[SEO] Failed to fetch shared snapshot details:', err);
       }
     }
-  } else if (normalizedPath.startsWith('/bulletin/') || normalizedPath.startsWith('/viralbook/') || normalizedPath.startsWith('/reels/')) {
-    const parts = normalizedPath.split('/');
-    const adId = parts[parts.length - 1];
-    if (adId) {
+  } else if (normalizedPath.startsWith('/bulletin/page/') || normalizedPath.startsWith('/viralbook/page/') || normalizedPath.startsWith('/viralbook/pages/')) {
+    const parts = normalizedPath.split('/').filter(Boolean);
+    const pageSlug = parts[parts.length - 1];
+    if (pageSlug) {
+      try {
+        const pageRes = await pool.query(
+          'SELECT name, description, cover_url, avatar_url, category, city FROM bulletin_pages WHERE slug = $1 OR id = $2',
+          [pageSlug, parseInt(pageSlug, 10) || -1]
+        );
+        if (pageRes.rows.length > 0) {
+          const pageObj = pageRes.rows[0];
+          currentTitle = `${pageObj.name} - ${pageObj.category || 'الصفحة التجارية الرسمية'}`;
+          let cleanContent = (pageObj.description || 'تفضل بزيارة صفحتنا الرسمية على منصة بيربليكستا').replace(/[#*`_\[\]()]/g, '');
+          currentDesc = cleanContent.slice(0, 160).trim();
+          const targetMedia = pageObj.cover_url || pageObj.avatar_url;
+          if (targetMedia) {
+            imageUrl = validateImageUrl(targetMedia);
+          }
+        }
+      } catch (err) {
+        console.error('[SEO] Failed to fetch page details:', err);
+      }
+    }
+  } else if (
+    normalizedPath.startsWith('/bulletin') ||
+    normalizedPath.startsWith('/viralbook') ||
+    normalizedPath.startsWith('/reels') ||
+    normalizedPath.startsWith('/p/') ||
+    normalizedPath.startsWith('/post/') ||
+    normalizedPath.startsWith('/share/')
+  ) {
+    const parts = normalizedPath.split('/').filter(Boolean);
+    let candidateCode = parts.find(p => /^PX-[A-Za-z0-9_-]+/i.test(p));
+    if (!candidateCode) {
+      const filteredParts = parts.filter(p => !['viralbook', 'bulletin', 'p', 'post', 'reels', 'pages', 'page', 'share'].includes(p.toLowerCase()));
+      candidateCode = filteredParts.length > 0 ? filteredParts[filteredParts.length - 1] : parts[parts.length - 1];
+    }
+
+    if (candidateCode) {
       try {
         const adRes = await pool.query(
-          'SELECT title, description, image_url, video_url, author_name, created_at, updated_at FROM bulletin_ads WHERE id = $1',
-          [parseInt(adId, 10) || -1]
+          'SELECT title, description, image_url, video_url, metadata, author_name, author_username, post_code, created_at, updated_at FROM bulletin_ads WHERE post_code = $1 OR id = $2 OR post_code = $3',
+          [candidateCode, parseInt(candidateCode, 10) || -1, candidateCode.toUpperCase()]
         );
         if (adRes.rows.length > 0) {
           const ad = adRes.rows[0];
-          currentTitle = ad.title || currentTitle;
+          currentTitle = ad.title ? `${ad.title} | ${ad.author_name || ad.author_username || 'بيربليكستا'}` : `منشور بواسطة ${ad.author_name || ad.author_username || 'مستخدم بيربليكستا'}`;
           let cleanContent = (ad.description || '').replace(/[#*`_\[\]()]/g, '');
           currentDesc = cleanContent.slice(0, 160).trim();
           if (cleanContent.length > 160) currentDesc += '...';
           
-          const targetMedia = ad.image_url || ad.video_url;
+          let targetMedia = ad.image_url || ad.video_url;
+          if (!targetMedia && ad.metadata) {
+            try {
+              const metaObj = typeof ad.metadata === 'string' ? JSON.parse(ad.metadata) : ad.metadata;
+              if (metaObj) {
+                if (Array.isArray(metaObj.media_gallery) && metaObj.media_gallery.length > 0) {
+                  targetMedia = metaObj.media_gallery[0];
+                } else if (Array.isArray(metaObj.images) && metaObj.images.length > 0) {
+                  targetMedia = metaObj.images[0];
+                } else if (Array.isArray(metaObj.photos) && metaObj.photos.length > 0) {
+                  targetMedia = metaObj.photos[0];
+                } else if (metaObj.image_url) {
+                  targetMedia = metaObj.image_url;
+                }
+              }
+            } catch (e) {}
+          }
+
           if (targetMedia) {
             imageUrl = validateImageUrl(targetMedia);
           }
@@ -2119,7 +2177,7 @@ async function injectSEOTags(
           upsertSeoMetadata({
             route_path: normalizedPath,
             entity_type: 'bulletin',
-            entity_id: adId,
+            entity_id: String(ad.post_code || candidateCode),
             title_en: ad.title || 'Bulletin Item',
             title_ar: ad.title || 'عنصر في النشرة',
             description_en: cleanContent.slice(0, 160),
@@ -2220,6 +2278,8 @@ async function injectSEOTags(
       html = html.replace('</head>', `${finalTitleHtml}</head>`);
     }
 
+    const isPostRoute = normalizedPath.startsWith('/bulletin') || normalizedPath.startsWith('/viralbook') || normalizedPath.startsWith('/reels') || normalizedPath.startsWith('/p/') || normalizedPath.startsWith('/post/');
+
     metaBlock = `
     <meta name="description" content="${escDesc}" />
     <meta name="keywords" content="${escKeywords}" />
@@ -2231,7 +2291,7 @@ async function injectSEOTags(
     <meta property="og:image:width" content="1200" />
     <meta property="og:image:height" content="630" />
     <meta property="og:url" content="${escUrl}" />
-    <meta property="og:type" content="website" />
+    <meta property="og:type" content="${isPostRoute ? 'article' : 'website'}" />
     <meta property="og:site_name" content="${escSiteName}" />
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:title" content="${escTitle}" />

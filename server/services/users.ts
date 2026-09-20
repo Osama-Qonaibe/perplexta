@@ -285,12 +285,34 @@ export async function getUserUsage(userId: string | number) {
   };
 }
 
+let columnsEnsured = false;
+export async function ensureUserProfileColumns() {
+  if (columnsEnsured || !pool) return;
+  try {
+    await pool.query(`
+      ALTER TABLE users ADD COLUMN IF NOT EXISTS cover_image TEXT;
+      ALTER TABLE users ADD COLUMN IF NOT EXISTS bio TEXT;
+      ALTER TABLE users ADD COLUMN IF NOT EXISTS occupation TEXT;
+      ALTER TABLE users ADD COLUMN IF NOT EXISTS location TEXT;
+      ALTER TABLE users ADD COLUMN IF NOT EXISTS website_url TEXT;
+      ALTER TABLE users ADD COLUMN IF NOT EXISTS custom_domain TEXT;
+      ALTER TABLE users ADD COLUMN IF NOT EXISTS is_domain_verified BOOLEAN DEFAULT FALSE;
+      ALTER TABLE users ADD COLUMN IF NOT EXISTS social_links JSONB DEFAULT '{}';
+      ALTER TABLE users ADD COLUMN IF NOT EXISTS verified_links JSONB DEFAULT '[]';
+    `);
+    columnsEnsured = true;
+  } catch (err: any) {
+    console.warn('[ensureUserProfileColumns] Notice/Warning while ensuring user profile columns:', err.message);
+  }
+}
+
 export async function getUserProfile(userId: string) {
   if (!pool) throw new Error('Database initializing');
+  await ensureUserProfileColumns();
   
   const [result, wallet] = await Promise.all([
     pool.query(`
-      SELECT u.id, u.name, u.email, u.role, u.avatar, u.status, u.language, u.theme, u.custom_instructions, u.kyc_status, u.created_at, u.referral_code, u.media_muted, u.data_saver,
+      SELECT u.id, u.name, u.email, u.role, u.avatar, u.cover_image, u.bio, u.occupation, u.location, u.website_url, u.custom_domain, u.is_domain_verified, u.social_links, u.verified_links, u.status, u.language, u.theme, u.custom_instructions, u.kyc_status, u.created_at, u.referral_code, u.media_muted, u.data_saver,
              s.plan_id, s.status as sub_status, s.current_period_end, p.name_en as plan_name_en, p.name_ar as plan_name_ar, p.color as plan_color, p.limits
       FROM users u
       LEFT JOIN subscriptions s ON u.id = s.user_id
@@ -327,6 +349,15 @@ export async function getUserProfile(userId: string) {
     email: row.email,
     role: row.role,
     avatar: row.avatar,
+    cover_image: row.cover_image || null,
+    bio: row.bio || row.custom_instructions || '',
+    occupation: row.occupation || '',
+    location: row.location || '',
+    website_url: row.website_url || '',
+    custom_domain: row.custom_domain || '',
+    is_domain_verified: !!row.is_domain_verified,
+    social_links: typeof row.social_links === 'object' && row.social_links !== null ? row.social_links : (typeof row.social_links === 'string' ? JSON.parse(row.social_links || '{}') : {}),
+    verified_links: Array.isArray(row.verified_links) ? row.verified_links : (typeof row.verified_links === 'string' ? JSON.parse(row.verified_links || '[]') : []),
     status: row.status,
     language: row.language,
     theme: row.theme,
@@ -346,11 +377,65 @@ export async function getUserProfile(userId: string) {
 
 export async function updateUserProfile(userId: string | number, data: any) {
   if (!pool) throw new Error('Database initializing');
+  await ensureUserProfileColumns();
   
-  const { name, avatar, language, theme, custom_instructions, password, email, email_notifications, media_muted, data_saver } = data;
+  const {
+    name, avatar, cover_image, bio, occupation, location, website_url,
+    custom_domain, is_domain_verified, social_links, verified_links,
+    language, theme, custom_instructions, password, email,
+    email_notifications, media_muted, data_saver
+  } = data;
+
   const updates: string[] = [];
   const values: any[] = [];
   let idx = 1;
+
+  if (cover_image !== undefined) {
+    updates.push(`cover_image = $${idx++}`);
+    values.push(cover_image);
+  }
+
+  if (bio !== undefined) {
+    updates.push(`bio = $${idx++}`);
+    values.push(bio);
+    updates.push(`custom_instructions = $${idx++}`);
+    values.push(bio);
+  }
+
+  if (occupation !== undefined) {
+    updates.push(`occupation = $${idx++}`);
+    values.push(occupation);
+  }
+
+  if (location !== undefined) {
+    updates.push(`location = $${idx++}`);
+    values.push(location);
+  }
+
+  if (website_url !== undefined) {
+    updates.push(`website_url = $${idx++}`);
+    values.push(website_url);
+  }
+
+  if (custom_domain !== undefined) {
+    updates.push(`custom_domain = $${idx++}`);
+    values.push(custom_domain);
+  }
+
+  if (is_domain_verified !== undefined) {
+    updates.push(`is_domain_verified = $${idx++}`);
+    values.push(!!is_domain_verified);
+  }
+
+  if (social_links !== undefined) {
+    updates.push(`social_links = $${idx++}`);
+    values.push(typeof social_links === 'object' ? JSON.stringify(social_links) : social_links);
+  }
+
+  if (verified_links !== undefined) {
+    updates.push(`verified_links = $${idx++}`);
+    values.push(typeof verified_links === 'object' ? JSON.stringify(verified_links) : verified_links);
+  }
 
   if (data_saver !== undefined) {
     if (typeof data_saver !== 'boolean') throw new Error('Data saver preference must be a boolean');
@@ -403,7 +488,7 @@ export async function updateUserProfile(userId: string | number, data: any) {
     values.push(cleanTheme);
   }
 
-  if (custom_instructions !== undefined) {
+  if (custom_instructions !== undefined && bio === undefined) {
     if (custom_instructions !== null && typeof custom_instructions !== 'string') throw new Error('Custom instructions must be a string');
     updates.push(`custom_instructions = $${idx++}`);
     values.push(custom_instructions);

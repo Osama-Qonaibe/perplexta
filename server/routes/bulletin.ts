@@ -235,17 +235,19 @@ router.post('/upload', authenticateToken, (upload.single('file') as any), handle
               WHERE id = $8
             `, [storedPath, originalname, mContext, mFormat, processedFileSize, fileBuf, (req as any).user?.id || null, existing.rows[0].id]);
           } else {
+            const bulletinAssetId = crypto.randomUUID();
             await targetMediaPool.query(`
               INSERT INTO media_assets (
-                stored_path, original_filename, context, format, width, height, size_bytes, sha256_hash, is_public,
+                id, stored_path, original_filename, context, format, width, height, size_bytes, sha256_hash, is_public,
                 user_id, metadata, file_data
-              ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, true, $9, $10, $11)
+              ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, true, $10, $11, $12)
               ON CONFLICT (stored_path) DO UPDATE SET
                 context = EXCLUDED.context,
                 user_id = COALESCE(EXCLUDED.user_id, media_assets.user_id),
                 file_data = COALESCE(EXCLUDED.file_data, media_assets.file_data),
                 updated_at = CURRENT_TIMESTAMP
             `, [
+              bulletinAssetId,
               storedPath, originalname, mContext, mFormat,
               optImageResult?.width || 0, optImageResult?.height || 0,
               processedFileSize, sha256Hash, (req as any).user?.id || null,
@@ -281,7 +283,7 @@ router.post('/upload', authenticateToken, (upload.single('file') as any), handle
  */
 router.get('/ads', async (req, res) => {
   try {
-    const { category, city, location_city, search, hashtag, sort, audience, page: pageQuery, limit: limitQuery } = req.query;
+    const { category, city, location_city, search, hashtag, sort, audience, page_id: queryPageId, user_id: queryUserId, profile_only, page: pageQuery, limit: limitQuery } = req.query;
     const pageNum = Math.max(1, parseInt(pageQuery as string) || 1);
     const limitNum = Math.min(50, Math.max(1, parseInt(limitQuery as string) || 8));
     const offsetNum = (pageNum - 1) * limitNum;
@@ -304,15 +306,25 @@ router.get('/ads', async (req, res) => {
     let query = `
       SELECT b.*,
         (CASE WHEN b.is_boosted AND (b.boosted_until IS NULL OR b.boosted_until > NOW()) THEN TRUE ELSE FALSE END) as is_boosted_active,
-        u.name as u_name, u.avatar as u_avatar,
-        bp.name as page_name, bp.avatar_url as page_avatar, bp.cover_url as page_cover, 
+        u.name as u_name, u.avatar as u_avatar, u.email as u_email,
+        bp.name as page_name, bp.avatar_url as page_avatar, bp.cover_url as page_cover, bp.slug as page_slug,
         (CASE WHEN bp.is_verified = TRUE OR u.kyc_status = 'verified' THEN TRUE ELSE FALSE END) as page_is_verified
       FROM bulletin_ads b
       LEFT JOIN users u ON b.user_id = u.id
       LEFT JOIN bulletin_pages bp ON b.page_id = bp.id
-      WHERE b.status = 'approved' AND b.ad_format != 'story'
+      WHERE b.status = 'approved' AND b.ad_format != 'story' AND b.deleted_at IS NULL AND b.archived_at IS NULL
     `;
     const params: any[] = [];
+
+    // Strict commercial page isolation
+    if (queryPageId) {
+      params.push(parseInt(queryPageId as string, 10) || -1);
+      query += ` AND b.page_id = $${params.length}`;
+    } else if (profile_only === 'true' && queryUserId) {
+      // Strict user personal profile isolation (exclude business page posts)
+      params.push(parseInt(queryUserId as string, 10) || -1);
+      query += ` AND b.user_id = $${params.length} AND b.page_id IS NULL`;
+    }
 
     if (category && category !== 'all' && category !== 'الكل') {
       params.push(category);
@@ -435,6 +447,8 @@ router.get('/ads', async (req, res) => {
         location_city: row.location_city || 'فلسطين',
         author_name: row.page_name || row.u_name || row.author_name || 'مستخدم بيربليكستا',
         author_avatar: row.page_avatar || row.u_avatar || row.author_avatar || null,
+        author_username: row.page_slug || row.author_username || (row.u_email ? row.u_email.split('@')[0] : null) || 'user',
+        post_code: row.post_code || `PX-${row.id}`,
         title: row.title,
         description: row.description,
         image_url: row.image_url,
@@ -494,6 +508,102 @@ router.get('/ads', async (req, res) => {
   } catch (error: any) {
     console.error('[Bulletin API] Error fetching ads:', error.message);
     res.status(500).json({ error: 'Failed to retrieve bulletin advertisements' });
+  }
+});
+
+/**
+ * GET /api/bulletin/ads/code/:postCode
+ * Retrieve a post by its post_code or numeric ID
+ */
+router.get('/ads/code/:postCode', async (req: any, res: any) => {
+  try {
+    const { postCode } = req.params;
+    const numericId = parseInt(postCode, 10) || -1;
+    const query = `
+      SELECT b.*,
+        (CASE WHEN b.is_boosted AND (b.boosted_until IS NULL OR b.boosted_until > NOW()) THEN TRUE ELSE FALSE END) as is_boosted_active,
+        u.name as u_name, u.avatar as u_avatar, u.email as u_email,
+        bp.name as page_name, bp.avatar_url as page_avatar, bp.cover_url as page_cover, bp.slug as page_slug,
+        (CASE WHEN bp.is_verified = TRUE OR u.kyc_status = 'verified' THEN TRUE ELSE FALSE END) as page_is_verified
+      FROM bulletin_ads b
+      LEFT JOIN users u ON b.user_id = u.id
+      LEFT JOIN bulletin_pages bp ON b.page_id = bp.id
+      WHERE (b.post_code = $1 OR b.id = $2) AND b.deleted_at IS NULL
+      LIMIT 1
+    `;
+    const result = await pool.query(query, [postCode, numericId]);
+    if (result.rows.length === 0) {
+      return res.status(404).json({ error: 'المنشور غير موجود / Post not found' });
+    }
+    const ad = result.rows[0];
+    if (ad.page_id && ad.page_name) {
+      ad.author_name = ad.page_name;
+      ad.author_avatar = ad.page_avatar;
+      ad.author_username = ad.page_slug;
+    } else if (ad.u_name) {
+      ad.author_name = ad.u_name;
+      ad.author_avatar = ad.u_avatar;
+      ad.author_username = ad.author_username || (ad.u_email ? ad.u_email.split('@')[0] : ad.u_name);
+    }
+    return res.json(ad);
+  } catch (error) {
+    console.error('[Bulletin API] Error fetching post by code:', error);
+    return res.status(500).json({ error: 'Failed to retrieve post by code' });
+  }
+});
+
+/**
+ * GET /api/bulletin/pages/slug/:slug
+ * Retrieve a commercial page by slug or numeric ID
+ */
+router.get('/pages/slug/:slug', async (req: any, res: any) => {
+  try {
+    const { slug } = req.params;
+    const numericId = parseInt(slug, 10) || -1;
+    const query = `
+      SELECT bp.*, u.name as owner_name, u.email as owner_email, u.avatar as owner_avatar
+      FROM bulletin_pages bp
+      LEFT JOIN users u ON (bp.owner_id = u.id OR bp.user_id = u.id)
+      WHERE bp.slug = $1 OR bp.id = $2
+      LIMIT 1
+    `;
+    const result = await pool.query(query, [slug, numericId]);
+    if (result.rows.length === 0) {
+      return res.status(404).json({ error: 'الصفحة غير موجودة / Page not found' });
+    }
+    const page = result.rows[0];
+
+    const adsRes = await pool.query(
+      `SELECT b.*,
+         bp.name as page_name, bp.avatar_url as page_avatar, bp.cover_url as page_cover, 
+         (CASE WHEN bp.is_verified = TRUE OR u.kyc_status = 'verified' THEN TRUE ELSE FALSE END) as page_is_verified
+       FROM bulletin_ads b
+       LEFT JOIN users u ON b.user_id = u.id
+       LEFT JOIN bulletin_pages bp ON b.page_id = bp.id
+       WHERE b.page_id = $1 AND b.status = 'approved' AND b.deleted_at IS NULL AND b.archived_at IS NULL AND b.ad_format != 'story'
+       ORDER BY b.created_at DESC`,
+      [page.id]
+    );
+
+    return res.json({
+      success: true,
+      page: {
+        ...page,
+        followers_count: Number(page.followers_count || 0),
+        ads_count: Number(page.ads_count || 0)
+      },
+      ads: adsRes.rows.map((row: any) => ({
+        ...row,
+        page_name: page.name,
+        page_avatar: page.avatar_url,
+        page_cover: page.cover_url,
+        page_is_verified: page.is_verified,
+        hashtags: row.hashtags ? row.hashtags.split(',').map((t: string) => t.trim()).filter(Boolean) : []
+      }))
+    });
+  } catch (error) {
+    console.error('[Bulletin API] Error fetching page by slug:', error);
+    return res.status(500).json({ error: 'Failed to retrieve page by slug' });
   }
 });
 
@@ -799,12 +909,23 @@ router.post('/ads', authenticateToken, async (req: any, res) => {
 
     const expiresAt = validFormat === 'story' ? new Date(Date.now() + 24 * 60 * 60 * 1000) : null;
 
+    const newPostCode = 'PX-' + Math.random().toString(36).substring(2, 8).toUpperCase();
+    let authorUsername = null;
+    if (validPageId) {
+      const pageInfo = await pool.query('SELECT slug, name FROM bulletin_pages WHERE id = $1', [validPageId]);
+      authorUsername = pageInfo.rows[0]?.slug || pageInfo.rows[0]?.name?.toLowerCase().replace(/[^\w\u0600-\u06FF]/g, '') || 'page';
+    } else {
+      const userInfo = await pool.query('SELECT username, name FROM users WHERE id = $1', [userId]);
+      authorUsername = userInfo.rows[0]?.username || userInfo.rows[0]?.name?.toLowerCase().replace(/[^\w\u0600-\u06FF]/g, '') || 'user';
+    }
+
     const insertRes = await pool.query(`
       INSERT INTO bulletin_ads (
         user_id, page_id, location_city, author_name, author_avatar, title, description, image_url,
         whatsapp_number, phone_number, video_url, target_url, hashtags, category, price_paid, duration_days, status,
-        feeling, is_ai_generated, tagged_users, has_whatsapp_button, audience, ad_format, quick_questions, expires_at, aspect_ratio, metadata
-      ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, 0, 0, 'approved', $15, $16, $17, $18, $19, $20, $21, $22, $23, $24)
+        feeling, is_ai_generated, tagged_users, has_whatsapp_button, audience, ad_format, quick_questions, expires_at, aspect_ratio, metadata,
+        post_code, author_username
+      ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, 0, 0, 'approved', $15, $16, $17, $18, $19, $20, $21, $22, $23, $24, $25, $26)
       RETURNING *
     `, [
       userId,
@@ -830,7 +951,9 @@ router.post('/ads', authenticateToken, async (req: any, res) => {
       JSON.stringify((quick_questions || []).filter(Boolean)),
       expiresAt,
       aspect_ratio || 'grid',
-      JSON.stringify(metadataToSave)
+      JSON.stringify(metadataToSave),
+      newPostCode,
+      authorUsername
     ]);
 
     const createdAd = insertRes.rows[0];
@@ -2105,7 +2228,13 @@ router.get('/pages/:id', async (req, res) => {
       } catch (e) {}
     }
 
-    const pageRes = await pool.query('SELECT * FROM bulletin_pages WHERE id = $1', [pageId]);
+    const pageRes = await pool.query(
+      `SELECT bp.*, u.name as owner_name, u.avatar as owner_avatar, COALESCE(u.name, u.email) as owner_username, u.email as owner_email
+       FROM bulletin_pages bp
+       LEFT JOIN users u ON (bp.owner_id = u.id OR bp.user_id = u.id)
+       WHERE bp.id = $1`,
+      [pageId]
+    );
     if (pageRes.rows.length === 0) {
       return res.status(404).json({ error: 'الصفحة التجارية غير موجودة' });
     }
@@ -2128,9 +2257,9 @@ router.get('/pages/:id', async (req, res) => {
        FROM bulletin_ads b
        LEFT JOIN users u ON b.user_id = u.id
        LEFT JOIN bulletin_pages bp ON b.page_id = bp.id
-       WHERE (b.page_id = $1 OR (b.user_id = $2 AND b.page_id IS NULL)) AND b.status = 'approved' AND b.ad_format != 'story'
+       WHERE b.page_id = $1 AND b.status = 'approved' AND b.deleted_at IS NULL AND b.archived_at IS NULL AND b.ad_format != 'story'
        ORDER BY b.created_at DESC`,
-      [pageId, page.user_id]
+      [pageId]
     );
 
     res.json({
@@ -2153,6 +2282,65 @@ router.get('/pages/:id', async (req, res) => {
   } catch (error: any) {
     console.error('[Bulletin Pages API] Single page fetch error:', error.message);
     res.status(500).json({ error: 'فشل جلب تفاصيل الصفحة التجارية' });
+  }
+});
+
+router.get('/users/:id/wall', async (req, res) => {
+  try {
+    const userId = parseInt(req.params.id, 10);
+    if (isNaN(userId)) {
+      return res.status(400).json({ error: 'معرّف المستخدم غير صالح' });
+    }
+
+    const userRes = await pool.query(
+      `SELECT id, name, avatar, cover_image, bio, occupation, location, website_url, custom_domain, is_domain_verified, social_links, verified_links, email, role, kyc_status, created_at FROM users WHERE id = $1`,
+      [userId]
+    );
+
+    if (userRes.rows.length === 0) {
+      return res.status(404).json({ error: 'المستخدم غير موجود' });
+    }
+
+    const userInfo = userRes.rows[0];
+
+    const postsCountRes = await pool.query(
+      `SELECT COUNT(*)::int as count FROM bulletin_ads WHERE user_id = $1 AND page_id IS NULL AND status = 'approved' AND deleted_at IS NULL AND archived_at IS NULL AND ad_format != 'story'`,
+      [userId]
+    );
+
+    const pagesCountRes = await pool.query(
+      `SELECT COUNT(*)::int as count FROM bulletin_pages WHERE (user_id = $1 OR owner_id = $1)`,
+      [userId]
+    );
+
+    const adsRes = await pool.query(
+      `SELECT b.*,
+         u.name as u_name, u.avatar as u_avatar, u.email as u_email,
+         (CASE WHEN u.kyc_status = 'verified' THEN TRUE ELSE FALSE END) as page_is_verified
+       FROM bulletin_ads b
+       LEFT JOIN users u ON b.user_id = u.id
+       WHERE b.user_id = $1 AND b.page_id IS NULL AND b.status = 'approved' AND b.deleted_at IS NULL AND b.archived_at IS NULL AND b.ad_format != 'story'
+       ORDER BY b.created_at DESC`,
+      [userId]
+    );
+
+    res.json({
+      success: true,
+      user: {
+        ...userInfo,
+        posts_count: Number(postsCountRes.rows[0]?.count || 0),
+        pages_count: Number(pagesCountRes.rows[0]?.count || 0),
+      },
+      ads: adsRes.rows.map((row: any) => ({
+        ...row,
+        author_name: userInfo.name,
+        author_avatar: userInfo.avatar,
+        hashtags: row.hashtags ? row.hashtags.split(',').map((t: string) => t.trim()).filter(Boolean) : []
+      }))
+    });
+  } catch (error: any) {
+    console.error('[Bulletin API] User wall fetch error:', error.message);
+    res.status(500).json({ error: 'فشل جلب حائط المستخدم الشخصي' });
   }
 });
 
@@ -3220,10 +3408,72 @@ router.post('/ads/:id/report', authenticateToken, async (req: any, res) => {
       return res.status(400).json({ error: 'يرجى تحديد سبب الإبلاغ' });
     }
 
-    await pool.query(
-      'INSERT INTO bulletin_reports (user_id, ad_id, reason, details) VALUES ($1, $2, $3, $4)',
-      [userId, adId, reason, details]
+    // Prevent duplicate report spam from the same user for the same ad
+    const existingReport = await pool.query(
+      'SELECT id FROM bulletin_reports WHERE user_id = $1 AND ad_id = $2',
+      [userId, adId]
     );
+    if (existingReport.rows.length > 0) {
+      return res.status(400).json({ error: 'لقد قمت بالإبلاغ عن هذا المنشور سابقاً، وهو قيد المراجعة لدى الإدارة' });
+    }
+
+    const reportRes = await pool.query(
+      'INSERT INTO bulletin_reports (user_id, ad_id, reason, details) VALUES ($1, $2, $3, $4) RETURNING id',
+      [userId, adId, reason, details || null]
+    );
+
+    // Fetch ad info & reporter info for notifications
+    const adRes = await pool.query('SELECT b.id, b.description, b.title, u.name as author_name FROM bulletin_ads b LEFT JOIN users u ON b.user_id = u.id WHERE b.id = $1', [adId]);
+    const reporterRes = await pool.query('SELECT id, name, email FROM users WHERE id = $1', [userId]);
+
+    const adInfo = adRes.rows[0];
+    const reporterInfo = reporterRes.rows[0];
+
+    // Find all admin users to notify them via in-app & email
+    const adminsRes = await pool.query("SELECT id, email, name FROM users WHERE role IN ('admin', 'superadmin') OR is_admin = true");
+    const adminIds = adminsRes.rows.map((a: any) => a.id);
+
+    if (adminIds.length > 0) {
+      try {
+        const { dispatchNotification } = await import('../services/notifications.js');
+        const titleAr = `🚨 بلاغ جديد عن محتوى مخالف (منشور #${adId})`;
+        const titleEn = `🚨 New Post Violation Report (#${adId})`;
+        const messageAr = `قام المستخدم (${reporterInfo?.name || 'مستخدم'}) بالإبلاغ عن المنشور #${adId}. السبب: ${reason}${details ? ` - التفاصيل: ${details}` : ''}`;
+        const messageEn = `User (${reporterInfo?.name || 'User'}) reported post #${adId}. Reason: ${reason}${details ? ` - Details: ${details}` : ''}`;
+
+        const emailHtmlAr = `
+          <div style="font-family: Arial, sans-serif; direction: rtl; text-align: right; background-color: #0f172a; color: #f8fafc; padding: 24px; border-radius: 12px; border: 1px solid #334155;">
+            <h2 style="color: #ef4444; margin-top: 0;">🚨 بلاغ جديد عن محتوى مخالف في منصة بيربليكستا</h2>
+            <p>تلقى النظام بلاغاً جديداً من أحد المستخدمين ويتطلب مراجعتك الرقابية:</p>
+            <div style="background-color: #1e293b; padding: 16px; border-radius: 8px; border-right: 4px solid #ef4444; margin: 16px 0;">
+              <p style="margin: 6px 0;"><strong>رقم المنشور:</strong> #${adId}</p>
+              <p style="margin: 6px 0;"><strong>المُبْلِغ:</strong> ${escapeHtml(reporterInfo?.name || '')} (${escapeHtml(reporterInfo?.email || '')})</p>
+              <p style="margin: 6px 0;"><strong>سبب الإبلاغ:</strong> <span style="color: #f87171; font-weight: bold;">${escapeHtml(reason)}</span></p>
+              ${details ? `<p style="margin: 6px 0;"><strong>تفاصيل إضافية:</strong> ${escapeHtml(details)}</p>` : ''}
+              ${(adInfo?.description || adInfo?.title) ? `<p style="margin: 6px 0;"><strong>نص المنشور:</strong> ${escapeHtml((adInfo.description || adInfo.title || '').slice(0, 250))}</p>` : ''}
+            </div>
+            <p style="color: #94a3b8; font-size: 13px;">يمكنك الدخول إلى لوحة التحكم واتخاذ الإجراء المناسب (حظر المنشور، حذف، أو حفظ البلاغ).</p>
+          </div>
+        `;
+
+        await dispatchNotification(
+          adminIds,
+          'content_report',
+          titleEn,
+          titleAr,
+          messageEn,
+          messageAr,
+          { ad_id: adId, report_id: reportRes.rows[0]?.id, reason, details },
+          {
+            sendEmail: true,
+            emailBodyAr: emailHtmlAr,
+            emailBody: emailHtmlAr
+          }
+        );
+      } catch (notifyErr: any) {
+        console.warn('[Bulletin API] Non-fatal notification error on report:', notifyErr.message);
+      }
+    }
 
     res.json({ success: true, message: 'تم إرسال بلاغك بنجاح وسيتم مراجعته من قبل الإدارة' });
   } catch (error: any) {

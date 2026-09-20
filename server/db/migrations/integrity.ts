@@ -193,14 +193,15 @@ export async function migrateMediaAssetsData() {
             else if (uFile.mime_type?.startsWith('audio/')) mContext = 'audio';
             else if (uFile.mime_type === 'application/pdf') mContext = 'document';
 
+            const integrityAssetId = crypto.randomUUID();
             await targetMediaPool.query(`
               INSERT INTO media_assets (
-                stored_path, original_filename, context, format, width, height, size_bytes,
+                id, stored_path, original_filename, context, format, width, height, size_bytes,
                 sha256_hash, is_public, user_id, metadata, file_data, created_at
-              ) VALUES ($1, $2, $3, $4, 0, 0, $5, $6, true, $7, $8, $9, $10)
+              ) VALUES ($1, $2, $3, $4, $5, 0, 0, $6, $7, true, $8, $9, $10, $11)
               ON CONFLICT (stored_path) DO NOTHING
             `, [
-              storedPath, uFile.file_name || 'media', mContext, uFile.file_type || 'general',
+              integrityAssetId, storedPath, uFile.file_name || 'media', mContext, uFile.file_type || 'general',
               uFile.file_size || 0, shaHash, uFile.user_id || null,
               typeof uFile.metadata === 'object' ? JSON.stringify(uFile.metadata) : (uFile.metadata || '{}'),
               uFile.file_data || null, uFile.created_at || new Date()

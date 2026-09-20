@@ -23,6 +23,25 @@ export interface User {
   name: string;
   email: string;
   avatar?: string;
+  cover_image?: string | null;
+  bio?: string;
+  occupation?: string;
+  location?: string;
+  website_url?: string;
+  custom_domain?: string;
+  is_domain_verified?: boolean;
+  social_links?: {
+    facebook?: string;
+    instagram?: string;
+    linkedin?: string;
+    twitter?: string;
+    whatsapp?: string;
+    youtube?: string;
+    github?: string;
+    website?: string;
+    [key: string]: string | undefined;
+  };
+  verified_links?: string[];
   role?: string;
   kyc_required?: boolean;
   kyc_status?: 'pending' | 'verified' | 'rejected' | 'none';

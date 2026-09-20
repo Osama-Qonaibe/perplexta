@@ -40,7 +40,10 @@ This identity serves as our compass. Every engineering decision—from the "Sile
 
 ## 0.1. Current Architectural Achievements (State of the Union)
 - **Dynamic Local SSL Handshake**: Automated context-aware Postgres SSL management (disables SSL on localhost to prevent handshake errors, while enforcing full secure SSL on cloud platforms like AWS and Neon).
-- **Synchronous Session Lifecycle**: Smooth, instantaneous auth-state updates with zero layout flickering, utilizing synchronous front-end cache flushes and graceful transition animations (1.1s Slow-Motion duration).
+- **Synchronous Session Lifecycle & Page Refresh Resilience**: Smooth, instantaneous auth-state updates with zero layout flickering, client-side token revalidation on page refresh, and synchronous cache flushes across mobile and desktop browsers.
+- **Client-Side Smart Image Optimization Pipeline**: Real-time HTML5 canvas aspect-ratio cropping (3:1 cover/banner ratio, 1:1 avatar/logo ratio) with lightweight WebP compression (`imageOptimizer.ts`) ensuring zero layout shift and lightweight server storage.
+- **Role-Gated Post Options & Professional Moderation**: Strict role isolation in `PostOptionsMenu.tsx` (owners receive full post controls while non-owners receive interactive controls and professional 7-category moderation reporting).
+- **Categorized Moderation & Automated Alert System**: Backend duplicate-protected reporting pipeline (`/api/bulletin/ads/:id/report`) with real-time in-app admin notifications and formatted HTML email dispatches with post content previews.
 - **File Upload & Ingestion Pipeline**: Full 100MB capacity support with strict multi-layer file size validations and resilient PDF parser integrations.
 - **Audited Wallet Ledger & API Credits**: Append-only transaction logging with instant credit check and 402 Insufficient Balance rejection workflows.
 
@@ -186,6 +189,8 @@ All operations strictly interface with the Core Database schema across 10 dedica
 #### 4. Strict Adherence & Evolution Directive (أمر صارم وملزم للتطوير المستقبلي)
 - **MANDATORY PRESERVATION OF APPROVED IDENTITY**: Any future developer or AI assistant working on the Bulletin Board is **STRICTLY PROHIBITED** from altering, stripping, or replacing the Facebook-standard layout, the approved color tokens (`SOCIAL_COLORS`), the verified page structure, or the multi-tab navigation model.
 - **ZERO MOCK / SIMULATION ENFORCEMENT**: Never re-introduce simulated response questions, fake metrics, or client-side placeholder counters. Every element must be directly connected to the PostgreSQL schema and the real-time notification engine.
+- **ROLE-ISOLATED OPTIONS MENU**: Post option dropdowns (`PostOptionsMenu.tsx`) MUST strictly distinguish between post owners/admins (full management, audience, comment controls, archive/trash) and guests/non-owners (save, mute notifications, embed, hide, 7-category moderation reporting).
+- **CLIENT-SIDE IMAGE OPTIMIZATION**: All page cover photos (3:1 aspect ratio), profile/avatar images (1:1 ratio), and post media MUST be processed through `imageOptimizer.ts` prior to upload to enforce light file sizes, fast WebP compression, and consistent card dimensions without button distortion.
 - **UNIFIED NOTIFICATION & DEEP LINKING INTEGRATION**: All content state mutations (publishing, boosting, deleting, reporting) must dispatch through the server-authoritative WebSocket notification engine and deep-link directly to the live post route (`/bulletin/:ad_id`).
 - **EXTENSION-ONLY EXPANSION**: Any enhancements—such as advanced sentiment analytics, enhanced video transcoding, or commercial checkout links—must build *on top* of the existing 10 relational tables and current React component architecture without breaking backward compatibility or database segregation.
 

@@ -1,4 +1,5 @@
 import { secureStorage } from "@/lib/storage";
+import { getPostShareUrl, getPageShareUrl, getPostShareText, getPageShareText } from "@/utils/shareUtils";
 import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { createPortal } from 'react-dom';
 import { useModalScrollLock } from '../hooks/useModalScrollLock';
@@ -8,11 +9,11 @@ import {
   Megaphone, Plus, Search, Heart, MessageSquare, Share2, Bookmark, Gift,
   Phone, Video, CheckCircle2, Eye, Sparkles,
   Send, X, Wallet, Tag, MessageCircle, Building2, MapPin, Globe, Type,
-  UserCheck, UserPlus, Inbox, ArrowRight, ArrowLeft, ShieldCheck, Camera,
+  UserCheck, UserPlus, Inbox, ArrowRight, ArrowLeft, ShieldCheck, Camera, User, Calendar,
   Image as ImageIcon, Filter, ChevronLeft, ChevronRight, Layers, Loader2, BarChart2, ArrowUp, ArrowDown, RefreshCw, Rocket,
   Radio, Clapperboard, Bell, Menu, SlidersHorizontal, Trash2, Ban, Volume2, VolumeX,
   Smile, Users, Compass, ChevronDown, Check, Navigation, Lock, Scissors, Edit2, Upload,
-  AtSign, Hash, Settings, Cpu, ArrowUpDown, Languages, MessageSquareText, Copy
+  AtSign, Hash, Settings, Cpu, ArrowUpDown, Languages, MessageSquareText, Copy, Briefcase, Link, ExternalLink, CheckCircle
 } from 'lucide-react';
 import { resolveImageUrl } from '../utils/imageResolver';
 import { NotificationIconRenderer } from '../utils/imageProcessor';
@@ -40,6 +41,7 @@ import { MediaLightboxModal, LightboxMediaItem } from '../components/MediaLightb
 import { triggerHaptic } from '../utils/haptics';
 import { BulletinAvatar } from '../components/BulletinAvatar';
 import { ImageUploadDropzone } from '../components/ImageUploadDropzone';
+import { optimizeImageUpload, RECOMMENDED_IMAGE_SPECS } from '../utils/imageOptimizer';
 import { extractVideoMetadata, extractVideoThumbnail, getRecommendedDimensions, getMediaUrl, compressAndResizeImage, extractVideoUrlFromAd } from '../utils/mediaUtils';
 import { stopAllMedia, getGlobalMuteState, setGlobalMuteState } from '../utils/mediaCoordinator';
 import { SOCIAL_COLORS } from '../constants/socialColors';
@@ -586,6 +588,29 @@ export const BulletinBoardPage: React.FC = () => {
   const [pagesLoading, setPagesLoading] = useState<boolean>(false);
 
   const [selectedPageDetail, setSelectedPageDetail] = useState<{ page: BulletinPage; ads: BulletinAd[] } | null>(null);
+  const [selectedUserDetail, setSelectedUserDetail] = useState<{
+    user: {
+      id: number;
+      name: string;
+      avatar?: string;
+      cover_image?: string | null;
+      bio?: string;
+      occupation?: string;
+      location?: string;
+      website_url?: string;
+      custom_domain?: string;
+      is_domain_verified?: boolean;
+      social_links?: Record<string, string>;
+      verified_links?: string[];
+      email?: string;
+      kyc_status?: string;
+      role?: string;
+      created_at?: Date | string;
+      posts_count?: number;
+      pages_count?: number;
+    };
+    ads: BulletinAd[];
+  } | null>(null);
   const [pageDetailTab, setPageDetailTab] = useState<'ads' | 'about' | 'media'>('ads');
 
   const [isProfileEditModalOpen, setIsProfileEditModalOpen] = useState<boolean>(false);
@@ -597,7 +622,24 @@ export const BulletinBoardPage: React.FC = () => {
   const [profileFormData, setProfileFormData] = useState({
     name: '',
     avatar: '',
+    cover_image: '',
     email: '',
+    occupation: '',
+    location: '',
+    bio: '',
+    website_url: '',
+    custom_domain: '',
+    is_domain_verified: false,
+    social_links: {
+      facebook: '',
+      instagram: '',
+      linkedin: '',
+      twitter: '',
+      whatsapp: '',
+      youtube: '',
+      github: ''
+    },
+    verified_links: [] as string[],
     custom_instructions: '',
     language: 'ar',
     theme: 'light'
@@ -607,6 +649,36 @@ export const BulletinBoardPage: React.FC = () => {
   const [kycIDNumber, setKycIDNumber] = useState<string>('');
   const [kycSelfieUrl, setKycSelfieUrl] = useState<string>('');
   const [kycTab, setKycTab] = useState<'info' | 'kyc'>('info');
+
+  useEffect(() => {
+    if (isProfileEditModalOpen && user) {
+      setProfileFormData({
+        name: user.name || '',
+        avatar: user.avatar || '',
+        cover_image: user.cover_image || '',
+        email: user.email || '',
+        occupation: user.occupation || '',
+        location: user.location || '',
+        bio: user.bio || user.custom_instructions || '',
+        website_url: user.website_url || '',
+        custom_domain: user.custom_domain || '',
+        is_domain_verified: !!user.is_domain_verified,
+        social_links: {
+          facebook: user.social_links?.facebook || '',
+          instagram: user.social_links?.instagram || '',
+          linkedin: user.social_links?.linkedin || '',
+          twitter: user.social_links?.twitter || '',
+          whatsapp: user.social_links?.whatsapp || '',
+          youtube: user.social_links?.youtube || '',
+          github: user.social_links?.github || ''
+        },
+        verified_links: user.verified_links || [],
+        custom_instructions: user.custom_instructions || '',
+        language: (user as any).language || language || 'ar',
+        theme: (user as any).theme || theme || 'light'
+      });
+    }
+  }, [isProfileEditModalOpen, user]);
 
   const [editPageFormData, setEditPageFormData] = useState({
     name: '',
@@ -653,15 +725,7 @@ export const BulletinBoardPage: React.FC = () => {
   }, [editingPageData]);
 
   useEffect(() => {
-    if (user) {
-      setProfileFormData({
-        name: user.name || '',
-        avatar: user.avatar || '',
-        email: user.email || '',
-        custom_instructions: user.custom_instructions || '',
-        language: (user as any).language || language || 'ar',
-        theme: (user as any).theme || theme || 'light'
-      });
+    if (user && isProfileEditModalOpen) {
       setKycFullName('');
       setKycIDNumber('');
       setKycSelfieUrl('');
@@ -1242,49 +1306,63 @@ export const BulletinBoardPage: React.FC = () => {
   };
 
   useEffect(() => {
-    let targetPostId: number | null = null;
+    if (typeof window === 'undefined') return;
+    const pathname = window.location.pathname;
 
-    if (routeIdParam && !isNaN(Number(routeIdParam))) {
-      targetPostId = Number(routeIdParam);
-    } else if (subPath && !isNaN(Number(subPath))) {
-      targetPostId = Number(subPath);
-    } else if (subId && !isNaN(Number(subId))) {
-      targetPostId = Number(subId);
-    } else if (typeof window !== 'undefined') {
-      const pathMatch = window.location.pathname.match(/^\/(?:viralbook|bulletin)\/(\d+)$/i);
-      if (pathMatch && pathMatch[1]) {
-        targetPostId = Number(pathMatch[1]);
+    // 1. Check for Commercial Page route: /viralbook/page/:slug or /viralbook/pages/:slug
+    const pageMatch = pathname.match(/\/(?:viralbook|bulletin)\/pages?\/([^\/]+)/i);
+    if (pageMatch && pageMatch[1]) {
+      const pageSlug = decodeURIComponent(pageMatch[1]);
+      handleOpenPageDetail(pageSlug);
+      return;
+    }
+
+    // 1b. Check for User Personal Profile Wall route: /viralbook/u/:userId or /u/:userId
+    const userMatch = pathname.match(/\/(?:viralbook|bulletin)\/u(?:ser)?\/([^\/]+)/i) || pathname.match(/\/u\/([^\/]+)/i);
+    if (userMatch && userMatch[1]) {
+      const targetUserId = decodeURIComponent(userMatch[1]);
+      handleOpenUserDetail(targetUserId);
+      return;
+    }
+
+    // 2. Check for Post code/id route
+    let targetPostCode: string | null = null;
+    if (routeIdParam && routeIdParam !== 'reels' && routeIdParam !== 'pages' && routeIdParam !== 'page' && routeIdParam !== 'inquiries') {
+      targetPostCode = routeIdParam;
+    } else {
+      const postMatch = pathname.match(/\/(?:viralbook|bulletin)\/(?:p|post)\/(?:[^\/]+\/)?([^\/]+)/i) ||
+                        pathname.match(/\/(?:viralbook|bulletin)\/([A-Za-z0-9_-]+)/i);
+      if (postMatch && postMatch[1] && !['reels', 'pages', 'page', 'inquiries', 'my-ads', 'analytics', 'saved'].includes(postMatch[1])) {
+        targetPostCode = decodeURIComponent(postMatch[1]);
       }
     }
 
-    if (!targetPostId && typeof window !== 'undefined') {
+    if (!targetPostCode) {
       const urlParams = new URLSearchParams(window.location.search);
-      const postStr = urlParams.get('post') || urlParams.get('id');
-      if (postStr && !isNaN(Number(postStr))) {
-        targetPostId = Number(postStr);
-      }
+      const postStr = urlParams.get('post') || urlParams.get('id') || urlParams.get('ad');
+      if (postStr) targetPostCode = postStr;
     }
 
-    if (targetPostId && targetPostId > 0) {
-      const postId = targetPostId;
+    if (targetPostCode) {
+      const codeOrId = targetPostCode;
       const fetchDirectPost = async () => {
         try {
-          const res = await fetch(`/api/bulletin/ads/${postId}`, {
+          const res = await fetch(`/api/bulletin/ads/code/${encodeURIComponent(codeOrId)}`, {
             headers: token ? { Authorization: `Bearer ${token}` } : {}
           });
           const data = await res.json();
-          if (data.success && data.ad) {
-            const ad = data.ad;
+          const ad = data.ad || (data.id ? data : null);
+          if (ad) {
             const mediaUrl = getMediaUrl(ad.video_url || ad.image_url);
             handleOpenLightbox(mediaUrl, ad.media_gallery, 0, ad.title, ad.author_name, ad);
 
             try {
-              const cRes = await fetch(`/api/bulletin/ads/${postId}/comments`, {
+              const cRes = await fetch(`/api/bulletin/ads/${ad.id}/comments`, {
                 headers: token ? { Authorization: `Bearer ${token}` } : {}
               });
               const cData = await cRes.json();
               if (cData.success) {
-                setCommentsMap(prev => ({ ...prev, [postId]: cData.comments || [] }));
+                setCommentsMap(prev => ({ ...prev, [ad.id]: cData.comments || [] }));
               }
             } catch (cErr) {
               console.error('Failed to fetch direct post comments:', cErr);
@@ -1296,7 +1374,7 @@ export const BulletinBoardPage: React.FC = () => {
       };
       fetchDirectPost();
     }
-  }, [token, routeIdParam, subPath, subId]);
+  }, [token, routeIdParam, subPath, subId, location.pathname]);
 
   useEffect(() => {
     let targetReelId: number | null = null;
@@ -1852,14 +1930,26 @@ export const BulletinBoardPage: React.FC = () => {
     }
   };
 
-  const handleOpenPageDetail = async (pageId: number) => {
+  const handleOpenPageDetail = async (pageIdentifier: number | string) => {
     try {
-      const res = await fetch(`/api/bulletin/pages/${pageId}`, {
+      const isSlug = typeof pageIdentifier === 'string' && isNaN(Number(pageIdentifier));
+      const endpoint = isSlug
+        ? `/api/bulletin/pages/slug/${encodeURIComponent(pageIdentifier)}`
+        : `/api/bulletin/pages/${pageIdentifier}`;
+      const res = await fetch(endpoint, {
         headers: token ? { Authorization: `Bearer ${token}` } : {}
       });
       const data = await res.json();
-      if (data.success) {
-        setSelectedPageDetail({ page: data.page, ads: data.ads || [] });
+      if (data.success || data.id) {
+        const pageObj = data.page || data;
+        let pageAds: BulletinAd[] = data.ads || [];
+        if (!data.ads) {
+          const adsRes = await fetch(`/api/bulletin/ads?page_id=${pageObj.id}`);
+          const adsData = await adsRes.json();
+          pageAds = adsData.ads || [];
+        }
+        setSelectedUserDetail(null);
+        setSelectedPageDetail({ page: pageObj, ads: pageAds });
         setPageDetailTab('ads');
         window.scrollTo({ top: 180, behavior: 'smooth' });
       } else {
@@ -1870,8 +1960,40 @@ export const BulletinBoardPage: React.FC = () => {
     }
   };
 
+  const handleOpenUserDetail = async (userIdentifier: number | string) => {
+    try {
+      setLoading(true);
+      const res = await fetch(`/api/bulletin/users/${encodeURIComponent(userIdentifier)}/wall`, {
+        headers: token ? { Authorization: `Bearer ${token}` } : {}
+      });
+      const data = await res.json();
+      if (data.success && data.user) {
+        setSelectedPageDetail(null);
+        setSelectedUserDetail({
+          user: data.user,
+          ads: data.ads || []
+        });
+        window.scrollTo({ top: 120, behavior: 'smooth' });
+        const cleanUrl = `/viralbook/u/${data.user.id}`;
+        if (typeof window !== 'undefined' && window.location.pathname !== cleanUrl) {
+          window.history.pushState({}, '', cleanUrl);
+        }
+      } else {
+        toast.error(data.error || (isRtl ? 'تعذر فتح الملف الشخصي' : 'Could not open user wall'));
+      }
+    } catch (e) {
+      toast.error(isRtl ? 'تعذر تحميل حائط المستخدم' : 'Failed to load user wall');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const handleBackToBoard = () => {
     setSelectedPageDetail(null);
+    setSelectedUserDetail(null);
+    if (typeof window !== 'undefined' && (window.location.pathname.includes('/u/') || window.location.pathname.includes('/pages/'))) {
+      window.history.pushState({}, '', '/viralbook');
+    }
   };
 
   const handleToggleCommentLike = async (adId: number, commentId: number, reaction: string = 'like') => {
@@ -3024,13 +3146,42 @@ export const BulletinBoardPage: React.FC = () => {
         },
         body: JSON.stringify({
           name: profileFormData.name,
+          email: profileFormData.email,
           avatar: profileFormData.avatar,
-          custom_instructions: profileFormData.custom_instructions
+          cover_image: profileFormData.cover_image,
+          occupation: profileFormData.occupation,
+          location: profileFormData.location,
+          bio: profileFormData.bio,
+          custom_instructions: profileFormData.bio,
+          website_url: profileFormData.website_url,
+          custom_domain: profileFormData.custom_domain,
+          is_domain_verified: profileFormData.is_domain_verified,
+          social_links: profileFormData.social_links,
+          verified_links: profileFormData.verified_links
         })
       });
       if (res.ok) {
-        toast.success(isRtl ? 'تم تحديث ملفك الشخصي بنجاح! ✨' : 'Profile updated successfully!');
+        toast.success(isRtl ? 'تم تحديث الملف الشخصي والإعدادات بنجاح! ✨' : 'Profile & settings updated successfully!');
         await refreshUser();
+        if (selectedUserDetail && user && selectedUserDetail.user.id === user.id) {
+          setSelectedUserDetail(prev => prev ? {
+            ...prev,
+            user: {
+              ...prev.user,
+              name: profileFormData.name,
+              avatar: profileFormData.avatar,
+              cover_image: profileFormData.cover_image,
+              occupation: profileFormData.occupation,
+              location: profileFormData.location,
+              bio: profileFormData.bio,
+              website_url: profileFormData.website_url,
+              custom_domain: profileFormData.custom_domain,
+              is_domain_verified: profileFormData.is_domain_verified,
+              social_links: profileFormData.social_links,
+              verified_links: profileFormData.verified_links
+            }
+          } : null);
+        }
         setIsProfileEditModalOpen(false);
       } else {
         const err = await res.json();
@@ -3047,11 +3198,25 @@ export const BulletinBoardPage: React.FC = () => {
     const file = e.target.files?.[0];
     if (!file) return;
     try {
-      const url = await handleUploadFile(file);
+      const optimized = await optimizeImageUpload(file, { maxWidth: 400, maxHeight: 400, aspectRatio: 1 });
+      const url = await handleUploadFile(optimized);
       setProfileFormData(prev => ({ ...prev, avatar: url }));
-      toast.success(isRtl ? 'تم رفع الصورة بنجاح' : 'Avatar uploaded successfully');
+      toast.success(isRtl ? 'تم قص وتجهيز الصورة الشخصية بنجاح 📸' : 'Avatar optimized & uploaded successfully');
     } catch (err: any) {
       toast.error(err.message || (isRtl ? 'فشل رفع الصورة' : 'Failed to upload image'));
+    }
+  };
+
+  const handleCoverUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    try {
+      const optimized = await optimizeImageUpload(file, { maxWidth: 1200, maxHeight: 400, aspectRatio: 3 });
+      const url = await handleUploadFile(optimized);
+      setProfileFormData(prev => ({ ...prev, cover_image: url }));
+      toast.success(isRtl ? 'تم قص وتجهيز صورة الغلاف بنجاح 🖼️' : 'Cover image optimized & uploaded successfully');
+    } catch (err: any) {
+      toast.error(err.message || (isRtl ? 'فشل رفع صورة الغلاف' : 'Failed to upload cover image'));
     }
   };
 
@@ -3071,9 +3236,10 @@ export const BulletinBoardPage: React.FC = () => {
     const file = e.target.files?.[0];
     if (!file) return;
     try {
-      const url = await handleUploadFile(file);
+      const optimized = await optimizeImageUpload(file, { maxWidth: 400, maxHeight: 400, aspectRatio: 1 });
+      const url = await handleUploadFile(optimized);
       setEditPageFormData(prev => ({ ...prev, avatar_url: url }));
-      toast.success(isRtl ? 'تم رفع شعار الصفحة بنجاح' : 'Page avatar uploaded successfully');
+      toast.success(isRtl ? 'تم قص وتجهيز شعار الصفحة بنجاح 🎯' : 'Page avatar optimized & uploaded successfully');
     } catch (err: any) {
       toast.error(err.message || (isRtl ? 'فشل رفع الشعار' : 'Failed to upload avatar'));
     }
@@ -3083,9 +3249,10 @@ export const BulletinBoardPage: React.FC = () => {
     const file = e.target.files?.[0];
     if (!file) return;
     try {
-      const url = await handleUploadFile(file);
+      const optimized = await optimizeImageUpload(file, { maxWidth: 1200, maxHeight: 400, aspectRatio: 3 });
+      const url = await handleUploadFile(optimized);
       setEditPageFormData(prev => ({ ...prev, cover_url: url }));
-      toast.success(isRtl ? 'تم رفع غلاف الصفحة بنجاح' : 'Page cover uploaded successfully');
+      toast.success(isRtl ? 'تم قص وتجهيز غلاف الصفحة بنجاح 🖼️' : 'Page cover optimized & uploaded successfully');
     } catch (err: any) {
       toast.error(err.message || (isRtl ? 'فشل رفع الغلاف' : 'Failed to upload cover'));
     }
@@ -3166,7 +3333,7 @@ export const BulletinBoardPage: React.FC = () => {
   };
 
   const handleShareAd = async (ad: BulletinAd) => {
-    const shareUrl = `${window.location.origin}/viralbook/${ad.id}`;
+    const shareUrl = getPostShareUrl(ad);
 
     try {
       await fetch(`/api/bulletin/ads/${ad.id}/share`, {
@@ -4072,7 +4239,11 @@ export const BulletinBoardPage: React.FC = () => {
             <div className="ui-card-container flex flex-col gap-3 w-full">
               {user ? (
                 <div className="flex items-center justify-between pb-2.5 mb-1 border-b border-[var(--border-default)] gap-2.5 w-full">
-                  <div className="flex items-center gap-2.5 min-w-0 flex-1">
+                  <div
+                    className="flex items-center gap-2.5 min-w-0 flex-1 cursor-pointer hover:opacity-85 transition-opacity group"
+                    onClick={() => user?.id && handleOpenUserDetail(user.id)}
+                    title={isRtl ? 'عرض حائط الملف الشخصي المستقل' : 'View Profile Wall'}
+                  >
                     <BulletinAvatar
                       src={user.avatar}
                       alt={user.name}
@@ -4081,7 +4252,7 @@ export const BulletinBoardPage: React.FC = () => {
                     />
                     <div className="min-w-0 flex-1 flex items-center">
                       <div className="flex items-center gap-1.5 min-w-0">
-                        <h3 className="text-xs font-extrabold truncate">{user.name}</h3>
+                        <h3 className="text-xs font-extrabold truncate group-hover:text-accent transition-colors">{user.name}</h3>
                         <ShieldCheck size={14} className="text-accent shrink-0" />
                       </div>
                     </div>
@@ -4540,7 +4711,263 @@ export const BulletinBoardPage: React.FC = () => {
             {}
             {}
             {}
-            {selectedPageDetail ? (
+            {selectedUserDetail ? (
+              <motion.div
+                initial={{ opacity: 0, y: 15 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="rounded-[var(--radius-md)] bg-[var(--surface-card)] border border-[var(--border-default)] overflow-hidden space-y-4"
+              >
+                {/* Header Back Bar */}
+                <div className="p-3 bg-[var(--surface-subtle)] border-b border-[var(--border-default)] flex items-center justify-between">
+                  <button
+                    onClick={handleBackToBoard}
+                    className="px-3 py-1.5 rounded-[var(--radius-md)] bg-accent text-[var(--text-primary)] font-bold text-xs flex items-center gap-2 hover:opacity-90 transition-theme shadow"
+                  >
+                    {isRtl ? <ArrowRight size={16} /> : <ArrowLeft size={16} />}
+                    <span>{isRtl ? 'العودة إلى خلاصة بيربليكستا بورد' : 'Back to Perplexta Board Feed'}</span>
+                  </button>
+                  <span className="text-xs font-bold text-[var(--text-muted)] bg-[var(--surface-card)] px-3 py-1 rounded-full border border-[var(--border-default)] flex items-center gap-1.5">
+                    <User size={14} className="text-accent" />
+                    <span>{isRtl ? 'حائط ملف شخصي مستقل' : 'Independent Profile Wall'}</span>
+                  </span>
+                </div>
+
+                {/* Profile Card Header */}
+                <div className="px-4 pt-2 pb-4 border-b border-[var(--border-default)] space-y-4">
+                  {/* Cover Image Header */}
+                  <div className="relative h-32 sm:h-44 w-full rounded-xl bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 overflow-hidden mb-12 shadow-sm border border-[var(--border-default)]">
+                    {selectedUserDetail.user.cover_image ? (
+                      <img
+                        src={resolveImageUrl(selectedUserDetail.user.cover_image)}
+                        alt="Profile Cover"
+                        className="w-full h-full object-cover"
+                      />
+                    ) : (
+                      <div className="absolute inset-0 opacity-20 bg-[radial-gradient(#fff_1px,transparent_1px)] [background-size:16px_16px]" />
+                    )}
+                    <div className="absolute -bottom-10 right-4 sm:right-6 border-4 border-[var(--surface-card)] rounded-full shadow-lg bg-[var(--surface-card)]">
+                      <BulletinAvatar
+                        src={selectedUserDetail.user.avatar}
+                        alt={selectedUserDetail.user.name}
+                        size="xl"
+                        fallbackText={selectedUserDetail.user.name}
+                      />
+                    </div>
+                  </div>
+
+                  <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 px-2">
+                    <div className="space-y-1.5">
+                      <div className="flex flex-wrap items-center gap-2">
+                        <h2 className="text-xl font-black text-[var(--text-primary)]">{selectedUserDetail.user.name}</h2>
+                        {selectedUserDetail.user.kyc_status === 'verified' && (
+                          <span title={isRtl ? 'حساب موثق' : 'Verified Account'} className="inline-flex items-center gap-1 bg-accent/10 border border-accent/20 px-2 py-0.5 rounded-full text-accent font-extrabold text-[11px]">
+                            <ShieldCheck size={15} />
+                            <span>{isRtl ? 'حساب موثق' : 'Verified'}</span>
+                          </span>
+                        )}
+                        {selectedUserDetail.user.occupation && (
+                          <span className="inline-flex items-center gap-1 bg-[var(--surface-subtle)] border border-[var(--border-default)] px-2.5 py-0.5 rounded-full text-xs font-bold text-[var(--text-primary)]">
+                            <Briefcase size={12} className="text-accent" />
+                            <span>{selectedUserDetail.user.occupation}</span>
+                          </span>
+                        )}
+                      </div>
+
+                      <div className="flex flex-wrap items-center gap-3 text-xs text-[var(--text-muted)]">
+                        {selectedUserDetail.user.location && (
+                          <span className="flex items-center gap-1">
+                            <MapPin size={13} className="text-accent" />
+                            <span>{selectedUserDetail.user.location}</span>
+                          </span>
+                        )}
+                        {selectedUserDetail.user.email && (
+                          <span className="flex items-center gap-1">
+                            <AtSign size={13} />
+                            <span>{selectedUserDetail.user.email}</span>
+                          </span>
+                        )}
+                      </div>
+                    </div>
+
+                    <div className="flex items-center gap-2 shrink-0">
+                      {user && user.id === selectedUserDetail.user.id && (
+                        <button
+                          onClick={() => setIsProfileEditModalOpen(true)}
+                          className="px-3.5 py-2 rounded-lg bg-accent text-[var(--text-primary)] text-xs font-bold shadow hover:opacity-90 transition-opacity flex items-center gap-1.5"
+                        >
+                          <Settings size={14} />
+                          <span>{isRtl ? 'تعديل الملف الشخصي' : 'Edit Profile'}</span>
+                        </button>
+                      )}
+                      <button
+                        onClick={() => {
+                          const url = `${window.location.origin}/viralbook/u/${selectedUserDetail.user.id}`;
+                          navigator.clipboard.writeText(url);
+                          toast.success(isRtl ? 'تم نسخ رابط الحائط الشخصي' : 'Profile wall link copied');
+                        }}
+                        className="px-3.5 py-2 rounded-lg bg-[var(--surface-subtle)] text-[var(--text-primary)] text-xs font-bold border border-[var(--border-default)] hover:bg-[var(--surface-card)] transition-colors flex items-center gap-1.5"
+                      >
+                        <Share2 size={14} className="text-accent" />
+                        <span>{isRtl ? 'مشاركة الحائط' : 'Share Wall'}</span>
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Bio Overview */}
+                  {selectedUserDetail.user.bio && (
+                    <div className="p-3 rounded-xl bg-[var(--surface-subtle)] border border-[var(--border-default)] text-xs text-[var(--text-secondary)] leading-relaxed">
+                      {selectedUserDetail.user.bio}
+                    </div>
+                  )}
+
+                  {/* Website & Verified Domain Links */}
+                  {(selectedUserDetail.user.website_url || selectedUserDetail.user.custom_domain) && (
+                    <div className="flex flex-wrap items-center gap-2 pt-1">
+                      {selectedUserDetail.user.website_url && (
+                        <a
+                          href={selectedUserDetail.user.website_url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[var(--surface-subtle)] border border-[var(--border-default)] text-xs text-accent font-bold hover:underline"
+                        >
+                          <Globe size={13} />
+                          <span>{selectedUserDetail.user.website_url.replace(/^https?:\/\//, '')}</span>
+                          <ExternalLink size={11} />
+                        </a>
+                      )}
+                      {selectedUserDetail.user.custom_domain && (
+                        <a
+                          href={`https://${selectedUserDetail.user.custom_domain}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-emerald-500/10 border border-emerald-500/30 text-xs text-emerald-600 dark:text-emerald-400 font-extrabold hover:underline"
+                        >
+                          <ShieldCheck size={14} />
+                          <span>{selectedUserDetail.user.custom_domain}</span>
+                          {selectedUserDetail.user.is_domain_verified && (
+                            <span className="bg-emerald-500 text-white text-[10px] px-1.5 py-0.2 rounded-full font-black">
+                              {isRtl ? 'دومين موثق' : 'Verified Domain'}
+                            </span>
+                          )}
+                        </a>
+                      )}
+                    </div>
+                  )}
+
+                  {/* Social Media Links */}
+                  {selectedUserDetail.user.social_links && Object.values(selectedUserDetail.user.social_links).some(link => Boolean(link)) && (
+                    <div className="flex flex-wrap items-center gap-2 pt-1 border-t border-[var(--border-default)]/60">
+                      <span className="text-[11px] font-bold text-[var(--text-muted)] me-1">{isRtl ? 'التواصل:' : 'Social:'}</span>
+                      {Object.entries(selectedUserDetail.user.social_links).map(([platform, rawLink]) => {
+                        const linkStr = String(rawLink || '').trim();
+                        if (!linkStr) return null;
+                        const url = linkStr.startsWith('http') ? linkStr : `https://${linkStr}`;
+                        return (
+                          <a
+                            key={platform}
+                            href={url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="px-2.5 py-1 rounded-md bg-[var(--surface-subtle)] border border-[var(--border-default)] text-[11px] font-bold text-[var(--text-secondary)] hover:text-accent hover:border-accent/30 transition-colors flex items-center gap-1"
+                          >
+                            <Share2 size={11} />
+                            <span className="capitalize">{platform}</span>
+                            <ExternalLink size={10} />
+                          </a>
+                        );
+                      })}
+                    </div>
+                  )}
+
+                  {/* Badges & Stats */}
+                  <div className="mt-2 pt-3 border-t border-[var(--border-default)]/60 flex flex-wrap items-center gap-4 text-xs text-[var(--text-secondary)]">
+                    <div className="flex items-center gap-1.5 bg-[var(--surface-subtle)] px-2.5 py-1 rounded-md border border-[var(--border-default)]">
+                      <Megaphone size={14} className="text-accent" />
+                      <span className="font-bold text-[var(--text-primary)]">{selectedUserDetail.ads.length}</span>
+                      <span>{isRtl ? 'منشور شخصي' : 'Personal Posts'}</span>
+                    </div>
+
+                    {selectedUserDetail.user.created_at && (
+                      <div className="flex items-center gap-1.5 text-[var(--text-muted)]">
+                        <Calendar size={13} />
+                        <span>{isRtl ? 'انضم منذ' : 'Joined'}: {new Date(selectedUserDetail.user.created_at).toLocaleDateString(isRtl ? 'ar-EG' : 'en-US')}</span>
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                {/* Posts Section Title */}
+                <div className="px-4 pt-2 pb-1 flex items-center justify-between">
+                  <h3 className="text-sm font-extrabold text-[var(--text-primary)] flex items-center gap-2">
+                    <User size={16} className="text-accent" />
+                    <span>{isRtl ? 'منشورات الحائط الشخصي' : 'Personal Wall Posts'}</span>
+                  </h3>
+                  <span className="text-xs font-bold text-[var(--text-muted)]">
+                    {selectedUserDetail.ads.length} {isRtl ? 'منشور' : 'posts'}
+                  </span>
+                </div>
+
+                {/* Feed or Empty State */}
+                <div className="p-3">
+                  {selectedUserDetail.ads.length === 0 ? (
+                    <div className="text-center py-12 bg-[var(--surface-subtle)] rounded-xl border border-[var(--border-default)]">
+                      <User size={40} className="mx-auto text-[var(--text-muted)] opacity-40 mb-3" />
+                      <p className="text-sm font-bold text-[var(--text-primary)]">
+                        {isRtl ? 'لا توجد منشورات شخصية لهذا المستخدم حالياً' : 'No personal posts for this user yet'}
+                      </p>
+                      <p className="text-xs text-[var(--text-muted)] mt-1">
+                        {isRtl ? 'المنشورات المعروضة هنا تقتصر فقط على المنشورات الشخصية المستقلة' : 'Only personal independent posts are displayed here'}
+                      </p>
+                    </div>
+                  ) : (
+                    <PostFeed
+                      ads={selectedUserDetail.ads}
+                      loading={false}
+                      isRtl={isRtl}
+                      token={token}
+                      user={user}
+                      onReportAd={handleReportAd}
+                      onToggleLike={handleToggleLike}
+                      onToggleComments={toggleComments}
+                      onToggleCommentLike={handleToggleCommentLike}
+                      expandedAdId={expandedAdId}
+                      commentsMap={commentsMap}
+                      loadingCommentsAdId={loadingCommentsAdId}
+                      newCommentText={newCommentText}
+                      setNewCommentText={setNewCommentText}
+                      onAddComment={handleAddComment}
+                      replyToCommentId={replyToCommentId}
+                      setReplyToCommentId={setReplyToCommentId}
+                      onMessageAdvertiser={handleMessageAdvertiser}
+                      messagingAdId={messagingAdId}
+                      onInquire={setInquireAd}
+                      onWhatsApp={handleWhatsAppClick}
+                      onShare={handleShareAd}
+                      onOpenPageDetail={handleOpenPageDetail}
+                      onOpenUserDetail={handleOpenUserDetail}
+                      onOpenLightbox={handleOpenLightbox}
+                      onCreateAdClick={openPostUploadModal}
+                      onBoostAd={handleOpenBoostModal}
+                      onEditAd={handleEditAd}
+                      onDeleteAd={handleDeleteAd}
+                      onToggleSave={handleToggleSave}
+                      onArchiveAd={(archivedAd) => {
+                        setSelectedUserDetail(prev => prev ? {
+                          ...prev,
+                          ads: prev.ads.filter(a => a.id !== archivedAd.id)
+                        } : null);
+                      }}
+                      onTrashAd={(trashedAd) => {
+                        setSelectedUserDetail(prev => prev ? {
+                          ...prev,
+                          ads: prev.ads.filter(a => a.id !== trashedAd.id)
+                        } : null);
+                      }}
+                    />
+                  )}
+                </div>
+              </motion.div>
+            ) : selectedPageDetail ? (
               <motion.div
                 initial={{ opacity: 0, y: 15 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -4561,40 +4988,71 @@ export const BulletinBoardPage: React.FC = () => {
                   </span>
                 </div>
 
-                {}
-                <div className="h-48 sm:h-56 w-full bg-[var(--surface-subtle)] relative">
+                {/* Page Cover Banner */}
+                <div className="h-44 sm:h-56 md:h-64 w-full bg-[var(--surface-subtle)] relative overflow-hidden rounded-t-[var(--radius-md)] border-b border-[var(--border-default)]">
                   <img
                     src={getMediaUrl(selectedPageDetail.page.cover_url)}
                     alt={selectedPageDetail.page.name}
                     className="w-full h-full object-cover"
                   />
-                  <span className="absolute top-3 start-3 px-3 py-1 rounded-shape-xs bg-black/60 text-[var(--text-primary)] text-xs font-bold backdrop-blur-md">
+                  <span className="absolute top-3 start-3 px-3 py-1 rounded-shape-xs bg-black/70 text-white text-xs font-bold backdrop-blur-md border border-white/20">
                     {selectedPageDetail.page.category}
                   </span>
                 </div>
 
-                {}
-                <div className="px-6 -mt-10 pb-4 space-y-4">
-                  <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
-                    <BulletinAvatar
-                      src={selectedPageDetail.page.avatar_url}
-                      alt={selectedPageDetail.page.name}
-                      size="lg"
-                      isPage={true}
-                    />
+                {/* Profile Avatar & Action Buttons Bar */}
+                <div className="px-4 sm:px-6 pb-4 space-y-4">
+                  <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-3 sm:gap-4 -mt-12 sm:-mt-14 relative z-10">
+                    {/* Avatar Container with crisp elevation */}
+                    <div className="shrink-0 p-1 bg-[var(--surface-card)] rounded-2xl shadow-xl border border-[var(--border-default)] inline-block w-fit">
+                      <BulletinAvatar
+                        src={selectedPageDetail.page.avatar_url}
+                        alt={selectedPageDetail.page.name}
+                        size="lg"
+                        isPage={true}
+                      />
+                    </div>
 
-                    {}
-                    <div className="flex flex-wrap items-center gap-2">
+                    {/* Action Buttons - Cleanly outside & below cover image */}
+                    <div className="flex flex-wrap items-center gap-2 pt-1 sm:pt-0">
                       <button
                         onClick={() => handleToggleFollowPage(selectedPageDetail.page.id)}
-                        className={`px-4 py-2 rounded-[var(--radius-md)] text-xs font-bold transition-theme flex items-center gap-1.5 shadow ${
+                        className={`px-4 py-2.5 min-h-[44px] rounded-[var(--radius-md)] text-xs font-extrabold transition-theme flex items-center gap-2 shadow-sm ${
                           selectedPageDetail.page.user_is_following
-                            ? 'bg-[var(--surface-subtle)] text-[var(--text-secondary)]'
-                            : 'bg-accent text-[var(--text-primary)] hover:bg-accent'
+                            ? 'bg-[var(--surface-subtle)] text-[var(--text-secondary)] border border-[var(--border-default)] hover:bg-[var(--surface-inset)]'
+                            : 'bg-accent text-[var(--text-primary)] hover:opacity-90'
                         }`}
                       >
                         {selectedPageDetail.page.user_is_following ? <UserCheck size={16} /> : <UserPlus size={16} />}
                         <span>{selectedPageDetail.page.user_is_following ? (isRtl ? 'تتابعها' : 'Following') : (isRtl ? '+ متابعة الصفحة' : '+ Follow Page')}</span>
+                      </button>
+
+                      <button
+                        onClick={async () => {
+                          const shareUrl = getPageShareUrl(selectedPageDetail.page);
+                          const shareText = getPageShareText(selectedPageDetail.page, isRtl);
+                          if (navigator.share) {
+                            try {
+                              await navigator.share({
+                                title: selectedPageDetail.page.name,
+                                text: shareText,
+                                url: shareUrl
+                              });
+                              return;
+                            } catch (e: any) {
+                              if (e?.name === 'AbortError') return;
+                            }
+                          }
+                          if (navigator.clipboard) {
+                            await navigator.clipboard.writeText(shareUrl);
+                            toast.success(isRtl ? 'تم نسخ رابط الصفحة بنجاح' : 'Page link copied!');
+                          }
+                        }}
+                        className="px-4 py-2.5 min-h-[44px] rounded-[var(--radius-md)] text-xs font-extrabold transition-theme flex items-center gap-2 bg-[var(--surface-subtle)] hover:bg-[var(--surface-inset)] text-[var(--text-primary)] shadow-sm cursor-pointer border border-[var(--border-default)]"
+                        title={isRtl ? 'مشاركة رابط هذه الصفحة' : 'Share Page Link'}
+                      >
+                        <Share2 size={16} className="text-accent" />
+                        <span>{isRtl ? 'مشاركة الصفحة' : 'Share Page'}</span>
                       </button>
 
                       {(() => {
@@ -4622,7 +5080,7 @@ export const BulletinBoardPage: React.FC = () => {
                               setEditingPageData(selectedPageDetail.page);
                               setIsEditPageModalOpen(true);
                             }}
-                            className="px-4 py-2 rounded-[var(--radius-md)] text-xs font-bold transition-theme flex items-center gap-1.5 bg-[var(--surface-subtle)] hover:bg-[var(--surface-inset)] text-[var(--text-secondary)] shadow cursor-pointer"
+                            className="px-4 py-2.5 min-h-[44px] rounded-[var(--radius-md)] text-xs font-extrabold transition-theme flex items-center gap-2 bg-[var(--surface-subtle)] hover:bg-[var(--surface-inset)] text-[var(--text-secondary)] shadow-sm cursor-pointer border border-[var(--border-default)]"
                           >
                             <Settings size={16} />
                             <span>{isRtl ? 'إدارة وتعديل الصفحة' : 'Manage & Edit Page'}</span>
@@ -4635,20 +5093,24 @@ export const BulletinBoardPage: React.FC = () => {
                           href={`https://wa.me/${selectedPageDetail.page.whatsapp_number.replace(/[^0-9]/g, '')}`}
                           target="_blank"
                           rel="noreferrer"
-                          className="w-9 h-9 rounded-[var(--radius-xs)] bg-[#25D366]/10 hover:bg-[#25D366]/20 border border-[#25D366]/30 flex items-center justify-center transition-theme shadow-2xs cursor-pointer" style={{ color: SOCIAL_COLORS.whatsapp.base }}
+                          className="px-3.5 py-2.5 min-h-[44px] rounded-[var(--radius-md)] bg-[#25D366]/10 hover:bg-[#25D366]/20 border border-[#25D366]/30 flex items-center justify-center gap-1.5 transition-theme shadow-2xs cursor-pointer font-extrabold text-xs" style={{ color: SOCIAL_COLORS.whatsapp.base }}
                           title={isRtl ? 'تواصل عبر واتساب' : 'WhatsApp'}
                           aria-label={isRtl ? 'تواصل عبر واتساب' : 'WhatsApp'}
                         >
                           <Phone size={16} />
+                          <span className="hidden sm:inline">{isRtl ? 'واتساب' : 'WhatsApp'}</span>
                         </a>
                       )}
                     </div>
                   </div>
 
                   <div className="space-y-2">
-                    <div className="flex items-center gap-2">
+                    <div className="flex flex-wrap items-center gap-2">
                       <h2 className="text-xl sm:text-2xl font-extrabold">{selectedPageDetail.page.name}</h2>
                       <CheckCircle2 size={20} className="text-blue-500 shrink-0" />
+                      <span className="px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-blue-500/10 text-blue-500 border border-blue-500/20">
+                        {isRtl ? 'صفحة تجارية موثقة' : 'Commercial Page'}
+                      </span>
                     </div>
 
                     <p className="text-xs sm:text-sm text-[var(--text-secondary)] leading-relaxed max-w-3xl">
@@ -4657,10 +5119,19 @@ export const BulletinBoardPage: React.FC = () => {
 
                     <div className="flex flex-wrap items-center gap-4 text-xs text-[var(--text-muted)] pt-2 border-t border-[var(--border-subtle)]">
                       <span className="flex items-center gap-1"><MapPin size={14} className="text-accent" /> {selectedPageDetail.page.city}</span>
+                      {selectedPageDetail.page.owner_name && (
+                        <>
+                          <span>•</span>
+                          <span className="flex items-center gap-1 font-medium text-[var(--text-secondary)]">
+                            <UserCheck size={13} className="text-accent" />
+                            {isRtl ? 'المالك:' : 'Owner:'} {selectedPageDetail.page.owner_name}
+                          </span>
+                        </>
+                      )}
                       <span>•</span>
                       <span>{selectedPageDetail.page.followers_count} {isRtl ? 'متابع' : 'Followers'}</span>
                       <span>•</span>
-                      <span>{selectedPageDetail.ads.length} {isRtl ? 'إعلان منشور' : 'Ads published'}</span>
+                      <span className="font-bold text-accent">{selectedPageDetail.ads.length} {isRtl ? 'منشور إعلاني خاص بالصفحة' : 'Page Posts'}</span>
                     </div>
                   </div>
 
@@ -4935,6 +5406,7 @@ export const BulletinBoardPage: React.FC = () => {
                     handleWhatsAppClick={handleWhatsAppClick}
                     handleShareAd={handleShareAd}
                     handleOpenPageDetail={handleOpenPageDetail}
+                    handleOpenUserDetail={handleOpenUserDetail}
                     handleOpenLightbox={handleOpenLightbox}
                     openPostUploadModal={openPostUploadModal}
                     handleOpenBoostModal={handleOpenBoostModal}
@@ -4977,6 +5449,7 @@ export const BulletinBoardPage: React.FC = () => {
                     handleWhatsAppClick={handleWhatsAppClick}
                     handleShareAd={handleShareAd}
                     handleOpenPageDetail={handleOpenPageDetail}
+                    handleOpenUserDetail={handleOpenUserDetail}
                     handleOpenLightbox={handleOpenLightbox}
                     openPostUploadModal={openPostUploadModal}
                     handleOpenBoostModal={handleOpenBoostModal}
@@ -6514,28 +6987,52 @@ export const BulletinBoardPage: React.FC = () => {
                   />
                 </div>
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                  <ImageUploadDropzone
-                    label={isRtl ? 'صورة الشعار (Avatar):' : 'Avatar (Profile Logo):'}
-                    value={pageFormData.avatar_url}
-                    onChange={(url) => setPageFormData({ ...pageFormData, avatar_url: url })}
-                    aspectRatio={1}
-                    targetWidth={400}
-                    targetHeight={400}
-                    placeholderText={isRtl ? 'رفع صورة الشعار من الجهاز (1:1)' : 'Upload Avatar Image (1:1)'}
-                    isRtl={isRtl}
-                  />
+                {/* Image Specs Guidance Box */}
+                <div className="p-3.5 rounded-xl bg-accent/5 border border-accent/20 space-y-3">
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs font-extrabold text-accent flex items-center gap-1.5">
+                      <Sparkles size={16} />
+                      <span>{isRtl ? 'قياسات الصور الموصى بها والقص الذكي' : 'Recommended Image Dimensions & Smart Crop'}</span>
+                    </span>
+                    <span className="text-[10px] text-[var(--text-muted)] font-bold">
+                      {isRtl ? 'قص تلقائي + ضغط عالي السرعة' : 'Auto Crop & Speed Optimized'}
+                    </span>
+                  </div>
 
-                  <ImageUploadDropzone
-                    label={isRtl ? 'صورة الغلاف (Cover Banner):' : 'Cover Banner:'}
-                    value={pageFormData.cover_url}
-                    onChange={(url) => setPageFormData({ ...pageFormData, cover_url: url })}
-                    aspectRatio={3}
-                    targetWidth={1200}
-                    targetHeight={400}
-                    placeholderText={isRtl ? 'رفع صورة الغلاف من الجهاز (3:1)' : 'Upload Cover Banner (3:1)'}
-                    isRtl={isRtl}
-                  />
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-[11px] text-[var(--text-secondary)]">
+                    <div className="p-2 rounded-lg bg-[var(--surface-card)] border border-[var(--border-default)]">
+                      <strong className="block text-[var(--text-primary)] font-bold mb-0.5">{isRtl ? 'غلاف البانير (Banner Cover):' : 'Banner Cover:'}</strong>
+                      <p className="text-[10px] text-[var(--text-muted)]">{isRtl ? RECOMMENDED_IMAGE_SPECS.cover.labelAr : RECOMMENDED_IMAGE_SPECS.cover.labelEn}</p>
+                    </div>
+                    <div className="p-2 rounded-lg bg-[var(--surface-card)] border border-[var(--border-default)]">
+                      <strong className="block text-[var(--text-primary)] font-bold mb-0.5">{isRtl ? 'شعار الصفحة (Avatar Logo):' : 'Avatar Logo:'}</strong>
+                      <p className="text-[10px] text-[var(--text-muted)]">{isRtl ? RECOMMENDED_IMAGE_SPECS.avatar.labelAr : RECOMMENDED_IMAGE_SPECS.avatar.labelEn}</p>
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
+                    <ImageUploadDropzone
+                      label={isRtl ? 'صورة الشعار (Avatar):' : 'Avatar (Profile Logo):'}
+                      value={pageFormData.avatar_url}
+                      onChange={(url) => setPageFormData({ ...pageFormData, avatar_url: url })}
+                      aspectRatio={1}
+                      targetWidth={400}
+                      targetHeight={400}
+                      placeholderText={isRtl ? 'رفع صورة الشعار (400×400 - 1:1)' : 'Upload Avatar Image (1:1)'}
+                      isRtl={isRtl}
+                    />
+
+                    <ImageUploadDropzone
+                      label={isRtl ? 'صورة الغلاف (Cover Banner):' : 'Cover Banner:'}
+                      value={pageFormData.cover_url}
+                      onChange={(url) => setPageFormData({ ...pageFormData, cover_url: url })}
+                      aspectRatio={3}
+                      targetWidth={1200}
+                      targetHeight={400}
+                      placeholderText={isRtl ? 'رفع صورة الغلاف (1200×400 - 3:1)' : 'Upload Cover Banner (3:1)'}
+                      isRtl={isRtl}
+                    />
+                  </div>
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -7450,65 +7947,287 @@ export const BulletinBoardPage: React.FC = () => {
               </div>
 
               {kycTab === 'info' ? (
-                <form onSubmit={handleSaveProfile} className="space-y-4">
-                  <div className="space-y-3">
-                    <div className="flex flex-col items-center justify-center p-3 rounded-[var(--radius-md)] bg-[var(--surface-inset)] border border-[var(--border-default)] gap-2">
-                      <BulletinAvatar
-                        src={profileFormData.avatar}
-                        alt={profileFormData.name}
-                        size="lg"
-                      />
-                      <div className="flex flex-wrap items-center justify-center gap-1.5">
-                        <label className="ui-btn-pill py-1 px-2.5 text-[10px] cursor-pointer flex items-center gap-1 bg-[var(--surface-card)] border border-[var(--border-default)] rounded-md">
-                          <Upload size={12} />
-                          <span>{isRtl ? 'تحميل صورة' : 'Upload Avatar'}</span>
-                          <input
-                            type="file"
-                            accept="image/*"
-                            onChange={handleAvatarUpload}
-                            className="hidden"
-                          />
-                        </label>
+                <form onSubmit={handleSaveProfile} className="space-y-5 max-h-[75vh] overflow-y-auto pe-1">
+                  {/* Banner & Avatar Upload Box with Smart Crop */}
+                  <div className="rounded-xl border border-[var(--border-default)] bg-[var(--surface-inset)] p-3.5 space-y-3">
+                    <div className="flex items-center justify-between border-b border-[var(--border-default)] pb-2">
+                      <div className="flex items-center gap-1.5 text-xs font-extrabold text-accent">
+                        <Sparkles size={15} />
+                        <span>{isRtl ? 'صورة البروفايل والغلاف مع القص والضغط الذكي' : 'Profile Avatar & Cover Image'}</span>
                       </div>
+                      <span className="text-[10px] text-[var(--text-muted)] font-bold">
+                        {isRtl ? 'يتم القص التلقائي مجاناً لحجم خفيف' : 'Auto Smart Crop Enabled'}
+                      </span>
                     </div>
 
-                    <div>
-                      <label className="block text-xs font-bold mb-1">{isRtl ? 'الاسم المعروض:' : 'Display Name:'}</label>
-                      <input
-                        type="text"
-                        required
-                        value={profileFormData.name}
-                        onChange={(e) => setProfileFormData(prev => ({ ...prev, name: e.target.value }))}
-                        className="w-full px-3 py-2 text-xs rounded-[var(--radius-md)] bg-[var(--surface-inset)] border border-[var(--border-default)]"
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                      <ImageUploadDropzone
+                        label={isRtl ? 'الصورة الشخصية (Avatar):' : 'Avatar (Profile Photo):'}
+                        value={profileFormData.avatar}
+                        onChange={(url) => setProfileFormData(prev => ({ ...prev, avatar: url }))}
+                        aspectRatio={1}
+                        targetWidth={400}
+                        targetHeight={400}
+                        placeholderText={isRtl ? 'رفع صورة شخصية (400×400 - 1:1)' : 'Upload Avatar (400×400)'}
+                        isRtl={isRtl}
                       />
-                    </div>
 
-                    <div>
-                      <label className="block text-xs font-bold mb-1">{isRtl ? 'النبذة التعريفية (Bio):' : 'Bio / Custom Status:'}</label>
-                      <textarea
-                        rows={3}
-                        value={profileFormData.custom_instructions}
-                        onChange={(e) => setProfileFormData(prev => ({ ...prev, custom_instructions: e.target.value }))}
-                        className="w-full px-3 py-2 text-xs rounded-[var(--radius-md)] bg-[var(--surface-inset)] border border-[var(--border-default)]"
-                        placeholder={isRtl ? 'اكتب نبذة عنك...' : 'Tell us about yourself...'}
+                      <ImageUploadDropzone
+                        label={isRtl ? 'غلاف الحائط (Cover Banner):' : 'Cover Banner:'}
+                        value={profileFormData.cover_image}
+                        onChange={(url) => setProfileFormData(prev => ({ ...prev, cover_image: url }))}
+                        aspectRatio={3}
+                        targetWidth={1200}
+                        targetHeight={400}
+                        placeholderText={isRtl ? 'رفع غلاف الحائط (1200×400 - 3:1)' : 'Upload Cover Banner (1200×400)'}
+                        isRtl={isRtl}
                       />
                     </div>
                   </div>
 
-                  <div className="flex items-center justify-end gap-2 border-t border-[var(--border-default)] pt-3">
+                  {/* Section 1: Basic Professional Info */}
+                  <div className="space-y-3 bg-[var(--surface-inset)] p-3.5 rounded-xl border border-[var(--border-default)]">
+                    <h4 className="text-xs font-black text-accent flex items-center gap-1.5 border-b border-[var(--border-default)] pb-2">
+                      <User size={14} />
+                      <span>{isRtl ? 'المعلومات الشخصية والمهنية' : 'Personal & Professional Info'}</span>
+                    </h4>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                      <div>
+                        <label className="block text-xs font-bold mb-1 text-[var(--text-secondary)]">{isRtl ? 'الاسم المعروض:' : 'Display Name:'}</label>
+                        <input
+                          type="text"
+                          required
+                          value={profileFormData.name}
+                          onChange={(e) => setProfileFormData(prev => ({ ...prev, name: e.target.value }))}
+                          className="w-full px-3 py-2 text-xs rounded-lg bg-[var(--surface-card)] border border-[var(--border-default)] focus:border-accent outline-none"
+                          placeholder={isRtl ? 'اسمك الكامل' : 'Your full name'}
+                        />
+                      </div>
+
+                      <div>
+                        <label className="block text-xs font-bold mb-1 text-[var(--text-secondary)]">{isRtl ? 'المهنة / المسمى الوظيفي:' : 'Occupation / Title:'}</label>
+                        <div className="relative">
+                          <input
+                            type="text"
+                            value={profileFormData.occupation}
+                            onChange={(e) => setProfileFormData(prev => ({ ...prev, occupation: e.target.value }))}
+                            className="w-full px-3 py-2 ps-8 text-xs rounded-lg bg-[var(--surface-card)] border border-[var(--border-default)] focus:border-accent outline-none"
+                            placeholder={isRtl ? 'مثال: مهندس برمجيات، تاجر معتمد، رائد أعمال' : 'e.g., Software Engineer, Merchant'}
+                          />
+                          <Briefcase size={14} className="absolute start-2.5 top-2.5 text-[var(--text-muted)]" />
+                        </div>
+                      </div>
+
+                      <div>
+                        <label className="block text-xs font-bold mb-1 text-[var(--text-secondary)]">{isRtl ? 'البريد الإلكتروني:' : 'Email Address:'}</label>
+                        <div className="relative">
+                          <input
+                            type="email"
+                            value={profileFormData.email}
+                            onChange={(e) => setProfileFormData(prev => ({ ...prev, email: e.target.value }))}
+                            className="w-full px-3 py-2 ps-8 text-xs rounded-lg bg-[var(--surface-card)] border border-[var(--border-default)] focus:border-accent outline-none"
+                            placeholder="name@example.com"
+                          />
+                          <AtSign size={14} className="absolute start-2.5 top-2.5 text-[var(--text-muted)]" />
+                        </div>
+                      </div>
+
+                      <div>
+                        <label className="block text-xs font-bold mb-1 text-[var(--text-secondary)]">{isRtl ? 'المدينة / الموقع:' : 'City / Location:'}</label>
+                        <div className="relative">
+                          <input
+                            type="text"
+                            value={profileFormData.location}
+                            onChange={(e) => setProfileFormData(prev => ({ ...prev, location: e.target.value }))}
+                            className="w-full px-3 py-2 ps-8 text-xs rounded-lg bg-[var(--surface-card)] border border-[var(--border-default)] focus:border-accent outline-none"
+                            placeholder={isRtl ? 'القدس الشريف، غزة، رام الله...' : 'City or region'}
+                          />
+                          <MapPin size={14} className="absolute start-2.5 top-2.5 text-[var(--text-muted)]" />
+                        </div>
+                      </div>
+                    </div>
+
+                    <div>
+                      <label className="block text-xs font-bold mb-1 text-[var(--text-secondary)]">{isRtl ? 'النبذة التعريفية (Bio):' : 'Bio / Overview:'}</label>
+                      <textarea
+                        rows={2}
+                        value={profileFormData.bio}
+                        onChange={(e) => setProfileFormData(prev => ({ ...prev, bio: e.target.value, custom_instructions: e.target.value }))}
+                        className="w-full px-3 py-2 text-xs rounded-lg bg-[var(--surface-card)] border border-[var(--border-default)] focus:border-accent outline-none"
+                        placeholder={isRtl ? 'اكتب نبذة تعريفية قصيرة تظهر على حائطك الشخصي...' : 'Brief description about yourself...'}
+                      />
+                    </div>
+                  </div>
+
+                  {/* Section 2: Website & Custom Domain */}
+                  <div className="space-y-3 bg-[var(--surface-inset)] p-3.5 rounded-xl border border-[var(--border-default)]">
+                    <h4 className="text-xs font-black text-accent flex items-center gap-1.5 border-b border-[var(--border-default)] pb-2">
+                      <Globe size={14} />
+                      <span>{isRtl ? 'الموقع الإلكتروني والدومين الخاص' : 'Website & Custom Domain'}</span>
+                    </h4>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                      <div>
+                        <label className="block text-xs font-bold mb-1 text-[var(--text-secondary)]">{isRtl ? 'رابط الموقع الشخصي:' : 'Website URL:'}</label>
+                        <div className="relative">
+                          <input
+                            type="url"
+                            value={profileFormData.website_url}
+                            onChange={(e) => setProfileFormData(prev => ({ ...prev, website_url: e.target.value }))}
+                            className="w-full px-3 py-2 ps-8 text-xs rounded-lg bg-[var(--surface-card)] border border-[var(--border-default)] focus:border-accent outline-none"
+                            placeholder="https://mywebsite.com"
+                          />
+                          <Link size={14} className="absolute start-2.5 top-2.5 text-[var(--text-muted)]" />
+                        </div>
+                      </div>
+
+                      <div>
+                        <label className="block text-xs font-bold mb-1 text-[var(--text-secondary)]">{isRtl ? 'اسم الدومين الخاص:' : 'Custom Domain Name:'}</label>
+                        <div className="relative">
+                          <input
+                            type="text"
+                            value={profileFormData.custom_domain}
+                            onChange={(e) => setProfileFormData(prev => ({ ...prev, custom_domain: e.target.value }))}
+                            className="w-full px-3 py-2 ps-8 text-xs rounded-lg bg-[var(--surface-card)] border border-[var(--border-default)] focus:border-accent outline-none"
+                            placeholder="username.com"
+                          />
+                          <Globe size={14} className="absolute start-2.5 top-2.5 text-[var(--text-muted)]" />
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="flex items-center justify-between p-2.5 rounded-lg bg-emerald-500/10 border border-emerald-500/20 text-xs">
+                      <div className="flex items-center gap-2">
+                        <ShieldCheck size={18} className="text-emerald-500 shrink-0" />
+                        <div>
+                          <p className="font-bold text-emerald-600 dark:text-emerald-400">{isRtl ? 'علامة توثيق النطاق والموقع' : 'Verified Domain Badge'}</p>
+                          <p className="text-[10px] text-[var(--text-muted)]">{isRtl ? 'إظهار شارة النطاق الموثق على حائطك الشخصي' : 'Show verified domain badge on profile'}</p>
+                        </div>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => setProfileFormData(prev => ({ ...prev, is_domain_verified: !prev.is_domain_verified }))}
+                        className={`px-3 py-1 rounded-full font-bold text-[11px] transition-colors ${
+                          profileFormData.is_domain_verified
+                            ? 'bg-emerald-500 text-white'
+                            : 'bg-[var(--surface-card)] text-[var(--text-muted)] border border-[var(--border-default)]'
+                        }`}
+                      >
+                        {profileFormData.is_domain_verified ? (isRtl ? '✓ موثق' : '✓ Verified') : (isRtl ? 'تفعيل' : 'Enable')}
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Section 3: Social Media Links */}
+                  <div className="space-y-3 bg-[var(--surface-inset)] p-3.5 rounded-xl border border-[var(--border-default)]">
+                    <h4 className="text-xs font-black text-accent flex items-center gap-1.5 border-b border-[var(--border-default)] pb-2">
+                      <Share2 size={14} />
+                      <span>{isRtl ? 'حسابات التواصل الاجتماعي الإضافية' : 'Social Media Accounts'}</span>
+                    </h4>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                      <div>
+                        <label className="block text-[11px] font-bold mb-1 text-[var(--text-muted)]">Facebook</label>
+                        <input
+                          type="text"
+                          value={profileFormData.social_links.facebook || ''}
+                          onChange={(e) => setProfileFormData(prev => ({
+                            ...prev,
+                            social_links: { ...prev.social_links, facebook: e.target.value }
+                          }))}
+                          className="w-full px-2.5 py-1.5 text-xs rounded-md bg-[var(--surface-card)] border border-[var(--border-default)]"
+                          placeholder="https://facebook.com/username"
+                        />
+                      </div>
+
+                      <div>
+                        <label className="block text-[11px] font-bold mb-1 text-[var(--text-muted)]">Instagram</label>
+                        <input
+                          type="text"
+                          value={profileFormData.social_links.instagram || ''}
+                          onChange={(e) => setProfileFormData(prev => ({
+                            ...prev,
+                            social_links: { ...prev.social_links, instagram: e.target.value }
+                          }))}
+                          className="w-full px-2.5 py-1.5 text-xs rounded-md bg-[var(--surface-card)] border border-[var(--border-default)]"
+                          placeholder="https://instagram.com/username"
+                        />
+                      </div>
+
+                      <div>
+                        <label className="block text-[11px] font-bold mb-1 text-[var(--text-muted)]">LinkedIn</label>
+                        <input
+                          type="text"
+                          value={profileFormData.social_links.linkedin || ''}
+                          onChange={(e) => setProfileFormData(prev => ({
+                            ...prev,
+                            social_links: { ...prev.social_links, linkedin: e.target.value }
+                          }))}
+                          className="w-full px-2.5 py-1.5 text-xs rounded-md bg-[var(--surface-card)] border border-[var(--border-default)]"
+                          placeholder="https://linkedin.com/in/username"
+                        />
+                      </div>
+
+                      <div>
+                        <label className="block text-[11px] font-bold mb-1 text-[var(--text-muted)]">X / Twitter</label>
+                        <input
+                          type="text"
+                          value={profileFormData.social_links.twitter || ''}
+                          onChange={(e) => setProfileFormData(prev => ({
+                            ...prev,
+                            social_links: { ...prev.social_links, twitter: e.target.value }
+                          }))}
+                          className="w-full px-2.5 py-1.5 text-xs rounded-md bg-[var(--surface-card)] border border-[var(--border-default)]"
+                          placeholder="https://x.com/username"
+                        />
+                      </div>
+
+                      <div>
+                        <label className="block text-[11px] font-bold mb-1 text-[var(--text-muted)]">WhatsApp</label>
+                        <input
+                          type="text"
+                          value={profileFormData.social_links.whatsapp || ''}
+                          onChange={(e) => setProfileFormData(prev => ({
+                            ...prev,
+                            social_links: { ...prev.social_links, whatsapp: e.target.value }
+                          }))}
+                          className="w-full px-2.5 py-1.5 text-xs rounded-md bg-[var(--surface-card)] border border-[var(--border-default)]"
+                          placeholder="+970599000000"
+                        />
+                      </div>
+
+                      <div>
+                        <label className="block text-[11px] font-bold mb-1 text-[var(--text-muted)]">YouTube / GitHub</label>
+                        <input
+                          type="text"
+                          value={profileFormData.social_links.youtube || profileFormData.social_links.github || ''}
+                          onChange={(e) => setProfileFormData(prev => ({
+                            ...prev,
+                            social_links: { ...prev.social_links, youtube: e.target.value, github: e.target.value }
+                          }))}
+                          className="w-full px-2.5 py-1.5 text-xs rounded-md bg-[var(--surface-card)] border border-[var(--border-default)]"
+                          placeholder="https://youtube.com/@channel or github"
+                        />
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Actions Bar */}
+                  <div className="flex items-center justify-end gap-2 border-t border-[var(--border-default)] pt-3 sticky bottom-0 bg-[var(--surface-card)] p-2">
                     <button
                       type="button"
                       onClick={() => setIsProfileEditModalOpen(false)}
-                      className="px-4 py-2 rounded-[var(--radius-md)] border border-[var(--border-default)] text-xs font-bold"
+                      className="px-4 py-2 rounded-[var(--radius-md)] border border-[var(--border-default)] text-xs font-bold hover:bg-[var(--surface-subtle)]"
                     >
                       {isRtl ? 'إلغاء' : 'Cancel'}
                     </button>
                     <button
                       type="submit"
                       disabled={isSubmittingProfile}
-                      className="px-4 py-2 rounded-[var(--radius-md)] bg-accent text-[var(--text-primary)] text-xs font-bold"
+                      className="px-5 py-2 rounded-[var(--radius-md)] bg-accent text-[var(--text-primary)] text-xs font-bold shadow-md hover:opacity-90 transition-opacity"
                     >
-                      {isSubmittingProfile ? (isRtl ? 'جاري الحفظ...' : 'Saving...') : (isRtl ? 'حفظ التغييرات' : 'Save Changes')}
+                      {isSubmittingProfile ? (isRtl ? 'جاري حفظ التغييرات...' : 'Saving...') : (isRtl ? 'حفظ إعدادات الملف الشخصي ✨' : 'Save Profile Settings')}
                     </button>
                   </div>
                 </form>
@@ -7750,49 +8469,57 @@ export const BulletinBoardPage: React.FC = () => {
                     </div>
                   </div>
 
-                  {}
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                    <div>
-                      <label className="block text-xs font-bold mb-1">{isRtl ? 'رابط شعار الصفحة (Avatar):' : 'Avatar URL:'}</label>
-                      <div className="flex gap-2">
-                        <input
-                          type="text"
-                          required
-                          value={editPageFormData.avatar_url}
-                          onChange={(e) => setEditPageFormData({ ...editPageFormData, avatar_url: e.target.value })}
-                          className="flex-1 px-3 py-2 text-xs rounded-[var(--radius-md)] bg-[var(--surface-inset)] border border-[var(--border-default)]"
-                        />
-                        <label className="px-3 py-2 rounded-[var(--radius-md)] bg-accent text-[var(--text-primary)] text-xs font-bold cursor-pointer flex items-center justify-center shrink-0">
-                          <Upload size={14} />
-                          <input
-                            type="file"
-                            accept="image/*"
-                            onChange={handleEditPageAvatarUpload}
-                            className="hidden"
-                          />
-                        </label>
+                  {/* Image Specifications & Upload Section */}
+                  <div className="p-3.5 rounded-xl bg-accent/5 border border-accent/20 space-y-3">
+                    <div className="flex items-center gap-2 text-xs font-extrabold text-accent">
+                      <Sparkles size={16} />
+                      <span>{isRtl ? 'قياسات الصور الموصى بها والقص الذكي الخفيف' : 'Recommended Dimensions & Smart Crop'}</span>
+                    </div>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-[11px] text-[var(--text-secondary)]">
+                      <div className="p-2.5 rounded-lg bg-[var(--surface-card)] border border-[var(--border-default)] space-y-1">
+                        <p className="font-bold text-[var(--text-primary)] flex items-center gap-1">
+                          <ImageIcon size={13} className="text-accent" />
+                          <span>{isRtl ? 'غلاف البانير (Cover Banner)' : 'Cover Banner'}</span>
+                        </p>
+                        <p className="text-[10px] text-[var(--text-muted)]">
+                          {isRtl ? RECOMMENDED_IMAGE_SPECS.cover.labelAr : RECOMMENDED_IMAGE_SPECS.cover.labelEn}
+                        </p>
+                      </div>
+
+                      <div className="p-2.5 rounded-lg bg-[var(--surface-card)] border border-[var(--border-default)] space-y-1">
+                        <p className="font-bold text-[var(--text-primary)] flex items-center gap-1">
+                          <User size={13} className="text-accent" />
+                          <span>{isRtl ? 'شعار الصفحة (Avatar Logo)' : 'Avatar Logo'}</span>
+                        </p>
+                        <p className="text-[10px] text-[var(--text-muted)]">
+                          {isRtl ? RECOMMENDED_IMAGE_SPECS.avatar.labelAr : RECOMMENDED_IMAGE_SPECS.avatar.labelEn}
+                        </p>
                       </div>
                     </div>
 
-                    <div>
-                      <label className="block text-xs font-bold mb-1">{isRtl ? 'رابط غلاف الصفحة (Cover):' : 'Cover URL:'}</label>
-                      <div className="flex gap-2">
-                        <input
-                          type="text"
-                          value={editPageFormData.cover_url}
-                          onChange={(e) => setEditPageFormData({ ...editPageFormData, cover_url: e.target.value })}
-                          className="flex-1 px-3 py-2 text-xs rounded-[var(--radius-md)] bg-[var(--surface-inset)] border border-[var(--border-default)]"
-                        />
-                        <label className="px-3 py-2 rounded-[var(--radius-md)] bg-accent text-[var(--text-primary)] text-xs font-bold cursor-pointer flex items-center justify-center shrink-0">
-                          <Upload size={14} />
-                          <input
-                            type="file"
-                            accept="image/*"
-                            onChange={handleEditPageCoverUpload}
-                            className="hidden"
-                          />
-                        </label>
-                      </div>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
+                      <ImageUploadDropzone
+                        label={isRtl ? 'شعار الصفحة (Avatar):' : 'Page Avatar (1:1):'}
+                        value={editPageFormData.avatar_url}
+                        onChange={(url) => setEditPageFormData({ ...editPageFormData, avatar_url: url })}
+                        aspectRatio={1}
+                        targetWidth={400}
+                        targetHeight={400}
+                        placeholderText={isRtl ? 'رفع الشعار المربع (400×400)' : 'Upload Avatar (400×400)'}
+                        isRtl={isRtl}
+                      />
+
+                      <ImageUploadDropzone
+                        label={isRtl ? 'غلاف الصفحة (Cover):' : 'Cover Banner (3:1):'}
+                        value={editPageFormData.cover_url}
+                        onChange={(url) => setEditPageFormData({ ...editPageFormData, cover_url: url })}
+                        aspectRatio={3}
+                        targetWidth={1200}
+                        targetHeight={400}
+                        placeholderText={isRtl ? 'رفع البانير الأفقي (1200×400)' : 'Upload Banner (1200×400)'}
+                        isRtl={isRtl}
+                      />
                     </div>
                   </div>
                   <div className="border-t border-[var(--border-default)] pt-4 space-y-3">

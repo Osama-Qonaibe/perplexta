@@ -28,6 +28,7 @@ export interface SavedPostsTabProps {
   handleWhatsAppClick: (ad: BulletinAd, e: React.MouseEvent) => void;
   handleShareAd: (ad: BulletinAd) => void;
   handleOpenPageDetail: (pageId: number) => void;
+  handleOpenUserDetail?: (userId: number) => void;
   handleOpenLightbox: (...args: any[]) => void;
   openPostUploadModal: () => void;
   handleOpenBoostModal: (ad: BulletinAd) => void;
@@ -63,6 +64,7 @@ export const SavedPostsTab: React.FC<SavedPostsTabProps> = ({
   handleWhatsAppClick,
   handleShareAd,
   handleOpenPageDetail,
+  handleOpenUserDetail,
   handleOpenLightbox,
   openPostUploadModal,
   handleOpenBoostModal,
@@ -151,6 +153,7 @@ export const SavedPostsTab: React.FC<SavedPostsTabProps> = ({
           onWhatsApp={handleWhatsAppClick}
           onShare={handleShareAd}
           onOpenPageDetail={handleOpenPageDetail}
+          onOpenUserDetail={handleOpenUserDetail}
           onOpenLightbox={handleOpenLightbox}
           onCreateAdClick={openPostUploadModal}
           onBoostAd={handleOpenBoostModal}

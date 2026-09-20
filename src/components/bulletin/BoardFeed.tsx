@@ -51,6 +51,7 @@ export interface BoardFeedProps {
   handleWhatsAppClick: (ad: BulletinAd, e?: any) => void;
   handleShareAd: (ad: BulletinAd) => void;
   handleOpenPageDetail: (pageId: number) => void;
+  handleOpenUserDetail?: (userId: number) => void;
   handleOpenLightbox: (...args: any[]) => void;
   openPostUploadModal: () => void;
   handleOpenBoostModal: (ad: BulletinAd) => void;
@@ -100,6 +101,7 @@ export const BoardFeed: React.FC<BoardFeedProps> = ({
   handleWhatsAppClick,
   handleShareAd,
   handleOpenPageDetail,
+  handleOpenUserDetail,
   handleOpenLightbox,
   openPostUploadModal,
   handleOpenBoostModal,
@@ -200,6 +202,7 @@ export const BoardFeed: React.FC<BoardFeedProps> = ({
         onWhatsApp={handleWhatsAppClick}
         onShare={handleShareAd}
         onOpenPageDetail={handleOpenPageDetail}
+        onOpenUserDetail={handleOpenUserDetail}
         onOpenLightbox={handleOpenLightbox}
         onCreateAdClick={openPostUploadModal}
         onBoostAd={handleOpenBoostModal}

@@ -1,6 +1,8 @@
 /// <reference types="vite/client" />
 /// <reference types="vite-plugin-pwa/react" />
 
+declare module 'ffprobe-static';
+
 interface ImportMetaEnv {
   readonly VITE_ADMIN_EMAIL: string
 }

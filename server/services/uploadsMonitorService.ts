@@ -137,10 +137,11 @@ export async function auditAndOptimizeUploadsFolder(): Promise<{ scanned: number
             const targetMediaPool = mediaPool || pool;
             if (targetMediaPool && optimizedFileBuffer) {
               const sha256Hash = crypto.createHash('sha256').update(optimizedFileBuffer).digest('hex');
+              const monitorAssetId = crypto.randomUUID();
               await targetMediaPool.query(`
                 INSERT INTO media_assets (
-                  stored_path, original_filename, context, format, width, height, size_bytes, sha256_hash, is_public, file_data, metadata
-                ) VALUES ($1, $2, 'general', 'webp', $3, $4, $5, $6, true, $7, $8)
+                  id, stored_path, original_filename, context, format, width, height, size_bytes, sha256_hash, is_public, file_data, metadata
+                ) VALUES ($1, $2, $3, 'general', 'webp', $4, $5, $6, $7, true, $8, $9)
                 ON CONFLICT (stored_path) DO UPDATE SET
                   format = 'webp',
                   size_bytes = EXCLUDED.size_bytes,
@@ -148,7 +149,7 @@ export async function auditAndOptimizeUploadsFolder(): Promise<{ scanned: number
                   sha256_hash = EXCLUDED.sha256_hash,
                   updated_at = CURRENT_TIMESTAMP
               `, [
-                newRelative, file, optResult.width || 0, optResult.height || 0, optResult.size || 0, sha256Hash, optimizedFileBuffer,
+                monitorAssetId, newRelative, file, optResult.width || 0, optResult.height || 0, optResult.size || 0, sha256Hash, optimizedFileBuffer,
                 JSON.stringify({ autoOptimized: true, thumbnail_url: thumbUrl })
               ]).catch(() => {});
             }

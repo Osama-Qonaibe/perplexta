@@ -675,6 +675,10 @@ export interface BulletinPage {
   followers_count: number;
   ads_count: number;
   user_is_following?: boolean;
+  owner_name?: string;
+  owner_avatar?: string;
+  owner_username?: string;
+  owner_email?: string;
   managers?: string | any[] | null;
   created_at: Date | string;
   updated_at: Date | string;

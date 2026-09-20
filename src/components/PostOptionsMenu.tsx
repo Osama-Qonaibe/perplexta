@@ -39,7 +39,67 @@ type ActiveModal =
   | 'embed'
   | 'archive_confirm'
   | 'trash_confirm'
+  | 'report'
   | null;
+
+const REPORT_CATEGORIES = [
+  {
+    id: 'fraud',
+    titleAr: 'احتيال، سكام أو عروض مضللة',
+    titleEn: 'Fraud, Scam or Misleading Offers',
+    descAr: 'إعلانات وهمية، طلبات أموال غير مشروعة، أو روابط صيد وتضليل تجاري',
+    descEn: 'Fake ads, illegal money requests, or phishing and scam links',
+    icon: '🛡️'
+  },
+  {
+    id: 'hate_speech',
+    titleAr: 'خطاب كراهية، تنمر أو مضايقة',
+    titleEn: 'Hate Speech, Bullying or Harassment',
+    descAr: 'إساءة موجهة، تنمر شخصي، شتم، أو تحريض على أفراد أو جماعات',
+    descEn: 'Targeted abuse, personal bullying, or incitement against individuals or groups',
+    icon: '⚠️'
+  },
+  {
+    id: 'violence',
+    titleAr: 'عنف، تهديد أو محتوى خطير',
+    titleEn: 'Violence, Threat or Dangerous Content',
+    descAr: 'مشاهد عنف جسدي، تهديد بالخدمات، أو التحريض على أفعال خطرة',
+    descEn: 'Physical violence scenes, threats, or incitement to dangerous activities',
+    icon: '🚫'
+  },
+  {
+    id: 'adult',
+    titleAr: 'محتوى غير لائق أو مخل بالآداب',
+    titleEn: 'Inappropriate or Adult Content',
+    descAr: 'صور، مقاطع فيديو، أو نصوص تخالف الذوق العام والتعليمات الأخلاقية للمنصة',
+    descEn: 'Photos, videos, or texts violating community moral standards',
+    icon: '🔞'
+  },
+  {
+    id: 'misinformation',
+    titleAr: 'معلومات مضللة أو إشاعات كاذبة',
+    titleEn: 'Misinformation or Fake News',
+    descAr: 'ادعاءات مفبركة، تزوير للحقائق، أو نشر إشاعات لإثارة الفتنة والخداع',
+    descEn: 'Fabricated claims, altered facts, or spreading rumors to deceive',
+    icon: '📰'
+  },
+  {
+    id: 'copyright',
+    titleAr: 'انتهاك حقوق الملكية الفكرية والعلامة',
+    titleEn: 'Intellectual Property Violation',
+    descAr: 'انتحال شخصية، استخدام شعارات بدون إذن، أو سرقة وتكرار محتوى مملوك',
+    descEn: 'Impersonation, unauthorized brand logos, or stolen copyrighted content',
+    icon: '⚖️'
+  },
+  {
+    id: 'other',
+    titleAr: 'سبب آخر (اذكر التفاصيل للرقابة)',
+    titleEn: 'Other Reason (Specify details for moderation)',
+    descAr: 'أي أسباب وملاحظات أخرى تنتهك سياسات شروط الاستخدام لمنصة بيربليكستا',
+    descEn: 'Any other reasons violating platform terms and conditions',
+    icon: '📝'
+  }
+];
 
 const menuVariants = {
   closed: {
@@ -71,7 +131,16 @@ export const PostOptionsMenu: React.FC<PostOptionsMenuProps> = ({
   dropdownAlign,
   className = ''
 }) => {
-  const isOwner = Boolean(user?.id && (user.id === ad.user_id || user.role === 'admin'));
+  const isOwner = Boolean(
+    user?.id && (
+      user.id === ad.user_id ||
+      ((ad as any).page_owner_id && user.id === (ad as any).page_owner_id) ||
+      ((ad as any).owner_id && user.id === (ad as any).owner_id) ||
+      user.role === 'admin' ||
+      user.role === 'superadmin' ||
+      user.is_admin === true
+    )
+  );
   
   const [isSaved, setIsSaved] = useState(Boolean(ad.user_has_saved));
   const [isMuted, setIsMuted] = useState(Boolean(ad.is_muted_notifications));
@@ -95,6 +164,51 @@ export const PostOptionsMenu: React.FC<PostOptionsMenuProps> = ({
   const [isActionLoading, setIsActionLoading] = useState(false);
   const [copiedEmbed, setCopiedEmbed] = useState(false);
   const [copiedCode, setCopiedCode] = useState(false);
+
+  const [reportReason, setReportReason] = useState('fraud');
+  const [reportDetails, setReportDetails] = useState('');
+
+  const handleSendReport = async () => {
+    if (!token) {
+      toast.error(isRtl ? 'يرجى تسجيل الدخول أولاً للإبلاغ عن المحتوى' : 'Please log in first to report content');
+      return;
+    }
+    const catObj = REPORT_CATEGORIES.find(c => c.id === reportReason) || REPORT_CATEGORIES[0];
+    const categoryTitle = isRtl ? catObj.titleAr : catObj.titleEn;
+
+    setIsActionLoading(true);
+    try {
+      const response = await fetch(`/api/bulletin/ads/${ad.id}/report`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          reason: categoryTitle,
+          details: reportDetails.trim() || undefined
+        })
+      });
+      const data = await response.json();
+      if (response.ok && data.success) {
+        toast.success(
+          data.message ||
+          (isRtl
+            ? 'تم إرسال بلاغك بنجاح للرقابة والإدارة، وسيتم اتخاذ الإجراء المناسب'
+            : 'Report submitted successfully to administration')
+        );
+        if (onReportAd) onReportAd(ad);
+        setActiveModal(null);
+        setReportDetails('');
+      } else {
+        toast.error(data.error || (isRtl ? 'فشل إرسال البلاغ' : 'Failed to submit report'));
+      }
+    } catch (err) {
+      toast.error(isRtl ? 'خطأ في الاتصال بالخادم' : 'Server connection error');
+    } finally {
+      setIsActionLoading(false);
+    }
+  };
 
   useEffect(() => {
     setIsSaved(Boolean(ad.user_has_saved));
@@ -615,7 +729,7 @@ export const PostOptionsMenu: React.FC<PostOptionsMenuProps> = ({
               isDestructive: true,
               action: () => {
                 onClose();
-                onReportAd?.(ad);
+                setActiveModal('report');
               }
             }
           ];
@@ -716,6 +830,7 @@ export const PostOptionsMenu: React.FC<PostOptionsMenuProps> = ({
                   {activeModal === 'embed' && (isRtl ? 'تضمين المنشور' : 'Embed post')}
                   {activeModal === 'archive_confirm' && (isRtl ? 'نقل إلى الأرشيف' : 'Move to archive')}
                   {activeModal === 'trash_confirm' && (isRtl ? 'نقل إلى سلة المهملات' : 'Move to trash')}
+                  {activeModal === 'report' && (isRtl ? 'الإبلاغ الرقابي عن محتوى مخالف' : 'Report Content Violation')}
                 </h3>
                 <button
                   type="button"
@@ -1024,6 +1139,99 @@ export const PostOptionsMenu: React.FC<PostOptionsMenuProps> = ({
                     >
                       {isActionLoading && <Loader2 size={13} className="animate-spin" />}
                       <span>{isRtl ? 'نقل إلى سلة المهملات' : 'Move to Trash'}</span>
+                    </button>
+                  </div>
+                </div>
+              )}
+
+              {/* 9. Modal: Professional Content Report */}
+              {activeModal === 'report' && (
+                <div className="space-y-3.5" dir={isRtl ? 'rtl' : 'ltr'}>
+                  <div className="p-3 rounded-shape-sm bg-rose-500/10 border border-rose-500/20 text-rose-600 dark:text-rose-400 text-xs">
+                    <span className="font-bold block mb-1 text-xs">
+                      {isRtl ? 'الإبلاغ الرقابي الاحترافي عن محتوى مخالف' : 'Professional Content Moderation Report'}
+                    </span>
+                    <p className="text-[11px] text-[var(--text-muted)] leading-relaxed">
+                      {isRtl
+                        ? 'اختر الفئة الأكثر دقة لوصف المخالفة. سيتم إرسال إشعار فوري وتوثيق بالبريد الإلكتروني للرقابة والإدارة لمراجعة المحتوى.'
+                        : 'Select the category that best describes the violation. A notification & email dispatch will be routed to administration.'}
+                    </p>
+                  </div>
+
+                  {/* Categories list */}
+                  <div className="space-y-2 max-h-[220px] overflow-y-auto pr-1">
+                    {REPORT_CATEGORIES.map((cat) => {
+                      const isSelected = reportReason === cat.id;
+                      return (
+                        <div
+                          key={cat.id}
+                          onClick={() => setReportReason(cat.id)}
+                          className={`flex items-start gap-2.5 p-2.5 rounded-shape-sm border transition-all cursor-pointer ${
+                            isSelected
+                              ? 'bg-accent/10 border-accent text-[var(--text-primary)] shadow-2xs'
+                              : 'bg-[var(--surface-subtle)] border-[var(--border-default)] hover:bg-[var(--surface-card)] text-[var(--text-secondary)]'
+                          }`}
+                        >
+                          <input
+                            type="radio"
+                            name="report_reason_group"
+                            checked={isSelected}
+                            onChange={() => setReportReason(cat.id)}
+                            className="mt-0.5 accent-accent cursor-pointer"
+                          />
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center gap-1.5 font-bold text-xs text-[var(--text-primary)]">
+                              <span>{cat.icon}</span>
+                              <span>{isRtl ? cat.titleAr : cat.titleEn}</span>
+                            </div>
+                            <p className="text-[10px] text-[var(--text-muted)] leading-tight mt-0.5">
+                              {isRtl ? cat.descAr : cat.descEn}
+                            </p>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+
+                  {/* Details textarea */}
+                  <div>
+                    <label className="block text-[11px] font-bold mb-1 text-[var(--text-secondary)]">
+                      {isRtl ? 'تفاصيل إضافية حول البلاغ (اختياري/موصى به):' : 'Additional details (Optional/Recommended):'}
+                    </label>
+                    <textarea
+                      rows={2}
+                      value={reportDetails}
+                      onChange={(e) => setReportDetails(e.target.value)}
+                      placeholder={
+                        isRtl
+                          ? 'أضف هنا أي تفاصيل أو سياق إضافي يساعد قسم الرقابة في سرعة اتخاذ القرار...'
+                          : 'Add any extra details or context to help moderation team review quickly...'
+                      }
+                      className="w-full p-2.5 rounded-shape-sm bg-[var(--surface-subtle)] border border-[var(--border-default)] text-xs text-[var(--text-primary)] placeholder:text-[var(--text-muted)] focus:outline-none focus:border-accent/60 resize-none"
+                    />
+                  </div>
+
+                  {/* Footer buttons */}
+                  <div className="flex items-center gap-2 pt-1">
+                    <button
+                      type="button"
+                      onClick={() => setActiveModal(null)}
+                      className="flex-1 h-8 px-3 rounded-shape-sm bg-[var(--surface-subtle)] border border-[var(--border-default)] hover:bg-[var(--surface-card)] text-[var(--text-primary)] text-xs font-bold transition-all duration-fast shadow-2xs active:scale-95 cursor-pointer"
+                    >
+                      {isRtl ? 'إلغاء' : 'Cancel'}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={handleSendReport}
+                      disabled={isActionLoading}
+                      className="flex-1 h-8 px-3 rounded-shape-sm bg-rose-600 hover:bg-rose-700 text-white text-xs font-bold transition-all duration-fast shadow-2xs active:scale-95 disabled:opacity-50 cursor-pointer flex items-center justify-center gap-1.5"
+                    >
+                      {isActionLoading ? (
+                        <Loader2 size={13} className="animate-spin" />
+                      ) : (
+                        <Flag size={13} />
+                      )}
+                      <span>{isRtl ? 'إرسال البلاغ للرقابة' : 'Submit Report'}</span>
                     </button>
                   </div>
                 </div>
