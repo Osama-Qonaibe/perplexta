@@ -1,5 +1,6 @@
 import { decrementUserUsage } from '../quota.js';
 import { getEconomySettings } from '../wallet.js';
+import { pool } from '../../db/index.js';
 
 export const AI_CALL_TIMEOUT_MS = 45000;
 export const TTS_TIMEOUT_MS = 30000;
@@ -144,6 +145,17 @@ export async function safeDecrementOnFailure(
   walletCharged: boolean | { charged: 'points' | 'balance'; amount: number }
 ) {
   try {
+    // Preserve usage count for heavy generation tasks (image/video) to prevent infinite retry leaks on failure
+    if (toolIdStr === 'image' || toolIdStr === 'video') {
+      console.info(`[Quota Protection] Preserving usage count for Heavy Task '${toolIdStr}' (User ${userId}) to prevent infinite retry leaks on failure.`);
+      if (pool && userId) {
+        pool.query(
+          `INSERT INTO user_activity_logs (user_id, event_type, event_details) VALUES ($1, $2, $3)`,
+          [userId, 'HEAVY_TASK_FAILED', JSON.stringify({ tool_id: toolIdStr, timestamp: new Date().toISOString() })]
+        ).catch(() => {});
+      }
+      return;
+    }
     if (quotaCheck && quotaCheck.allowed) {
       await decrementUserUsage(userId, toolIdStr);
     } else {

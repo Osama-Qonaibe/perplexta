@@ -569,6 +569,13 @@ export const CORE_SCHEMA_TABLES: { name: string; query: string }[] = [
         tagged_users JSONB DEFAULT '[]',
         is_ai_generated BOOLEAN DEFAULT FALSE,
         has_whatsapp_button BOOLEAN DEFAULT FALSE,
+        meta_title_en VARCHAR(255),
+        meta_title_ar VARCHAR(255),
+        meta_description_en TEXT,
+        meta_description_ar TEXT,
+        keywords_en TEXT,
+        keywords_ar TEXT,
+        og_image_url TEXT,
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
       )`

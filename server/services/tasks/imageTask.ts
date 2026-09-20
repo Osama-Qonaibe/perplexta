@@ -239,7 +239,7 @@ export async function executeImageTask(ctx: TaskExecutionContext): Promise<{ res
     { provider: route.fallback_1_provider, model: route.fallback_1_model, label: 'fallback_1' },
     { provider: route.fallback_2_provider, model: route.fallback_2_model, label: 'fallback_2' },
     { provider: route.fallback_3_provider, model: route.fallback_3_model, label: 'fallback_3' }
-  ].filter(t => t.provider && t.model);
+  ].filter(t => t.provider && t.model).slice(0, 2);
 
   if (targets.length === 0) {
     await safeDecrementOnFailure(quotaCheck, userId, toolIdStr, walletCharged);

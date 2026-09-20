@@ -462,7 +462,7 @@ router.post("/sync-message", authenticateToken, chatLimiter, verifyBillingFunds,
     let errBody = { error: error.message || 'Failed to sync message in background' };
     try {
       const parsed = JSON.parse(error.message);
-      if (parsed.type === 'QUOTA_EXCEEDED') {
+      if (parsed.type === 'QUOTA_EXCEEDED' || parsed.type === 'DUPLICATE_REQUEST_IN_FLIGHT') {
         status = 429;
         errBody = parsed;
       } else if (parsed.type === 'SYSTEM_INACTIVE') {

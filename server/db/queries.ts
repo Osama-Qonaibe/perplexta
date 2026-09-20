@@ -610,37 +610,28 @@ export async function getCachedApiKeysVault(): Promise<any[]> {
       return dec;
     });
 
-    if (process.env.GEMINI_API_KEY) {
-      const hasGoogle = keys.some((k: any) => k.provider === 'google' || k.provider === 'gemini');
-      if (!hasGoogle) {
-        const geminiKey = process.env.GEMINI_API_KEY;
-        const defaultModels = '[]';
+    if (process.env.GEMINI_API_KEY && keys.length === 0) {
+      const geminiKey = process.env.GEMINI_API_KEY;
+      const defaultModels = '[]';
 
-        keys.push({
-          id: 99999,
-          provider: 'google',
-          encrypted_key: encrypt(geminiKey),
-          decrypted_key: geminiKey,
-          is_active: true,
-          daily_budget: 0,
-          used_today: 0,
-          models: defaultModels
-        });
+      keys.push({
+        id: 99999,
+        provider: 'google',
+        encrypted_key: encrypt(geminiKey),
+        decrypted_key: geminiKey,
+        is_active: true,
+        daily_budget: 0,
+        used_today: 0,
+        models: defaultModels
+      });
 
-        // Auto-seed google provider into api_keys_vault table in PostgreSQL if missing
-        pool.query(
-          `INSERT INTO api_keys_vault (provider, encrypted_key, is_active, models, updated_at)
-           VALUES ('google', $1, true, $2, CURRENT_TIMESTAMP)
-           ON CONFLICT (provider) DO UPDATE 
-           SET encrypted_key = EXCLUDED.encrypted_key, is_active = true, updated_at = CURRENT_TIMESTAMP`,
-          [encrypt(geminiKey), defaultModels]
-        ).then(() => {
-          // Dynamically fetch and sync the actual supported models directly from Google without hardcoding
-          import('../services/ai.js').then(m => m.syncProviderModelsInternal('google', geminiKey)).catch((err: any) => {
-            console.warn('[Queries] Dynamic model sync for Google skipped:', err.message);
-          });
-        }).catch((err: any) => console.warn('[Queries] Failed to auto-sync GEMINI_API_KEY into api_keys_vault:', err.message));
-      }
+      // Auto-seed google provider into api_keys_vault table in PostgreSQL if vault is completely empty
+      pool.query(
+        `INSERT INTO api_keys_vault (provider, encrypted_key, is_active, models, updated_at)
+         VALUES ('google', $1, true, $2, CURRENT_TIMESTAMP)
+         ON CONFLICT (provider) DO NOTHING`,
+        [encrypt(geminiKey), defaultModels]
+      ).catch((err: any) => console.warn('[Queries] Failed to auto-sync GEMINI_API_KEY into api_keys_vault:', err.message));
     }
 
     apiKeysVaultCache.set('global', { data: keys, timestamp: now });

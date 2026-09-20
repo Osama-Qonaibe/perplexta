@@ -340,23 +340,36 @@ export async function getProviderKey(provider: string): Promise<string | null> {
 
   let decryptedKey: string | null = null;
   try {
-    const result = await pool.query('SELECT encrypted_key, url_key FROM api_keys_vault WHERE provider = $1', [normProvider]);
+    const result = await pool.query('SELECT encrypted_key, url_key, is_active FROM api_keys_vault WHERE provider = $1', [normProvider]);
     if (result.rows.length > 0) {
-      if (result.rows[0].encrypted_key) {
-        decryptedKey = decrypt(result.rows[0].encrypted_key);
+      const row = result.rows[0];
+      if (row.is_active === false) {
+        return null;
       }
-      if (result.rows[0].url_key) {
-        urlKeyCache.set(normProvider, { value: result.rows[0].url_key, expiresAt: now + CACHE_TTL_MS });
+      if (row.encrypted_key) {
+        decryptedKey = decrypt(row.encrypted_key);
+      }
+      if (row.url_key) {
+        urlKeyCache.set(normProvider, { value: row.url_key, expiresAt: now + CACHE_TTL_MS });
+      }
+      if (decryptedKey && decryptedKey.trim().length > 0) {
+        vaultCache.set(normProvider, { value: decryptedKey, expiresAt: now + CACHE_TTL_MS });
+        return decryptedKey;
+      }
+      // Explicitly empty/deleted key in DB vault
+      return null;
+    } else {
+      // Check if vault has any records at all
+      const totalCountRes = await pool.query('SELECT COUNT(*) as cnt FROM api_keys_vault').catch(() => ({ rows: [{ cnt: '0' }] }));
+      const totalCnt = parseInt(totalCountRes.rows[0]?.cnt || '0', 10);
+      if (totalCnt > 0) {
+        // Vault has records, meaning keys are managed and this provider was explicitly deleted/not added
+        return null;
       }
     }
   } catch (_) {}
 
-  if (decryptedKey && decryptedKey.trim().length > 0) {
-    vaultCache.set(normProvider, { value: decryptedKey, expiresAt: now + CACHE_TTL_MS });
-    return decryptedKey;
-  }
-
-  // Environment fallback for Google / Gemini
+  // Environment fallback ONLY for fresh uninitialized vault for Google / Gemini
   if ((normProvider === 'google' || normProvider === 'gemini') && process.env.GEMINI_API_KEY) {
     vaultCache.set(normProvider, { value: process.env.GEMINI_API_KEY, expiresAt: now + CACHE_TTL_MS });
     return process.env.GEMINI_API_KEY;

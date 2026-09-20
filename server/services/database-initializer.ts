@@ -57,8 +57,7 @@ export async function ensureDatabaseTables(): Promise<void> {
         await targetPool.query(`
           INSERT INTO api_keys_vault (provider, encrypted_key, is_active, models, model_list, updated_at)
           VALUES ('google', $1, true, '[]', '[]', CURRENT_TIMESTAMP)
-          ON CONFLICT (provider) DO UPDATE
-          SET encrypted_key = EXCLUDED.encrypted_key, is_active = true, updated_at = CURRENT_TIMESTAMP
+          ON CONFLICT (provider) DO NOTHING
         `, [encrypt(geminiKey)]);
         invalidateApiKeysVaultCache();
 

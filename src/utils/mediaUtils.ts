@@ -197,53 +197,74 @@ export async function extractVideoThumbnail(videoSource: File | string, seekTime
   return meta.thumbnail;
 }
 
+const mediaUrlCache = new Map<string, string>();
+
 export function getMediaUrl(url?: string | null): string {
   if (!url || typeof url !== 'string') return '';
-  let clean = url.trim();
-  if (!clean) return '';
+  const trimmed = url.trim();
+  if (!trimmed) return '';
 
-  clean = clean.replace(/^https?:\/\/(?:localhost|127\.0\.0\.1|0\.0\.0\.0)(?::\d+)?/i, '');
-
-  if (
-    clean.startsWith('http://') ||
-    clean.startsWith('https://') ||
-    clean.startsWith('blob:') ||
-    clean.startsWith('data:')
-  ) {
-    if (clean.startsWith('data:')) return clean;
-    if (clean.includes(',')) {
-      clean = clean.split(',')[0].trim();
-    }
-    return clean;
+  if (mediaUrlCache.has(trimmed)) {
+    return mediaUrlCache.get(trimmed)!;
   }
 
-  if (clean.includes(',')) {
+  // Preserve data URLs and blob URLs directly
+  if (trimmed.startsWith('data:') || trimmed.startsWith('blob:')) {
+    return trimmed;
+  }
+
+  // Handle multiple comma-separated URLs if present (take the first)
+  let clean = trimmed;
+  if (clean.includes(',') && !clean.startsWith('data:')) {
     clean = clean.split(',')[0].trim();
   }
 
-  // Strip query parameters to avoid duplicate stacking (?v=...&t=...&t=...)
-  const [cleanPathOnly] = clean.split('?');
-
-  let resolved = '';
-  const uploadsMatch = cleanPathOnly.match(/(?:https?:\/\/[^\/]+)?\/?(?:uploads\/)+(.+)$/i);
+  // Check if it belongs to local /uploads/ directory (whether full domain, IP, or relative)
+  const uploadsMatch = clean.match(/(?:https?:\/\/[^\/]+)?\/?(?:uploads\/)+(.+)$/i);
   if (uploadsMatch && uploadsMatch[1]) {
-    resolved = `/uploads/${uploadsMatch[1].replace(/^\/+/, '')}`;
-  } else if (cleanPathOnly.startsWith('uploads/')) {
-    resolved = `/${cleanPathOnly}`;
-  } else if (cleanPathOnly.startsWith('/')) {
-    resolved = cleanPathOnly;
-  } else {
-    resolved = `/uploads/${cleanPathOnly}`;
+    const rawFileWithParams = uploadsMatch[1].replace(/^\/+/, '');
+    const cleanFileName = rawFileWithParams.split('?')[0];
+    
+    const normalized = `/uploads/${cleanFileName}?t=${BUILD_VERSION}`;
+    if (mediaUrlCache.size > 2000) mediaUrlCache.clear();
+    mediaUrlCache.set(trimmed, normalized);
+    return normalized;
   }
 
-  let finalUrl = getAssetUrl(resolved);
-  if (finalUrl.includes('/uploads/')) {
-    if (!finalUrl.includes('t=')) {
-      const sep = finalUrl.includes('?') ? '&' : '?';
-      finalUrl = `${finalUrl}${sep}t=${BUILD_VERSION}`;
+  // If it's an external HTTP/HTTPS URL (e.g. Unsplash, Google, CDN)
+  if (clean.startsWith('http://') || clean.startsWith('https://')) {
+    // Strip local hostnames if present
+    const relativeClean = clean.replace(/^https?:\/\/(?:localhost|127\.0\.0\.1|0\.0\.0\.0)(?::\d+)?/i, '');
+    if (relativeClean.startsWith('/uploads/')) {
+      const cleanFileName = relativeClean.replace(/^\/uploads\//, '').split('?')[0];
+      const normalized = `/uploads/${cleanFileName}?t=${BUILD_VERSION}`;
+      if (mediaUrlCache.size > 2000) mediaUrlCache.clear();
+      mediaUrlCache.set(trimmed, normalized);
+      return normalized;
     }
+    if (mediaUrlCache.size > 2000) mediaUrlCache.clear();
+    mediaUrlCache.set(trimmed, relativeClean);
+    return relativeClean;
   }
-  return finalUrl;
+
+  // Bare filename without slashes (e.g., "1726801234_photo.webp")
+  if (!clean.startsWith('/')) {
+    const cleanFileName = clean.split('?')[0];
+    const normalized = `/uploads/${cleanFileName}?t=${BUILD_VERSION}`;
+    if (mediaUrlCache.size > 2000) mediaUrlCache.clear();
+    mediaUrlCache.set(trimmed, normalized);
+    return normalized;
+  }
+
+  // Relative path starting with /
+  const [cleanPathOnly] = clean.split('?');
+  const normalized = cleanPathOnly.startsWith('/uploads/') 
+    ? `${cleanPathOnly}?t=${BUILD_VERSION}`
+    : getAssetUrl(cleanPathOnly);
+
+  if (mediaUrlCache.size > 2000) mediaUrlCache.clear();
+  mediaUrlCache.set(trimmed, normalized);
+  return normalized;
 }
 
 export function getMediaFallback(type: 'image' | 'video' | 'avatar' = 'image'): string {

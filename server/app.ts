@@ -705,8 +705,8 @@ app.use(express.static('public', {
 
 import jwt from 'jsonwebtoken';
 import { getSystemSettings } from './services/system.js';
-import { filePermissionCache, fileVersionCache, FILE_CACHE_TTL_MS, invalidateFilePermissionCache, invalidateFileVersionCache } from './services/filePermissionCache.js';
-export { filePermissionCache, fileVersionCache, invalidateFilePermissionCache, invalidateFileVersionCache };
+import { filePermissionCache, fileVersionCache, missingFileCache, FILE_CACHE_TTL_MS, MISSING_FILE_TTL_MS, invalidateFilePermissionCache, invalidateFileVersionCache } from './services/filePermissionCache.js';
+export { filePermissionCache, fileVersionCache, missingFileCache, invalidateFilePermissionCache, invalidateFileVersionCache };
 
 if (!fs.existsSync(uploadsPath)) {
   try {
@@ -772,12 +772,17 @@ async function checkIsPublicFile(filename: string): Promise<boolean> {
   const cleanName = path.basename(cleanPath);
   if (!cleanName || cleanName.includes('..') || cleanName.includes('/') || cleanName.includes('\\')) return false;
 
-  // System brand assets and default images are always public
+  // System brand assets, default images, and standard public upload media are always public
+  const ext = path.extname(cleanName).toLowerCase();
+  const publicMediaExtensions = ['.png', '.jpg', '.jpeg', '.gif', '.webp', '.svg', '.ico', '.avif', '.heic', '.jfif', '.mp4', '.webm', '.mp3', '.wav', '.mov'];
+  const isStandardMedia = publicMediaExtensions.includes(ext);
+
   if (
     cleanPath.startsWith('brand/') || 
     cleanPath.startsWith('brand\\') || 
     cleanPath === 'brand' || 
-    cleanPath === 'default_video_poster.jpg'
+    cleanPath === 'default_video_poster.jpg' ||
+    isStandardMedia
   ) {
     return true;
   }
@@ -787,8 +792,8 @@ async function checkIsPublicFile(filename: string): Promise<boolean> {
 
   if (filePermissionCache.has(cacheKey)) {
     const cached = filePermissionCache.get(cacheKey)!;
-    if (now < cached.expiresAt && cached.authorized) {
-      return true;
+    if (now < cached.expiresAt) {
+      return cached.authorized;
     }
     filePermissionCache.delete(cacheKey);
   }
@@ -853,14 +858,11 @@ async function checkIsPublicFile(filename: string): Promise<boolean> {
       }
     }
 
-    if (isPublic) {
-      filePermissionCache.set(cacheKey, { authorized: true, expiresAt: now + FILE_CACHE_TTL_MS });
-      return true;
-    }
-
-    return false;
+    filePermissionCache.set(cacheKey, { authorized: isPublic, expiresAt: now + FILE_CACHE_TTL_MS });
+    return isPublic;
   } catch (dbErr) {
     console.error('[Upload Secure Handler] checkIsPublicFile error:', dbErr);
+    filePermissionCache.set(cacheKey, { authorized: false, expiresAt: now + FILE_CACHE_TTL_MS });
     return false;
   }
 }
@@ -941,6 +943,16 @@ app.use('/uploads', async (req: express.Request, res: express.Response, next: ex
       }
 
       if (!foundFile) {
+        const nowMs = Date.now();
+        if (missingFileCache.has(filename)) {
+          const exp = missingFileCache.get(filename)!;
+          if (nowMs < exp) {
+            res.setHeader('Cache-Control', 'public, max-age=60');
+            return res.status(404).json({ error: 'File not found' });
+          }
+          missingFileCache.delete(filename);
+        }
+
         try {
           if (pool) {
             const dbRes = await pool.query(
@@ -976,7 +988,8 @@ app.use('/uploads', async (req: express.Request, res: express.Response, next: ex
           console.error('[Uploads] DB Fallback error:', dbErr);
         }
         
-        res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
+        missingFileCache.set(filename, nowMs + MISSING_FILE_TTL_MS);
+        res.setHeader('Cache-Control', 'public, max-age=60');
         return res.status(404).json({ error: 'File not found' });
       }
     }
@@ -1471,7 +1484,7 @@ app.post('/api/activity/log', async (req, res) => {
     const userAgent = req.headers['user-agent'] || null;
 
     let validUserId: number | null = null;
-    if (userId) {
+    if (userId !== undefined && userId !== null) {
       const parsedId = typeof userId === 'number' ? userId : parseInt(String(userId), 10);
       if (!isNaN(parsedId) && parsedId > 0) {
         try {

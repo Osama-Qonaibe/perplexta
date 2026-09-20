@@ -17,6 +17,7 @@ import { OrchestratorRegistry } from './orchestratorRegistry.js';
 import { withTimeout, safeDecrementOnFailure, safeParseResponse, AI_CALL_TIMEOUT_MS, TTS_TIMEOUT_MS, STT_TIMEOUT_MS } from './tasks/utils.js';
 import { sanitizeHTMLAndXSS, validatePromptLength, MAX_CUMULATIVE_HISTORY_CHARS, MAX_DOC_EXTRACT_SIZE } from '../utils/security.js';
 import { userLoader, getCachedOrchestratorConfig, getCachedSystemSettings, getCachedApiKeysVault, invalidateApiKeysVaultCache, invalidateOrchestratorConfigCache } from '../db/queries.js';
+import { acquireInFlightLock, releaseInFlightLock } from '../utils/inFlightLock.js';
 import { extractDirectUserMemories, updateChatContextSummary, consolidateAllUserMemories, addMemory } from './memory.js';
 import { scanForPromptInjection, redactInternalArtifacts } from './securitySanitizer.js';
 
@@ -326,7 +327,39 @@ Instruction: You MUST explicitly disclose this forensic audit to the user. Descr
     };
   }
 
-  const quotaCheck = await checkAndIncrementQuota(userId, toolIdStr);
+  // In-Flight Request Deduplication Check
+  const lockAcquired = acquireInFlightLock(userId, toolIdStr, finalPrompt);
+  if (!lockAcquired) {
+    const userRes = await pool.query('SELECT language FROM users WHERE id = $1', [userId]).catch(() => ({ rows: [] }));
+    const isAr = (userRes.rows[0]?.language || 'ar') === 'ar';
+    throw new Error(JSON.stringify({
+      error: `An identical '${toolIdStr}' generation request is already in progress. Please wait for it to finish.`,
+      error_ar: `هناك طلب توليد متطابق قيد المعالجة حالياً لنفس النص بنفس الأداة ('${toolIdStr}'). يرجى الانتظار لحين اكتمال الطلب الأول.`,
+      type: "DUPLICATE_REQUEST_IN_FLIGHT"
+    }));
+  }
+
+  try {
+    const quotaCheck = await checkAndIncrementQuota(userId, toolIdStr);
+
+    if (!quotaCheck.allowed) {
+      const userRes = await pool.query('SELECT language FROM users WHERE id = $1', [userId]).catch(() => ({ rows: [] }));
+      const isAr = (userRes.rows[0]?.language || 'ar') === 'ar';
+      const periodLabel = quotaCheck.period === 'monthly' 
+        ? (isAr ? 'الشهري' : 'monthly') 
+        : (isAr ? 'اليومي' : 'daily');
+      const limitVal = quotaCheck.limit !== undefined ? quotaCheck.limit : 0;
+      const currentVal = quotaCheck.currentUsage !== undefined ? quotaCheck.currentUsage : limitVal;
+
+      throw new Error(JSON.stringify({
+        error: `Daily or monthly usage limit reached for '${toolIdStr}'. (${currentVal}/${limitVal})`,
+        error_ar: `لقد استنفدت الحد الأقصى المتاح لاستخدام أداة '${toolIdStr}'. الحد الـ${periodLabel} المخصص لحسابك هو ${limitVal} طلب.`,
+        type: "QUOTA_EXCEEDED",
+        limit: limitVal,
+        currentUsage: currentVal,
+        period: quotaCheck.period
+      }));
+    }
 
   return await executeWithBillingMiddleware(
     userId,
@@ -868,4 +901,7 @@ ${refinedSystemPromptSegment}`.trim();
       apiKey: successfulApiKey
     };
   });
+  } finally {
+    releaseInFlightLock(userId, toolIdStr, finalPrompt);
+  }
 };

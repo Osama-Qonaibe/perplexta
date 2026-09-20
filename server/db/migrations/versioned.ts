@@ -1686,6 +1686,17 @@ export async function runVersionedMigrations(
       await tx.query(`CREATE INDEX IF NOT EXISTS idx_seo_metadata_route_path ON seo_metadata(route_path)`);
       await tx.query(`CREATE INDEX IF NOT EXISTS idx_seo_metadata_entity ON seo_metadata(entity_type, entity_id)`);
 
+      // Ensure bulletin_ads has SEO columns before querying
+      await ensureColumnsBulk(tx, 'bulletin_ads', {
+        meta_title_en: { type: 'VARCHAR(255)' },
+        meta_title_ar: { type: 'VARCHAR(255)' },
+        meta_description_en: { type: 'TEXT' },
+        meta_description_ar: { type: 'TEXT' },
+        keywords_en: { type: 'TEXT' },
+        keywords_ar: { type: 'TEXT' },
+        og_image_url: { type: 'TEXT' }
+      });
+
       // Seed/populate dynamic routes for existing bulletin ads
       await tx.query(`
         INSERT INTO seo_metadata (route_path, entity_type, entity_id, title_en, title_ar, description_en, description_ar, og_image_url, keywords_en, keywords_ar, updated_at)

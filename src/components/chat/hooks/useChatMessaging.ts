@@ -279,7 +279,10 @@ export const useChatMessaging = (
 
       if (!res.ok) {
         const errData = await res.json().catch(() => ({}));
-        throw new Error(errData.message || errData.error || 'Failed to sync message');
+        const errMsg = (dir === 'rtl' && errData.error_ar) 
+          ? errData.error_ar 
+          : (errData.error || errData.message || 'Failed to sync message');
+        throw new Error(errMsg);
       }
     } catch (err: any) {
       if (err.name === 'AbortError') {

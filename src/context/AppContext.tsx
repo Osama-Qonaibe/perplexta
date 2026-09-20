@@ -1735,9 +1735,23 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   });
   const userRef = useRef<User | null>(user);
   const isSyncingAuth = useRef(false);
+  const lastSessionStartRef = useRef<{ path: string; time: number } | null>(null);
 
   const logUserActivity = useCallback(async (eventType: string, eventDetails?: any) => {
     try {
+      if (eventType === 'SESSION_START') {
+        const currentPath = eventDetails?.path || (typeof window !== 'undefined' ? window.location.pathname : '');
+        const now = Date.now();
+        if (
+          lastSessionStartRef.current &&
+          lastSessionStartRef.current.path === currentPath &&
+          now - lastSessionStartRef.current.time < 30000
+        ) {
+          return; // Throttled duplicate session start within 30 seconds
+        }
+        lastSessionStartRef.current = { path: currentPath, time: now };
+      }
+
       const rawId = userRef.current?.id;
       const numericUserId = typeof rawId === 'number' && rawId > 0
         ? rawId
@@ -2677,7 +2691,10 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   }, [socket, queryClient]);
 
   const logout = async (forceRedirect = true) => {
-    logUserActivity('LOGOUT');
+    const hasActiveSession = !!(token || userRef.current || user);
+    if (hasActiveSession) {
+      logUserActivity('LOGOUT');
+    }
     if (!token && !user) {
       purgeSession(forceRedirect);
       return;
