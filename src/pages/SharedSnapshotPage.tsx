@@ -130,7 +130,7 @@ export const SharedSnapshotPage: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen-safe w-full bg-[var(--surface-page)] text-[var(--text-primary)] font-sans relative overflow-x-hidden flex flex-col transition-theme pb-24" dir={dir}>
+    <div className="h-[100dvh] w-full bg-[var(--surface-page)] text-[var(--text-primary)] font-sans relative overflow-y-auto overflow-x-hidden flex flex-col transition-theme pb-24 main-scroll-container custom-scrollbar" dir={dir}>
       {/* Background Decorative Gradients */}
       <div className="absolute top-0 inset-x-0 h-[500px] bg-gradient-to-b from-gray-500/10 via-transparent to-transparent pointer-events-none" />
       <div className="absolute top-1/4 -start-48 w-96 h-96 bg-accent/5 rounded-full blur-[100px] pointer-events-none" />

@@ -305,7 +305,7 @@ export const TOKEN_REGISTRY: TokenDefinition[] = [
     labelEn: 'GitHub Pink (Sponsorship & Viral)',
     labelAr: 'وردي جيت هب (الدعم والتفاعل)',
     descriptionEn: 'Vibrant pink for viral book interactions, creator badges, and gifts',
-    descriptionAr: 'الوردي الزاهي لتفاعلات مجتمع فايرال بوك والشارات التفاعلية',
+    descriptionAr: 'الوردي الزاهي لتفاعلات مجتمع فيرال بوك والشارات التفاعلية',
     defaultValueLight: DEFAULT_LIGHT_TOKENS['--github-pink'],
     defaultValueDark: DEFAULT_DARK_TOKENS['--github-pink'],
     cssVariable: '--github-pink'

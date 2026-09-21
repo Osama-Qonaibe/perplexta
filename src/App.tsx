@@ -7,6 +7,12 @@ import { ArtifactProvider } from './context/ArtifactContext';
 import { MainLayout } from './layouts/MainLayout';
 import { AdminLayout } from './layouts/AdminLayout';
 import { injectJsonLdSchema, removeJsonLdSchema } from './utils/seoSchemaBuilder';
+import {
+  fetchSeoMetadataWithCache,
+  fetchSeoRoutesListWithCache,
+  getCachedSeoMetadata,
+  getCachedSeoRoutesList
+} from './utils/seoCache';
 import { UnifiedFeedbackProvider } from '@/design-system';
 
 const resolveModule = (m: any, name?: string) => {
@@ -73,6 +79,7 @@ const Terms = lazyRetry(() => import('./pages/Terms'), 'Terms');
 const Privacy = lazyRetry(() => import('./pages/Privacy'), 'Privacy');
 const About = lazyRetry(() => import('./pages/About'), 'About');
 const Copyright = lazyRetry(() => import('./pages/Copyright'), 'Copyright');
+const LegalDocsPage = lazyRetry(() => import('./pages/LegalDocsPage'), 'LegalDocsPage');
 const ResetPasswordPage = lazyRetry(() => import('./pages/ResetPasswordPage'), 'ResetPasswordPage');
 const GoogleHubPage = lazyRetry(() => import('./pages/GoogleHubPage'));
 const BulletinBoardPage = lazyRetry(() => import('./pages/BulletinBoardPage'), 'BulletinBoardPage');
@@ -165,51 +172,27 @@ const PWAWrapper = ({ children }: { children: React.ReactNode }) => {
   }, [theme]);
 
   const [dbRouteSeo, setDbRouteSeo] = useState<any[]>(() => {
-    try {
-      const cached = sessionStorage.getItem('perplexta_seo_routes');
-      return cached ? JSON.parse(cached) : [];
-    } catch {
-      return [];
-    }
+    const cached = getCachedSeoRoutesList();
+    return cached.hit ? cached.data : [];
   });
   const [dynamicSeoMap, setDynamicSeoMap] = useState<Record<string, any>>(() => {
-    try {
-      const cached = sessionStorage.getItem('perplexta_dynamic_seo_map');
-      return cached ? JSON.parse(cached) : {};
-    } catch {
-      return {};
-    }
+    if (typeof window === 'undefined') return {};
+    const norm = window.location.pathname === '/' ? '/' : window.location.pathname.replace(/\/+$/, '');
+    const initialMeta = getCachedSeoMetadata(norm);
+    return initialMeta.hit && initialMeta.data ? { [norm]: initialMeta.data } : {};
   });
-  const requestedRoutesRef = useRef<Set<string>>(new Set());
 
   useEffect(() => {
-    const initialRoute = typeof window !== 'undefined' ? (window.location.pathname === '/' ? '/' : window.location.pathname.replace(/\/$/, '')) : '/';
-    requestedRoutesRef.current.add(initialRoute);
-    try {
-      const cached = sessionStorage.getItem('perplexta_dynamic_seo_map');
-      if (cached) {
-        const parsed = JSON.parse(cached);
-        Object.keys(parsed).forEach(route => {
-          requestedRoutesRef.current.add(route);
-        });
+    let isCurrent = true;
+    fetchSeoRoutesListWithCache().then((routes) => {
+      if (isCurrent && routes && routes.length > 0) {
+        setDbRouteSeo(routes);
       }
-    } catch {}
+    });
+    return () => {
+      isCurrent = false;
+    };
   }, []);
-
-  useEffect(() => {
-    if (dbRouteSeo.length > 0) return;
-    fetch('/api/seo-routes')
-      .then(res => res.json())
-      .then(data => {
-        if (Array.isArray(data)) {
-          setDbRouteSeo(data);
-          try {
-            sessionStorage.setItem('perplexta_seo_routes', JSON.stringify(data));
-          } catch {}
-        }
-      })
-      .catch(() => {});
-  }, [dbRouteSeo.length]);
 
   const currentPath = location.pathname;
 
@@ -234,26 +217,29 @@ const PWAWrapper = ({ children }: { children: React.ReactNode }) => {
 
   useEffect(() => {
     if (isSensitive) return;
-    const normalizedPath = currentPath === '/' ? '/' : currentPath.replace(/\/$/, '');
-    if (requestedRoutesRef.current.has(normalizedPath) || dynamicSeoMap[normalizedPath]) return;
+    const normalizedPath = currentPath === '/' ? '/' : currentPath.replace(/\/+$/, '');
 
-    requestedRoutesRef.current.add(normalizedPath);
+    // 1. Synchronous Instant Cache Check (Memory / SessionStorage)
+    const cached = getCachedSeoMetadata(normalizedPath);
+    if (cached.hit) {
+      if (cached.data && !dynamicSeoMap[normalizedPath]) {
+        setDynamicSeoMap(prev => ({
+          ...prev,
+          [normalizedPath]: cached.data
+        }));
+      }
+      return;
+    }
+
+    // 2. Asynchronous In-Flight Deduplicated Fetch
     let isCurrent = true;
-
-    fetch(`/api/seo-metadata?route=${encodeURIComponent(normalizedPath)}`)
-      .then(res => res.json())
-      .then(data => {
-        if (isCurrent && data && data.metadata) {
-          setDynamicSeoMap(prev => {
-            const updated = {
-              ...prev,
-              [normalizedPath]: data.metadata
-            };
-            try {
-              sessionStorage.setItem('perplexta_dynamic_seo_map', JSON.stringify(updated));
-            } catch {}
-            return updated;
-          });
+    fetchSeoMetadataWithCache(normalizedPath)
+      .then(metadata => {
+        if (isCurrent && metadata) {
+          setDynamicSeoMap(prev => ({
+            ...prev,
+            [normalizedPath]: metadata
+          }));
         }
       })
       .catch(() => {});
@@ -261,7 +247,7 @@ const PWAWrapper = ({ children }: { children: React.ReactNode }) => {
     return () => {
       isCurrent = false;
     };
-  }, [currentPath, isSensitive, dynamicSeoMap]);
+  }, [currentPath, isSensitive]);
 
   useEffect(() => {
     const updateMetaTag = (attrType: string, attrValue: string, content: string) => {
@@ -478,6 +464,10 @@ export default function App() {
               <Route path="copyright" element={<Copyright />} />
               <Route path="reset-password" element={<ResetPasswordPage />} />
             </Route>
+
+            <Route path="docs/legal/:docId?" element={<LegalDocsPage />} />
+            <Route path="docs/legal" element={<LegalDocsPage />} />
+            <Route path="legal" element={<Navigate to="/docs/legal" replace />} />
 
             <Route path="share/:id" element={<SharedSnapshotPage />} />
 

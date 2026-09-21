@@ -33,6 +33,9 @@ import {
   Wallet,
   Gift,
   CreditCard,
+  Database,
+  Server,
+  Share2,
 } from "lucide-react";
 import { motion } from "motion/react";
 import { perplextaPageTransition } from "@/design-system";
@@ -51,10 +54,37 @@ export const About: React.FC = () => {
     setExpandedCards((prev) => ({ ...prev, [index]: !prev[index] }));
   };
 
+  const architecturalPillars = [
+    {
+      id: "dual_db",
+      title: isAr ? "بنية قواعد البيانات الثنائية" : "Dual-Database Architecture",
+      desc: isAr
+        ? "فصل تام وعالي الأمان بين قاعدة البيانات التشغيلية الأساسية (للبيانات والملفات والجلسات) وقاعدة بيانات الحسابات المالية ودفتر الأستاذ (Ledger) للمعاملات والأرصدة."
+        : "Absolute segregation between the core operational database (telemetry, files, sessions) and the secure append-only financial Ledger vault for wallets and transactions.",
+      icon: <Database size={22} className="text-[var(--fg-accent)]" />,
+    },
+    {
+      id: "orchestrator",
+      title: isAr ? "محرك التوجيه الصامت (Orchestrator)" : "Silent Failover AI Orchestrator",
+      desc: isAr
+        ? "نظام توجيه ذكي ديناميكي يختار النماذج والمزودين تلقائياً مع تفعيل التبديل الفوري عند استنفاد الحصص، مما يضمن استمرارية التشغيل بنسبة 100% ودون أي انقطاع."
+        : "Dynamic routing intelligence that automatically assigns and fails over between AI models and providers, ensuring 100% uptime and zero-latency execution.",
+      icon: <Cpu size={22} className="text-[var(--fg-accent)]" />,
+    },
+    {
+      id: "vault",
+      title: isAr ? "خزانة مفاتيح أمنية بصفر زمن انتقال" : "Zero-Latency API Vault",
+      desc: isAr
+        ? "إدارة مشفرة بالكامل (AES-256) لمفاتيح مزودي الذكاء الاصطناعي والخدمات السحابية مع قراءة محلية فورية تضمن أماناً سيادياً وسرعة استجابة فائقة."
+        : "Fully encrypted (AES-256) API key management and local cache loading guaranteeing sovereign enterprise security and lightning-fast response times.",
+      icon: <Lock size={22} className="text-[var(--fg-accent)]" />,
+    },
+  ];
+
   const featuresToolsList = [
     {
       id: "chat",
-      title: isAr ? "محادثة" : "Chat",
+      title: isAr ? "المساعد الاستراتيجي (Chat)" : "Elite Chat Assistant",
       desc: isAr
         ? "مساعد استراتيجي نخبوي للنقاش المهني، حل المشكلات المعقدة، والتحليل المنطقي العام بشكل سريع وفعال."
         : "Elite strategic assistant for professional discourse, complex problem solving, and efficient logical analysis.",
@@ -64,7 +94,7 @@ export const About: React.FC = () => {
     },
     {
       id: "code",
-      title: isAr ? "كود" : "Code",
+      title: isAr ? "محطة هندسة البرمجيات (Code)" : "Software Engineering Studio",
       desc: isAr
         ? "محطة عمل هندسة البرمجيات. يوفر بناء الهياكل البرمجية المتقدمة وكتابة شيفرات دقيقة ونظيفة تلبي احتياجاتك."
         : "Master-level software engineering workstation providing advanced code scaffolding and generation.",
@@ -74,7 +104,7 @@ export const About: React.FC = () => {
     },
     {
       id: "perplexta_analysis",
-      title: isAr ? "تحليل" : "Analysis",
+      title: isAr ? "البحث والتحليل العميق (Analysis)" : "Advanced Search & Analysis",
       desc: isAr
         ? "البحث التقني والتحليل الرقمي العميق لاستخراج البيانات الاستراتيجية والمؤشرات الإحصائية بدقة فائقة."
         : "High-precision intelligent engine for deep search and extracting strategic data and statistical indicators.",
@@ -84,7 +114,7 @@ export const About: React.FC = () => {
     },
     {
       id: "image",
-      title: isAr ? "صورة" : "Image",
+      title: isAr ? "محرك التوليد البصري (Image)" : "Visual Synthesis Engine",
       desc: isAr
         ? "محرك توليد بصري عالي الدقة للأصول المهنية. إمكانية تحويل النصوص لصور بمستوى إبداعي استثنائي لمختلف الاستخدامات."
         : "High-precision visual synthesis engine for professional assets. Text to image generation with exceptional creativity.",
@@ -94,7 +124,7 @@ export const About: React.FC = () => {
     },
     {
       id: "video",
-      title: isAr ? "فيديو" : "Video",
+      title: isAr ? "استوديو الفيديو السينمائي (Video)" : "Cinematic Video Studio",
       desc: isAr
         ? "توليد مشاهد بصرية احترافية وتحريك العناصر بناءً على التعليمات الوصفية، مع الالتزام بالمعايير الدولية السينمائية."
         : "Generate professional visual scenes and animate elements with strict international cinematic standards.",
@@ -103,18 +133,18 @@ export const About: React.FC = () => {
       icon: <Video size={20} />,
     },
     {
-      id: "sovereign_search",
-      title: isAr ? "البحوث والدراسات" : "Research & Studies",
+      id: "viralbook",
+      title: isAr ? "شبكة فيرال بوك (ViralBook Hub)" : "ViralBook Social & Ads Hub",
       desc: isAr
-        ? "منظومة متطورة لتفكيك وتركيب البحوث والدراسات الأكاديمية والمراجعة المنهجية وتحليل الأدبيات العلمية."
-        : "Advanced system for academic literature synthesis, thesis framework development, and empirical research analysis.",
+        ? "المنصة الاجتماعية والتجارية المتكاملة: نشر المنشورات والقصص والمقاطع، توثيق الصفحات التجاريّة، إدارة الإعلانات والترويج بخصم لحظي من المحفظة."
+        : "Integrated social & commercial hub: posts, stories, reels, verified business pages, campaign ad boosting with real-time wallet debiting.",
       imageUrl:
-        "https://images.unsplash.com/photo-1509062522246-3755977927d7?auto=format&fit=crop&q=80&w=600",
-      icon: <BookOpen size={20} />,
+        "https://images.unsplash.com/photo-1432821596592-e2c18b78144f?auto=format&fit=crop&q=80&w=600",
+      icon: <Share2 size={20} />,
     },
     {
       id: "ads_copilot",
-      title: isAr ? "مساعد الإعلانات (Ads Copilot)" : "Ads Copilot",
+      title: isAr ? "مساعد الإعلانات الذكي (Ads Copilot)" : "Ads Copilot",
       desc: isAr
         ? "مساعد استراتيجي مخصص لصياغة الحملات الإعلانية، كتابة النصوص التسويقية، وتوزيع الميزانيات لمنصة فيرال بوك والمنصات العالمية."
         : "Strategic campaign designer, high-converting ad copywriter, and media buying copilot for ViralBook and global ad platforms.",
@@ -124,7 +154,7 @@ export const About: React.FC = () => {
     },
     {
       id: "canvas",
-      title: isAr ? "استوديو الصوت" : "Audio Studio",
+      title: isAr ? "استوديو الصوت واللحن (Audio Studio)" : "Audio & Music Studio",
       desc: isAr
         ? "محرك هندسة صوتي ولحني احترافي متخصص في تحرير الصوت وإدارة الملفات الصوتية بميزات ومرونة عالية."
         : "Professional audio and melody engineering engine specialized in sound editing and audio management.",
@@ -134,7 +164,7 @@ export const About: React.FC = () => {
     },
     {
       id: "stt",
-      title: isAr ? "تحويل الصوت الى نص" : "Speech to Text",
+      title: isAr ? "التفريغ الصوتي (Speech to Text)" : "Speech to Text Engine",
       desc: isAr
         ? "محرك التفريغ الصوتي فائق الدقة. استخراج النصوص من المحادثات والمقاطع الصوتية بكفاءة عالية وبدون أخطاء."
         : "High-fidelity acoustic transcription engine. Efficient and accurate extraction of text from audio clips.",
@@ -144,7 +174,7 @@ export const About: React.FC = () => {
     },
     {
       id: "tts",
-      title: isAr ? "تحويل النص الى صوت" : "Text to Speech",
+      title: isAr ? "التحويل الصوتي (Text to Speech)" : "Text to Speech Synthesis",
       desc: isAr
         ? "توليد صوتي طبيعي متطور وهندسة صوتية نخبوية، مما يتيح لك الاستماع للنصوص والمحتويات بنبرة واقعية ولغات متعددة."
         : "Elite natural acoustic synthesis and voice engineering, allowing you to listen to context in a realistic tone.",
@@ -155,6 +185,20 @@ export const About: React.FC = () => {
   ];
 
   const newsList = [
+    {
+      date: "2026-09-21",
+      title: isAr
+        ? "إطلاق الإصدار الشامل لشبكة فيرال بوك التجارية"
+        : "Full Launch of ViralBook Commercial & Social Network",
+      excerpt: isAr
+        ? "تدشين لوحة إعلانات فيرال بوك، الصفحات التجارية الموثقة، ونظام الترويج المالي المرتبط بالمحفظة..."
+        : "Deploying ViralBook bulletin feed, verified business pages, and wallet-backed ad boosting system...",
+      fullContent: isAr
+        ? "أطلقنا رسمياً شبكة فيرال بوك المتكاملة داخل بيربليكستا، والتي تضم نظاماً متطوراً لإدارة الصفحات التجارية، المنشورات والقصص والمقاطع (Reels)، مع نظام إعلاني يعتمد على الخصم الفوري من المحفظة الرقمية وتحليلات العائد على الإعلانات (ROAS)."
+        : "We have officially launched the integrated ViralBook network within Perplexta, featuring verified merchant pages, posts, stories, reels, and an ad boosting engine with real-time wallet debiting and ROAS analytics.",
+      imageUrl:
+        "https://images.unsplash.com/photo-1432821596592-e2c18b78144f?auto=format&fit=crop&q=80&w=600",
+    },
     {
       date: "2026-05-27",
       title: isAr
@@ -168,20 +212,6 @@ export const About: React.FC = () => {
         : "We successfully integrated a professional video generation engine and expanded our elite tools to include Education Assistant, Legal Assistant, and Research Notebook. This update makes the platform a unified ecosystem integrating code analysis, complex file parsing, audio generation, and visual creativity in a single professional interface with a robust architecture ensuring error-free execution.",
       imageUrl:
         "https://images.unsplash.com/photo-1536440136628-849c177e76a1?auto=format&fit=crop&q=80&w=600",
-    },
-    {
-      date: "2026-05-20",
-      title: isAr
-        ? "إطلاق تحديث ذكاء بيربليكستا 2.5"
-        : "Perplexta Intelligence 2.5 Launched",
-      excerpt: isAr
-        ? "مستوى جديد من استخراج المعرفة والوعي الذاتي بالسياق النشط مع معالجة PDF متطورة..."
-        : "A new level of knowledge extraction and stateful context tracking with robust PDF support...",
-      fullContent: isAr
-        ? "أطلقنا رسمياً التحديث 2.5 لنواة المعرفة في بيربليكستا. يأتي هذا التحديث بدعم كامل لمعالجة واستخلاص الملفات عالية الكثافة (حتى 100 ميجابايت)، وبروتوكول دمج الذاكرة التلقائي لحماية النواة من تراكم الجلسات، إلى جانب تصفية الأخطاء الهيكلية لاسترجاع الاستجابات الذكية بأسرع وتيرة."
-        : "We have officially deployed Perplexta Intelligence 2.5. This release introduces high-capacity context attachment capabilities (up to 100MB volumes), real-time proactive memory distillation, and robust PDF parsing APIs, paired with structural JSON parsing repair for reasoning models (like o1 and DeepSeek).",
-      imageUrl:
-        "https://images.unsplash.com/photo-1451187580459-43490279c0fa?auto=format&fit=crop&q=80&w=600",
     },
     {
       date: "2026-05-15",
@@ -292,9 +322,9 @@ export const About: React.FC = () => {
   const economyList = [
     {
       id: "wallet",
-      title: isAr ? "المحفظة الرقمية" : "Digital Wallet",
+      title: isAr ? "المحفظة الرقمية والدفتر المزدوج" : "Digital Wallet & Dual-Ledger",
       desc: isAr 
-        ? "نظام مالي متطور الدفتر المزدوج. شحن الرصيد، الدفع بنقرة واحدة، وتتبع دقيق للمعاملات المالية وحركات الأرصدة." 
+        ? "نظام مالي متطور يعتمد دفتر الأستاذ المزدوج. شحن الرصيد، الدفع بنقرة واحدة، وتتبع دقيق للمعاملات المالية وحركات الأرصدة." 
         : "Advanced Dual-Ledger financial system. Top-up balances, 1-click payments, and precise transaction tracking.",
       imageUrl: "https://images.unsplash.com/photo-1616803140344-6682afb13cda?auto=format&fit=crop&q=80&w=600",
       icon: <Wallet size={20} />
@@ -312,7 +342,7 @@ export const About: React.FC = () => {
        id: "subscriptions",
        title: isAr ? "الاشتراكات والباقات" : "Flexible Subscriptions",
        desc: isAr
-         ? "باقات متنوعة تناسب احتياجاتك، بدءاً من خطط البداية وحتى قوة النخبة الاستراتيجية مع تحكم كامل بالحصص."
+         ? "باقات متنوعة تناسب احتياجاتك، بدءاً من خطط البداية وحتى قوة النخبة الاستراتيجية مع تحكم كامل بالحصص والحدود."
          : "Diverse plans tailoring to your needs, from Starter to Elite strategic power with full quota control.",
        imageUrl: "https://images.unsplash.com/photo-1554224155-8d04cb21cd6c?auto=format&fit=crop&q=80&w=600",
        icon: <CreditCard size={20} />
@@ -347,10 +377,10 @@ export const About: React.FC = () => {
                 className="text-[var(--fg-accent)]"
                 size={20}
               />
-              {isAr ? "من نحن" : "About Us"}
+              {isAr ? "من نحن - موسوعة بيربليكستا" : "About Perplexta Platform"}
             </h1>
             <p className="text-[10px] text-[var(--text-muted)] font-bold uppercase tracking-widest font-mono">
-              {isAr ? "رؤية المنصة وهويتها" : "PLATFORM VISION & IDENTITY"}
+              {isAr ? "المنظومة الكاملة والقدرات الاستراتيجية" : "COMPLETE ECOSYSTEM & STRATEGIC CAPABILITIES"}
             </p>
           </div>
         </div>
@@ -360,16 +390,50 @@ export const About: React.FC = () => {
         <section className="text-center space-y-4 pt-4">
           <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-[var(--radius-xs)] bg-[var(--surface-subtle)] border border-[var(--border-subtle)] text-[var(--text-primary)] text-xs font-bold uppercase tracking-widest">
             <Info size={14} className="text-[var(--fg-accent)]" />
-            {isAr ? "من نحن" : "About Us"}
+            {isAr ? "الموسوعة الهندسية والمؤسسية" : "Engineering & Corporate Encyclopedia"}
           </div>
           <h1 className="text-4xl md:text-6xl font-black tracking-tighter text-[var(--text-primary)] uppercase">
             {isAr ? "بيربليكستا" : "PERPLEXTA"}
           </h1>
           <p className="text-lg md:text-2xl font-bold text-[var(--fg-accent)] max-w-2xl mx-auto leading-relaxed">
             {isAr
-              ? "القوة الكامنة خلف القرار الذكي"
-              : "The Power Behind Smart Decisions"}
+              ? "القوة الكامنة خلف القرار الذكي والمنظومة الرقمية السيادية"
+              : "The Power Behind Smart Decisions & Sovereign Digital Ecosystem"}
           </p>
+        </section>
+
+        {/* Architectural Pillars Section */}
+        <section className="space-y-8">
+          <div className="text-center space-y-2">
+            <h2 className="text-2xl md:text-3xl font-black text-[var(--text-primary)] uppercase flex items-center justify-center gap-2">
+              <Server className="text-[var(--fg-accent)]" size={24} />
+              {isAr ? "العمارة التقنية والنواة السيادية" : "Architectural Core & Sovereign Engine"}
+            </h2>
+            <p className="text-sm text-[var(--text-secondary)] max-w-2xl mx-auto font-medium">
+              {isAr
+                ? "ركائز صلبة تضمن أعلى معايير الأمان، عزل البيانات، والمرونة التشغيلية."
+                : "Solid pillars ensuring highest standards of security, data isolation, and operational resilience."}
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {architecturalPillars.map((pillar, i) => (
+              <div
+                key={`pillar-${i}-${pillar.id}`}
+                className="p-6 rounded-[var(--radius-md)] border border-[var(--border-default)] bg-[var(--surface-card)] hover:border-[var(--border-accent)] transition-theme group shadow-sm flex flex-col gap-3"
+              >
+                <div className="w-10 h-10 rounded-[var(--radius-xs)] bg-[var(--surface-subtle)] border border-[var(--border-default)] flex items-center justify-center group-hover:border-[var(--border-accent)] transition-theme">
+                  {pillar.icon}
+                </div>
+                <h3 className="text-lg font-black text-[var(--text-primary)]">
+                  {pillar.title}
+                </h3>
+                <p className="text-xs md:text-sm text-[var(--text-secondary)] leading-relaxed font-semibold font-sans">
+                  {pillar.desc}
+                </p>
+              </div>
+            ))}
+          </div>
         </section>
 
         <section className="grid grid-cols-1 md:grid-cols-2 gap-10 items-start">
@@ -378,13 +442,13 @@ export const About: React.FC = () => {
               <div className="flex items-center gap-3 text-[var(--text-primary)] mb-4">
                 <Target className="w-6 h-6 text-[var(--text-muted)] group-hover:text-[var(--fg-accent)] transition-theme" />
                 <h2 className="text-xl md:text-2xl font-black">
-                  {isAr ? "الرؤية" : "Vision"}
+                  {isAr ? "الرؤية الاستراتيجية" : "Strategic Vision"}
                 </h2>
               </div>
               <p className="text-sm md:text-base leading-relaxed text-[var(--text-secondary)] font-medium">
                 {isAr
-                  ? "نؤمن بأن التكنولوجيا يجب أن تخدم الإنسان ببساطة. رؤيتنا هي إنهاء تشتت المستخدم بين الأدوات عبر نظام متكامل وذكي يفهم احتياجاتك ويوجهها بدقة للمسار التقني الأمثل، لضمان نتائج مثالية وموثوقة."
-                  : "We believe technology should serve humanity simply. Our vision is to eliminate tool fragmentation through an intelligent, integrated platform that understands your needs and autonomously directs them to the optimal technical path, ensuring seamless, reliable results."}
+                  ? "نؤمن بأن التكنولوجيا يجب أن تخدم الإنسان ببساطة. رؤيتنا هي بناء منصة سيادية متكاملة تضم أدوات الذكاء الاصطناعي، شبكة فيرال بوك الاجتماعية والتجارية، والدفتر المالي المزدوج في بيئة واحدة فائقة الأمان."
+                  : "We believe technology should serve humanity simply. Our vision is to build an integrated sovereign platform uniting AI tools, ViralBook social/commercial network, and dual-ledger finance in one ultra-secure ecosystem."}
               </p>
             </div>
 
@@ -392,13 +456,13 @@ export const About: React.FC = () => {
               <div className="flex items-center gap-3 text-[var(--text-primary)] mb-4">
                 <Zap className="w-6 h-6 text-[var(--text-muted)] group-hover:text-[var(--fg-accent)] transition-theme" />
                 <h2 className="text-xl md:text-2xl font-black">
-                  {isAr ? "الرسالة" : "Mission"}
+                  {isAr ? "الرسالة التقنية" : "Technical Mission"}
                 </h2>
               </div>
               <p className="text-sm md:text-base leading-relaxed text-[var(--text-secondary)] font-medium">
                 {isAr
-                  ? "تمكين المبدعين والشركات من تجاوز حدود الإنتاجية التقليدية. نقدم حلولاً تقنية ذكية وعميقة، مع التزام مطلق بحماية الخصوصية وتعزيز أمان البيانات لضمان بيئة عمل آمنة ومستقرة."
-                  : "We empower creators and enterprises to exceed productivity limits. By delivering intelligent, simple, and deep technical solutions, we maintain an absolute commitment to enterprise data security and privacy, ensuring a secure and stable digital environment."}
+                  ? "تمكين المبدعين والشركات من تجاوز حدود الإنتاجية التقليدية عبر حلول ذكية، استقرار بنية تحتية بنسبة توافر 100%، والتزام مطلق بحماية الخصوصية وتشفير البيانات بمعايير عسكرية (AES-256)."
+                  : "Empowering creators and enterprises to exceed traditional productivity limits through intelligent solutions, 100% uptime infrastructure, and absolute commitment to military-grade data encryption (AES-256)."}
               </p>
             </div>
           </div>
@@ -416,8 +480,8 @@ export const About: React.FC = () => {
                     label: isAr ? "تصميم فائق" : "Superior Design",
                   },
                   {
-                    icon: Video,
-                    label: isAr ? "صناعة محتوى" : "Content Creation",
+                    icon: Share2,
+                    label: isAr ? "فيرال بوك" : "ViralBook Hub",
                   },
                   { icon: Cpu, label: isAr ? "ذكاء متصل" : "Connected AI" },
                 ].map((item, idx) => (
@@ -438,10 +502,108 @@ export const About: React.FC = () => {
           </div>
         </section>
 
+        {/* Features & Tools Section */}
+        <section className="space-y-10">
+          <div className="text-center space-y-2">
+            <h2 className="text-2xl md:text-3xl font-black text-[var(--text-primary)] uppercase flex items-center justify-center gap-2">
+              <Boxes className="text-[var(--fg-accent)]" size={24} />
+              {isAr ? "منظومة الأدوات والقدرات الذكية" : "Ecosystem Tools & AI Capabilities"}
+            </h2>
+            <p className="text-sm text-[var(--text-secondary)] max-w-2xl mx-auto font-medium">
+              {isAr
+                ? "محطات عمل متكاملة تلبي كافة احتياجات النخبة من هندسة البرمجيات، شبكة فيرال بوك، والصوتيات."
+                : "Integrated workstations fulfilling all elite needs in software engineering, ViralBook network, and audio studios."}
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {featuresToolsList.map((tool, i) => (
+              <div
+                key={`about-tool-${i}-${tool.title}`}
+                className="p-6 rounded-[var(--radius-md)] border border-[var(--border-default)] bg-[var(--surface-card)] hover:bg-[var(--surface-subtle)] hover:border-[var(--border-accent)] transition-theme group flex flex-col justify-between gap-4 cursor-pointer relative overflow-hidden shadow-sm hover:shadow-md h-fit"
+              >
+                <div className="space-y-4">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-[var(--radius-xs)] bg-[var(--surface-subtle)] border border-[var(--border-accent)] flex items-center justify-center text-[var(--fg-accent)] group-hover:bg-[var(--surface-card)] transition-all duration-fast">
+                      {tool.icon}
+                    </div>
+                    <h3 className="text-lg font-black text-[var(--text-primary)] group-hover:text-[var(--fg-accent)] transition-colors duration-300">
+                      {tool.title}
+                    </h3>
+                  </div>
+
+                  <div className="relative w-full aspect-[16/10] rounded-[var(--radius-sm)] overflow-hidden border border-[var(--border-subtle)] shadow-sm bg-[var(--surface-inset)] group-hover:border-[var(--border-accent)] transition-colors duration-300">
+                    <img
+                      src={tool.imageUrl}
+                      alt={tool.title}
+                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 opacity-90 group-hover:opacity-100"
+                      referrerPolicy="no-referrer"
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-[var(--surface-page)]/80 to-transparent pointer-events-none" />
+                  </div>
+
+                  <p className="text-xs md:text-sm text-[var(--text-secondary)] font-semibold leading-relaxed">
+                    {tool.desc}
+                  </p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </section>
+
+        {/* Platform Economy Section */}
+        <section className="space-y-10">
+          <div className="text-center space-y-2">
+            <h2 className="text-2xl md:text-3xl font-black text-[var(--text-primary)] uppercase flex items-center justify-center gap-2">
+              <Wallet className="text-[var(--fg-accent)]" size={24} />
+              {isAr ? "اقتصاد المنصة والمكافآت" : "Platform Economy & Rewards"}
+            </h2>
+            <p className="text-sm text-[var(--text-secondary)] max-w-2xl mx-auto font-medium">
+              {isAr 
+                ? "نظام البيئة المالية لبيربليكستا حيث تلتقي إدارة الأرصدة الشفافة بالدفتر المزدوج مع الاشتراكات المرنة وبرامج المكافآت." 
+                : "The financial ecosystem of Perplexta, combining transparent dual-ledger balance management, flexible subscriptions, and reward programs."}
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {economyList.map((item, i) => (
+              <div
+                key={`about-economy-${i}-${item.title}`}
+                className="p-6 rounded-[var(--radius-md)] border border-[var(--border-default)] bg-[var(--surface-card)] hover:bg-[var(--surface-subtle)] hover:border-[var(--border-accent)] transition-theme group flex flex-col justify-between gap-4 cursor-pointer relative overflow-hidden shadow-sm hover:shadow-md h-fit"
+              >
+                <div className="space-y-4">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-[var(--radius-xs)] bg-[var(--surface-subtle)] border border-[var(--border-accent)] flex items-center justify-center text-[var(--fg-accent)] group-hover:bg-[var(--surface-card)] transition-all duration-fast">
+                      {item.icon}
+                    </div>
+                    <h3 className="text-lg font-black text-[var(--text-primary)] group-hover:text-[var(--fg-accent)] transition-colors duration-fast">
+                      {item.title}
+                    </h3>
+                  </div>
+
+                  <div className="relative w-full aspect-[16/10] rounded-[var(--radius-sm)] overflow-hidden border border-[var(--border-subtle)] shadow-sm bg-[var(--surface-inset)] group-hover:border-[var(--border-accent)] transition-colors duration-fast">
+                    <img 
+                      src={item.imageUrl} 
+                      alt={item.title}
+                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-slow opacity-90 group-hover:opacity-100"
+                      referrerPolicy="no-referrer"
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-[var(--surface-page)]/80 to-transparent pointer-events-none" />
+                  </div>
+
+                  <p className="text-xs md:text-sm text-[var(--text-secondary)] font-semibold leading-relaxed">
+                    {item.desc}
+                  </p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </section>
+
         <section className="space-y-10">
           <div className="text-center space-y-2">
             <h2 className="text-2xl md:text-3xl font-black text-[var(--text-primary)] uppercase">
-              {isAr ? "الميزات والقدرات" : "Features & Capabilities"}
+              {isAr ? "الميزات والقدرات الهندسية" : "Engineering Features & Capabilities"}
             </h2>
             <p className="text-sm text-[var(--text-secondary)] max-w-2xl mx-auto font-medium leading-relaxed">
               {isAr
@@ -476,13 +638,24 @@ export const About: React.FC = () => {
           </h2>
           <p className="text-sm md:text-base leading-relaxed text-[var(--text-primary)] font-semibold font-sans">
             {isAr
-              ? 'لأننا قدمنا "المساعد التنفيذي" المتكامل. بيربليكستا لا تخطئ في اختيار الأداة، فهي مبنية على منطق "البناء النظيف" الذي يربط القوى التقنية العالمية في واجهة واحدة. نمنحك صفوة النتائج، ونوفر عليك الوقت والجهد وتكاليف الاشتراك المتعددة، بحل شامل يدار بعقل اصطناعي لا ينام.'
-              : 'Because we have provided an integrated "Executive Assistant." PERPLEXTA does not make mistakes in choosing the tool, built on the logic of "Clean Build" that connects global technical powers in one simple interface. We give you the finest results, saving you time, effort, and multiple subscription costs, with a comprehensive solution managed by an artificial mind that never sleeps.'}
+              ? 'لأننا قدمنا "المساعد التنفيذي" المتكامل وشبكة فيرال بوك التجارية. بيربليكستا لا تخطئ في اختيار الأداة، فهي مبنية على منطق العمارة المزدوجة والتوجيه الصامت الذي يربط القوى التقنية العالمية في واجهة واحدة. نمنحك صفوة النتائج، ونوفر عليك الوقت والجهد وتكاليف الاشتراكات المتعددة.'
+              : 'Because we have provided an integrated executive assistant and ViralBook commercial network. PERPLEXTA does not make mistakes in choosing the tool, built on dual-architecture logic and silent failover orchestration uniting global technical powers in one interface.'}
           </p>
+          <div className="pt-2 flex flex-wrap gap-4 items-center">
+            <button
+              onClick={() => navigate('/docs/legal')}
+              id="about-to-legal-docs-btn"
+              className="px-5 py-2.5 rounded-[var(--radius-sm)] bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs uppercase tracking-wider transition-all flex items-center gap-2 shadow-sm cursor-pointer"
+            >
+              <Shield size={16} />
+              <span>{isAr ? "الوثائق القانونية" : "Legal Documents"}</span>
+              <ExternalLink size={14} className="opacity-70" />
+            </button>
+          </div>
         </section>
 
         <section className="grid grid-cols-1 md:grid-cols-2 gap-8 items-center border border-[var(--border-default)] rounded-[var(--radius-md)] p-6 md:p-8 bg-[var(--surface-card)]">
-          <div className="space-y-4 text-center md:text-right animate-pulse">
+          <div className="space-y-4 text-center md:text-right">
             <CheckCircle2 className="w-12 h-12 text-[var(--fg-accent)] mx-auto md:mx-0 md:mr-0 inline-block md:block" />
             <h3 className="text-2xl font-black text-[var(--text-primary)]">
               {isAr ? "أمان وموثوقية عالمية" : "Global Security & Reliability"}
@@ -499,19 +672,20 @@ export const About: React.FC = () => {
             </div>
             <p className="text-xs md:text-sm text-[var(--text-secondary)] font-semibold leading-relaxed">
               {isAr
-                ? "نستخدم أحدث تقنيات Google المتطورة، ونلتزم بسياساتهم الصارمة. هذا الالتزام يضمن لمستخدمينا أعلى مستويات الأمان، والدقة، والموثوقية التقنية التي تفرضها المعايير العالمية في معالجة البيانات والذكاء الاصطناعي."
-                : "We rely on the latest advanced Google technologies and are fully committed to their strict policies. This commitment ensures our users receive the highest levels of security, accuracy, and technical reliability imposed by global standards in data processing and AI."}
+                ? "نستخدم أحدث تقنيات Google المتطورة ونلتزم بمعايير المملكة المتحدة (UK GDPR) وقوانين الخصوصية العالمية، مع حماية العمليات المالية بسجلات دفتر أستاذ لا تقبل التعديل العشوائي."
+                : "We rely on advanced Google technologies and adhere to UK GDPR and global privacy standards, protecting financial transactions with tamper-evident ledger records."}
             </p>
           </div>
         </section>
 
+        {/* Corporate Identity Section */}
         <section className="p-6 md:p-8 rounded-[var(--radius-md)] border border-[var(--border-default)] bg-[var(--surface-card)] space-y-8">
           <div className="flex items-center gap-3 text-[var(--text-primary)]">
             <Shield className="w-5 h-5 text-[var(--fg-accent)]" />
             <h2 className="text-xl md:text-2xl font-black">
               {isAr
-                ? "الهوية المؤسسية والشفافية"
-                : "PERPLEXTA - Corporate Identity & Transparency"}
+                ? "الهوية المؤسسية والشفافية القانونية"
+                : "PERPLEXTA - Corporate Identity & Legal Transparency"}
             </h2>
           </div>
 
@@ -524,12 +698,12 @@ export const About: React.FC = () => {
             <div className="p-6 rounded-[var(--radius-md)] bg-[var(--surface-subtle)] border border-[var(--border-default)] flex items-center justify-between shadow-sm">
               <div>
                 <h3 className="text-xl md:text-2xl font-black text-[var(--text-primary)] mb-1">
-                  {isAr ? "بيربليكستا المحدودة" : "PERPLEXTA LTD"}
+                  {isAr ? "فيرال لينك اب المحدودة" : "ViralLinkUp Limited"} ({isAr ? "بيربليكستا" : "PERPLEXTA LTD"})
                 </h3>
                 <p className="text-xs md:text-sm font-semibold text-[var(--text-secondary)]">
                   {isAr
-                    ? "شركة محدودة بالأسهم مسجلة رسمياً في المملكة المتحدة"
-                    : "A company limited by shares officially registered in the United Kingdom"}
+                    ? "شركة محدودة بالأسهم مسجلة رسمياً في المملكة المتحدة (إنجلترا وويلز)"
+                    : "A company limited by shares officially registered in the United Kingdom (England & Wales)"}
                 </p>
               </div>
               <div>
@@ -616,6 +790,7 @@ export const About: React.FC = () => {
           </div>
         </section>
 
+        {/* Digital Ecosystem Section */}
         <section className="space-y-10">
           <div className="text-center space-y-2">
             <h2 className="text-2xl md:text-3xl font-black text-[var(--text-primary)] uppercase">
@@ -623,8 +798,8 @@ export const About: React.FC = () => {
             </h2>
             <p className="text-sm text-[var(--text-secondary)] max-w-2xl mx-auto font-medium">
               {isAr
-                ? "PERPLEXTA LTD تفتخر بإدارة شبكة متكاملة من المنصات الرقمية"
-                : "PERPLEXTA LTD is proud to manage an integrated network of digital platforms"}
+                ? "ViralLinkUp Limited تفتخر بإدارة شبكة متكاملة من المنصات الرقمية"
+                : "ViralLinkUp Limited is proud to manage an integrated network of digital platforms"}
             </p>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -656,105 +831,7 @@ export const About: React.FC = () => {
           </div>
         </section>
 
-        <section className="space-y-10">
-          <div className="text-center space-y-2">
-            <h2 className="text-2xl md:text-3xl font-black text-[var(--text-primary)] uppercase flex items-center justify-center gap-2">
-              <Boxes
-                className="text-[var(--fg-accent)]"
-                size={24}
-              />
-              {isAr ? "الميزات والأدوات" : "Features & Tools"}
-            </h2>
-            <p className="text-sm text-[var(--text-secondary)] max-w-2xl mx-auto font-medium">
-              {isAr
-                ? "استكشف القدرات المعمارية والأدوات الاحترافية المدمجة في بيئة عمل بيربليكستا."
-                : "Explore the architectural capabilities and professional tools integrated within the Perplexta ecosystem."}
-            </p>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {featuresToolsList.map((tool, i) => (
-              <div
-                key={`about-tool-${i}-${tool.title}`}
-                className="p-6 rounded-[var(--radius-md)] border border-[var(--border-default)] bg-[var(--surface-card)] hover:bg-[var(--surface-subtle)] hover:border-[var(--border-accent)] transition-theme group flex flex-col justify-between gap-4 cursor-pointer relative overflow-hidden shadow-sm hover:shadow-md h-fit"
-              >
-                <div className="space-y-4">
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-[var(--radius-xs)] bg-[var(--surface-subtle)] border border-[var(--border-accent)] flex items-center justify-center text-[var(--fg-accent)] group-hover:bg-[var(--surface-card)] transition-all duration-fast">
-                      {tool.icon}
-                    </div>
-                    <h3 className="text-lg font-black text-[var(--text-primary)] group-hover:text-[var(--fg-accent)] transition-colors duration-300">
-                      {tool.title}
-                    </h3>
-                  </div>
-
-                  <div className="relative w-full aspect-[16/10] rounded-[var(--radius-sm)] overflow-hidden border border-[var(--border-subtle)] shadow-sm bg-[var(--surface-inset)] group-hover:border-[var(--border-accent)] transition-colors duration-300">
-                    <img
-                      src={tool.imageUrl}
-                      alt={tool.title}
-                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 opacity-90 group-hover:opacity-100"
-                      referrerPolicy="no-referrer"
-                    />
-                    <div className="absolute inset-0 bg-gradient-to-t from-[var(--surface-page)]/80 to-transparent pointer-events-none" />
-                  </div>
-
-                  <p className="text-xs md:text-sm text-[var(--text-secondary)] font-semibold leading-relaxed">
-                    {tool.desc}
-                  </p>
-                </div>
-              </div>
-            ))}
-          </div>
-        </section>
-
-        <section className="space-y-10">
-          <div className="text-center space-y-2">
-            <h2 className="text-2xl md:text-3xl font-black text-[var(--text-primary)] uppercase flex items-center justify-center gap-2">
-              <Wallet className="text-[var(--fg-accent)]" size={24} />
-              {isAr ? "اقتصاد المنصة والمكافآت" : "Platform Economy & Rewards"}
-            </h2>
-            <p className="text-sm text-[var(--text-secondary)] max-w-2xl mx-auto font-medium">
-              {isAr 
-                ? "نظام البيئة المالية لبيربليكستا حيث تلتقي إدارة الأرصدة الشفافة مع الاشتراكات المرنة وبرامج المكافآت المستدامة." 
-                : "The financial ecosystem of Perplexta, combining transparent ledger management, flexible subscriptions, and sustainable reward programs."}
-            </p>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {economyList.map((item, i) => (
-              <div
-                key={`about-economy-${i}-${item.title}`}
-                className="p-6 rounded-[var(--radius-md)] border border-[var(--border-default)] bg-[var(--surface-card)] hover:bg-[var(--surface-subtle)] hover:border-[var(--border-accent)] transition-theme group flex flex-col justify-between gap-4 cursor-pointer relative overflow-hidden shadow-sm hover:shadow-md h-fit"
-              >
-                <div className="space-y-4">
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-[var(--radius-xs)] bg-[var(--surface-subtle)] border border-[var(--border-accent)] flex items-center justify-center text-[var(--fg-accent)] group-hover:bg-[var(--surface-card)] transition-all duration-fast">
-                      {item.icon}
-                    </div>
-                    <h3 className="text-lg font-black text-[var(--text-primary)] group-hover:text-[var(--fg-accent)] transition-colors duration-fast">
-                      {item.title}
-                    </h3>
-                  </div>
-
-                  <div className="relative w-full aspect-[16/10] rounded-[var(--radius-sm)] overflow-hidden border border-[var(--border-subtle)] shadow-sm bg-[var(--surface-inset)] group-hover:border-[var(--border-accent)] transition-colors duration-fast">
-                    <img 
-                      src={item.imageUrl} 
-                      alt={item.title}
-                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-slow opacity-90 group-hover:opacity-100"
-                      referrerPolicy="no-referrer"
-                    />
-                    <div className="absolute inset-0 bg-gradient-to-t from-[var(--surface-page)]/80 to-transparent pointer-events-none" />
-                  </div>
-
-                  <p className="text-xs md:text-sm text-[var(--text-secondary)] font-semibold leading-relaxed">
-                    {item.desc}
-                  </p>
-                </div>
-              </div>
-            ))}
-          </div>
-        </section>
-
+        {/* Latest News & Releases */}
         <section className="space-y-10">
           <div className="text-center space-y-2">
             <h2 className="text-2xl md:text-3xl font-black text-[var(--text-primary)] uppercase flex items-center justify-center gap-2">
@@ -876,8 +953,8 @@ export const About: React.FC = () => {
             </div>
             <p className="text-xs md:text-sm leading-relaxed text-[var(--text-secondary)] font-semibold font-sans">
               {isAr
-                ? "جميع الحقوق البرمجية، العلامة التجارية، ومنطق الربط الذكي الخاص بـ بيربليكستا وكافة مشاريعنا هي حقوق محفوظة لشركة بيربليكستا المحدودة. أي محاولة لإعادة الإنتاج أو الاستخدام غير المصرح به تعرض الفاعل للمساءلة القانونية الدولية"
-                : "All software rights, trademarks, and the smart connection logic of PERPLEXTA and all our projects are reserved rights of PERPLEXTA LTD. Any attempt at reproduction or unauthorized use exposes the actor to international legal accountability"}
+                ? "جميع الحقوق البرمجية، العلامة التجارية، ومنطق الربط الذكي الخاص بـ بيربليكستا وكافة مشاريعنا هي حقوق محفوظة لشركة فيرال لينك اب المحدودة (ViralLinkUp Limited). أي محاولة لإعادة الإنتاج أو الاستخدام غير المصرح به تعرض الفاعل للمساءلة القانونية الدولية."
+                : "All software rights, trademarks, and smart connection logic of PERPLEXTA and all our projects are reserved rights of ViralLinkUp Limited. Any attempt at reproduction or unauthorized use exposes the actor to international legal accountability."}
             </p>
           </div>
         </footer>

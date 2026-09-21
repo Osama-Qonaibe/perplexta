@@ -10,6 +10,9 @@ import { uploadValidator } from '../middleware/uploadValidator.js';
 import { optimizeUploadedImage } from '../services/mediaOptimizationService.js';
 import { processUploadedVideo } from '../services/videoProcessor.js';
 import { escapeHtml } from '../utils/security.js';
+import { searchHierarchicalLocations, ALL_GEO_COUNTRIES, normalizeGeoText } from '../utils/geoData.js';
+import { findCachedLocations } from '../services/locationCache.js';
+import { getActiveGoogleMapsKey, getActiveProviderKey } from '../services/mapProvidersService.js';
 import path from 'path';
 import fs from 'fs/promises';
 import crypto from 'crypto';
@@ -147,6 +150,805 @@ router.get('/mentions/suggest', authenticateToken, async (req: any, res) => {
   } catch (error: any) {
     console.error('[Mentions Suggest] Fetch failed:', error);
     return res.status(500).json({ error: error.message });
+  }
+});
+
+/**
+ * GET /api/bulletin/geocoding/search
+ * Dynamic real-time Geocoding Search powered by Google Places/Geocoding, Photon Global Engine & OpenStreetMap
+ */
+router.get('/geocoding/search', async (req, res) => {
+  try {
+    const query = typeof req.query.q === 'string' ? req.query.q.trim() : '';
+    const country = typeof req.query.country === 'string' ? req.query.country.trim() : '';
+    const rawCountryCode = typeof req.query.country_code === 'string' ? req.query.country_code.trim().toLowerCase() : '';
+    const rawCountryCodes = typeof req.query.country_codes === 'string' ? req.query.country_codes.trim().toLowerCase() : '';
+    const countryCodesStr = rawCountryCodes || rawCountryCode;
+    const countryCodesList = countryCodesStr
+      .split(/[,|]/)
+      .map(c => c.trim().toLowerCase())
+      .filter(c => c && c !== 'all');
+
+    const countryCode = countryCodesList[0] || '';
+    const lang = req.query.lang === 'en' ? 'en' : 'ar';
+    const limit = Math.min(Number(req.query.limit) || 20, 40);
+
+    const dynamicResults: any[] = [];
+    const seenKeys = new Set<string>();
+
+    const mapsApiKey = getActiveGoogleMapsKey();
+    const searchTerm = query || country;
+
+    // Helper: Clean & Normalize Results
+    const addResult = (item: any) => {
+      if (!item || !item.title) return;
+      
+      // Strict sovereignty filter: Never return Israeli occupation labels when searching Palestine
+      const isPalestineQuery = searchTerm.includes('فلسطين') || searchTerm.toLowerCase().includes('palestine');
+      if (isPalestineQuery) {
+        if (
+          item.title?.includes('إسرائيل') || 
+          item.subtitle?.includes('إسرائيل') || 
+          item.country?.includes('إسرائيل') ||
+          item.title?.toLowerCase().includes('israel') ||
+          item.subtitle?.toLowerCase().includes('israel')
+        ) {
+          return;
+        }
+        if (item.country?.includes('Palestin') || item.country?.includes('فلسطين') || item.subtitle?.includes('الأراضي الفلسطينية') || !item.country) {
+          item.country = lang === 'ar' ? 'فلسطين' : 'Palestine';
+          item.country_code = 'ps';
+          item.flag = '🇵🇸';
+        }
+      }
+
+      const normKey = `${item.title.toLowerCase().trim()}_${(item.subtitle || '').toLowerCase().trim()}`;
+      if (!seenKeys.has(normKey)) {
+        seenKeys.add(normKey);
+        dynamicResults.push(item);
+      }
+    };
+
+    // Check if query is targeting a country
+    const isPalestine = searchTerm.includes('فلسطين') || searchTerm.toLowerCase().includes('palestine');
+    const isJordan = searchTerm.includes('أردن') || searchTerm.includes('اردن') || searchTerm.toLowerCase().includes('jordan');
+    const isEgypt = searchTerm.includes('مصر') || searchTerm.toLowerCase().includes('egypt');
+    const isSaudi = searchTerm.includes('سعودي') || searchTerm.toLowerCase().includes('saudi');
+    const isUAE = searchTerm.includes('إمارات') || searchTerm.includes('امارات') || searchTerm.toLowerCase().includes('emirates') || searchTerm.toLowerCase().includes('uae');
+
+    // 1. If searching Palestine or specific Arab/Global countries, dynamically seed the sovereign Country entity + Governorates & Cities
+    if (isPalestine) {
+      addResult({
+        display_name: lang === 'ar' ? 'دولة فلسطين' : 'State of Palestine',
+        title: lang === 'ar' ? 'فلسطين' : 'Palestine',
+        subtitle: lang === 'ar' ? 'دولة عربية ذات سيادة' : 'Sovereign State',
+        city: lang === 'ar' ? 'القدس' : 'Jerusalem',
+        country: lang === 'ar' ? 'فلسطين' : 'Palestine',
+        country_code: 'ps',
+        flag: '🇵🇸',
+        raw_type: 'country',
+        category_label: lang === 'ar' ? 'دولة' : 'Country',
+        source: 'sovereign_registry'
+      });
+
+      const palestineGovernoratesAndCities = lang === 'ar' ? [
+        { name: 'القدس', sub: 'عاصمة دولة فلسطين', type: 'administrative', cat: 'محافظة' },
+        { name: 'رام الله والبيرة', sub: 'محافظة رام الله والبيرة، فلسطين', type: 'administrative', cat: 'محافظة' },
+        { name: 'نابلس', sub: 'محافظة نابلس، فلسطين', type: 'city', cat: 'مدينة' },
+        { name: 'الخليل', sub: 'محافظة الخليل، فلسطين', type: 'city', cat: 'مدينة' },
+        { name: 'غزة', sub: 'محافظة غزة، فلسطين', type: 'city', cat: 'مدينة' },
+        { name: 'جنين', sub: 'محافظة جنين، فلسطين', type: 'city', cat: 'مدينة' },
+        { name: 'بيت لحم', sub: 'محافظة بيت لحم، فلسطين', type: 'city', cat: 'مدينة' },
+        { name: 'طولكرم', sub: 'محافظة طولكرم، فلسطين', type: 'city', cat: 'مدينة' },
+        { name: 'قلقيلية', sub: 'محافظة قلقيلية، فلسطين', type: 'city', cat: 'مدينة' },
+        { name: 'أريحا والأغوار', sub: 'محافظة أريحا، فلسطين', type: 'city', cat: 'مدينة' },
+        { name: 'سلفيت', sub: 'محافظة سلفيت، فلسطين', type: 'city', cat: 'مدينة' },
+        { name: 'طوباس', sub: 'محافظة طوباس والأغوار الشمالية، فلسطين', type: 'city', cat: 'مدينة' },
+        { name: 'خان يونس', sub: 'قطاع غزة، فلسطين', type: 'city', cat: 'مدينة' },
+        { name: 'رفح', sub: 'قطاع غزة، فلسطين', type: 'city', cat: 'مدينة' },
+        { name: 'دير البلح', sub: 'قطاع غزة، فلسطين', type: 'city', cat: 'مدينة' },
+        { name: 'شمال غزة / جباليا', sub: 'قطاع غزة، فلسطين', type: 'city', cat: 'مدينة' },
+        { name: 'حيفا', sub: 'الساحل الفلسطيني', type: 'city', cat: 'مدينة' },
+        { name: 'يافا', sub: 'الساحل الفلسطيني', type: 'city', cat: 'مدينة' },
+        { name: 'عكا', sub: 'شمال فلسطين', type: 'city', cat: 'مدينة' },
+        { name: 'الناصرة', sub: 'الجليل، فلسطين', type: 'city', cat: 'مدينة' },
+        { name: 'دورا', sub: 'محافظة الخليل، فلسطين', type: 'town', cat: 'بلدة' },
+        { name: 'يطا', sub: 'محافظة الخليل، فلسطين', type: 'town', cat: 'بلدة' },
+        { name: 'حلحول', sub: 'محافظة الخليل، فلسطين', type: 'town', cat: 'بلدة' },
+        { name: 'الظاهرية', sub: 'محافظة الخليل، فلسطين', type: 'town', cat: 'بلدة' },
+        { name: 'بيت جالا', sub: 'محافظة بيت لحم، فلسطين', type: 'town', cat: 'بلدة' },
+        { name: 'بيت ساحور', sub: 'محافظة بيت لحم، فلسطين', type: 'town', cat: 'بلدة' },
+        { name: 'عنبتا', sub: 'محافظة طولكرم، فلسطين', type: 'town', cat: 'بلدة' },
+        { name: 'طمون', sub: 'محافظة طوباس، فلسطين', type: 'town', cat: 'بلدة' },
+        { name: 'طمرة', sub: 'الجليل، فلسطين', type: 'city', cat: 'مدينة' },
+        { name: 'سخنين', sub: 'الجليل، فلسطين', type: 'city', cat: 'مدينة' },
+        { name: 'أم الفحم', sub: 'المثلث، فلسطين', type: 'city', cat: 'مدينة' },
+        { name: 'رهط', sub: 'النقب، فلسطين', type: 'city', cat: 'مدينة' },
+        { name: 'كفر قاسم', sub: 'المثلث، فلسطين', type: 'town', cat: 'بلدة' },
+        { name: 'العيزرية', sub: 'محافظة القدس، فلسطين', type: 'town', cat: 'بلدة' },
+        { name: 'أبو ديس', sub: 'محافظة القدس، فلسطين', type: 'town', cat: 'بلدة' }
+      ] : [
+        { name: 'Jerusalem', sub: 'Capital of Palestine', type: 'administrative', cat: 'Governorate' },
+        { name: 'Ramallah & Al-Bireh', sub: 'Ramallah Governorate, Palestine', type: 'administrative', cat: 'Governorate' },
+        { name: 'Nablus', sub: 'Nablus Governorate, Palestine', type: 'city', cat: 'City' },
+        { name: 'Hebron', sub: 'Hebron Governorate, Palestine', type: 'city', cat: 'City' },
+        { name: 'Gaza City', sub: 'Gaza Governorate, Palestine', type: 'city', cat: 'City' },
+        { name: 'Jenin', sub: 'Jenin Governorate, Palestine', type: 'city', cat: 'City' },
+        { name: 'Bethlehem', sub: 'Bethlehem Governorate, Palestine', type: 'city', cat: 'City' },
+        { name: 'Tulkarm', sub: 'Tulkarm Governorate, Palestine', type: 'city', cat: 'City' },
+        { name: 'Qalqilya', sub: 'Qalqilya Governorate, Palestine', type: 'city', cat: 'City' },
+        { name: 'Jericho', sub: 'Jericho Governorate, Palestine', type: 'city', cat: 'City' },
+        { name: 'Salfit', sub: 'Salfit Governorate, Palestine', type: 'city', cat: 'City' },
+        { name: 'Tubas', sub: 'Tubas Governorate, Palestine', type: 'city', cat: 'City' },
+        { name: 'Khan Yunis', sub: 'Gaza Strip, Palestine', type: 'city', cat: 'City' },
+        { name: 'Rafah', sub: 'Gaza Strip, Palestine', type: 'city', cat: 'City' },
+        { name: 'Deir al-Balah', sub: 'Gaza Strip, Palestine', type: 'city', cat: 'City' },
+        { name: 'Haifa', sub: 'Palestine Coast', type: 'city', cat: 'City' },
+        { name: 'Jaffa', sub: 'Palestine Coast', type: 'city', cat: 'City' },
+        { name: 'Acre (Akka)', sub: 'North Palestine', type: 'city', cat: 'City' },
+        { name: 'Nazareth', sub: 'Galilee, Palestine', type: 'city', cat: 'City' }
+      ];
+
+      for (const loc of palestineGovernoratesAndCities) {
+        addResult({
+          display_name: `${loc.name}، ${loc.sub}`,
+          title: loc.name,
+          subtitle: loc.sub,
+          city: loc.name,
+          country: lang === 'ar' ? 'فلسطين' : 'Palestine',
+          country_code: 'ps',
+          flag: '🇵🇸',
+          raw_type: loc.type,
+          category_label: loc.cat,
+          source: 'sovereign_registry'
+        });
+      }
+    }
+
+    // 2. Query Local Cache First (Zero Latency & Eliminates Redundant Outbound Google Places API Calls)
+    if (searchTerm) {
+      try {
+        const cachedMatches = await findCachedLocations(searchTerm, countryCode, limit);
+        for (const loc of cachedMatches) {
+          addResult({
+            display_name: loc.fullAddress || `${loc.title}${loc.state ? `، ${loc.state}` : ''}${loc.country ? `، ${loc.country}` : ''}`,
+            title: loc.title,
+            subtitle: loc.state || loc.country || '',
+            city: loc.city,
+            state: loc.state || '',
+            country: loc.country || '',
+            country_code: loc.countryCode || '',
+            flag: loc.flag || (loc.countryCode === 'ps' ? '🇵🇸' : ''),
+            lat: loc.lat ? String(loc.lat) : '',
+            lon: loc.lon ? String(loc.lon) : '',
+            raw_type: loc.rawType || 'locality',
+            category_label: loc.categoryLabel || (lang === 'ar' ? 'مدينة' : 'City'),
+            source: 'local_cache_engine',
+            place_id: loc.placeId
+          });
+        }
+      } catch (cacheLookupErr) {
+        console.warn('[Geocoding API] Local cache lookup warning:', cacheLookupErr);
+      }
+    }
+
+    // 3. Real-Time Dynamic Search: Dispatch parallel queries to Google Places & Photon Global Geocoder if needed
+    if (searchTerm && dynamicResults.length < limit) {
+      const fetchPromises: Promise<any>[] = [];
+
+      // A) Google Places & Geocoding APIs
+      if (mapsApiKey) {
+        const googleAutocompleteUrl = `https://maps.googleapis.com/maps/api/place/autocomplete/json?input=${encodeURIComponent(searchTerm)}&language=${lang}&key=${mapsApiKey}`;
+        const googleGeocodeUrl = `https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(searchTerm)}&language=${lang}&key=${mapsApiKey}`;
+        const googleTextSearchUrl = `https://maps.googleapis.com/maps/api/place/textsearch/json?query=${encodeURIComponent(searchTerm)}&language=${lang}&key=${mapsApiKey}`;
+
+        fetchPromises.push(
+          fetch(googleAutocompleteUrl)
+            .then(r => (r.ok ? r.json() : null))
+            .then(data => {
+              if (data && data.status === 'OK' && Array.isArray(data.predictions)) {
+                for (const pred of data.predictions) {
+                  const mainText = pred.structured_formatting?.main_text || pred.description.split(',')[0].trim();
+                  const secText = pred.structured_formatting?.secondary_text || '';
+                  const types = pred.types || [];
+
+                  let catAr = 'مدينة';
+                  let catEn = 'City';
+                  if (types.includes('country')) {
+                    catAr = 'دولة';
+                    catEn = 'Country';
+                  } else if (types.includes('administrative_area_level_1') || types.includes('administrative_area_level_2')) {
+                    catAr = 'محافظة';
+                    catEn = 'Governorate';
+                  } else if (types.includes('sublocality') || types.includes('town')) {
+                    catAr = 'بلدة';
+                    catEn = 'Town';
+                  } else if (types.includes('neighborhood')) {
+                    catAr = 'حي';
+                    catEn = 'Neighborhood';
+                  } else if (types.includes('route') || types.includes('street_address')) {
+                    catAr = 'شارع';
+                    catEn = 'Street';
+                  }
+
+                  addResult({
+                    display_name: pred.description,
+                    title: mainText,
+                    subtitle: secText || pred.description,
+                    city: mainText,
+                    country: secText.split(',').pop()?.trim() || country,
+                    raw_type: types[0] || 'locality',
+                    category_label: lang === 'ar' ? catAr : catEn,
+                    source: 'google_places_autocomplete',
+                    place_id: pred.place_id
+                  });
+                }
+              }
+            })
+            .catch(() => null)
+        );
+
+        fetchPromises.push(
+          fetch(googleGeocodeUrl)
+            .then(r => (r.ok ? r.json() : null))
+            .then(data => {
+              if (data && data.status === 'OK' && Array.isArray(data.results)) {
+                for (const item of data.results) {
+                  const types = item.types || [];
+                  let cName = '';
+                  let locality = '';
+                  let adminArea = '';
+
+                  if (Array.isArray(item.address_components)) {
+                    for (const comp of item.address_components) {
+                      if (comp.types.includes('country')) cName = comp.long_name;
+                      if (comp.types.includes('locality')) locality = comp.long_name;
+                      if (comp.types.includes('administrative_area_level_1')) adminArea = comp.long_name;
+                    }
+                  }
+
+                  const titleName = locality || adminArea || cName || item.formatted_address.split(',')[0];
+                  let catAr = 'مدينة';
+                  let catEn = 'City';
+                  if (types.includes('country')) {
+                    catAr = 'دولة';
+                    catEn = 'Country';
+                  } else if (types.includes('administrative_area_level_1')) {
+                    catAr = 'محافظة';
+                    catEn = 'Governorate';
+                  }
+
+                  addResult({
+                    display_name: item.formatted_address,
+                    title: titleName,
+                    subtitle: [adminArea, cName].filter(Boolean).join('، ') || item.formatted_address,
+                    city: titleName,
+                    country: cName,
+                    lat: item.geometry?.location?.lat ? String(item.geometry.location.lat) : '',
+                    lon: item.geometry?.location?.lng ? String(item.geometry.location.lng) : '',
+                    raw_type: types[0] || 'locality',
+                    category_label: lang === 'ar' ? catAr : catEn,
+                    source: 'google_geocoding',
+                    place_id: item.place_id
+                  });
+                }
+              }
+            })
+            .catch(() => null)
+        );
+
+        fetchPromises.push(
+          fetch(googleTextSearchUrl)
+            .then(r => (r.ok ? r.json() : null))
+            .then(data => {
+              if (data && data.status === 'OK' && Array.isArray(data.results)) {
+                for (const place of data.results) {
+                  const placeName = place.name || place.formatted_address?.split(',')[0];
+                  const rawTypes = place.types || [];
+                  let catAr = 'موقع';
+                  let catEn = 'Place';
+
+                  if (rawTypes.includes('country')) {
+                    catAr = 'دولة';
+                    catEn = 'Country';
+                  } else if (rawTypes.includes('locality') || rawTypes.includes('city')) {
+                    catAr = 'مدينة';
+                    catEn = 'City';
+                  } else if (rawTypes.includes('administrative_area_level_1') || rawTypes.includes('administrative_area_level_2')) {
+                    catAr = 'محافظة';
+                    catEn = 'Governorate';
+                  } else if (rawTypes.includes('sublocality') || rawTypes.includes('town')) {
+                    catAr = 'بلدة';
+                    catEn = 'Town';
+                  } else if (rawTypes.includes('neighborhood')) {
+                    catAr = 'حي';
+                    catEn = 'Neighborhood';
+                  }
+
+                  addResult({
+                    display_name: place.formatted_address || placeName,
+                    title: placeName,
+                    subtitle: place.formatted_address || '',
+                    city: placeName,
+                    country: place.formatted_address?.split(',').pop()?.trim() || '',
+                    lat: place.geometry?.location?.lat ? String(place.geometry.location.lat) : '',
+                    lon: place.geometry?.location?.lng ? String(place.geometry.location.lng) : '',
+                    raw_type: rawTypes[0] || 'point_of_interest',
+                    category_label: lang === 'ar' ? catAr : catEn,
+                    source: 'google_places_textsearch',
+                    place_id: place.place_id
+                  });
+                }
+              }
+            })
+            .catch(() => null)
+        );
+      }
+
+      // B) Photon Global Geocoder (High-speed OpenStreetMap engine with instant multi-lingual typeahead)
+      const photonUrl = `https://photon.komoot.io/api/?q=${encodeURIComponent(searchTerm)}&limit=25&lang=${lang}`;
+      fetchPromises.push(
+        fetch(photonUrl, {
+          headers: { 'User-Agent': 'PerplextaPlatform/1.0' }
+        })
+          .then(r => (r.ok ? r.json() : null))
+          .then(data => {
+            if (data && Array.isArray(data.features)) {
+              for (const feat of data.features) {
+                const props = feat.properties || {};
+                const name = props.name || props.city || props.street || '';
+                if (!name) continue;
+
+                const cName = props.country || '';
+                const state = props.state || props.county || '';
+                const city = props.city || props.district || name;
+                const type = (props.type || '').toLowerCase();
+
+                let catAr = 'مدينة';
+                let catEn = 'City';
+
+                if (type === 'country' || props.osm_value === 'country') {
+                  catAr = 'دولة';
+                  catEn = 'Country';
+                } else if (type === 'state' || type === 'county' || props.osm_value === 'state' || props.osm_value === 'county') {
+                  catAr = 'محافظة';
+                  catEn = 'Governorate';
+                } else if (type === 'city' || props.osm_value === 'city') {
+                  catAr = 'مدينة';
+                  catEn = 'City';
+                } else if (type === 'town' || props.osm_value === 'town') {
+                  catAr = 'بلدة';
+                  catEn = 'Town';
+                } else if (type === 'village' || type === 'hamlet' || props.osm_value === 'village') {
+                  catAr = 'قرية';
+                  catEn = 'Village';
+                } else if (type === 'district' || type === 'suburb' || type === 'neighbourhood' || props.osm_value === 'suburb') {
+                  catAr = 'حي';
+                  catEn = 'Neighborhood';
+                } else if (type === 'street' || props.osm_value === 'residential' || props.osm_value === 'highway') {
+                  catAr = 'شارع';
+                  catEn = 'Street';
+                }
+
+                const subtitleParts = [state, cName].filter(Boolean);
+                const subtitle = subtitleParts.join('، ') || cName;
+
+                addResult({
+                  display_name: `${name}، ${subtitle}`,
+                  title: name,
+                  subtitle: subtitle || [catAr, cName].filter(Boolean).join(' - '),
+                  city: city,
+                  state: state,
+                  country: cName,
+                  country_code: props.countrycode?.toLowerCase() || '',
+                  lat: feat.geometry?.coordinates?.[1] ? String(feat.geometry.coordinates[1]) : '',
+                  lon: feat.geometry?.coordinates?.[0] ? String(feat.geometry.coordinates[0]) : '',
+                  raw_type: type || 'locality',
+                  category_label: lang === 'ar' ? catAr : catEn,
+                  source: 'photon_global_engine'
+                });
+              }
+            }
+          })
+          .catch(() => null)
+      );
+
+      // C) OpenStreetMap Nominatim Geocoder
+      const nomUrl = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(searchTerm)}&addressdetails=1&extratags=1&limit=20&accept-language=${lang}`;
+      fetchPromises.push(
+        fetch(nomUrl, {
+          headers: { 'User-Agent': 'PerplextaPlatform/1.0 (https://perplexta.app)' }
+        })
+          .then(r => (r.ok ? r.json() : null))
+          .then(data => {
+            if (Array.isArray(data)) {
+              for (const item of data) {
+                const addr = item.address || {};
+                const cityName =
+                  addr.city ||
+                  addr.town ||
+                  addr.village ||
+                  addr.municipality ||
+                  addr.suburb ||
+                  addr.neighbourhood ||
+                  addr.road ||
+                  addr.county ||
+                  item.name ||
+                  searchTerm;
+
+                const countryName = addr.country || country || '';
+                const stateName = addr.state || addr.region || addr.county || '';
+                const rawType = (item.addresstype || item.type || item.class || 'location').toLowerCase();
+
+                let catAr = 'مدينة';
+                let catEn = 'City';
+
+                if (addr.country || rawType === 'country') {
+                  catAr = 'دولة';
+                  catEn = 'Country';
+                } else if (addr.city || rawType === 'city' || rawType === 'municipality') {
+                  catAr = 'مدينة';
+                  catEn = 'City';
+                } else if (addr.town || rawType === 'town') {
+                  catAr = 'بلدة';
+                  catEn = 'Town';
+                } else if (addr.village || addr.hamlet || rawType === 'village') {
+                  catAr = 'قرية';
+                  catEn = 'Village';
+                } else if (addr.neighbourhood || addr.suburb || rawType === 'neighbourhood') {
+                  catAr = 'حي';
+                  catEn = 'Neighborhood';
+                } else if (addr.road || rawType === 'road' || rawType === 'street') {
+                  catAr = 'شارع';
+                  catEn = 'Street';
+                } else if (addr.county || addr.state || rawType === 'administrative') {
+                  catAr = 'محافظة';
+                  catEn = 'Governorate';
+                }
+
+                addResult({
+                  display_name: item.display_name,
+                  title: cityName,
+                  subtitle: [stateName, countryName].filter(Boolean).join('، ') || item.display_name,
+                  city: cityName,
+                  state: stateName,
+                  country: countryName,
+                  country_code: (addr.country_code || countryCode || '').toLowerCase(),
+                  lat: item.lat,
+                  lon: item.lon,
+                  raw_type: rawType,
+                  category_label: lang === 'ar' ? catAr : catEn,
+                  source: 'nominatim'
+                });
+              }
+            }
+          })
+          .catch(() => null)
+      );
+
+      // D) Mapbox Search & Geocoding (if key configured in Admin Panel)
+      const mapboxKey = getActiveProviderKey('mapbox');
+      if (mapboxKey) {
+        const mapboxUrl = `https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(searchTerm)}.json?access_token=${encodeURIComponent(mapboxKey)}&language=${lang}&limit=15`;
+        fetchPromises.push(
+          fetch(mapboxUrl)
+            .then(r => (r.ok ? r.json() : null))
+            .then(data => {
+              if (data && Array.isArray(data.features)) {
+                for (const feat of data.features) {
+                  const placeName = feat.text || feat.place_name?.split(',')[0] || '';
+                  if (!placeName) continue;
+                  const context = Array.isArray(feat.context) ? feat.context : [];
+                  const countryObj = context.find((c: any) => (c.id || '').startsWith('country'));
+                  const regionObj = context.find((c: any) => (c.id || '').startsWith('region'));
+                  const countryName = countryObj?.text || '';
+                  const regionName = regionObj?.text || '';
+
+                  addResult({
+                    display_name: feat.place_name,
+                    title: placeName,
+                    subtitle: [regionName, countryName].filter(Boolean).join('، ') || feat.place_name,
+                    city: placeName,
+                    state: regionName,
+                    country: countryName,
+                    country_code: countryObj?.short_code?.toLowerCase() || '',
+                    lat: feat.center?.[1] ? String(feat.center[1]) : '',
+                    lon: feat.center?.[0] ? String(feat.center[0]) : '',
+                    raw_type: feat.place_type?.[0] || 'place',
+                    category_label: lang === 'ar' ? 'موقع' : 'Place',
+                    source: 'mapbox_geocoding',
+                    place_id: feat.id
+                  });
+                }
+              }
+            })
+            .catch(() => null)
+        );
+      }
+
+      // E) LocationIQ Geocoding (if key configured in Admin Panel)
+      const locationiqKey = getActiveProviderKey('locationiq');
+      if (locationiqKey) {
+        const locIqUrl = `https://us1.locationiq.com/v1/search?key=${encodeURIComponent(locationiqKey)}&q=${encodeURIComponent(searchTerm)}&format=json&accept-language=${lang}&limit=15`;
+        fetchPromises.push(
+          fetch(locIqUrl)
+            .then(r => (r.ok ? r.json() : null))
+            .then(data => {
+              if (Array.isArray(data)) {
+                for (const item of data) {
+                  const titleName = item.display_name?.split(',')[0]?.trim() || searchTerm;
+                  addResult({
+                    display_name: item.display_name,
+                    title: titleName,
+                    subtitle: item.display_name,
+                    city: titleName,
+                    lat: item.lat ? String(item.lat) : '',
+                    lon: item.lon ? String(item.lon) : '',
+                    raw_type: item.type || 'place',
+                    category_label: lang === 'ar' ? 'موقع' : 'Place',
+                    source: 'locationiq_geocoding',
+                    place_id: item.place_id
+                  });
+                }
+              }
+            })
+            .catch(() => null)
+        );
+      }
+
+      // Await all live data streams concurrently with timeout safety
+      await Promise.allSettled(fetchPromises);
+    }
+
+    // 3. Fallback to Popular Global Hubs if still empty
+    if (dynamicResults.length === 0) {
+      const globalHubs = lang === 'ar' ? [
+        { title: 'القدس', subtitle: 'فلسطين', city: 'القدس', country: 'فلسطين', flag: '🇵🇸' },
+        { title: 'رام الله', subtitle: 'فلسطين', city: 'رام الله', country: 'فلسطين', flag: '🇵🇸' },
+        { title: 'نابلس', subtitle: 'فلسطين', city: 'نابلس', country: 'فلسطين', flag: '🇵🇸' },
+        { title: 'الخليل', subtitle: 'فلسطين', city: 'الخليل', country: 'فلسطين', flag: '🇵🇸' },
+        { title: 'غزة', subtitle: 'فلسطين', city: 'غزة', country: 'فلسطين', flag: '🇵🇸' },
+        { title: 'عمّان', subtitle: 'الأردن', city: 'عمّان', country: 'الأردن', flag: '🇯🇴' },
+        { title: 'الرياض', subtitle: 'المملكة العربية السعودية', city: 'الرياض', country: 'المملكة العربية السعودية', flag: '🇸🇦' },
+        { title: 'دبي', subtitle: 'الإمارات العربية المتحدة', city: 'دبي', country: 'الإمارات العربية المتحدة', flag: '🇦🇪' },
+        { title: 'القاهرة', subtitle: 'مصر', city: 'القاهرة', country: 'مصر', flag: '🇪🇬' },
+        { title: 'الدوحة', subtitle: 'قطر', city: 'الدوحة', country: 'قطر', flag: '🇶🇦' },
+        { title: 'الكويت', subtitle: 'الكويت', city: 'الكويت', country: 'الكويت', flag: '🇰🇼' },
+        { title: 'مسقط', subtitle: 'عُمان', city: 'مسقط', country: 'عُمان', flag: '🇴🇲' },
+        { title: 'بيروت', subtitle: 'لبنان', city: 'بيروت', country: 'لبنان', flag: '🇱🇧' },
+        { title: 'بغداد', subtitle: 'العراق', city: 'بغداد', country: 'العراق', flag: '🇮🇶' },
+        { title: 'دمشق', subtitle: 'سوريا', city: 'دمشق', country: 'سوريا', flag: '🇸🇾' },
+        { title: 'لندن', subtitle: 'المملكة المتحدة', city: 'لندن', country: 'المملكة المتحدة', flag: '🇬🇧' },
+        { title: 'نيويورك', subtitle: 'الولايات المتحدة', city: 'نيويورك', country: 'الولايات المتحدة', flag: '🇺🇸' },
+        { title: 'باريس', subtitle: 'فرنسا', city: 'باريس', country: 'فرنسا', flag: '🇫🇷' },
+        { title: 'إسطنبول', subtitle: 'تركيا', city: 'إسطنبول', country: 'تركيا', flag: '🇹🇷' }
+      ] : [
+        { title: 'Jerusalem', subtitle: 'Palestine', city: 'Jerusalem', country: 'Palestine', flag: '🇵🇸' },
+        { title: 'Ramallah', subtitle: 'Palestine', city: 'Ramallah', country: 'Palestine', flag: '🇵🇸' },
+        { title: 'Amman', subtitle: 'Jordan', city: 'Amman', country: 'Jordan', flag: '🇯🇴' },
+        { title: 'Riyadh', subtitle: 'Saudi Arabia', city: 'Riyadh', country: 'Saudi Arabia', flag: '🇸🇦' },
+        { title: 'Dubai', subtitle: 'United Arab Emirates', city: 'Dubai', country: 'United Arab Emirates', flag: '🇦🇪' },
+        { title: 'Cairo', subtitle: 'Egypt', city: 'Cairo', country: 'Egypt', flag: '🇪🇬' },
+        { title: 'Doha', subtitle: 'Qatar', city: 'Doha', country: 'Qatar', flag: '🇶🇦' },
+        { title: 'Kuwait City', subtitle: 'Kuwait', city: 'Kuwait City', country: 'Kuwait', flag: '🇰🇼' },
+        { title: 'Muscat', subtitle: 'Oman', city: 'Muscat', country: 'Oman', flag: '🇴🇲' },
+        { title: 'Beirut', subtitle: 'Lebanon', city: 'Beirut', country: 'Lebanon', flag: '🇱🇧' },
+        { title: 'Baghdad', subtitle: 'Iraq', city: 'Baghdad', country: 'Iraq', flag: '🇮🇶' },
+        { title: 'London', subtitle: 'United Kingdom', city: 'London', country: 'United Kingdom', flag: '🇬🇧' },
+        { title: 'New York', subtitle: 'United States', city: 'New York', country: 'United States', flag: '🇺🇸' },
+        { title: 'Paris', subtitle: 'France', city: 'Paris', country: 'France', flag: '🇫🇷' },
+        { title: 'Istanbul', subtitle: 'Turkey', city: 'Istanbul', country: 'Turkey', flag: '🇹🇷' }
+      ];
+
+      for (const hub of globalHubs) {
+        addResult({
+          display_name: `${hub.title}، ${hub.subtitle}`,
+          title: hub.title,
+          subtitle: hub.subtitle,
+          city: hub.city,
+          country: hub.country,
+          flag: hub.flag,
+          raw_type: 'locality',
+          category_label: lang === 'ar' ? 'مدينة رئيسية' : 'Major City',
+          source: 'dynamic_hubs'
+        });
+      }
+    }
+
+    return res.json({
+      success: true,
+      query: searchTerm,
+      provider: 'hybrid_live_places_engine',
+      results: dynamicResults.slice(0, limit)
+    });
+  } catch (error: any) {
+    console.error('[Geocoding API] Search error:', error);
+    return res.status(500).json({ success: false, error: error.message });
+  }
+});
+
+/**
+ * GET /api/bulletin/geocoding/reverse
+ * Zero-Cost Reverse Geocoding with OSM Nominatim + Fallback to Google Geocoding API
+ */
+router.get('/geocoding/reverse', async (req, res) => {
+  try {
+    const { lat, lon } = req.query;
+    const lang = req.query.lang === 'en' ? 'en' : 'ar';
+
+    if (!lat || !lon) {
+      return res.status(400).json({ success: false, message: 'Missing lat/lon' });
+    }
+
+    // 1. Primary Engine: OpenStreetMap Nominatim (Zero-Cost & Free)
+    try {
+      const url = `https://nominatim.openstreetmap.org/reverse?format=json&lat=${encodeURIComponent(String(lat))}&lon=${encodeURIComponent(String(lon))}&accept-language=${lang}`;
+      const apiRes = await fetch(url, {
+        headers: {
+          'User-Agent': 'PerplextaPlatform/1.0 (https://perplexta.app)'
+        }
+      });
+
+      if (apiRes.ok) {
+        const data = await apiRes.json();
+        if (data && data.address) {
+          const addr = data.address || {};
+          let detectedCity = addr.city || addr.town || addr.village || addr.municipality || addr.state || addr.county || 'موقع جغرافي';
+          let detectedCountry = addr.country || '';
+          let detectedCountryCode = (addr.country_code || '').toLowerCase();
+
+          // Sovereign Palestine Normalization
+          const rawDisplay = (data.display_name || '').toLowerCase();
+          if (detectedCountryCode === 'ps' || detectedCountryCode === 'il' || rawDisplay.includes('jerusalem') || rawDisplay.includes('القدس') || rawDisplay.includes('palestine') || rawDisplay.includes('فلسطين') || rawDisplay.includes('west bank') || rawDisplay.includes('gaza')) {
+            detectedCountry = lang === 'ar' ? 'فلسطين' : 'Palestine';
+            detectedCountryCode = 'ps';
+          }
+
+          return res.json({
+            success: true,
+            provider: 'nominatim_zero_cost',
+            display_name: data.display_name,
+            city: detectedCity,
+            country: detectedCountry,
+            country_code: detectedCountryCode,
+            lat: String(lat),
+            lon: String(lon)
+          });
+        }
+      }
+    } catch (nomErr) {
+      console.warn('[Geocoding API] Nominatim Reverse Geocoding failed, trying secondary fallback:', nomErr);
+    }
+
+    // 2. Secondary Fallback: Google Geocoding API (if key present in Admin DB / env)
+    const mapsApiKey = getActiveGoogleMapsKey();
+    if (mapsApiKey) {
+      try {
+        const googleUrl = `https://maps.googleapis.com/maps/api/geocode/json?latlng=${lat},${lon}&language=${lang}&key=${mapsApiKey}`;
+        const googleRes = await fetch(googleUrl);
+        if (googleRes.ok) {
+          const googleData = await googleRes.json();
+          if (googleData.status === 'OK' && Array.isArray(googleData.results) && googleData.results.length > 0) {
+            const topResult = googleData.results[0];
+            let detectedCity = 'موقع جغرافي';
+            let detectedCountry = '';
+            let detectedCountryCode = '';
+
+            if (Array.isArray(topResult.address_components)) {
+              for (const comp of topResult.address_components) {
+                if (comp.types.includes('locality') || comp.types.includes('sublocality_level_1') || comp.types.includes('administrative_area_level_3')) {
+                  detectedCity = comp.long_name;
+                }
+                if (comp.types.includes('country')) {
+                  detectedCountry = comp.long_name;
+                  detectedCountryCode = comp.short_name.toLowerCase();
+                }
+              }
+            }
+
+            // Sovereign Palestine Normalization
+            const rawFormatted = (topResult.formatted_address || '').toLowerCase();
+            if (detectedCountryCode === 'ps' || detectedCountryCode === 'il' || rawFormatted.includes('jerusalem') || rawFormatted.includes('القدس') || rawFormatted.includes('palestine') || rawFormatted.includes('فلسطين')) {
+              detectedCountry = lang === 'ar' ? 'فلسطين' : 'Palestine';
+              detectedCountryCode = 'ps';
+            }
+
+            return res.json({
+              success: true,
+              provider: 'google_geocoding_fallback',
+              display_name: topResult.formatted_address,
+              city: detectedCity,
+              country: detectedCountry,
+              country_code: detectedCountryCode,
+              lat: String(lat),
+              lon: String(lon)
+            });
+          }
+        }
+      } catch (gErr) {
+        console.warn('[Geocoding API] Google Reverse Geocoding error:', gErr);
+      }
+    }
+
+    // 3. Tertiary Fallback: Mapbox Reverse Geocoding (if key in Admin DB)
+    const mapboxKey = getActiveProviderKey('mapbox');
+    if (mapboxKey) {
+      try {
+        const mapboxUrl = `https://api.mapbox.com/geocoding/v5/mapbox.places/${lon},${lat}.json?access_token=${encodeURIComponent(mapboxKey)}&language=${lang}&limit=1`;
+        const mRes = await fetch(mapboxUrl);
+        if (mRes.ok) {
+          const mData = await mRes.json();
+          if (mData && Array.isArray(mData.features) && mData.features.length > 0) {
+            const feat = mData.features[0];
+            const context = Array.isArray(feat.context) ? feat.context : [];
+            const countryObj = context.find((c: any) => (c.id || '').startsWith('country'));
+            const regionObj = context.find((c: any) => (c.id || '').startsWith('region'));
+            let detectedCity = feat.text || regionObj?.text || 'موقع جغرافي';
+            let detectedCountry = countryObj?.text || '';
+            let detectedCountryCode = (countryObj?.short_code || '').toLowerCase();
+
+            if (detectedCountryCode === 'ps' || detectedCountryCode === 'il' || feat.place_name?.toLowerCase().includes('palestine')) {
+              detectedCountry = lang === 'ar' ? 'فلسطين' : 'Palestine';
+              detectedCountryCode = 'ps';
+            }
+
+            return res.json({
+              success: true,
+              provider: 'mapbox_reverse_geocoding',
+              display_name: feat.place_name,
+              city: detectedCity,
+              country: detectedCountry,
+              country_code: detectedCountryCode,
+              lat: String(lat),
+              lon: String(lon)
+            });
+          }
+        }
+      } catch (mErr) {
+        console.warn('[Geocoding API] Mapbox Reverse Geocoding error:', mErr);
+      }
+    }
+
+    // 4. Quaternary Fallback: LocationIQ Reverse Geocoding (if key in Admin DB)
+    const locationiqKey = getActiveProviderKey('locationiq');
+    if (locationiqKey) {
+      try {
+        const locIqUrl = `https://us1.locationiq.com/v1/reverse?key=${encodeURIComponent(locationiqKey)}&lat=${lat}&lon=${lon}&format=json&accept-language=${lang}`;
+        const lRes = await fetch(locIqUrl);
+        if (lRes.ok) {
+          const lData = await lRes.json();
+          if (lData && lData.address) {
+            const addr = lData.address;
+            let detectedCity = addr.city || addr.town || addr.village || addr.municipality || addr.state || 'موقع جغرافي';
+            let detectedCountry = addr.country || '';
+            let detectedCountryCode = (addr.country_code || '').toLowerCase();
+
+            if (detectedCountryCode === 'ps' || detectedCountryCode === 'il') {
+              detectedCountry = lang === 'ar' ? 'فلسطين' : 'Palestine';
+              detectedCountryCode = 'ps';
+            }
+
+            return res.json({
+              success: true,
+              provider: 'locationiq_reverse_geocoding',
+              display_name: lData.display_name,
+              city: detectedCity,
+              country: detectedCountry,
+              country_code: detectedCountryCode,
+              lat: String(lat),
+              lon: String(lon)
+            });
+          }
+        }
+      } catch (lErr) {
+        console.warn('[Geocoding API] LocationIQ Reverse Geocoding error:', lErr);
+      }
+    }
+
+    return res.status(404).json({ success: false, message: 'Unable to resolve reverse coordinates' });
+  } catch (error: any) {
+    console.error('[Geocoding API] Reverse error:', error);
+    return res.status(500).json({ success: false, error: error.message });
   }
 });
 
@@ -331,10 +1133,27 @@ router.get('/ads', async (req, res) => {
       query += ` AND b.category = $${params.length}`;
     }
 
-    const targetCity = (city || location_city) as string;
-    if (targetCity && targetCity !== 'all' && targetCity !== 'الكل') {
-      params.push(`%${targetCity.trim()}%`);
-      query += ` AND (b.location_city ILIKE $${params.length} OR bp.city ILIKE $${params.length} OR b.title ILIKE $${params.length} OR b.description ILIKE $${params.length})`;
+    // Multi-country and multi-city filtering support
+    const rawCitiesParam = (req.query.cities || req.query.city || req.query.location_city || '') as string;
+    const rawCountriesParam = (req.query.countries || req.query.country || '') as string;
+
+    const cityList = rawCitiesParam.split(',').map(c => c.trim()).filter(c => c && c !== 'all' && c !== 'الكل');
+    const countryList = rawCountriesParam.split(',').map(c => c.trim()).filter(c => c && c !== 'all' && c !== 'الكل');
+
+    if (cityList.length > 0) {
+      const cityConditions: string[] = [];
+      for (const cVal of cityList) {
+        params.push(`%${cVal}%`);
+        cityConditions.push(`(b.location_city ILIKE $${params.length} OR bp.city ILIKE $${params.length} OR b.title ILIKE $${params.length} OR b.description ILIKE $${params.length})`);
+      }
+      query += ` AND (${cityConditions.join(' OR ')})`;
+    } else if (countryList.length > 0) {
+      const countryConditions: string[] = [];
+      for (const ctryVal of countryList) {
+        params.push(`%${ctryVal}%`);
+        countryConditions.push(`(b.location_city ILIKE $${params.length} OR bp.city ILIKE $${params.length} OR b.title ILIKE $${params.length} OR b.description ILIKE $${params.length})`);
+      }
+      query += ` AND (${countryConditions.join(' OR ')})`;
     }
 
     if (search && typeof search === 'string' && search.trim()) {
@@ -385,7 +1204,7 @@ router.get('/ads', async (req, res) => {
     let isFallbackToNational = false;
 
     // If city search returned 0 items on page 1, fallback to national ads so content never disappears
-    if (result.rows.length === 0 && pageNum === 1 && targetCity && targetCity !== 'all' && targetCity !== 'الكل') {
+    if (result.rows.length === 0 && pageNum === 1 && cityList.length > 0) {
       const fallbackQuery = `
         SELECT b.*,
           (CASE WHEN b.is_boosted AND (b.boosted_until IS NULL OR b.boosted_until > NOW()) THEN TRUE ELSE FALSE END) as is_boosted_active,
@@ -1020,8 +1839,9 @@ router.post('/ads', authenticateToken, async (req: any, res) => {
       if (hasEveryoneMention) {
         try {
           const activeUsersRes = await pool.query(
-          );
+            'SELECT id FROM users WHERE id != $1 ORDER BY id DESC LIMIT 500',
             [userId]
+          );
           for (const row of activeUsersRes.rows) {
             const uId = Number(row.id);
             if (uId && uId !== Number(userId)) {

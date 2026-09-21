@@ -74,40 +74,14 @@ const renderRichPostText = (text: string | null | undefined, searchQuery?: strin
           return <span key={idx}>{word}</span>;
         }
 
-        // Mention @الجميع or @everyone
-        if (word === '@الجميع' || word.toLowerCase() === '@everyone') {
-          return (
-            <span
-              key={idx}
-              className="inline-flex items-center gap-1 font-black text-purple-600 dark:text-purple-400 bg-purple-500/10 dark:bg-purple-500/20 px-1.5 py-0.5 rounded-md border border-purple-500/25 mx-0.5 align-middle select-all shadow-xs"
-            >
-              <span>{word}</span>
-              <span className="text-[10px]">📢</span>
-            </span>
-          );
-        }
-
-        // Mention @اشارة للمتابعين or @متابعين or @followers
-        if (word === '@اشارة' || word === '@اشارة_للمتابعين' || word === '@اشارة للمتابعين' || word === '@متابعين' || word.toLowerCase() === '@followers') {
-          return (
-            <span
-              key={idx}
-              className="inline-flex items-center gap-1 font-black text-blue-600 dark:text-blue-400 bg-blue-500/10 dark:bg-blue-500/20 px-1.5 py-0.5 rounded-md border border-blue-500/25 mx-0.5 align-middle select-all shadow-xs"
-            >
-              <span>{word}</span>
-              <span className="text-[10px]">👥</span>
-            </span>
-          );
-        }
-
-        // Generic @mention
+        // Mention (@الجميع, @everyone, @متابعين, @followers, or any @username)
         if (word.startsWith('@') && word.length > 1) {
           return (
             <span
               key={idx}
-              className="inline-flex items-center font-bold text-accent dark:text-accent bg-accent/10 px-1.5 py-0.5 rounded-md border border-accent/20 mx-0.5 align-middle"
+              className="font-bold text-[#1877F2] dark:text-[#3880FF] hover:underline cursor-pointer inline-block mx-0.5"
             >
-              {word}
+              <HighlightText text={word} query={searchQuery} />
             </span>
           );
         }
@@ -117,7 +91,7 @@ const renderRichPostText = (text: string | null | undefined, searchQuery?: strin
           return (
             <span
               key={idx}
-              className="font-extrabold text-blue-600 dark:text-blue-400 hover:underline cursor-pointer inline-block mx-0.5"
+              className="font-bold text-[#1877F2] dark:text-[#3880FF] hover:underline cursor-pointer inline-block mx-0.5"
             >
               <HighlightText text={word} query={searchQuery} />
             </span>
@@ -612,7 +586,7 @@ export const PostFeed: React.FC<PostFeedProps> = ({
       <AnimatePresence mode="popLayout">
         {visibleAds.map((ad, index) => {
           const isTextExpanded = !!expandedTextIds[ad.id];
-          const isLongText = ad.description && ad.description.length > 100;
+          const isLongText = ad.description && ad.description.length > 280;
 
           return (
             <motion.div
@@ -726,11 +700,10 @@ export const PostFeed: React.FC<PostFeedProps> = ({
                 </div>
               </div>
 
-              <div className="flex items-center gap-1 shrink-0">
+              <div className="flex items-center gap-1.5 shrink-0">
                 {ad.is_ai_generated && (
-                  <span className="px-1.5 sm:px-2 py-0.5 rounded-[var(--radius-xs)] bg-indigo-500/10 border border-indigo-500/30 text-indigo-500 dark:text-indigo-400 text-[10px] font-black flex items-center gap-1 shadow-sm">
-                    <Sparkles size={11} className="text-indigo-500 animate-pulse" />
-                    <span className="hidden sm:inline">{isRtl ? 'بواسطة AI' : 'AI-Generated'}</span>
+                  <span className="h-8 min-w-[32px] px-2.5 rounded-shape-sm bg-indigo-500/10 border border-indigo-500/30 text-indigo-600 dark:text-indigo-400 text-xs font-black uppercase tracking-wider shadow-2xs flex items-center justify-center shrink-0 select-none">
+                    AI
                   </span>
                 )}
                 {ad.ad_format && ad.ad_format !== 'post' && (
@@ -741,26 +714,27 @@ export const PostFeed: React.FC<PostFeedProps> = ({
                         onOpenReelFeed(ad.id);
                       }
                     }}
-                    className={`px-1.5 sm:px-2 py-0.5 rounded-[var(--radius-xs)] border text-[10px] font-black flex items-center gap-1 shadow-sm transition-transform active:scale-95 ${
+                    className={`h-8 px-2.5 rounded-shape-sm border text-xs font-bold flex items-center justify-center gap-1.5 shadow-2xs transition-all duration-fast active:scale-95 shrink-0 cursor-pointer ${
                       ad.ad_format === 'reel' 
-                        ? 'bg-purple-500/10 border-purple-500/30 text-purple-600 dark:text-purple-400 hover:bg-purple-500/20 cursor-pointer' 
-                        : 'bg-[var(--bg-accent-muted)] border-[var(--border-accent)]/30 text-[var(--fg-accent)]'
+                        ? 'bg-purple-500/10 border-purple-500/30 text-purple-600 dark:text-purple-400 hover:bg-purple-500/20' 
+                        : 'bg-[var(--surface-subtle)] border-[var(--border-default)] text-[var(--fg-accent)] hover:bg-accent/10'
                     }`}
+                    title={ad.ad_format === 'reel' ? (isRtl ? 'عرض الريلز' : 'View Reel') : (isRtl ? 'عرض القصة' : 'View Story')}
                   >
-                    {ad.ad_format === 'reel' ? <Clapperboard size={11} className="text-purple-500" /> : <Camera size={11} className="text-[var(--fg-accent)]" />}
+                    {ad.ad_format === 'reel' ? <Clapperboard size={13} className="text-purple-500" /> : <Camera size={13} className="text-[var(--fg-accent)]" />}
                     <span className="hidden sm:inline">{ad.ad_format === 'reel' ? (isRtl ? 'ريلز' : 'Reel') : (isRtl ? 'قصة' : 'Story')}</span>
                   </button>
                 )}
                 {ad.category && !['عام', 'general', 'عام / general', 'عام / General'].includes(ad.category.trim().toLowerCase()) && (
-                  <span className="hidden sm:inline-flex px-2 py-0.5 rounded-shape-xs bg-[var(--bg-accent-muted)] border border-[var(--border-accent)]/20 text-[var(--fg-accent)] text-[10px] font-black items-center gap-1 shadow-sm shrink-0">
-                    <span className="w-1 h-1 rounded-full bg-[var(--fg-accent)] shrink-0" />
+                  <span className="hidden sm:inline-flex h-8 px-2.5 rounded-shape-sm bg-[var(--surface-subtle)] border border-[var(--border-default)] text-[var(--fg-accent)] text-xs font-bold items-center justify-center gap-1.5 shadow-2xs shrink-0">
+                    <span className="w-1.5 h-1.5 rounded-full bg-[var(--fg-accent)] shrink-0" />
                     <span>{ad.category}</span>
                   </span>
                 )}
 
                 {/* Edit & Delete Actions for Owners */}
                 {user && (user.id === ad.user_id || user.is_admin) && (
-                  <div className="flex items-center gap-1 shrink-0">
+                  <div className="flex items-center gap-1.5 shrink-0">
                     {onEditAd && (
                       <button
                         onClick={() => onEditAd(ad)}
@@ -875,22 +849,22 @@ export const PostFeed: React.FC<PostFeedProps> = ({
                 return (
                   <>
                     {showTitleHeader && (
-                      <h3 className="text-xs font-black text-[var(--text-primary)] leading-snug">
+                      <h3 className="text-sm sm:text-[15px] font-bold text-[var(--text-primary)] leading-snug">
                         {renderRichPostText(cleanTitle, searchQuery)}
                       </h3>
                     )}
 
-                    <div className="text-[11px] text-[var(--text-secondary)] leading-relaxed space-y-1">
-                      <div className="whitespace-pre-wrap">
+                    <div className="text-[14px] sm:text-[15px] text-[var(--text-primary)] leading-relaxed space-y-1.5 font-normal">
+                      <div className="whitespace-pre-wrap break-words">
                         {isLongText && !isTextExpanded
-                          ? renderRichPostText(postBodyText.slice(0, 100) + '...', searchQuery)
+                          ? renderRichPostText(postBodyText.slice(0, 280) + '...', searchQuery)
                           : renderRichPostText(postBodyText, searchQuery)}
                       </div>
 
                       {isLongText && (
                         <button
                           onClick={() => toggleTextExpand(ad.id)}
-                          className="text-[var(--fg-accent)] font-bold hover:underline inline-flex items-center gap-1 text-[10px]"
+                          className="text-[#1877F2] dark:text-[#3880FF] font-bold hover:underline inline-flex items-center gap-1 text-xs cursor-pointer"
                         >
                           <span>
                             {isTextExpanded
@@ -901,7 +875,7 @@ export const PostFeed: React.FC<PostFeedProps> = ({
                               ? 'عرض المزيد...'
                               : 'See More...'}
                           </span>
-                          {isTextExpanded ? <ChevronUp size={12} /> : <ChevronDown size={12} />}
+                          {isTextExpanded ? <ChevronUp size={13} /> : <ChevronDown size={13} />}
                         </button>
                       )}
                     </div>
@@ -924,11 +898,11 @@ export const PostFeed: React.FC<PostFeedProps> = ({
                       if (uniqueTags.length === 0) return null;
 
                       return (
-                        <div className="flex flex-wrap gap-1 pt-1">
+                        <div className="flex flex-wrap items-center gap-x-2.5 gap-y-1 pt-1">
                           {uniqueTags.map((tag, idx) => (
                             <span
                               key={`tag-${ad.id}-${tag}-${idx}`}
-                              className="text-[10px] font-extrabold text-blue-600 dark:text-blue-400 hover:underline cursor-pointer bg-blue-500/5 dark:bg-blue-500/10 px-2 py-0.5 rounded-md border border-blue-500/10 dark:border-blue-500/20"
+                              className="text-xs sm:text-[13px] font-bold text-[#1877F2] dark:text-[#3880FF] hover:underline cursor-pointer inline-block"
                             >
                               <HighlightText text={String(tag).startsWith('#') ? String(tag) : `#${String(tag)}`} query={searchQuery} />
                             </span>
@@ -988,22 +962,16 @@ export const PostFeed: React.FC<PostFeedProps> = ({
                       if (filteredElements.length === 0) return null;
 
                       return (
-                        <div className="flex flex-wrap items-center gap-1 pt-1">
+                        <div className="flex flex-wrap items-center gap-x-2.5 gap-y-1 pt-1">
                           {filteredElements.map((item, idx) => {
                             const isEveryone = item.normKey === 'everyone';
                             const isFollowers = item.normKey === 'followers';
                             return (
                               <span
                                 key={`tagged-${ad.id}-${idx}`}
-                                className={`inline-flex items-center gap-1 text-[10px] font-extrabold px-2 py-0.5 rounded-md border ${
-                                  isEveryone
-                                    ? 'bg-purple-500/10 text-purple-600 dark:text-purple-400 border-purple-500/30'
-                                    : isFollowers
-                                    ? 'bg-blue-500/10 text-blue-600 dark:text-blue-400 border-blue-500/30'
-                                    : 'bg-accent/10 text-accent dark:text-accent border-accent/25'
-                                }`}
+                                className="text-xs sm:text-[13px] font-bold text-[#1877F2] dark:text-[#3880FF] hover:underline cursor-pointer inline-block"
                               >
-                                {isEveryone ? '📢 @الجميع' : isFollowers ? '👥 @المتابعين' : `@${item.tagStr.replace(/^@/, '')}`}
+                                {isEveryone ? '@الجميع' : isFollowers ? '@المتابعين' : `@${item.tagStr.replace(/^@/, '')}`}
                               </span>
                             );
                           })}

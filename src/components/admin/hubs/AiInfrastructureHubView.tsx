@@ -1,12 +1,13 @@
 import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "motion/react";
-import { Key, Server, Cpu, Brain } from "lucide-react";
+import { Key, Server, Cpu, Brain, MapPin } from "lucide-react";
 import { ApiKeysVaultView } from "../ApiKeysVaultView";
 import { GpuInfrastructureView } from "../GpuInfrastructureView";
 import { OrchestratorView } from "../OrchestratorView";
 import { MemoryCenterView } from "../MemoryCenterView";
+import { MapsInfrastructureView } from "../MapsInfrastructureView";
 
-export type AiInfraTab = "keys" | "gpu" | "orchestrator" | "memories";
+export type AiInfraTab = "keys" | "gpu" | "maps" | "orchestrator" | "memories";
 
 interface AiInfrastructureHubViewProps {
   theme: string;
@@ -61,6 +62,12 @@ export const AiInfrastructureHubView: React.FC<AiInfrastructureHubViewProps> = (
       labelAr: "خوادم الـ GPU ومعالجة الوسائط",
       labelEn: "GPU Infrastructure & Media Compute",
       icon: <Server size={16} />,
+    },
+    {
+      id: "maps",
+      labelAr: "مزودو الخرائط والمواقع",
+      labelEn: "Maps & Geocoding Infrastructure",
+      icon: <MapPin size={16} />,
     },
     {
       id: "orchestrator",
@@ -127,6 +134,14 @@ export const AiInfrastructureHubView: React.FC<AiInfrastructureHubViewProps> = (
             )}
             {activeTab === "gpu" && (
               <GpuInfrastructureView
+                theme={theme}
+                t={t}
+                dir={dir}
+                showToast={showToast}
+              />
+            )}
+            {activeTab === "maps" && (
+              <MapsInfrastructureView
                 theme={theme}
                 t={t}
                 dir={dir}

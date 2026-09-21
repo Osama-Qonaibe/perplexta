@@ -939,6 +939,16 @@ export const Sidebar: React.FC<{ activeLanguage?: string }> = ({ activeLanguage 
                       <NavLink to="/about" className="text-[6.5px] font-bold text-[var(--text-muted)] hover:text-[var(--accent)] transition-all duration-fast whitespace-nowrap">
                         {language === 'ar' ? 'عن المنصة' : 'About'}
                       </NavLink>
+                      <span className="hidden md:inline-block w-0.5 h-0.5 rounded-full bg-[var(--border-default)] flex-shrink-0" />
+                      <a
+                        href="/docs/legal"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="hidden md:inline-block text-[6.5px] font-bold text-[var(--text-muted)] hover:text-[var(--accent)] transition-all duration-fast whitespace-nowrap"
+                        title={language === 'ar' ? 'الوثائق القانونية' : 'Legal Docs'}
+                      >
+                        {language === 'ar' ? 'الوثائق القانونية' : 'Legal Docs'}
+                      </a>
                     </motion.div>
                   )}
                 </AnimatePresence>
@@ -1303,7 +1313,7 @@ export const Sidebar: React.FC<{ activeLanguage?: string }> = ({ activeLanguage 
                 <div className="flex flex-col min-w-0 flex-1 text-start overflow-hidden">
                   <span className="font-bold text-xs truncate leading-tight text-[var(--text-primary)]">{user.name}</span>
                   <span className="text-[9.5px] text-[var(--text-muted)] truncate leading-tight mt-0.5 font-medium">
-                    {user.email || t(`role_${(user.role || 'user').toLowerCase()}`)}
+                    {t(`role_${(user.role || 'user').toLowerCase()}`) || user.role || 'Member'}
                   </span>
                 </div>
                 {user.subscription?.plan_name_en && (

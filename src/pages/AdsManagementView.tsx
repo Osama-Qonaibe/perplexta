@@ -1112,7 +1112,7 @@ export const AdsManagementView: React.FC<{
           }`}
         >
           <Sparkles size={15} />
-          <span>{isRtl ? 'إعلانات فايرال بوك والمجتمع' : 'ViralBook Community Ads'}</span>
+          <span>{isRtl ? 'إعلانات فيرال بوك والمجتمع' : 'ViralBook Community Ads'}</span>
           {bulletinAds.filter(b => b.status === 'pending').length > 0 && (
             <span className="px-2 py-0.5 rounded-full text-[10px] bg-amber-500 text-white font-extrabold animate-pulse">
               {bulletinAds.filter(b => b.status === 'pending').length} {isRtl ? 'معلّق' : 'Pending'}
@@ -2393,7 +2393,7 @@ export const AdsManagementView: React.FC<{
             <div>
               <h3 className="font-black text-sm text-[var(--text-primary)] flex items-center gap-2">
                 <Sparkles size={16} className="text-[var(--fg-accent)]" />
-                <span>{isRtl ? 'طلبات إعلانات فايرال بوك (ViralBook Ads)' : 'ViralBook Community Ad Submissions'}</span>
+                <span>{isRtl ? 'طلبات إعلانات فيرال بوك (ViralBook Ads)' : 'ViralBook Community Ad Submissions'}</span>
               </h3>
               <p className="text-[11px] text-[var(--text-muted)] mt-0.5">
                 {isRtl ? 'مراجعة واعتماد أو رفض الإعلانات الممولة التي نشرها المستخدمون ودفعوا ثمنها من محفظتهم.' : 'Review, approve or reject paid community ads submitted by users.'}
@@ -2446,7 +2446,7 @@ export const AdsManagementView: React.FC<{
           {isBulletinLoading ? (
             <div className="p-12 text-center text-xs text-[var(--text-muted)] flex flex-col items-center gap-2">
               <RefreshCw size={24} className="animate-spin text-[var(--fg-accent)]" />
-              <span>{isRtl ? 'جاري تحميل طلبات فايرال بوك...' : 'Loading ViralBook ads...'}</span>
+              <span>{isRtl ? 'جاري تحميل طلبات فيرال بوك...' : 'Loading ViralBook ads...'}</span>
             </div>
           ) : bulletinAds.length === 0 ? (
             <div className="p-12 text-center text-xs text-[var(--text-muted)] flex flex-col items-center gap-2">

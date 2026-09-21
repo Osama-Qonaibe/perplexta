@@ -85,6 +85,7 @@ export const AdminDashboard: React.FC = () => {
     const sensitivePaths = [
       "keys",
       "gpu",
+      "maps",
       "databases",
       "finance",
       "settings",
@@ -252,12 +253,13 @@ export const AdminDashboard: React.FC = () => {
           : "REAL-TIME DIAGNOSTICS & SYSTEM PERFORMANCE MONITORING";
       case "keys":
       case "gpu":
+      case "maps":
       case "orchestrator":
       case "memories":
       case "ai-infra":
         return language === "ar"
-          ? "خزائن المفاتيح، خوادم الـ GPU، توجيه الموديلات والذاكرة المعرفية"
-          : "LLM KEYS, GPU CLUSTERS, MODEL ROUTING & COGNITIVE MEMORY";
+          ? "خزائن المفاتيح، خوادم الـ GPU، مزودو الخرائط، توجيه الموديلات والذاكرة المعرفية"
+          : "LLM KEYS, GPU CLUSTERS, MAP PROVIDERS, MODEL ROUTING & COGNITIVE MEMORY";
       case "databases":
         return language === "ar"
           ? "عقد الاتصال المعزولة، الترحيل الآلي، والنسخ الاحتياطي والإنعاش"
@@ -306,6 +308,7 @@ export const AdminDashboard: React.FC = () => {
         return <Activity size={20} className={iconClass} />;
       case "keys":
       case "gpu":
+      case "maps":
       case "orchestrator":
       case "memories":
       case "ai-infra":
@@ -620,7 +623,7 @@ export const AdminDashboard: React.FC = () => {
       <div
         className={`relative transition-theme ${
           [
-            "dashboard", "radar", "databases", "orchestrator", "keys", "gpu",
+            "dashboard", "radar", "databases", "orchestrator", "keys", "gpu", "maps",
             "finance", "plans", "users", "emails", "broadcast", "settings",
             "audit", "referrals", "ads", "metrics", "seo", "theme", "ai-infra", "design-seo"
           ].includes(path)
@@ -631,7 +634,7 @@ export const AdminDashboard: React.FC = () => {
         <ErrorBoundary name="Admin Command Panels">
           {path === "dashboard" ? (
             <CommandCenterView theme={theme} t={t} showToast={showToast} />
-          ) : ["keys", "gpu", "orchestrator", "memories", "ai-infra"].includes(path) ? (
+          ) : ["keys", "gpu", "maps", "orchestrator", "memories", "ai-infra"].includes(path) ? (
             <AiInfrastructureHubView
               theme={theme}
               t={t}
@@ -644,6 +647,8 @@ export const AdminDashboard: React.FC = () => {
               initialTab={
                 path === "gpu"
                   ? "gpu"
+                  : path === "maps"
+                  ? "maps"
                   : path === "orchestrator"
                   ? "orchestrator"
                   : path === "memories"

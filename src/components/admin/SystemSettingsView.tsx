@@ -953,7 +953,7 @@ export const SystemSettingsView: React.FC<SystemSettingsViewProps> = ({
     const base = [
       { path: "/", labelEn: "Home Gateway Redirect", labelAr: "بوابة التوجيه الرئيسية", type: "public", status: "index", descriptionEn: "Public gateway routing users to default dashboard structure.", descriptionAr: "بوابة توجيه عامة تقوم بتوجيه المستخدمين للواجهة الافتراضية." },
       { path: "/subscription", labelEn: "Subscription Plans Page", labelAr: "صفحة خطط الاشتراكات", type: "public", status: "index", descriptionEn: "Public storefront detailing memberships, tiers, and pricing matrices.", descriptionAr: "صفحة عامة لعرض مزايا وتفاصيل العضوية والخطط السعرية." },
-      { path: "/viralbook", labelEn: "ViralBook & Community Feed", labelAr: "فايرال بوك والمجتمع التفاعلي", type: "public", status: "index", descriptionEn: "Public interactive feed with verified reels, business pages, and campaigns.", descriptionAr: "منصة فايرال بوك التفاعلية لنشر الإعلانات ومقاطع الفيديو والصفحات التجارية." },
+      { path: "/viralbook", labelEn: "ViralBook & Community Feed", labelAr: "فيرال بوك والمجتمع التفاعلي", type: "public", status: "index", descriptionEn: "Public interactive feed with verified reels, business pages, and campaigns.", descriptionAr: "منصة فيرال بوك التفاعلية لنشر الإعلانات ومقاطع الفيديو والصفحات التجارية." },
       { path: "/terms", labelEn: "Terms of Service", labelAr: "شروط الخدمة والاستخدام", type: "public", status: "index", descriptionEn: "Mandatory public legal statement governing platform interactions.", descriptionAr: "اتفاقية قانونية عامة تنظم الاستخدام وحقوق الملكية للمنصة." },
       { path: "/privacy", labelEn: "Privacy Policy Charter", labelAr: "سياسة الخصوصية وحماية البيانات", type: "public", status: "index", descriptionEn: "Mandatory public charter highlighting database handling policies.", descriptionAr: "ميثاق خصوصية عام يوضح سياسات التعامل الآمن مع قواعد البيانات." },
       { path: "/about", labelEn: "About Corporate Pitch", labelAr: "صفحة التعريف والرؤية", type: "public", status: "index", descriptionEn: "Public company presentation showcasing core tech vision.", descriptionAr: "عرض عام للمؤسسة يعزز الثقة ويوضح الرؤية الابتكارية." },
@@ -1868,9 +1868,9 @@ export const SystemSettingsView: React.FC<SystemSettingsViewProps> = ({
               },
               {
                 key: "/viralbook",
-                title: dir === "rtl" ? "فايرال بوك والنشر (ViralBook Ads)" : "ViralBook Ads & Feed",
+                title: dir === "rtl" ? "فيرال بوك والنشر (ViralBook Ads)" : "ViralBook Ads & Feed",
                 subtitle: dir === "rtl" ? "مسار /viralbook" : "Route /viralbook",
-                description: dir === "rtl" ? "إخفاء قسم فايرال بوك والمنشورات التفاعلية من الهيدر." : "Hide interactive ViralBook section from header.",
+                description: dir === "rtl" ? "إخفاء قسم فيرال بوك والمنشورات التفاعلية من الهيدر." : "Hide interactive ViralBook section from header.",
                 icon: <Megaphone size={18} className="text-pink-500" />
               },
               {

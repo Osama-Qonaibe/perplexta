@@ -74,14 +74,14 @@ export const MultiImageGallery: React.FC<MultiImageGalleryProps> = ({
       <div
         key={item.id || idx}
         onClick={() => onOpenLightbox(item.url, items, idx)}
-        className="relative w-full h-full overflow-hidden cursor-pointer group bg-transparent select-none"
+        className="relative w-full h-full overflow-hidden cursor-pointer group bg-[var(--surface-subtle)]/30 dark:bg-black/20 flex items-center justify-center select-none"
       >
         {isVideo ? (
           <div className="relative w-full h-full bg-[var(--surface-subtle)] flex items-center justify-center overflow-hidden">
             <video
               src={videoSrcWithTime}
               poster={posterUrl}
-              className="w-full h-full object-cover transition-transform duration-slow group-hover:scale-105 pointer-events-none"
+              className="max-w-full max-h-full object-contain transition-transform duration-slow group-hover:scale-105 pointer-events-none"
               muted
               playsInline
               preload="metadata"
@@ -109,7 +109,7 @@ export const MultiImageGallery: React.FC<MultiImageGalleryProps> = ({
                 target.src = 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=1080&q=80';
               }
             }}
-            className="w-full h-full object-cover transition-transform duration-slow group-hover:scale-105"
+            className="max-w-full max-h-full object-contain transition-transform duration-slow group-hover:scale-105"
             loading="lazy"
           />
         )}
@@ -152,22 +152,22 @@ export const MultiImageGallery: React.FC<MultiImageGalleryProps> = ({
     return (
       <div
         onClick={() => onOpenLightbox(item.url, items, 0)}
-        className={`relative w-full bg-transparent cursor-pointer overflow-hidden group transition-theme touch-pan-y ${
+        className={`relative w-full bg-[var(--surface-subtle)]/30 dark:bg-black/20 cursor-pointer overflow-hidden group transition-theme touch-pan-y flex items-center justify-center py-0.5 ${
           adFormat === 'reel' || adFormat === 'story'
-            ? 'aspect-[4/5] max-h-[500px] mx-auto rounded-shape-md overflow-hidden border border-[var(--border-default)]/60 shadow-md bg-[var(--surface-subtle)]'
+            ? 'aspect-[4/5] max-h-[520px] mx-auto rounded-shape-md overflow-hidden border border-[var(--border-default)]/60 shadow-md'
             : adFormat === 'video' || adFormat === 'instream'
             ? 'aspect-video max-h-[480px]'
             : adFormat === 'banner'
             ? 'aspect-[21/9]'
-            : 'aspect-square max-h-[500px] mx-auto flex items-center justify-center bg-[var(--surface-subtle)]'
+            : 'w-full min-h-[200px]'
         }`}
       >
         {isVideo ? (
-          <div className="relative w-full h-full bg-[var(--surface-subtle)] flex items-center justify-center overflow-hidden">
+          <div className="relative w-full bg-[var(--surface-subtle)] flex items-center justify-center overflow-hidden">
             <video
               src={videoSrcWithTime}
               poster={posterUrl}
-              className="w-full h-full object-cover pointer-events-none"
+              className="max-w-full max-h-[650px] w-auto h-auto object-contain pointer-events-none"
               muted
               playsInline
               preload="metadata"
@@ -194,7 +194,7 @@ export const MultiImageGallery: React.FC<MultiImageGalleryProps> = ({
                 target.src = 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=1080&q=80';
               }
             }}
-            className="w-full h-full object-cover transition-transform duration-slow group-hover:scale-[1.01] pointer-events-none"
+            className="max-w-full max-h-[680px] w-auto h-auto object-contain transition-transform duration-slow group-hover:scale-[1.005] pointer-events-none mx-auto block"
             loading="lazy"
           />
         )}

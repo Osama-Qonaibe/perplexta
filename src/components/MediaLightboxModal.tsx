@@ -690,7 +690,7 @@ export const MediaLightboxModal: React.FC<MediaLightboxModalProps> = ({
             }
           }}
           className="inline-flex items-center gap-2 px-3.5 py-2 min-h-[38px] rounded-[var(--comp-button-radius,8px)] bg-accent/10 hover:bg-accent/20 text-accent font-bold text-xs border border-accent/25 hover:border-accent/40 transition-all hover:scale-105 active:scale-95 cursor-pointer"
-          title={isRtl ? 'عرض المنشور الأصلي في فايرال بوك' : 'View original post in ViralBook'}
+          title={isRtl ? 'عرض المنشور الأصلي في فيرال بوك' : 'View original post in ViralBook'}
         >
           <ExternalLink size={15} />
           <span>{isRtl ? 'عرض المنشور' : 'View Post'}</span>
@@ -808,9 +808,8 @@ export const MediaLightboxModal: React.FC<MediaLightboxModalProps> = ({
 
       {/* AI Assistance Label if present */}
       {ad?.is_ai_generated && (
-        <div className="mx-3.5 sm:mx-4 mb-2 px-2.5 py-1 rounded-[var(--comp-button-radius,8px)] bg-accent/10 border border-accent/20 text-accent text-[11px] font-bold flex items-center gap-1 shrink-0">
-          <Sparkles size={13} className="text-accent shrink-0" />
-          <span>{isRtl ? 'مُنشأ بمساعدة الذكاء الاصطناعي' : 'Created with AI assistance'}</span>
+        <div className="mx-3.5 sm:mx-4 mb-2 px-2 py-0.5 rounded-[var(--radius-xs)] bg-accent/10 border border-accent/20 text-accent text-[10px] font-black uppercase tracking-wider inline-flex items-center shrink-0 w-fit">
+          AI
         </div>
       )}
 

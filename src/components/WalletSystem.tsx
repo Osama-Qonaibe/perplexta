@@ -1289,7 +1289,7 @@ export const WalletSystem: React.FC<{ theme: string; dir: 'ltr' | 'rtl' }> = ({ 
                         </div>
                         <div className="md:col-span-2 p-3 bg-[var(--surface-card)] rounded-[var(--radius-sm)] border border-[var(--border-default)] flex items-center justify-between">
                           <div>
-                            <span className="text-[8px] text-[var(--text-muted)] tracking-widest block">IBAN / الحساب</span>
+                            <span className="text-[8px] text-[var(--text-muted)] tracking-widest block">{dir === 'rtl' ? 'رقم الحساب المصرفي الدولي (IBAN)' : 'IBAN Account'}</span>
                             <span className="font-sans font-black text-xs text-[var(--fg-accent)] tracking-wider font-mono">{wallet?.bank_iban || 'IL42 0110 0000 0000 3484 2192'}</span>
                           </div>
                           <button
@@ -1302,7 +1302,7 @@ export const WalletSystem: React.FC<{ theme: string; dir: 'ltr' | 'rtl' }> = ({ 
                         </div>
                         <div className="p-3 bg-[var(--surface-card)] rounded-[var(--radius-sm)] border border-[var(--border-default)] flex items-center justify-between">
                           <div>
-                            <span className="text-[8px] text-[var(--text-muted)] tracking-widest block">SWIFT / BIC Code</span>
+                            <span className="text-[8px] text-[var(--text-muted)] tracking-widest block">{dir === 'rtl' ? 'رمز السويفت (SWIFT)' : 'SWIFT / BIC Code'}</span>
                             <span className="font-sans font-black text-xs text-[var(--fg-accent)] tracking-widest font-mono">{wallet?.bank_swift || 'PPLXIL33XXX'}</span>
                           </div>
                           <button
@@ -1740,7 +1740,7 @@ export const WalletSystem: React.FC<{ theme: string; dir: 'ltr' | 'rtl' }> = ({ 
 
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                           <div className="md:col-span-2 space-y-2">
-                            <label className="text-[9px] font-black uppercase text-[var(--text-muted)]">IBAN / رقم الحساب الدولي:</label>
+                            <label className="text-[9px] font-black uppercase text-[var(--text-muted)]">{dir === 'rtl' ? 'رقم الحساب المصرفي الدولي (IBAN):' : 'IBAN Account Number:'}</label>
                             <input
                               type="text"
                               required
@@ -1751,7 +1751,7 @@ export const WalletSystem: React.FC<{ theme: string; dir: 'ltr' | 'rtl' }> = ({ 
                             />
                           </div>
                           <div className="space-y-2">
-                            <label className="text-[9px] font-black uppercase text-[var(--text-muted)]">BIC / SWIFT Code:</label>
+                            <label className="text-[9px] font-black uppercase text-[var(--text-muted)]">{dir === 'rtl' ? 'رمز السويفت (SWIFT):' : 'BIC / SWIFT Code:'}</label>
                             <input
                               type="text"
                               required

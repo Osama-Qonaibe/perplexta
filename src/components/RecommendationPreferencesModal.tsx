@@ -118,7 +118,7 @@ export const RecommendationPreferencesModal: React.FC<RecommendationPreferencesM
   return createPortal(
     <AnimatePresence>
       <div 
-        className="fixed inset-0 z-[9999] flex items-center justify-center p-3 sm:p-4 bg-black/60 backdrop-blur-sm"
+        className="fixed inset-0 z-[1000] flex items-center justify-center p-3 sm:p-4 bg-black/75 backdrop-blur-md overflow-y-auto overscroll-contain"
         dir={isRtl ? 'rtl' : 'ltr'}
         onClick={(e) => {
           if (e.target === e.currentTarget) {
@@ -132,7 +132,7 @@ export const RecommendationPreferencesModal: React.FC<RecommendationPreferencesM
           exit={{ opacity: 0, scale: 0.95, y: 12 }}
           transition={{ duration: 0.18, ease: [0.16, 1, 0.3, 1] }}
           onClick={(e) => e.stopPropagation()}
-          className="w-full max-w-lg rounded-2xl border border-[var(--border-default)] bg-[var(--surface-card)] p-5 sm:p-6 shadow-2xl relative overflow-hidden text-[var(--text-primary)]"
+          className="w-full max-w-lg rounded-2xl border border-[var(--border-default)] bg-[var(--surface-card)] p-5 sm:p-6 shadow-2xl relative overflow-hidden text-[var(--text-primary)] my-auto transform-gpu"
         >
           {/* Top Bar */}
           <div className="flex items-center justify-between pb-3.5 mb-4 border-b border-[var(--border-default)]">

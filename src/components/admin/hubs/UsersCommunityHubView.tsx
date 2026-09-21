@@ -50,7 +50,7 @@ export const UsersCommunityHubView: React.FC<UsersCommunityHubViewProps> = ({
     },
     {
       id: "ads",
-      labelAr: "إعلانات ومنشورات المجتمع (فايرال بوك)",
+      labelAr: "إعلانات ومنشورات المجتمع (فيرال بوك)",
       labelEn: "ViralBook Ads & Community Promotions",
       icon: <Megaphone size={16} />,
     },

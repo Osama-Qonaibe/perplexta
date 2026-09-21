@@ -40,7 +40,7 @@ const BOOST_TIERS = [
     badgeEn: 'Starter',
     viewsAr: '+1,500 مشاهدة متوقعة',
     viewsEn: '+1,500 Est. Views',
-    descAr: 'ظهور الأولوية في فايرال بوك لمدة 24 ساعة.',
+    descAr: 'ظهور الأولوية في فيرال بوك لمدة 24 ساعة.',
     descEn: 'Priority placement on ViralBook feed for 24 hours.'
   },
   {

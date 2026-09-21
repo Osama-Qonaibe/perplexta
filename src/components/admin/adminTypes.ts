@@ -99,3 +99,10 @@ export interface ComplianceAuditLogsViewProps {
   dir: string;
   initialTab?: 'logs' | 'radar' | 'metrics' | 'databases';
 }
+
+export interface MapsInfrastructureViewProps {
+  theme: string;
+  t: (key: string, replacements?: any) => string;
+  dir: string;
+  showToast?: (message: string, type?: 'success' | 'error' | 'warning' | 'info') => void;
+}

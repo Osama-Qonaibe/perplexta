@@ -1050,6 +1050,48 @@ export const CORE_SCHEMA_TABLES: { name: string; query: string }[] = [
         user_agent TEXT,
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
       )`
+  },
+  {
+    name: 'map_providers',
+    query: `CREATE TABLE IF NOT EXISTS map_providers (
+        id SERIAL PRIMARY KEY,
+        provider_key VARCHAR(100) UNIQUE NOT NULL,
+        name VARCHAR(255) NOT NULL,
+        api_key_encrypted TEXT,
+        is_enabled BOOLEAN DEFAULT true,
+        is_primary BOOLEAN DEFAULT false,
+        priority INTEGER DEFAULT 1,
+        capabilities JSONB DEFAULT '[]',
+        config JSONB DEFAULT '{}',
+        status VARCHAR(50) DEFAULT 'untested',
+        last_tested_at TIMESTAMP,
+        last_error TEXT,
+        latency_ms INTEGER,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      )`
+  },
+  {
+    name: 'cached_locations',
+    query: `CREATE TABLE IF NOT EXISTS cached_locations (
+        id SERIAL PRIMARY KEY,
+        place_id VARCHAR(255),
+        title VARCHAR(255) NOT NULL,
+        city VARCHAR(255) NOT NULL,
+        state VARCHAR(255),
+        country VARCHAR(255),
+        country_code VARCHAR(10),
+        lat NUMERIC(10, 7),
+        lon NUMERIC(10, 7),
+        full_address TEXT,
+        category_label VARCHAR(100),
+        raw_type VARCHAR(100),
+        flag VARCHAR(20),
+        source VARCHAR(100) DEFAULT 'user_sync',
+        hits INTEGER DEFAULT 1,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      )`
   }
 ];
 
@@ -1264,6 +1306,35 @@ export async function applyCoreColumnEnforcements(targetPool: QueryClient) {
     checksum_sha256: { type: 'VARCHAR(64)' },
     tags: { type: 'TEXT[]', default: "'{}'" },
     metadata: { type: 'JSONB', default: "'{}'" }
+  });
+
+  await ensureColumnsBulk(targetPool, 'map_providers', {
+    api_key_encrypted: { type: 'TEXT' },
+    is_enabled: { type: 'BOOLEAN', default: true },
+    is_primary: { type: 'BOOLEAN', default: false },
+    priority: { type: 'INTEGER', default: 1 },
+    capabilities: { type: 'JSONB', default: "'[]'" },
+    config: { type: 'JSONB', default: "'{}'" },
+    status: { type: 'VARCHAR(50)', default: "'untested'" },
+    latency_ms: { type: 'INTEGER' },
+    last_error: { type: 'TEXT' }
+  });
+
+  await ensureColumnsBulk(targetPool, 'cached_locations', {
+    place_id: { type: 'VARCHAR(255)' },
+    title: { type: 'VARCHAR(255)' },
+    city: { type: 'VARCHAR(255)' },
+    state: { type: 'VARCHAR(255)' },
+    country: { type: 'VARCHAR(255)' },
+    country_code: { type: 'VARCHAR(10)' },
+    lat: { type: 'NUMERIC(10, 7)' },
+    lon: { type: 'NUMERIC(10, 7)' },
+    full_address: { type: 'TEXT' },
+    category_label: { type: 'VARCHAR(100)' },
+    raw_type: { type: 'VARCHAR(100)' },
+    flag: { type: 'VARCHAR(20)' },
+    source: { type: 'VARCHAR(100)', default: "'user_sync'" },
+    hits: { type: 'INTEGER', default: 1 }
   });
 
   await ensureColumnsBulk(targetPool, 'user_activity_logs', {
@@ -1765,4 +1836,54 @@ export async function seedCoreDatabase(targetPool: QueryClient, targetLedgerPool
   `);
 
   await targetPool.query("DELETE FROM tool_orchestrator WHERE tool_id IN ('notebook', 'learning', 'legal_analysis', 'sovereign_memory')");
+
+  // Map Providers Seed
+  const mapCheck = await targetPool.query('SELECT count(*) FROM map_providers');
+  if (parseInt(mapCheck.rows[0].count, 10) === 0) {
+    await targetPool.query(`
+      INSERT INTO map_providers (provider_key, name, is_enabled, is_primary, priority, status, capabilities, config)
+      VALUES
+        (
+          'openstreetmap', 
+          'OpenStreetMap / Photon Engine (Zero-Cost Free Tier)', 
+          true, 
+          true, 
+          1, 
+          'free_tier',
+          '["places_autocomplete", "geocoding", "reverse_geocoding"]',
+          '{"portal_url": "https://photon.komoot.io/"}'
+        ),
+        (
+          'google_maps', 
+          'Google Maps Platform (Places & Geocoding APIs)', 
+          true, 
+          false, 
+          2, 
+          'untested',
+          '["places_autocomplete", "geocoding", "reverse_geocoding", "places_details", "vector_tiles"]',
+          '{"portal_url": "https://console.cloud.google.com/google/maps-apis/credentials"}'
+        ),
+        (
+          'mapbox', 
+          'Mapbox Search & Geocoding v5', 
+          false, 
+          false, 
+          3, 
+          'untested',
+          '["places_autocomplete", "geocoding", "reverse_geocoding", "vector_tiles"]',
+          '{"portal_url": "https://account.mapbox.com/access-tokens/"}'
+        ),
+        (
+          'locationiq', 
+          'LocationIQ Geocoding & Forward Search', 
+          false, 
+          false, 
+          4, 
+          'untested',
+          '["places_autocomplete", "geocoding", "reverse_geocoding"]',
+          '{"portal_url": "https://my.locationiq.com/dashboard#accesstoken"}'
+        )
+      ON CONFLICT (provider_key) DO NOTHING
+    `);
+  }
 }

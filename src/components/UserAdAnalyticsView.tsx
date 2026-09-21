@@ -334,7 +334,7 @@ export const UserAdAnalyticsView: React.FC = () => {
           <div className="pb-3 border-b border-[var(--border-default)]">
             <h3 className="font-extrabold text-sm text-[var(--text-primary)] flex items-center gap-2">
               <PieIcon size={18} className="text-pink-500" />
-              <span>{isRtl ? 'توزيع الجنس (ذكور / إناث)' : 'Gender Breakdown'}</span>
+              <span>{isRtl ? 'توزيع الجمهور حسب الجنس' : 'Gender Breakdown'}</span>
             </h3>
             <p className="text-[11px] text-[var(--text-muted)] mt-0.5">
               {isRtl ? 'نسبة المتابعين والمهتمين حسب الجنس.' : 'Audience breakdown by gender.'}

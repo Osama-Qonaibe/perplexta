@@ -535,6 +535,97 @@ router.post("/launch-telemetry", (req, res) => {
 });
 
 import { validatePwa } from '../../scripts/validate-pwa.js';
+import { 
+  validateLocationData, 
+  cacheLocation, 
+  findCachedLocations, 
+  getAllCachedLocations, 
+  getLocationCacheStats 
+} from '../services/locationCache.js';
+
+/**
+ * POST /api/system/location-sync
+ * Validates selected location data from the client and caches it locally to eliminate redundant Google Places API calls.
+ */
+router.post("/location-sync", async (req, res) => {
+  try {
+    const validation = validateLocationData(req.body);
+    if (!validation.valid || !validation.data) {
+      return res.status(400).json({
+        success: false,
+        error: validation.error || 'Invalid location data payload',
+        error_ar: validation.error_ar || 'بيانات الموقع غير صالحة'
+      });
+    }
+
+    const cached = await cacheLocation(validation.data);
+
+    return res.status(200).json({
+      success: true,
+      message: 'Location data successfully validated and cached locally',
+      message_ar: 'تم التحقق من بيانات الموقع وتخزينها محلياً بنجاح',
+      location: cached
+    });
+  } catch (error: any) {
+    console.error('[LocationSync] Error syncing location:', error);
+    return res.status(500).json({
+      success: false,
+      error: error.message || 'Internal server error during location sync',
+      error_ar: 'حدث خطأ في الخادم أثناء مزامنة الموقع'
+    });
+  }
+});
+
+/**
+ * GET /api/system/location-sync
+ * Retrieve cached locations by query or fetch popular cached items
+ */
+router.get("/location-sync", async (req, res) => {
+  try {
+    const q = typeof req.query.q === 'string' ? req.query.q.trim() : '';
+    const countryCode = typeof req.query.country_code === 'string' ? req.query.country_code.trim() : undefined;
+    const limit = Math.min(Number(req.query.limit) || 20, 100);
+
+    if (q) {
+      const results = await findCachedLocations(q, countryCode, limit);
+      return res.json({
+        success: true,
+        count: results.length,
+        query: q,
+        results
+      });
+    }
+
+    const all = await getAllCachedLocations(limit);
+    return res.json({
+      success: true,
+      count: all.length,
+      results: all
+    });
+  } catch (error: any) {
+    console.error('[LocationSync] Error fetching cached locations:', error);
+    return res.status(500).json({
+      success: false,
+      error: error.message || 'Failed to fetch cached locations'
+    });
+  }
+});
+
+/**
+ * GET /api/system/location-sync/stats
+ * Telemetry and hit count stats for cached locations
+ */
+router.get("/location-sync/stats", (req, res) => {
+  try {
+    const stats = getLocationCacheStats();
+    return res.json({
+      success: true,
+      stats
+    });
+  } catch (error: any) {
+    return res.status(500).json({ success: false, error: error.message });
+  }
+});
 
 router.get("/validate-manifest", (req, res) => {
   try {

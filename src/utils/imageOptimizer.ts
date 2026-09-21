@@ -19,14 +19,14 @@ export const RECOMMENDED_IMAGE_SPECS = {
     width: 1200,
     height: 400,
     aspectRatio: 3 / 1,
-    labelAr: 'غلاف البانير: 1200×400 بكسل (نسبة 3:1) - الحجم الأقصى 1MB',
+    labelAr: 'غلاف الصفحة: 1200×400 بكسل (نسبة 3:1) - الحد الأقصى 1 ميجابايت',
     labelEn: 'Banner Cover: 1200×400px (3:1 ratio) - Max 1MB'
   },
   avatar: {
     width: 400,
     height: 400,
     aspectRatio: 1 / 1,
-    labelAr: 'الشعار / البروفايل: 400×400 بكسل (نسبة 1:1) - الحجم الأقصى 500KB',
+    labelAr: 'شعار الصفحة: 400×400 بكسل (نسبة 1:1) - الحد الأقصى 500 كيلوبايت',
     labelEn: 'Avatar / Logo: 400×400px (1:1 ratio) - Max 500KB'
   }
 };

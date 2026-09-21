@@ -2956,7 +2956,7 @@ export const ReelsFeed: React.FC<ReelsFeedProps> = ({
                     }
                   }}
                   className="inline-flex items-center gap-1 px-3.5 py-1.5 min-h-[36px] rounded-shape-sm bg-accent text-[var(--fg-on-emphasis)] hover:bg-accent/90 font-bold text-xs shadow-sm transition-all cursor-pointer"
-                  title={isRtl ? 'عرض المنشور الأصلي في فايرال بوك' : 'View original post in ViralBook'}
+                  title={isRtl ? 'عرض المنشور الأصلي في فيرال بوك' : 'View original post in ViralBook'}
                 >
                   <ExternalLink size={14} />
                   <span>{isRtl ? 'عرض المنشور' : 'View Post'}</span>
@@ -3085,9 +3085,8 @@ export const ReelsFeed: React.FC<ReelsFeedProps> = ({
 
               {/* 4. AI Generated Label */}
               {activeAd?.is_ai_generated && (
-                <div className="mx-3.5 sm:mx-4 mb-2 px-2.5 py-1 rounded-[var(--radius-sm)] bg-[var(--bg-accent-muted)] border border-[var(--border-accent)]/30 text-[var(--fg-accent)] text-[11px] font-bold flex items-center gap-1 shrink-0">
-                  <Sparkles size={13} className="text-[var(--fg-accent)] shrink-0" />
-                  <span>{isRtl ? 'مُنشأ بمساعدة الذكاء الاصطناعي' : 'Created with AI assistance'}</span>
+                <div className="mx-3.5 sm:mx-4 mb-2 px-2 py-0.5 rounded-[var(--radius-xs)] bg-[var(--bg-accent-muted)] border border-[var(--border-accent)]/30 text-[var(--fg-accent)] text-[10px] font-black uppercase tracking-wider inline-flex items-center shrink-0 w-fit">
+                  AI
                 </div>
               )}
 
@@ -3109,7 +3108,7 @@ export const ReelsFeed: React.FC<ReelsFeedProps> = ({
                         onClick={() => setIsDescriptionExpanded(prev => !prev)}
                         className="text-[11px] font-bold text-[var(--fg-accent)] hover:underline mt-1 cursor-pointer"
                       >
-                        {isDescriptionExpanded ? (isRtl ? 'عرض أقل' : 'Show less') : (isRtl ? 'عرض التفاصيل / المزيد...' : 'View details / more...')}
+                        {isDescriptionExpanded ? (isRtl ? 'عرض أقل' : 'Show less') : (isRtl ? 'عرض المزيد...' : 'View more...')}
                       </button>
                     )}
                   </div>
@@ -3487,7 +3486,7 @@ export const ReelsFeed: React.FC<ReelsFeedProps> = ({
                 >
                   <div className="flex items-center gap-3">
                     <ExternalLink size={14} />
-                    <span className="text-sm">{isRtl ? 'عرض المنشور في فايرال بوك' : 'View Post in ViralBook Feed'}</span>
+                    <span className="text-sm">{isRtl ? 'عرض المنشور في فيرال بوك' : 'View Post in ViralBook Feed'}</span>
                   </div>
                 </button>
                 <button 

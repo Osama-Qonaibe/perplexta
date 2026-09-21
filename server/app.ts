@@ -224,7 +224,38 @@ app.use((req, res, next) => {
       const totalDurationMs = Math.round((Number(elapsedHr) / 1_000_000) * 100) / 100;
       const roundedMs = totalDurationMs.toFixed(2);
 
-      if (totalDurationMs >= 500) {
+      const aiInferenceEndpoints = [
+        '/api/chats/sync-message',
+        '/api/chats/stream-message',
+        '/api/v1/chat/completions',
+        '/api/admin/gpu-providers/inference/dispatch',
+        '/api/bulletin/ai/generate',
+        '/api/media/generate'
+      ];
+
+      const isAiInferenceRoute = aiInferenceEndpoints.some(ep => req.originalUrl.startsWith(ep));
+
+      if (isAiInferenceRoute) {
+        console.log(`[AI Inference Workload] 🧠 ${req.method} ${req.originalUrl} - Status: ${res.statusCode} - ${(totalDurationMs / 1000).toFixed(2)}s`);
+        
+        setImmediate(() => {
+          const clientIp = (req.headers['x-forwarded-for'] as string)?.split(',')[0]?.trim() || req.ip || req.socket?.remoteAddress || null;
+          const userId = (req as any).user?.id || (req as any).userId || null;
+          const rawEndpoint = req.baseUrl ? `${req.baseUrl}${req.path}` : (req.path || req.originalUrl?.split('?')[0] || '/');
+
+          recordSlowApiRequest({
+            endpoint: rawEndpoint,
+            method: req.method,
+            statusCode: res.statusCode,
+            durationMs: totalDurationMs,
+            clientIp,
+            userAgent: req.headers['user-agent'] || null,
+            userId,
+            queryParams: req.query || {},
+            headersSnapshot: {}
+          }).catch(() => {});
+        });
+      } else if (totalDurationMs >= 500) {
         console.warn(`[SLOW API] ⚠️ ${req.method} ${req.originalUrl} - Status: ${res.statusCode} - ${roundedMs}ms (>500ms threshold)`);
 
         setImmediate(() => {
@@ -434,6 +465,21 @@ app.use((req, res, next) => {
     res.setHeader("x-markdown-tokens", String(tokens));
     res.setHeader("Vary", "Accept, Accept-Language");
     return res.send(content);
+  }
+  next();
+});
+
+// Block malicious automated vulnerability scanners attempting to probe sensitive dotfiles (e.g. /.git/config, /.env, /.aws)
+app.use((req, res, next) => {
+  const lowercasePath = req.path.toLowerCase();
+  if (
+    lowercasePath.startsWith('/.git') ||
+    lowercasePath.startsWith('/.env') ||
+    lowercasePath.startsWith('/.aws') ||
+    lowercasePath.startsWith('/.ssh') ||
+    lowercasePath.startsWith('/.htaccess')
+  ) {
+    return res.status(404).send('Not Found');
   }
   next();
 });

@@ -49,6 +49,14 @@ import { invalidateFilePermissionCache, invalidateFileVersionCache } from '../se
 import { invalidateGpuCache } from '../services/gpuVaultService.js';
 import { escapeHtml } from '../utils/security.js';
 import { io } from '../config/socket.js';
+import {
+  getAllMapProviders,
+  saveMapProvider,
+  testMapProviderConnection,
+  resetMapProviderKey,
+  updateProviderHealthStatus,
+  ensureMapProvidersTable
+} from '../services/mapProvidersService.js';
 
 const router = express.Router();
 router.use(adminLimiter);
@@ -4753,6 +4761,102 @@ router.delete("/forms/:id/submissions/:submissionId", authenticateAdmin, async (
     res.json({ success: true, message: 'Submission removed from database' });
   } catch (error: any) {
     res.status(500).json({ success: false, error: error.message || 'Failed to delete submission' });
+  }
+});
+
+/**
+ * MAPS & GEOCODING PROVIDERS INFRASTRUCTURE ROUTES
+ */
+
+// GET /api/admin/maps/providers - List all map providers with status & masked keys
+router.get("/maps/providers", authenticateAdmin, async (req, res) => {
+  try {
+    await ensureMapProvidersTable();
+    const providers = await getAllMapProviders();
+    res.json({ success: true, providers });
+  } catch (error: any) {
+    console.error('[Admin Maps API] Error fetching providers:', error);
+    res.status(500).json({ success: false, error: error.message || 'Failed to fetch map providers' });
+  }
+});
+
+// POST /api/admin/maps/providers - Save or update map provider credentials & toggles
+router.post("/maps/providers", authenticateAdmin, async (req, res) => {
+  try {
+    const { provider_key, name, api_key, is_enabled, is_primary, priority, config } = req.body;
+    if (!provider_key) {
+      return res.status(400).json({ success: false, error: 'provider_key is required' });
+    }
+
+    const updated = await saveMapProvider({
+      provider_key,
+      name,
+      api_key,
+      is_enabled,
+      is_primary,
+      priority,
+      config
+    });
+
+    const adminId = (req as any).user?.id || null;
+    await auditLog(adminId, 'Update Map Provider', 'map_providers', {
+      provider_key,
+      is_enabled,
+      is_primary
+    });
+
+    res.json({ success: true, message: 'Map provider configuration updated successfully', provider: updated });
+  } catch (error: any) {
+    console.error('[Admin Maps API] Error saving provider:', error);
+    res.status(500).json({ success: false, error: error.message || 'Failed to save map provider' });
+  }
+});
+
+// POST /api/admin/maps/providers/test - Pre-flight test connection (Ping & latency)
+router.post("/maps/providers/test", authenticateAdmin, async (req, res) => {
+  try {
+    const { provider_key, api_key } = req.body;
+    if (!provider_key) {
+      return res.status(400).json({ success: false, error: 'provider_key is required' });
+    }
+
+    const testResult = await testMapProviderConnection(provider_key, api_key);
+    
+    // Update provider health in DB
+    await updateProviderHealthStatus(
+      provider_key,
+      testResult.success ? 'healthy' : 'error',
+      testResult.latencyMs,
+      testResult.success ? null : testResult.message
+    );
+
+    res.json({
+      success: testResult.success,
+      latency_ms: testResult.latencyMs,
+      message: testResult.message,
+      message_ar: testResult.message_ar,
+      details: testResult.details
+    });
+  } catch (error: any) {
+    console.error('[Admin Maps API] Error testing provider:', error);
+    res.status(500).json({ success: false, error: error.message || 'Failed to test map provider connection' });
+  }
+});
+
+// DELETE /api/admin/maps/providers/:key - Reset / clear provider key
+router.delete("/maps/providers/:key", authenticateAdmin, async (req, res) => {
+  try {
+    const { key } = req.params;
+    if (!key) return res.status(400).json({ success: false, error: 'Provider key is required' });
+
+    await resetMapProviderKey(key);
+    const adminId = (req as any).user?.id || null;
+    await auditLog(adminId, 'Reset Map Provider Key', 'map_providers', { provider_key: key });
+
+    res.json({ success: true, message: `Key for ${key} was reset successfully` });
+  } catch (error: any) {
+    console.error('[Admin Maps API] Error resetting provider key:', error);
+    res.status(500).json({ success: false, error: error.message || 'Failed to reset map provider key' });
   }
 });
 

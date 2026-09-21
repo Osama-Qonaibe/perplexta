@@ -13,7 +13,10 @@ import {
   Building2,
   ChevronLeft,
   ChevronRight,
-  ShieldCheck
+  ShieldCheck,
+  FileText,
+  ExternalLink,
+  Share2
 } from 'lucide-react';
 import { motion } from 'motion/react';
 import { perplextaPageTransition } from '@/design-system';
@@ -28,111 +31,103 @@ export const Privacy: React.FC = () => {
   const sections = [
     {
       icon: Lock,
-      title: isAr ? "1. التشفير المطلق وانعدام الصلاحيات (معمارية المعرفة الصفرية)" : "1. Zero-Knowledge Architecture",
+      title: isAr ? "1. التشفير المطلق ومعمارية المعرفة الصفرية (Zero-Knowledge)" : "1. Absolute Encryption & Zero-Knowledge Architecture",
       content: isAr 
-        ? "نعلن بوضوح وصرامة تقنية تامة: لا تمتلك إدارة المنصة، ولا فريق المطورين، ولا أي جهة داخلية القدرة أو الصلاحية للوصول إلى محادثاتك، ملفاتك المرفوعة، صورك، أو أي محتوى تقوم بتوليده."
-        : "We declare with absolute technical strictness: neither the platform management, nor the development team, nor any internal party possesses the capability or authority to access your conversations, uploaded files, images, or any generated content.",
+        ? "نعلن بوضوح وصرامة تقنية تامة: لا تمتلك إدارة المنصة، ولا فريق المطورين، ولا أي جهة داخلية القدرة أو الصلاحية للوصول إلى محادثاتك، ملفاتك المرفوعة، صورك، أو أي محتوى تقوم بتوليده عبر محطات العمل الذكية."
+        : "We declare with absolute technical strictness: neither platform management, nor developers, nor any internal party possesses the capability or authority to access your conversations, uploaded files, images, or generated content across AI workstations.",
       subItems: [
         {
-          label: isAr ? "الناقل الأعمى للملفات والرسائل" : "Blind Carrier for Files & Texts",
-          desc: isAr ? "تعمل خوادمنا كمضيف آمن وناقل مشفر فقط، مع معالجة المستندات (PDF/Text) والصور بصورة لحظية." : "Our servers function exclusively as a secure host and encrypted carrier, processing documents (PDF/Text) and images in real-time."
+          label: isAr ? "الناقل الأعمى للرسائل والمرفقات" : "Blind Carrier for Messages & Attachments",
+          desc: isAr ? "تُعالج المستندات (PDF)، الأكواد، والصور بصورة لحظية وآمنة تماماً دون حفظ محتواها في قواعد البيانات التشغيلية بصيغة مقروءة." : "Documents, code, and images are processed in real-time and securely without saving readable content in operational databases."
         },
         {
-          label: isAr ? "استحالة فك التشفير" : "Decryption Impossibility",
-          desc: isAr ? "حفظ البيانات بمفاتيح تشفير ديناميكية معزولة تجعل فك التشفير مستحيلاً من الناحية الهندسية." : "Data preservation using isolated dynamic encryption keys rendering decryption an engineering impossibility."
+          label: isAr ? "استحالة فك التشفير السيادي" : "Sovereign Decryption Impossibility",
+          desc: isAr ? "حفظ البيانات بمفاتيح تشفير ديناميكية معزولة (AES-256) تجعل فك التشفير مستحيلاً هندسياً لأي طرف ثالث." : "Data preservation using isolated dynamic encryption keys (AES-256) making decryption an engineering impossibility for any third party."
         },
         {
-          label: isAr ? "التشفير اللحظي لقواعد البيانات" : "Real-time Database Encryption",
-          desc: isAr ? "تشفير كافة النصوص، الملفات، والمخرجات لحظياً قبل تخزينها المتين والموزع بأمان." : "Real-time encryption of all text prompts, files, and outputs prior to secure, robust, distributed storage."
+          label: isAr ? "عزل الذاكرة المؤقتة" : "Ephemeral Memory Isolation",
+          desc: isAr ? "تدمير المخازن المؤقتة فور اكتمال الجيل أو التصيير في استوديوهات الفيديو والصوت والذكاء الاصطناعي." : "Immediate purging of temporary buffers upon completion of generation or rendering in video, audio, and AI studios."
         }
       ]
     },
     {
       icon: Database,
-      title: isAr ? "2. تصنيف البيانات لمعالجة العمليات الحيوية والمالية" : "2. Data Classification for Essential Operations",
+      title: isAr ? "2. حماية الدفتر المزدوج والعمليات المالية (Ledger & Wallets)" : "2. Dual-Ledger & Financial Operations Protection",
       content: isAr 
-        ? "نطبق سياسة الحد الأدنى الضروري ولا نجمع أي بيانات مخفية، ونعالِج البيانات المالية بشكل معزول تماماً."
-        : "We implement a minimum-necessary policy, abstaining from concealed data collection, and processing financial data in absolute isolation.",
+        ? "تعمل المحفظة الرقمية والدفتر المزدوج (Dual-Ledger) في بيئة معزولة تماماً عن قواعد بيانات التشغيل، مع تطبيق أعلى معايير أمان البيانات المالية."
+        : "The digital wallet and dual-ledger operate in an environment strictly isolated from operational databases, adhering to highest financial data security standards.",
       subItems: [
         {
-          label: isAr ? "البيانات والعمليات المالية" : "Financial Operations Data",
-          desc: isAr ? "معالجة المدفوعات والاشتراكات والمحفظة تتم حصراً عبر بوابات عالمية آمنة (مثل Stripe)، دون تخزين بطاقات ائتمان." : "Payments, subscriptions, and wallet top-ups are processed exclusively via secure global gateways (e.g., Stripe) without storing credit cards."
+          label: isAr ? "معالجة المدفوعات الآمنة" : "Secure Payment Processing",
+          desc: isAr ? "تتم عمليات شحن الأرصدة عبر بوابات عالمية مشفرة (مثل Stripe) دون حفظ أي بيانات بطاقات ائتمان على خوادمنا." : "Top-up operations are processed via encrypted global gateways (e.g., Stripe) without storing credit card data on our servers."
         },
         {
-          label: isAr ? "بيانات المصادقة" : "Authentication Data",
-          desc: isAr ? "جمع معلومات التسجيل الأساسية (البريد الإلكتروني) لتأمين الهوية الرقمية، الأرصدة، والمكافآت الخاصة بك." : "Collection of basic registration details (email) to secure your digital identity, balances, and exclusive rewards."
+          label: isAr ? "سجلات أستاذ غير قابلة للتلاعب" : "Tamper-Evident Ledger Logs",
+          desc: isAr ? "تسجيل الحركات المالية للأرصدة والإحالات والمشتريات في سجلات append-only مشفرة ومؤمنة تماماً ضد التعديل." : "Financial transactions, referrals, and purchases are logged in encrypted append-only ledgers secure against unauthorized tampering."
+        }
+      ]
+    },
+    {
+      icon: Share2,
+      title: isAr ? "3. خصوصية شبكة فيرال بوك والصفحات التجارية (ViralBook Hub)" : "3. ViralBook Hub & Verified Pages Privacy",
+      content: isAr 
+        ? "تضمن منصة فيرال بوك الاجتماعية والتجارية خصوصية كاملة للمنشورات، القصص، المقاطع (Reels)، والمراسلات المباشرة بين المستخدمين والشركات."
+        : "The ViralBook social and commercial hub guarantees full privacy for posts, stories, reels, and direct communications between users and merchants.",
+      subItems: [
+        {
+          label: isAr ? "رسائل الاستفسارات المباشرة" : "Direct Inquiry Messages",
+          desc: isAr ? "تشفير كافة المراسلات التجارية واستفسارات الإعلانات بين المشتري والصفحة التجارية الموثقة لضمان سرية التداولات." : "Encryption of all commercial correspondence and ad inquiries between buyers and verified business pages."
         },
         {
-          label: isAr ? "توليد وتحليل الوسائط" : "Media Generation & Parsing",
-          desc: isAr ? "تحليل الأكواد ومعالجة الصوتيات وتوليد الفيديو يتم آلياً داخل بيئة منعزلة وتُحذف المؤقتات الفورية فور اكتمال الجيل." : "Code parsing, audio processing, and video generation occur automatically in an isolated environment; temp buffers are destroyed instantly upon completion."
+          label: isAr ? "تحليلات الحملات والترويج" : "Campaign & Boost Analytics",
+          desc: isAr ? "معالجة بيانات النقرات والانطباعات بصفة مجمعة ودون ربط الهوية الشخصية للمستهلكين بأي نشاط تسويقي خارجي." : "Processing click and impression data in aggregate without associating consumer personal identity with external marketing activities."
         }
       ]
     },
     {
       icon: Cpu,
-      title: isAr ? "3. الغرض الحصري من المعالجة الآلية" : "3. Exclusive Purpose of Automated Processing",
+      title: isAr ? "4. التوجيه الذكي ومحرك الأوركسترا الصامت" : "4. Smart Routing & Silent Failover Orchestrator",
       content: isAr 
-        ? "تتفاعل بنيتنا التحتية مع طلباتك آلياً باستخدام منطق التوجيه الذكي، دون تدخل بشري لضمان الكفاءة القصوى والسرية المطلقة."
-        : "Our infrastructure interacts with requests autonomously using smart routing logic, without human intervention to guarantee maximum efficiency and absolute confidentiality.",
+        ? "تعتمد النظم الذكية في بيربليكستا على محرك توجيه صامت (Orchestrator) يختار النماذج بأعلى كفاءة مع حماية تامة للخصوصية وعدم التدريب."
+        : "Smart systems in PERPLEXTA rely on a silent failover orchestrator selecting models with highest efficiency and strict zero-training privacy.",
       subItems: [
         {
-          label: isAr ? "التوجيه اللحظي الذكي" : "Smart Real-time Routing",
-          desc: isAr ? "تحليل نوع المهمة برمجياً لتوجيهها بين محركات التعلم العميق وتوليد الصوت/الفيديو حسب الاحتياج بأفضل استقرار." : "Programmatic task analysis routing requests between deep learning engines and Audio/Video generators based on precise parameters."
+          label: isAr ? "عدم استخدام البيانات للتدريب" : "Anti-Training Guarantee",
+          desc: isAr ? "عدم استخدام نصوصك، أكوادك، أو مرفقاتك لتدريب أي نماذج ذكاء اصطناعي أساسية وفق اتفاقيات المؤسسة." : "Never utilizing your texts, code, or attachments to train base AI models in accordance with enterprise agreements."
         },
         {
-          label: isAr ? "حماية الحصص والموارد" : "Resource & Quota Protection",
-          desc: isAr ? "مراقبة معدلات الاستهلاك بدقة لحماية بيئة المنصة وضمان العدالة وفق نظام اشتراكات ومحافظ صارم." : "Precise monitoring of consumption rates to protect the platform environment and ensure fair utilization according to strict wallet/subscription architectures."
-        }
-      ]
-    },
-    {
-      icon: Globe,
-      title: isAr ? "4. التوافق العالي مع شركاء البنية الذكية ومزودي السحابة" : "4. Unyielding Compliance with Enterprise Cloud & AI Partners",
-      content: isAr 
-        ? "تعتمد ميزاتنا وتوليد الفيديو ومعالجة النصوص على أحدث الخوادم وتقنيات الذكاء الاصطناعي العالمية مع التقيد الصارم بسياسات الخصوصية الخاصة بعدم التدريب."
-        : "Our generation tools (video, text, audio) rely on state-of-the-art enterprise AI cloud technologies with strict adherence to Zero-Training privacy policies.",
-      subItems: [
-        {
-          label: isAr ? "الخصوصية ضد تدريب النماذج" : "Anti-Training Privacy Clause",
-          desc: isAr ? "عدم استخدام بياناتك (نصوص التدقيق القانوني، الملفات الخاصة، الأكواد) لتدريب أي نماذج ذكاء اصطناعي وفق اتفاقيات المطورين الرسمية." : "We guarantee your data (legal reviews, private files, code) is NEVER used to train base AI models, per official enterprise agreements."
-        },
-        {
-          label: isAr ? "الأنفاق المشفرة للتصيير" : "Encrypted Rendering Tunnels",
-          desc: isAr ? "تمرير طلبات توليد الوسائط وصوت الذكاء الاصطناعي عبر قنوات مشفرة مؤمنة بالكامل وتحذف البيانات المعالجة تلقائياً." : "Routing media generation and AI acoustics requests through fully secured encrypted channels, with automatic processed data deletion."
+          label: isAr ? "التشفير اللحظي للنقاط الطرفية" : "Real-time Endpoint Encryption",
+          desc: isAr ? "تشفير الاتصالات بين خوادم المنصة ومزودي خدمات الذكاء الاصطناعي والوسائط عبر بروتوكولات TLS 1.3 المتطورة." : "Encrypting communications between platform servers and AI/media providers via advanced TLS 1.3 protocols."
         }
       ]
     },
     {
       icon: ShieldCheck,
-      title: isAr ? "5. سياسة المنع البات لبيع ومشاركة البيانات (الاحتفاظ العقيم)" : "5. Zero-Sell Policy & Sterile Retention",
+      title: isAr ? "5. حظر بيع البيانات وسياسة الاحتفاظ العقيم" : "5. Zero-Sell Policy & Sterile Data Retention",
       content: isAr 
-        ? "نحظر بيع أو مشاركة بيانات مساحتك الشخصية، ملفاتك، أو أرصدة محفظتك مع أي جهة تسويقية أو تحليلية إطلاقاً."
-        : "Sale or sharing of your personal space data, files, or wallet balances with any marketing or analytics entities is strictly prohibited entirely.",
+        ? "نحظر تماماً بيع أو تأجير أو مشاركة بيانات مساحتك الرقمية أو سجلاتك مع أي أطراف تسويقية أو تجارية خارجية."
+        : "We strictly prohibit selling, leasing, or sharing your digital space data or records with any external marketing or commercial parties.",
       subItems: [
         {
-          label: isAr ? "مزودي النماذج الآمنة" : "Secure Model Providers",
-          desc: isAr ? "اقتصار التبادل التقني مع مزودي الخدمة (Google, OpenAI وغيرها) على واجهات برمجة مشفرة من المستوى المؤسسي بلا احتفاظ." : "Technical handshakes with providers (Google, OpenAI, etc.) are restricted to enterprise-level encrypted APIs with Zero Retention."
+          label: isAr ? "الامتثال القانوني الدولي" : "International Legal Compliance",
+          desc: isAr ? "الالتزام بأعلى معايير حماية البيانات الأوروبية (GDPR) وقوانين الخصوصية العالمية في إدارة ومعالجة الملفات." : "Adhering to high European data protection standards (GDPR) and global privacy laws in file management and processing."
         },
         {
-          label: isAr ? "الامتثال القانوني المحض" : "Absolute Legal Compliance",
-          desc: isAr ? "لا تُفصَح السجلات التشغيلية المحدودة والخاصة بالمكافآت والتعاملات المشبوهة إلا بموجب القوانين واللوائح النافذة." : "Limited operational logs related to rewards and suspicious ledgers are disclosed strictly under relevant laws and regulations."
+          label: isAr ? "الحذف النهائي عند الطلب" : "Permanent Deletion on Request",
+          desc: isAr ? "إمكانية مسح الحساب، سجل المحادثات، والملفات نهائياً من قواعد البيانات بضغطة زر واحدة." : "Ability to permanently erase account, chat history, and files from databases with a single click."
         }
       ]
     },
     {
       icon: UserCheck,
-      title: isAr ? "6. حقوق التحكم وإدارة البيانات (حقوق بياناتك)" : "6. Your Data Rights & Control",
+      title: isAr ? "6. حقوق التحكم وإدارة الهوية الرقمية" : "6. Digital Identity Control & User Rights",
       content: isAr 
-        ? "نمنحك أدوات تحكم واسعة وحقيقية في كل بيانات ومرفقات مساحتك الرقمية."
-        : "We bestow upon you expansive, authentic control instruments over all your digital space data and attachments.",
+        ? "نمنحك سيطرة كاملة ومطلق الصلاحية على ملفك الشخصي، إعدادات الأمان، والمحتوى المنشور ضمن مساحتك في بيربليكستا."
+        : "We grant you full and absolute authority over your profile, security settings, and published content within your PERPLEXTA space.",
       subItems: [
         {
-          label: isAr ? "حق الحذف الشامل الآمن" : "Right of Erasure and Safe Purge",
-          desc: isAr ? "إمكانية مسح الحساب، سجل المحادثات، وتدمير كافة المرفقات والملفات من شبكة الخوادم نهائياً من خلال واجهة الاستخدام." : "Ability to erase the account, chat history, and securely purge all attachments/files from the server grid via the user interface."
-        },
-        {
-          label: isAr ? "سحب الأرصدة والمكافآت" : "Credits and Rewards Retraction",
-          desc: isAr ? "في حالة الإغلاق، تسقط الأرصدة الترويجية وتتم تصفية البيانات المرتبطة ببرنامج الإحالات بشكل آمن لا رجعة فيه." : "Upon closure, promotional balances are voided, and data tied to referral programs is securely, irreversibly liquidated."
+          label: isAr ? "الشفافية في تعديل الحساب" : "Transparent Account Modification",
+          desc: isAr ? "تحديث بيانات البريد، الكلمات السرية، وتفضيلات الإشعارات بشكل فوري مع تزامن لحظي بين الأجهزة." : "Instantaneous updating of email, passwords, and notification preferences with real-time cross-device sync."
         }
       ]
     }
@@ -142,7 +137,7 @@ export const Privacy: React.FC = () => {
     <ContentContainer 
       className="overflow-y-auto h-full custom-scrollbar"
     >
-      <div className="sticky -top-0.5 z-20 -mx-4 md:-mx-8 px-4 md:px-8 py-3 mb-6 bg-[var(--surface-page)]/90 backdrop-blur-md border-b border-[var(--border-default)] flex items-center justify-between">
+      <div className="sticky -top-0.5 z-25 -mx-4 md:-mx-8 px-4 md:px-8 py-3 mb-6 bg-[var(--surface-page)]/90 backdrop-blur-md border-b border-[var(--border-default)] flex items-center justify-between">
         <div className="flex items-center gap-3">
           <button 
             onClick={() => navigate(-1)}
@@ -155,12 +150,23 @@ export const Privacy: React.FC = () => {
           <div>
             <h1 className="text-xl md:text-2xl font-black text-[var(--text-primary)] uppercase flex items-center gap-2">
               <Shield className="text-[var(--fg-accent)]" size={20} />
-              {isAr ? 'سياسة الخصوصية' : 'Privacy Policy'}
+              {isAr ? 'سياسة الخصوصية والوثائق القانونية' : 'Privacy Policy & Legal Documents'}
             </h1>
             <p className="text-[10px] text-[var(--text-muted)] font-bold uppercase tracking-widest font-mono">
-              {isAr ? 'حماية وأمان البيانات' : 'DATA PROTECTION & SECURITY'}
+              {isAr ? 'حماية وأمان البيانات السيادية' : 'SOVEREIGN DATA PROTECTION & SECURITY'}
             </p>
           </div>
+        </div>
+
+        <div className="flex items-center gap-3">
+          <button
+            onClick={() => navigate('/about')}
+            id="privacy-to-about-btn"
+            className="px-4 py-2 rounded-[var(--radius-sm)] bg-[var(--surface-subtle)] border border-[var(--border-default)] text-[var(--text-primary)] hover:border-[var(--border-accent)] font-bold text-xs uppercase tracking-wider transition-theme flex items-center gap-2 cursor-pointer shadow-sm"
+          >
+            <Building2 size={15} className="text-[var(--fg-accent)]" />
+            <span>{isAr ? "عن المنصة (من نحن)" : "About Platform"}</span>
+          </button>
         </div>
       </div>
 
@@ -168,14 +174,26 @@ export const Privacy: React.FC = () => {
         <section className="text-center space-y-4 pt-4">
           <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-[var(--radius-xs)] bg-[var(--surface-subtle)] border border-[var(--border-subtle)] text-[var(--text-primary)] text-xs font-bold uppercase tracking-widest">
             <Shield size={14} className="text-[var(--fg-accent)]" />
-            {isAr ? "سياسة الخصوصية" : "Privacy Policy"}
+            {isAr ? "الدستور الأمني والوثائق القانونية" : "Security Constitution & Legal Documents"}
           </div>
           <h1 className="text-4xl md:text-6xl font-black tracking-tighter text-[var(--text-primary)] uppercase">
             {isAr ? "بيربليكستا" : "PERPLEXTA"}
           </h1>
           <p className="text-lg md:text-2xl font-bold text-[var(--fg-accent)] max-w-2xl mx-auto leading-relaxed">
-            {isAr ? "سياسة الخصوصية وحماية البيانات" : "Privacy Policy and Data Protection"}
+            {isAr ? "الالتزام السيادي بحماية الخصوصية وأمان مساحتك الرقمية" : "Sovereign Commitment to Privacy & Digital Space Security"}
           </p>
+
+          <div className="pt-4 flex flex-wrap items-center justify-center gap-4">
+            <button
+              onClick={() => navigate('/docs/legal')}
+              id="privacy-hero-legal-docs-btn"
+              className="px-5 py-2.5 rounded-[var(--radius-sm)] bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs uppercase tracking-wider transition-all flex items-center gap-2 shadow-sm cursor-pointer"
+            >
+              <FileText size={16} />
+              <span>{isAr ? "الوثائق القانونية" : "Legal Documents"}</span>
+              <ExternalLink size={14} className="opacity-80" />
+            </button>
+          </div>
         </section>
 
         <section className="grid grid-cols-1 md:grid-cols-2 gap-10 items-start">
@@ -183,30 +201,30 @@ export const Privacy: React.FC = () => {
             <div className="p-6 md:p-8 rounded-[var(--radius-md)] border border-[var(--border-default)] bg-[var(--surface-card)] backdrop-blur-sm shadow-sm transition-theme hover:border-[var(--border-accent)] group">
               <div className="flex items-center gap-3 text-[var(--text-primary)] mb-4">
                 <Scale className="w-6 h-6 text-[var(--text-muted)] group-hover:text-[var(--fg-accent)] transition-theme" />
-                <h2 className="text-xl md:text-2xl font-black">{isAr ? "المبادئ التأسيسية" : "Foundational Principles"}</h2>
+                <h2 className="text-xl md:text-2xl font-black">{isAr ? "المبادئ التأسيسية للخصوصية" : "Foundational Privacy Principles"}</h2>
               </div>
               <p className="text-sm md:text-base leading-relaxed text-[var(--text-secondary)] font-medium font-sans">
                 {isAr 
-                  ? "تدرك منصة بيربليكستا أن الخصوصية تعني الاستحالة التقنية للوصول للبيانات. بنيت المنصة على أسس هندسية صارمة تضمن تحكمك الكامل في مساحتك الرقمية وفقاً لأعلى معايير حماية البيانات."
-                  : "PERPLEXTA understands that true privacy means the technical impossibility of data access. PERPLEXTA is built on rigorous engineering foundations ensuring full control over your digital space in accordance with top data protection standards."}
+                  ? "تدرك منصة بيربليكستا (ViralLinkUp Limited) أن الخصوصية الحقيقية تعني الاستحالة التقنية للوصول إلى بياناتك. بنيت المنصة على أسس عمارة قواعد البيانات المزدوجة والتشفير العسكري لضمان تحكمك الكامل في مساحتك الرقمية."
+                  : "PERPLEXTA (ViralLinkUp Limited) understands that true privacy means the technical impossibility of data access. Built on dual-database architecture and military-grade encryption ensuring your total digital control."}
               </p>
               <p className="text-xs font-bold uppercase tracking-wider text-[var(--fg-accent)] font-mono mt-4">
-                {isAr ? "تاريخ السريان: مارس 25, 2026" : "Effective Date: March 25, 2026"}
+                {isAr ? "تاريخ السريان المحدث: سبتمبر 2026" : "Updated Effective Date: September 2026"}
               </p>
             </div>
           </div>
 
           <div className="relative aspect-square rounded-[var(--radius-lg)] overflow-hidden bg-[var(--surface-subtle)] border border-[var(--border-default)] flex items-center justify-center p-8 shadow-inner">
             <div className="relative z-10 flex flex-col items-center gap-8 w-full">
-              <div className="flex items-center justify-center p-6 rounded-[var(--radius-xs)] bg-[var(--surface-card)] border border-[var(--border-default)] shadow-lg hover:shadow-none transition-theme group animate-pulse">
+              <div className="flex items-center justify-center p-6 rounded-[var(--radius-xs)] bg-[var(--surface-card)] border border-[var(--border-default)] shadow-lg hover:shadow-none transition-theme group">
                 <Lock className="w-24 h-24 text-[var(--text-muted)] group-hover:text-[var(--fg-accent)] transition-theme" />
               </div>
 
               <div className="grid grid-cols-3 gap-3 w-full">
                 {[
-                  { icon: Shield, label: isAr ? "تحكم كامل" : "Full Control" },
-                  { icon: Eye, label: isAr ? "شفافية تقنية" : "Tech Transparency" },
-                  { icon: Database, label: isAr ? "تشفير كامل" : "Full Encryption" }
+                  { icon: Shield, label: isAr ? "تشفير AES-256" : "AES-256 Crypto" },
+                  { icon: Eye, label: isAr ? "معرفة صفرية" : "Zero-Knowledge" },
+                  { icon: Database, label: isAr ? "عزل مالي" : "Ledger Isolated" }
                 ].map((item, idx) => (
                   <div 
                     key={`privacy-pillar-${idx}-${item.label}`}
@@ -228,10 +246,10 @@ export const Privacy: React.FC = () => {
         <section className="space-y-10">
           <div className="text-center space-y-2">
             <h2 className="text-2xl md:text-3xl font-black text-[var(--text-primary)] uppercase">
-              {isAr ? "بنود الخصوصية وحماية البيانات" : "Privacy & Data Protection Clauses"}
+              {isAr ? "البنود التفصيلية لحماية البيانات" : "Detailed Data Protection Clauses"}
             </h2>
             <p className="text-sm text-[var(--text-secondary)] max-w-2xl mx-auto font-medium leading-relaxed">
-              {isAr ? "نصوص رسمية تحدد التزاماتنا التقنية والقانونية والأخلاقية لحماية مساحتك الرقمية." : "Official clauses defining our technical, ethical, and legal obligations to protect your digital space."}
+              {isAr ? "نصوص رسمية معتمدة تحدد الالتزامات التقنية والقانونية لحماية مساحتك عبر كافة أقسام بيربليكستا." : "Official certified clauses defining technical and legal commitments to protect your space across all PERPLEXTA sections."}
             </p>
           </div>
 
@@ -239,63 +257,67 @@ export const Privacy: React.FC = () => {
             {sections.map((section, i) => (
               <div 
                 key={`privacy-sec-${i}-${section.title}`} 
-                className="p-6 md:p-8 rounded-[var(--radius-md)] border border-[var(--border-default)] bg-[var(--surface-card)] hover:bg-[var(--surface-subtle)] hover:border-[var(--border-accent)] transition-theme group shadow-sm"
+                className="p-6 md:p-8 rounded-[var(--radius-md)] border border-[var(--border-default)] bg-[var(--surface-card)] hover:bg-[var(--surface-subtle)] hover:border-[var(--border-accent)] transition-theme group shadow-sm flex flex-col justify-between"
               >
-                <div className="flex items-center gap-4 mb-6">
-                  <div className="w-12 h-12 rounded-[var(--radius-xs)] bg-[var(--surface-card)] border border-[var(--border-default)] flex items-center justify-center text-[var(--text-muted)] group-hover:text-[var(--fg-accent)] transition-theme">
-                    <section.icon className="w-6 h-6" />
-                  </div>
-                  <h3 className="text-lg md:text-xl font-bold text-[var(--text-primary)] group-hover:text-[var(--fg-accent)] transition-colors duration-300">{section.title}</h3>
-                </div>
-
-                <p className="text-sm text-[var(--text-secondary)] leading-relaxed font-semibold mb-6">
-                  {section.content}
-                </p>
-
-                <div className="space-y-4 pt-6 border-t border-[var(--border-subtle)]">
-                  {section.subItems.map((sub, sIdx) => (
-                    <div key={`privacy-sub-${i}-${sIdx}-${sub.label}`} className="space-y-1">
-                      <h4 className="text-xs font-black uppercase tracking-wider text-[var(--fg-accent)]">{sub.label}</h4>
-                      <p className="text-xs text-[var(--text-muted)] leading-relaxed font-sans">{sub.desc}</p>
+                <div className="space-y-4">
+                  <div className="flex items-center gap-4 mb-2">
+                    <div className="w-12 h-12 rounded-[var(--radius-xs)] bg-[var(--surface-card)] border border-[var(--border-default)] flex items-center justify-center text-[var(--text-muted)] group-hover:text-[var(--fg-accent)] transition-theme">
+                      <section.icon className="w-6 h-6" />
                     </div>
-                  ))}
+                    <h3 className="text-lg md:text-xl font-bold text-[var(--text-primary)] group-hover:text-[var(--fg-accent)] transition-colors duration-300">{section.title}</h3>
+                  </div>
+
+                  <p className="text-sm text-[var(--text-secondary)] leading-relaxed font-semibold mb-6">
+                    {section.content}
+                  </p>
+
+                  <div className="space-y-4 pt-6 border-t border-[var(--border-subtle)]">
+                    {section.subItems.map((sub, sIdx) => (
+                      <div key={`privacy-sub-${i}-${sIdx}-${sub.label}`} className="space-y-1">
+                        <h4 className="text-xs font-black uppercase tracking-wider text-[var(--fg-accent)]">{sub.label}</h4>
+                        <p className="text-xs text-[var(--text-muted)] leading-relaxed font-sans">{sub.desc}</p>
+                      </div>
+                    ))}
+                  </div>
                 </div>
               </div>
             ))}
           </div>
         </section>
 
-        <section className="p-6 md:p-8 rounded-[var(--radius-md)] border border-[var(--border-default)] bg-[var(--surface-card)] space-y-8">
+        {/* Corporate Legal Footer Section */}
+        <section className="p-6 md:p-8 rounded-[var(--radius-md)] border border-[var(--border-default)] bg-[var(--surface-card)] space-y-6">
           <div className="flex items-center gap-3 text-[var(--text-primary)]">
-            <Shield className="w-5 h-5 text-[var(--fg-accent)]" />
-            <h2 className="text-xl md:text-2xl font-black">{isAr ? "الهوية المؤسسية والشفافية" : "Corporate Identity & Transparency"}</h2>
+            <Building2 className="w-5 h-5 text-[var(--fg-accent)]" />
+            <h2 className="text-xl md:text-2xl font-black">{isAr ? "الكيان القانوني والمسؤولية الرسمية" : "Legal Entity & Official Responsibility"}</h2>
           </div>
           
-          <div className="space-y-4">
+          <div className="space-y-3">
             <p className="text-sm md:text-base font-bold text-[var(--text-primary)]">
               {isAr 
-                ? "منصة بيربليكستا هي بيئة تقنية متقدمة لإدارة وتحليل الذكاء الاصطناعي مع التزام كامل بالشفافية والسرية."
-                : "PERPLEXTA platform is an advanced AI analysis and orchestration suite committed to total transparency and confidentiality."}
+                ? "جميع الخدمات والسياسات والأطر التقنية في منصة بيربليكستا تدار وتخضع قانونياً لشركة:"
+                : "All services, policies, and technical frameworks on the PERPLEXTA platform are legally operated and governed by:"}
             </p>
+            <div className="p-4 rounded-[var(--radius-sm)] bg-[var(--surface-subtle)] border border-[var(--border-subtle)] flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+              <div>
+                <h4 className="font-black text-base text-[var(--text-primary)]">ViralLinkUp Limited (PERPLEXTA LTD)</h4>
+                <p className="text-xs text-[var(--text-muted)] font-mono mt-0.5">Reg. No: 16804604 | 128 City Road, London, EC1V 2NX</p>
+              </div>
+              <button
+                onClick={() => navigate('/docs/legal')}
+                className="px-5 py-2.5 rounded-[var(--radius-sm)] bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs uppercase tracking-wider transition-all flex items-center gap-2 shadow-sm cursor-pointer"
+              >
+                <span>{isAr ? "الوثائق القانونية" : "Legal Documents"}</span>
+                <ExternalLink size={13} className="opacity-80" />
+              </button>
+            </div>
           </div>
         </section>
 
         <footer className="pt-10 border-t border-[var(--border-subtle)] space-y-10">
           <div className="text-center">
             <p className="text-lg md:text-xl font-black text-[var(--text-primary)] tracking-widest uppercase font-mono">
-              {isAr ? "بيربليكستا - نبتكر لنحمي بياناتك" : "PERPLEXTA - INNOVATING TO PROTECT YOUR DATA"}
-            </p>
-          </div>
-
-          <div className="p-6 md:p-8 rounded-[var(--radius-md)] border border-[var(--border-default)] bg-[var(--surface-card)] space-y-4 max-w-4xl mx-auto shadow-inner">
-            <div className="flex items-center gap-3 text-[var(--text-primary)]">
-              <Shield className="w-5 h-5 text-[var(--fg-accent)]" />
-              <h3 className="text-base md:text-lg font-black">{isAr ? "حقوق الملكية الفكرية" : "Intellectual Property Rights"}</h3>
-            </div>
-            <p className="text-xs md:text-sm leading-relaxed text-[var(--text-secondary)] font-semibold font-sans">
-              {isAr 
-                ? "جميع الحقوق البرمجية، العلامة التجارية، ومنطق الربط الذكي الخاص بـ بيربليكستا وكافة مشاريعنا هي حقوق محفوظة بالكامل."
-                : "All software rights, trademarks, and smart orchestration logic of PERPLEXTA and all associated projects are fully protected."}
+              {isAr ? "بيربليكستا - نبتكر لنحمي بياناتك السيادية" : "PERPLEXTA - INNOVATING TO PROTECT YOUR SOVEREIGN DATA"}
             </p>
           </div>
         </footer>

@@ -3,10 +3,12 @@ import { tools } from '../config/constants.js';
 import { encrypt } from '../utils/crypto.js';
 import { syncProviderModelsInternal } from './ai.js';
 import { invalidateApiKeysVaultCache, invalidateOrchestratorConfigCache } from '../db/queries.js';
+import { ensureMapProvidersTable } from './mapProvidersService.js';
+import { ensureLocationCacheTable } from './locationCache.js';
 
 /**
  * Database Initializer Service
- * Ensures essential database tables (such as studio_workspaces, studio_snapshots, tool_orchestrator, and api_keys_vault)
+ * Ensures essential database tables (such as studio_workspaces, studio_snapshots, tool_orchestrator, map_providers, and api_keys_vault)
  * are initialized and synchronized before incoming requests arrive.
  */
 export async function ensureDatabaseTables(): Promise<void> {
@@ -16,6 +18,10 @@ export async function ensureDatabaseTables(): Promise<void> {
       console.warn('[DatabaseInitializer] Database pool not available for table initialization.');
       return;
     }
+
+    // Ensure map providers & cached locations tables
+    await ensureMapProvidersTable().catch(err => console.warn('[DatabaseInitializer] Map providers table notice:', err?.message));
+    await ensureLocationCacheTable().catch(err => console.warn('[DatabaseInitializer] Location cache table notice:', err?.message));
 
     await targetPool.query(`
       CREATE TABLE IF NOT EXISTS studio_workspaces (

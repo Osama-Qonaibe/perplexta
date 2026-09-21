@@ -10,6 +10,8 @@ export interface BoardFeedProps {
   isRtl: boolean;
   selectedCity: string;
   selectedRadius: string;
+  selectedCities?: string[];
+  selectedCountries?: string[];
   setIsLocationFlyoutOpen: (open: boolean) => void;
   handleDetectGpsLocation: () => void;
   isDetectingGps: boolean;
@@ -66,6 +68,8 @@ export const BoardFeed: React.FC<BoardFeedProps> = ({
   isRtl,
   selectedCity,
   selectedRadius,
+  selectedCities = [],
+  selectedCountries = [],
   setIsLocationFlyoutOpen,
   handleDetectGpsLocation,
   isDetectingGps,
@@ -123,7 +127,11 @@ export const BoardFeed: React.FC<BoardFeedProps> = ({
           >
             <MapPin size={13} className="text-accent shrink-0" />
             <span className="truncate">
-              {selectedCity === 'all'
+              {selectedCities.length > 0
+                ? `${selectedCities.length} ${isRtl ? 'مدن' : 'cities'} (${selectedCities.slice(0, 2).join('، ')}${selectedCities.length > 2 ? '...' : ''})`
+                : selectedCountries.length > 0
+                ? `${selectedCountries.length} ${isRtl ? 'دول' : 'countries'} (${selectedCountries.slice(0, 2).join('، ')}${selectedCountries.length > 2 ? '...' : ''})`
+                : selectedCity === 'all'
                 ? isRtl
                   ? 'كافة المدن'
                   : 'All Cities'

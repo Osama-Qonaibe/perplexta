@@ -14,7 +14,8 @@ import {
   Ban,
   UserCheck,
   Cpu,
-  Shield
+  Shield,
+  ArrowUpRight
 } from 'lucide-react';
 import { motion } from 'motion/react';
 import { perplextaPageTransition } from '@/design-system';
@@ -305,6 +306,28 @@ export const Terms: React.FC = () => {
                 ? "منصة بيربليكستا هي بيئة تقنية متقدمة لإدارة وتحليل الذكاء الاصطناعي مع التزام كامل بالشفافية والسرية."
                 : "PERPLEXTA platform is an advanced AI analysis and orchestration suite committed to total transparency and confidentiality."}
             </p>
+          </div>
+        </section>
+
+        <section className="hidden md:block p-6 md:p-8 rounded-[var(--radius-md)] border border-[var(--border-default)] bg-[var(--surface-card)] space-y-4 text-center">
+          <h3 className="text-lg md:text-xl font-black text-[var(--text-primary)]">
+            {isAr ? "مكتبة الوثائق القانونية والسياسات الرسمية الشاملة" : "Complete Legal Documentation & Regulatory Suite"}
+          </h3>
+          <p className="text-xs md:text-sm text-[var(--text-secondary)] max-w-2xl mx-auto leading-relaxed">
+            {isAr 
+              ? "تفضل بزيارة مركز التوثيق القانوني التفاعلي الشامل لشركة فيرال لينك اب المحدودة للاطلاع على كافة السياسات التفصيلية (اتفاقية مستوى الخدمة، ميثاق سلامة الذكاء الاصطناعي، المعالجات الفرعية، مكافحة غسل الأموال، وتراخيص البرمجيات)." 
+              : "Explore the comprehensive interactive legal repository of ViralLinkUp Limited covering SLA, AI Safety Charters, Sub-processors, AML/KYC, and Source Code Licensing."}
+          </p>
+          <div className="pt-2">
+            <a
+              href="/docs/legal"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="hidden md:inline-flex items-center gap-2 px-5 py-2.5 rounded-[var(--radius-sm)] bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs uppercase tracking-wider shadow-sm transition-all cursor-pointer"
+            >
+              <span>{isAr ? "الوثائق القانونية" : "Legal Documents"}</span>
+              <ArrowUpRight size={16} />
+            </a>
           </div>
         </section>
 

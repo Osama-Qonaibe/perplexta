@@ -78,8 +78,7 @@ export const DesktopLayout: React.FC = () => {
           WebkitBackfaceVisibility: 'hidden',
           backfaceVisibility: 'hidden',
           WebkitOverflowScrolling: 'touch',
-          scrollbarWidth: 'none',
-          msOverflowStyle: 'none',
+          ...(isChatRoute ? { scrollbarWidth: 'none', msOverflowStyle: 'none' } : {}),
         }}
       >
         <main className={`flex-1 min-h-full relative ${
