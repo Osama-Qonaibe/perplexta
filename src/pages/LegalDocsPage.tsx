@@ -21,7 +21,7 @@ import {
   X,
   Share2
 } from 'lucide-react';
-import { LEGAL_DOCS, LegalDocMetadata, getLegalDoc } from '@/content/docs/legalDocsData';
+import { LEGAL_DOCS, LegalDocMetadata, getLegalDoc } from '../content/docs/legalDocsData';
 import { useAppContext } from '../context/AppContext';
 import { Logo } from '../components/common/Logo';
 import { ThemeToggleButton } from '../components/ThemeToggleButton';

@@ -1141,19 +1141,96 @@ router.get('/ads', async (req, res) => {
     const countryList = rawCountriesParam.split(',').map(c => c.trim()).filter(c => c && c !== 'all' && c !== 'الكل');
 
     if (cityList.length > 0) {
-      const cityConditions: string[] = [];
+      const expandedCityNamesSet = new Set<string>();
       for (const cVal of cityList) {
-        params.push(`%${cVal}%`);
-        cityConditions.push(`(b.location_city ILIKE $${params.length} OR bp.city ILIKE $${params.length} OR b.title ILIKE $${params.length} OR b.description ILIKE $${params.length})`);
+        expandedCityNamesSet.add(cVal.toLowerCase());
+        
+        // Find matching city in ALL_GEO_COUNTRIES
+        for (const ctry of ALL_GEO_COUNTRIES) {
+          const matchedCity = ctry.cities.find(
+            c => c.nameAr === cVal || c.nameEn === cVal
+          );
+          if (matchedCity) {
+            if (matchedCity.nameAr) expandedCityNamesSet.add(matchedCity.nameAr.toLowerCase());
+            if (matchedCity.nameEn) expandedCityNamesSet.add(matchedCity.nameEn.toLowerCase());
+            if (matchedCity.stateAr) expandedCityNamesSet.add(matchedCity.stateAr.toLowerCase());
+            if (matchedCity.stateEn) expandedCityNamesSet.add(matchedCity.stateEn.toLowerCase());
+            if (matchedCity.subLocalities) {
+              for (const sub of matchedCity.subLocalities) {
+                if (sub.nameAr) expandedCityNamesSet.add(sub.nameAr.toLowerCase());
+                if (sub.nameEn) expandedCityNamesSet.add(sub.nameEn.toLowerCase());
+              }
+            }
+          }
+        }
       }
-      query += ` AND (${cityConditions.join(' OR ')})`;
+      
+      const lowercaseCities = Array.from(expandedCityNamesSet).map(s => s.trim()).filter(Boolean);
+      if (lowercaseCities.length > 0) {
+        params.push(lowercaseCities);
+        const arrayParamIndex = params.length;
+        
+        const cityKeywordsConditions: string[] = [];
+        for (const cVal of cityList) {
+          params.push(`%${cVal}%`);
+          cityKeywordsConditions.push(`(b.title ILIKE $${params.length} OR b.description ILIKE $${params.length})`);
+        }
+        
+        query += ` AND (
+          LOWER(b.location_city) = ANY($${arrayParamIndex}::text[])
+          OR LOWER(bp.city) = ANY($${arrayParamIndex}::text[])
+          OR ${cityKeywordsConditions.join(' OR ')}
+        )`;
+      }
     } else if (countryList.length > 0) {
-      const countryConditions: string[] = [];
+      const expandedNamesSet = new Set<string>();
       for (const ctryVal of countryList) {
-        params.push(`%${ctryVal}%`);
-        countryConditions.push(`(b.location_city ILIKE $${params.length} OR bp.city ILIKE $${params.length} OR b.title ILIKE $${params.length} OR b.description ILIKE $${params.length})`);
+        expandedNamesSet.add(ctryVal.toLowerCase());
+        
+        // Find matching country in geoData
+        const matchedCtry = ALL_GEO_COUNTRIES.find(
+          c => c.nameAr === ctryVal || c.nameEn === ctryVal || c.code.toLowerCase() === ctryVal.toLowerCase()
+        );
+        if (matchedCtry) {
+          if (matchedCtry.nameAr) expandedNamesSet.add(matchedCtry.nameAr.toLowerCase());
+          if (matchedCtry.nameEn) expandedNamesSet.add(matchedCtry.nameEn.toLowerCase());
+          if (matchedCtry.keywords) {
+            for (const kw of matchedCtry.keywords) {
+              expandedNamesSet.add(kw.toLowerCase());
+            }
+          }
+          for (const city of matchedCtry.cities) {
+            if (city.nameAr) expandedNamesSet.add(city.nameAr.toLowerCase());
+            if (city.nameEn) expandedNamesSet.add(city.nameEn.toLowerCase());
+            if (city.stateAr) expandedNamesSet.add(city.stateAr.toLowerCase());
+            if (city.stateEn) expandedNamesSet.add(city.stateEn.toLowerCase());
+            if (city.subLocalities) {
+              for (const sub of city.subLocalities) {
+                if (sub.nameAr) expandedNamesSet.add(sub.nameAr.toLowerCase());
+                if (sub.nameEn) expandedNamesSet.add(sub.nameEn.toLowerCase());
+              }
+            }
+          }
+        }
       }
-      query += ` AND (${countryConditions.join(' OR ')})`;
+
+      const lowercaseNames = Array.from(expandedNamesSet).map(s => s.trim()).filter(Boolean);
+      if (lowercaseNames.length > 0) {
+        params.push(lowercaseNames);
+        const arrayParamIndex = params.length;
+        
+        const countryKeywordsConditions: string[] = [];
+        for (const ctryVal of countryList) {
+          params.push(`%${ctryVal}%`);
+          countryKeywordsConditions.push(`(b.title ILIKE $${params.length} OR b.description ILIKE $${params.length})`);
+        }
+        
+        query += ` AND (
+          LOWER(b.location_city) = ANY($${arrayParamIndex}::text[])
+          OR LOWER(bp.city) = ANY($${arrayParamIndex}::text[])
+          OR ${countryKeywordsConditions.join(' OR ')}
+        )`;
+      }
     }
 
     if (search && typeof search === 'string' && search.trim()) {

@@ -17,7 +17,7 @@ const footer = (lang: string) => {
       <div style="margin-top: 15px; font-family: ${isAr ? 'Tajawal, Arial' : 'Arial'}; font-size: 13px; color: #64748b; line-height: 1.8;">
         <div style="margin-bottom: 4px;"><strong>${isAr ? 'الدعم الفني:' : 'Support:'}</strong> <a href="mailto:support@perplexta.com" style="color: #334155; text-decoration: none;">support@perplexta.com</a></div>
         <div style="margin-bottom: 4px;"><strong>${isAr ? 'المنصة الرئيسية:' : 'Primary Domain:'}</strong> <a href="https://perplexta.com" style="color: #334155; text-decoration: none;">perplexta.com</a></div>
-        <div style="margin-bottom: 4px;"><strong>${isAr ? 'بوابة الشركة:' : 'Corporate Gateway:'}</strong> <a href="https://perplexta.uk" style="color: #334155; text-decoration: none;">perplexta.uk</a></div>
+        <div style="margin-bottom: 4px;"><strong>${isAr ? 'بوابة الشركة:' : 'Corporate Gateway:'}</strong> <a href="https://perplexta.com" style="color: #334155; text-decoration: none;">perplexta.com</a></div>
       </div>
       
       <div style="margin-top: 40px; text-align: center; border-top: 1px solid #f1f5f9; padding-top: 20px;">
