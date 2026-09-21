@@ -6,6 +6,40 @@ import path from 'path';
 import crypto from 'crypto';
 import fs from 'fs';
 import { Readable, Transform } from 'stream';
+
+/**
+ * ============================================================================
+ * SERVER-SIDE CRON & BACKGROUND MAINTENANCE AUDIT DIRECTIVE
+ * ============================================================================
+ * 
+ * OUTBOUND API & GPU NEUTRALIZATION STATUS:
+ * [✓] All background intervals hitting external GPU providers (RunPod, ComfyUI, etc.) are NEUTRALIZED.
+ * [✓] Automated background periodic pings in `gpuDiscoveryService` are DISABLED.
+ * [✓] Outbound search engine sitemap pings in `sitemapPinger` are DISABLED.
+ * [✓] All remaining scheduled background jobs run 100% internally on local PostgreSQL & local disk.
+ * 
+ * INTERNAL MAINTENANCE TASKS SCHEDULED (server/jobs/cron.ts):
+ * 1. Daily Maintenance (`0 3 * * *`):
+ *    - Resets `used_today` in local DB (`api_keys_vault`, `gpu_providers`).
+ *    - Purges temporary media files older than 48 hours from local disk.
+ *    - Purges expired 24h stories and trashed bulletin posts from local DB.
+ *    - Cleans up orphaned physical upload files on local disk.
+ * 2. 48-Hour Media Storage Purge (`Every 6 Hours`):
+ *    - 6-hour interval check to remove temporary generated images/videos > 48h from local disk.
+ * 3. Database Heartbeat (`Every 5 Minutes`):
+ *    - Monitors local PostgreSQL connection pool status and saturation metrics.
+ * 4. Subscription Renewal Audit (`5 3 * * *`):
+ *    - Scans local DB subscriptions expiring in 3 days and inserts internal notifications into local DB.
+ * 5. Daily SEO Metadata Sync (`0 2 * * *`):
+ *    - Scans local DB bulletin ads and pages to generate missing SEO meta tags in local DB.
+ * 6. Monthly Memory Compaction (`30 4 1 * *`):
+ *    - Performs deterministic heuristic text compaction on chat memory summaries in local DB (Zero AI API calls).
+ * 7. Monthly Financial Ledger Audit (`0 5 1 * *`):
+ *    - Reconciles local wallet ledger balances and logs discrepancy reports in local DB.
+ * 8. Weekly Wallet Reconciliation (`0 4 * * 0`):
+ *    - Weekly audit of local wallet balances against append-only ledger transaction history in local DB.
+ * ============================================================================
+ */
 import { globalLimiter, authLimiter, adminLimiter } from './middleware/rateLimit.js';
 import { csrfProtection } from './middleware/csrf.js';
 import { uploadValidator } from './middleware/uploadValidator.js';

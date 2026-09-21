@@ -94,7 +94,6 @@ import { GlobalLoadingOverlay } from "./components/GlobalLoadingOverlay";
 import { InactivityWarningModal } from './components/InactivityWarningModal';
 import { ServiceUpdateToast } from './components/ServiceUpdateToast';
 import { PwaInstallBanner } from './components/PwaInstallBanner';
-import { PwaInstallSuccessService } from './components/PwaInstallSuccessService';
 import { CriticalResourcePreloader } from './utils/criticalResourcePreloader';
 import { DiagnosticMobileOverlay } from './components/DiagnosticMobileOverlay';
 import { useThemeCustomizations } from './hooks/useThemeCustomizations';
@@ -432,7 +431,6 @@ const PWAWrapper = ({ children }: { children: React.ReactNode }) => {
       {!isAdminPath && <IncentiveCard />}
       {!isAdminPath && <InactivityWarningModal />}
       <GlobalLoadingOverlay />
-      <PwaInstallSuccessService />
       <CriticalResourcePreloader />
 
       <motion.div

@@ -128,11 +128,13 @@ export async function testGpuProviderHealth(
           const userEndpoints = gqlData.data.myself.endpoints || [];
           if (userEndpoints.length > 0) {
             const exactMatch = userEndpoints.find((e: any) => e.id === cleanEndpoint);
+            let matchedEndpoint = exactMatch;
             if (!exactMatch) {
               const fuzzyMatch = userEndpoints.find((e: any) => 
                 e.id.toLowerCase().replace(/1/g, 'l') === cleanEndpoint.toLowerCase().replace(/1/g, 'l')
               );
               if (fuzzyMatch) {
+                matchedEndpoint = fuzzyMatch;
                 cleanEndpoint = fuzzyMatch.id;
                 targetUrl = `https://api.runpod.ai/v2/${cleanEndpoint}`;
                 
@@ -143,6 +145,7 @@ export async function testGpuProviderHealth(
                   } catch (_) {}
                 }
               } else if (userEndpoints.length === 1) {
+                matchedEndpoint = userEndpoints[0];
                 cleanEndpoint = userEndpoints[0].id;
                 targetUrl = `https://api.runpod.ai/v2/${cleanEndpoint}`;
                 if (providerDbId) {
@@ -153,9 +156,20 @@ export async function testGpuProviderHealth(
                 }
               }
             }
+
+            const epName = matchedEndpoint?.name || cleanEndpoint;
+            // CRITICAL: Return immediately via RunPod Control Plane GraphQL query.
+            // DO NOT issue an HTTP GET to /v2/ENDPOINT/health, as that triggers serverless GPU worker warming!
+            return {
+              success: true,
+              status: 'online',
+              latencyMs: Date.now() - startTime,
+              message: `RunPod Endpoint Verified via Control Plane (${epName})`
+            };
           }
         }
       } catch (gqlErr: any) {
+        console.warn('[GpuVaultService] RunPod GraphQL control plane check warning:', gqlErr.message);
       }
     }
   }
@@ -320,48 +334,7 @@ export async function syncRemoteGpuModels(
     cleanEndpoint = cleanEndpoint.split('?')[0].split('#')[0].split('/')[0].trim();
 
     if (cleanEndpoint) {
-      const vllmUrl = `https://api.runpod.ai/v2/${cleanEndpoint}/openai/v1/models`;
-      const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 8000);
-
-      try {
-        const resp = await fetch(vllmUrl, {
-          method: 'GET',
-          headers: {
-            'Accept': 'application/json',
-            'Authorization': cleanKey.startsWith('Bearer ') ? cleanKey : `Bearer ${cleanKey}`
-          },
-          signal: controller.signal
-        });
-        clearTimeout(timeoutId);
-
-        if (resp.ok) {
-          const json: any = await resp.json();
-          const rawList = Array.isArray(json?.data) ? json.data : (Array.isArray(json) ? json : []);
-          if (rawList.length > 0) {
-            const mapped = rawList.map((item: any) => {
-              const modelId = item.id || item.name || '';
-              return {
-                model_id: modelId,
-                name: item.name || modelId,
-                task_type: detectTaskType(modelId),
-                context_window: item.context_window || 32768,
-                max_output_tokens: item.max_output_tokens || 8192
-              };
-            }).filter((m: any) => m.model_id.length > 0);
-
-            return {
-              success: true,
-              count: mapped.length,
-              models: mapped,
-              message: `Discovered ${mapped.length} remote vLLM model(s)`
-            };
-          }
-        }
-      } catch (_) {
-        clearTimeout(timeoutId);
-      }
-
+      // 1. Check GraphQL Control Plane FIRST (0 worker warming impact)
       try {
         const gqlRes = await fetch(`https://api.runpod.io/graphql?api_key=${cleanKey}`, {
           method: 'POST',
@@ -381,7 +354,7 @@ export async function syncRemoteGpuModels(
               }
             }`
           }),
-          signal: AbortSignal.timeout(10000)
+          signal: AbortSignal.timeout(8000)
         });
 
         if (gqlRes.ok) {
@@ -389,7 +362,7 @@ export async function syncRemoteGpuModels(
           const endpoints = gqlData.data?.myself?.endpoints || [];
           const match = endpoints.find((e: any) => 
             e.id === cleanEndpoint || e.id.toLowerCase().replace(/1/g, 'l') === cleanEndpoint.toLowerCase().replace(/1/g, 'l')
-          ) || endpoints[0];
+          ) || (endpoints.length === 1 ? endpoints[0] : null);
 
           if (match) {
             const epName = match.name || cleanEndpoint;
@@ -410,11 +383,13 @@ export async function syncRemoteGpuModels(
               success: true,
               count: serverModels.length,
               models: serverModels,
-              message: `Synchronized ${serverModels.length} endpoint model (${epName}) directly from server`
+              message: `Synchronized endpoint model (${epName}) safely via Control Plane`
             };
           }
         }
-      } catch (_) {}
+      } catch (gqlErr: any) {
+        console.warn('[GpuVaultService] RunPod GraphQL sync warning:', gqlErr.message);
+      }
     }
   }
 

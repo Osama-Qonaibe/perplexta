@@ -334,6 +334,8 @@ export async function runGpuEndpointDiscovery(options?: { forceAll?: boolean }):
 
 /**
  * Starts the automated periodic GPU discovery service
+ * NOTE: Background periodic interval is intentionally disabled by default to protect
+ * serverless GPU worker compute units and prevent idle balance consumption.
  */
 export function startAutomatedGpuDiscovery(intervalMinutes: number = 5) {
   if (discoveryIntervalTimer) {
@@ -342,22 +344,7 @@ export function startAutomatedGpuDiscovery(intervalMinutes: number = 5) {
   }
 
   discoveryIntervalMinutes = intervalMinutes;
-
-  console.log(`[GPU Discovery Service] Initialized with periodic interval of ${intervalMinutes} minutes.`);
-
-  // Initial delayed discovery pass (5 seconds after boot to let DB pools stabilize)
-  setTimeout(() => {
-    runGpuEndpointDiscovery().catch((err) => {
-      console.warn('[GPU Discovery Service] Initial scan warning:', err.message);
-    });
-  }, 5000);
-
-  // Periodic schedule
-  discoveryIntervalTimer = setInterval(() => {
-    runGpuEndpointDiscovery().catch((err) => {
-      console.warn('[GPU Discovery Service] Periodic scan warning:', err.message);
-    });
-  }, intervalMinutes * 60 * 1000);
+  console.log(`[GPU Discovery Service] Periodic background polling is DISABLED to protect serverless GPU worker compute units.`);
 }
 
 /**

@@ -341,24 +341,7 @@ export function initCronJobs() {
     });
   });
 
-  // 8. Search Engine Sitemap Pinger - Runs every 30 minutes
-  cron.schedule('*/30 * * * *', async () => {
-    await runGuardedCron('Sitemap Pinger', null, async () => {
-      if (pool) {
-        const newBulletin = await pool.query(
-          "SELECT id FROM bulletin_ads WHERE created_at >= CURRENT_TIMESTAMP - INTERVAL '30 minutes' AND status = 'active' LIMIT 1"
-        );
-
-        if (newBulletin.rowCount && newBulletin.rowCount > 0) {
-          console.log('[Cron] Found newly inserted items. Triggering sitemap ping...');
-          const { pingSearchEngines } = await import('../services/sitemapPinger.js');
-          await pingSearchEngines();
-        }
-      }
-    });
-  });
-
-  // 9. Weekly Wallet Reconciliation - Runs every Sunday at 04:00 AM
+  // 8. Weekly Wallet Reconciliation - Runs every Sunday at 04:00 AM
   cron.schedule('0 4 * * 0', async () => {
     await runGuardedCron('Weekly Wallet Reconciliation', null, async () => {
       console.log('[Cron] ⚖️ Running weekly wallet ledger reconciliation...');

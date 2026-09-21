@@ -174,7 +174,6 @@ export function usePwaInstall(): UsePwaInstallReturn {
 
     // Check if marked as installed
     const wasInstalled = safeStorageGet(STORAGE_INSTALLED_KEY) === 'true' ||
-      safeStorageGet('perplexta_install_celebrated') === 'true' ||
       safeStorageGet('pwa_app_installed') === 'true';
 
     if (checkStandalone || wasInstalled) {
@@ -197,7 +196,6 @@ export function usePwaInstall(): UsePwaInstallReturn {
         (window.navigator as any).standalone === true ||
         document.referrer.includes('android-app://') ||
         safeStorageGet(STORAGE_INSTALLED_KEY) === 'true' ||
-        safeStorageGet('perplexta_install_celebrated') === 'true' ||
         safeStorageGet('pwa_app_installed') === 'true'
       );
     };
@@ -239,9 +237,6 @@ export function usePwaInstall(): UsePwaInstallReturn {
       (window as any).__deferredPwaPrompt = null;
       setInstallState('installed');
       safeStorageSet(STORAGE_INSTALLED_KEY, 'true');
-      if (typeof window !== 'undefined') {
-        window.dispatchEvent(new CustomEvent('pwa-app-installed'));
-      }
     };
 
     window.addEventListener('pwa-prompt-captured', handleCaptured);
@@ -269,9 +264,6 @@ export function usePwaInstall(): UsePwaInstallReturn {
         setDeferredPrompt(null);
         setInstallState('installed');
         safeStorageSet(STORAGE_INSTALLED_KEY, 'true');
-        if (typeof window !== 'undefined') {
-          window.dispatchEvent(new CustomEvent('pwa-app-installed'));
-        }
         return true;
       } else {
         setInstallState('idle');

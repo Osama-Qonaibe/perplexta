@@ -1111,14 +1111,20 @@ async function executeRunPodServerless(
   } catch (err) {
     if (remoteId) {
       try {
-        await fetch(`${baseEndpoint}/cancel`, {
+        await fetch(`${baseEndpoint}/cancel/${remoteId}`, {
           method: 'POST',
-          headers,
-          body: JSON.stringify({ job_id: remoteId })
+          headers
         });
         console.log(`[GpuDispatcher] Successfully cancelled orphan RunPod job ${remoteId}`);
       } catch (cancelErr) {
-        // Ignore cancellation error
+        // Fallback to legacy payload format
+        try {
+          await fetch(`${baseEndpoint}/cancel`, {
+            method: 'POST',
+            headers,
+            body: JSON.stringify({ job_id: remoteId })
+          });
+        } catch (_) {}
       }
     }
     throw err;

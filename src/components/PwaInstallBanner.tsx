@@ -26,8 +26,7 @@ export const PwaInstallBanner: React.FC = () => {
     document.referrer.includes('android-app://')
   );
 
-  const isPreviouslyInstalled = safeStorageGet('perplexta_pwa_installed') === 'true' ||
-    safeStorageGet('perplexta_install_celebrated') === 'true';
+  const isPreviouslyInstalled = safeStorageGet('perplexta_pwa_installed') === 'true';
   
   const isDesktop = mobilePlatform === 'desktop';
   const isIOS = mobilePlatform === 'ios-safari' || mobilePlatform === 'ios-other';
