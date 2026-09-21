@@ -184,15 +184,17 @@ export const Privacy: React.FC = () => {
           </p>
 
           <div className="pt-4 flex flex-wrap items-center justify-center gap-4">
-            <button
-              onClick={() => navigate('/docs/legal')}
+            <a
+              href="/docs/legal"
+              target="_blank"
+              rel="noopener noreferrer"
               id="privacy-hero-legal-docs-btn"
               className="px-5 py-2.5 rounded-[var(--radius-sm)] bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs uppercase tracking-wider transition-all flex items-center gap-2 shadow-sm cursor-pointer"
             >
               <FileText size={16} />
               <span>{isAr ? "الوثائق القانونية" : "Legal Documents"}</span>
               <ExternalLink size={14} className="opacity-80" />
-            </button>
+            </a>
           </div>
         </section>
 
@@ -303,13 +305,15 @@ export const Privacy: React.FC = () => {
                 <h4 className="font-black text-base text-[var(--text-primary)]">ViralLinkUp Limited (PERPLEXTA LTD)</h4>
                 <p className="text-xs text-[var(--text-muted)] font-mono mt-0.5">Reg. No: 16804604 | 128 City Road, London, EC1V 2NX</p>
               </div>
-              <button
-                onClick={() => navigate('/docs/legal')}
+              <a
+                href="/docs/legal"
+                target="_blank"
+                rel="noopener noreferrer"
                 className="px-5 py-2.5 rounded-[var(--radius-sm)] bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs uppercase tracking-wider transition-all flex items-center gap-2 shadow-sm cursor-pointer"
               >
                 <span>{isAr ? "الوثائق القانونية" : "Legal Documents"}</span>
                 <ExternalLink size={13} className="opacity-80" />
-              </button>
+              </a>
             </div>
           </div>
         </section>

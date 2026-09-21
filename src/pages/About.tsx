@@ -642,15 +642,17 @@ export const About: React.FC = () => {
               : 'Because we have provided an integrated executive assistant and ViralBook commercial network. PERPLEXTA does not make mistakes in choosing the tool, built on dual-architecture logic and silent failover orchestration uniting global technical powers in one interface.'}
           </p>
           <div className="pt-2 flex flex-wrap gap-4 items-center">
-            <button
-              onClick={() => navigate('/docs/legal')}
+            <a
+              href="/docs/legal"
+              target="_blank"
+              rel="noopener noreferrer"
               id="about-to-legal-docs-btn"
               className="px-5 py-2.5 rounded-[var(--radius-sm)] bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs uppercase tracking-wider transition-all flex items-center gap-2 shadow-sm cursor-pointer"
             >
               <Shield size={16} />
               <span>{isAr ? "الوثائق القانونية" : "Legal Documents"}</span>
               <ExternalLink size={14} className="opacity-70" />
-            </button>
+            </a>
           </div>
         </section>
 
