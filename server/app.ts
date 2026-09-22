@@ -1971,7 +1971,9 @@ async function injectSEOTags(
   let currentKeywords = defaultKeywords;
   let currentSiteName = defaultSiteName;
   
-  const DEFAULT_OG_IMAGE = (settings.logo_url && !settings.logo_url.startsWith('data:')) ? settings.logo_url : ((settings.favicon_url && !settings.favicon_url.startsWith('data:')) ? settings.favicon_url : '/apple-touch-icon.png');
+  const DEFAULT_OG_IMAGE = (settings.seo_image_url && !settings.seo_image_url.startsWith('data:')) 
+    ? settings.seo_image_url 
+    : ((settings.logo_url && !settings.logo_url.startsWith('data:')) ? settings.logo_url : ((settings.favicon_url && !settings.favicon_url.startsWith('data:')) ? settings.favicon_url : '/apple-touch-icon.png'));
   let imageUrl = settings.seo_image_url || '';
 
   /** Combines a base URL and relative path, strictly avoiding duplicate slash errors */
@@ -2008,25 +2010,6 @@ async function injectSEOTags(
       const cleanPath = cleanUrl.split('?')[0];
       const filename = path.basename(cleanPath);
       if (!filename || filename.includes('..')) return '';
-
-      const uploadsDir = path.resolve(process.cwd(), 'uploads');
-      const publicDir = path.resolve(process.cwd(), 'public');
-
-      if (cleanUrl.startsWith('/uploads/')) {
-        const localPath = path.resolve(uploadsDir, filename);
-        if (localPath.startsWith(uploadsDir + path.sep) && !fs.existsSync(localPath)) {
-          const publicUploadsPath = path.resolve(publicDir, 'uploads', filename);
-          if (publicUploadsPath.startsWith(publicDir + path.sep) && !fs.existsSync(publicUploadsPath)) {
-            // Return URL even if physical file check fails to maintain static/CDN hosting support
-            return cleanUrl;
-          }
-        }
-      } else if (cleanUrl.startsWith('/images/')) {
-        const publicImagesPath = path.resolve(publicDir, 'images', filename);
-        if (publicImagesPath.startsWith(publicDir + path.sep) && !fs.existsSync(publicImagesPath)) {
-          return cleanUrl;
-        }
-      }
       return cleanUrl;
     }
 
