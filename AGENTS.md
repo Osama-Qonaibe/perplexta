@@ -144,7 +144,7 @@ The Admin Panel is engineered as a comprehensive Enterprise Resource Planning (E
 - **Customization:** Admins can edit, save, and preview templates directly in the UI.
 - **Broadcast & Marketing:** A dedicated interface to create custom promotional campaigns or update announcements, with the ability to send to all users, specific segments, or individual emails.
 
-### 7.4. ViralBook Architecture & Sovereign Identity (نظام فايرال بوك والمجتمع التفاعلي)
+### 7.4. ViralBook Architecture & Sovereign Identity (نظام فيرال بوك والمجتمع التفاعلي)
 ViralBook (`/viralbook`, `/bulletin`, `BulletinBoardPage.tsx`) is Perplexta's social, commercial, and rich media communication hub. Engineered according to the Facebook-standard interactive design system and reinforced by military-grade backend pipelines, it unites sovereign community engagement, commercial business discovery, verified reels, and interactive real-time communications into a unified, high-performance ecosystem.
 
 #### 1. Core Identity & Architectural Philosophy (الهوية المعمارية والرسالة)

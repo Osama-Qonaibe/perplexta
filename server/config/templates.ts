@@ -519,7 +519,7 @@ export const systemTemplates = [
   {
     name: 'bulletin_ad_approved',
     subject_en: 'Logistics: ViralBook Advertisement Approved & Published - Perplexta',
-    subject_ar: 'تحديث لوجستي: تم اعتماد ونشر إعلانك بنجاح في فايرال بوك - بيربليكستا',
+    subject_ar: 'تحديث لوجستي: تم اعتماد ونشر إعلانك بنجاح في فيرال بوك - بيربليكستا',
     body_en: wrapper(`
       <h2 style="color: #334155; font-size: 22px; font-weight: 600; margin-bottom: 25px; letter-spacing: -0.5px;">Advertisement Published</h2>
       <p style="color: #475569; font-size: 15px; line-height: 1.7; margin-bottom: 20px;">Identity profile verified. Your advertisement <strong>"{{adTitle}}"</strong> has been successfully approved and published on Perplexta ViralBook.</p>
@@ -534,7 +534,7 @@ export const systemTemplates = [
     `, 'en'),
     body_ar: wrapper(`
       <h2 style="color: #334155; font-size: 24px; font-weight: 700; margin-bottom: 25px;">تم اعتماد ونشر الإعلان</h2>
-      <p style="color: #475569; font-size: 16px; line-height: 1.8; margin-bottom: 20px;">تم التحقق من الامتثال. تمت الموافقة على نشر إعلانك الموسوم بـ <strong>"{{adTitle}}"</strong> ونشره بنجاح في فايرال بوك - بيربليكستا.</p>
+      <p style="color: #475569; font-size: 16px; line-height: 1.8; margin-bottom: 20px;">تم التحقق من الامتثال. تمت الموافقة على نشر إعلانك الموسوم بـ <strong>"{{adTitle}}"</strong> ونشره بنجاح في فيرال بوك - بيربليكستا.</p>
       <div style="background-color: #f8fafc; padding: 25px; border-right: 3px solid #334155; border-radius: 2px; margin: 25px 0;">
         <div style="font-size: 14px; color: #64748b; margin-bottom: 8px;"><strong>مدة العرض النشط:</strong> <span style="color: #0f172a;">{{durationDays}} يوم</span></div>
         <div style="font-size: 14px; color: #64748b;"><strong>تاريخ انتهاء الصلاحية:</strong> <span style="color: #0f172a;">{{expiresAt}}</span></div>
@@ -548,7 +548,7 @@ export const systemTemplates = [
   {
     name: 'bulletin_ad_rejected',
     subject_en: 'Compliance Alert: ViralBook Advertisement Rejected - Perplexta',
-    subject_ar: 'تنبيه الامتثال: تم رفض نشر إعلانك في فايرال بوك - بيربليكستا',
+    subject_ar: 'تنبيه الامتثال: تم رفض نشر إعلانك في فيرال بوك - بيربليكستا',
     body_en: wrapper(`
       <h2 style="color: #ef4444; font-size: 22px; font-weight: 600; margin-bottom: 25px; letter-spacing: -0.5px;">Ad Submission Rejection</h2>
       <p style="color: #475569; font-size: 15px; line-height: 1.7; margin-bottom: 20px;">Your submission <strong>"{{adTitle}}"</strong> did not meet our editorial and safety guidelines.</p>
@@ -562,8 +562,8 @@ export const systemTemplates = [
       </div>
     `, 'en'),
     body_ar: wrapper(`
-      <h2 style="color: #ef4444; font-size: 24px; font-weight: 700; margin-bottom: 25px;">رفض نشر الإعلان في فايرال بوك</h2>
-      <p style="color: #475569; font-size: 16px; line-height: 1.8; margin-bottom: 20px;">لم يستوفِ طلب النشر الخاص بكم لإعلان <strong>"{{adTitle}}"</strong> معايير النشر والأمان الخاصة بمنصة فايرال بوك.</p>
+      <h2 style="color: #ef4444; font-size: 24px; font-weight: 700; margin-bottom: 25px;">رفض نشر الإعلان في فيرال بوك</h2>
+      <p style="color: #475569; font-size: 16px; line-height: 1.8; margin-bottom: 20px;">لم يستوفِ طلب النشر الخاص بكم لإعلان <strong>"{{adTitle}}"</strong> معايير النشر والأمان الخاصة بمنصة فيرال بوك.</p>
       <div style="background-color: #fef2f2; padding: 25px; border: 1px solid #fee2e2; border-radius: 2px; margin: 25px 0; color: #991b1b;">
         <div style="font-size: 14px; font-weight: 700; margin-bottom: 8px;">سبب رفض طلب النشر:</div>
         <div style="font-size: 15px; font-family: sans-serif; line-height: 1.6;">{{rejectionReason}}</div>

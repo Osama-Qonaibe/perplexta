@@ -2402,7 +2402,7 @@ async function injectSEOTags(
     }
 
     const breadcrumbNames: Record<string, Record<string, string>> = {
-      ar: { '/': 'الرئيسية', '/viralbook': 'فايرال بوك', '/bulletin': 'فايرال بوك', '/subscription': 'الاشتراكات', '/terms': 'الشروط والأحكام', '/privacy': 'سياسة الخصوصية', '/about': 'عن المنصة' },
+      ar: { '/': 'الرئيسية', '/viralbook': 'فيرال بوك', '/bulletin': 'فيرال بوك', '/subscription': 'الاشتراكات', '/terms': 'الشروط والأحكام', '/privacy': 'سياسة الخصوصية', '/about': 'عن المنصة' },
       en: { '/': 'Home', '/viralbook': 'Viralbook', '/bulletin': 'Viralbook', '/subscription': 'Subscriptions', '/terms': 'Terms & Conditions', '/privacy': 'Privacy Policy', '/about': 'About Us' },
       fr: { '/': 'Accueil', '/viralbook': 'Viralbook', '/bulletin': 'Viralbook', '/subscription': 'Abonnements', '/terms': "Conditions d'utilisation", '/privacy': 'Politique de confidentialité', '/about': 'À propos' },
       es: { '/': 'Inicio', '/viralbook': 'Viralbook', '/bulletin': 'Viralbook', '/subscription': 'Suscripciones', '/terms': 'Términos y condiciones', '/privacy': 'Política de privacidad', '/about': 'Acerca de' },

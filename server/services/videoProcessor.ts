@@ -82,167 +82,139 @@ export async function processUploadedVideo(
 
     // First probe video metadata
     ffmpeg.ffprobe(inputFilePath, (probeErr, metadata) => {
-      if (!probeErr && metadata) {
-        if (metadata.format) {
-          videoDuration = metadata.format.duration || 0;
-          videoBitrate = Number(metadata.format.bit_rate) || 0;
-        }
-        const videoStream = metadata.streams?.find(s => s.codec_type === 'video');
-        if (videoStream) {
-          videoWidth = videoStream.width || 1280;
-          videoHeight = videoStream.height || 720;
-          if (!videoBitrate && videoStream.bit_rate) {
-            videoBitrate = Number(videoStream.bit_rate) || 0;
-          }
+      if (probeErr || !metadata) {
+        return resolve({
+          success: false,
+          processedVideoUrl: '',
+          thumbnailUrl: '',
+          error: probeErr?.message || 'Failed to probe video metadata.'
+        });
+      }
+
+      if (metadata.format) {
+        videoDuration = metadata.format.duration || 0;
+        videoBitrate = Number(metadata.format.bit_rate) || 0;
+      }
+      
+      const videoStream = metadata.streams?.find(s => s.codec_type === 'video');
+      const audioStream = metadata.streams?.find(s => s.codec_type === 'audio');
+      
+      if (videoStream) {
+        videoWidth = videoStream.width || 1280;
+        videoHeight = videoStream.height || 720;
+        if (!videoBitrate && videoStream.bit_rate) {
+          videoBitrate = Number(videoStream.bit_rate) || 0;
         }
       }
 
       const resolutionStr = `${videoWidth}x${videoHeight}`;
+      
+      // Optimization: Check if transcoding is actually needed
+      // If video is h264/avc1 and audio is aac/mp3, and no trimming is needed, we can use stream copy
+      const isH264 = videoStream?.codec_name === 'h264';
+      const isAAC = audioStream?.codec_name === 'aac' || audioStream?.codec_name === 'mp3';
+      const canStreamCopy = isH264 && isAAC && (!maxDuration || videoDuration <= maxDuration);
 
-      // Generate Thumbnail first
-      ffmpeg(inputFilePath)
-        .screenshots({
-          timestamps: ['25%'],
-          filename: outputThumbName,
-          folder: outputDir,
-          size: '720x?'
-        })
-        .on('end', () => {
-          // Now process video transcoding and standardization
-          let command = ffmpeg(inputFilePath)
-            .outputOptions([
-              '-c:v libx264',
-              '-preset veryfast',
-              '-crf 25',
-              '-pix_fmt yuv420p',
-              '-profile:v main',
-              '-level 3.1',
-              '-r 30',
-              '-g 60',
-              '-keyint_min 60',
-              '-sc_threshold 0',
-              '-c:a aac',
-              '-b:a 96k',
-              '-ar 48000',
-              '-ac 2',
-              '-movflags +faststart',
-              '-vf scale=trunc(iw/2)*2:trunc(ih/2)*2' // ensure even dimensions for h264
-            ]);
+      console.log(`[VideoProcessor] Analysis: ${videoStream?.codec_name}/${audioStream?.codec_name}. StreamCopy potential: ${canStreamCopy}`);
 
-          // Apply trimming if requested
-          if (maxDuration && videoDuration > maxDuration) {
-            console.log(`[VideoProcessor] Trimming video from ${videoDuration}s to ${maxDuration}s`);
-            command = command.setDuration(maxDuration);
-          }
+      // Start Thumbnail and Transcoding IN PARALLEL
+      const thumbPromise = new Promise<string>((tResolve) => {
+        ffmpeg(inputFilePath)
+          .screenshots({
+            timestamps: ['10%'], // Earlier for speed
+            filename: outputThumbName,
+            folder: outputDir,
+            size: '640x?' // Slightly smaller for speed
+          })
+          .on('end', () => tResolve(`/uploads/${outputThumbName}`))
+          .on('error', (err) => {
+            console.warn('[VideoProcessor] Thumbnail failed:', err.message);
+            tResolve('');
+          });
+      });
 
-          command
-            .toFormat('mp4')
-            .save(outputVideoPath)
-            .on('end', () => {
-              let finalFileSize = 0;
-              try {
-                const stats = fs.statSync(outputVideoPath);
-                finalFileSize = stats.size;
-              } catch {}
+      const transcodePromise = new Promise<{url: string, size: number, error?: string}>((vResolve) => {
+        let command = ffmpeg(inputFilePath);
+        
+        if (canStreamCopy) {
+          console.log('[VideoProcessor] Using fast stream copy strategy');
+          command = command.outputOptions(['-c copy', '-movflags +faststart']);
+        } else {
+          console.log('[VideoProcessor] Using high-performance transcoding strategy');
+          
+          // Intelligent bitrate capping (max 5Mbps for 1080p, 2.5Mbps for 720p)
+          const targetBitrate = videoHeight >= 1080 ? '5000k' : (videoHeight >= 720 ? '2500k' : '1500k');
+          
+          command = command.outputOptions([
+            '-c:v libx264',
+            '-preset superfast', 
+            '-crf 26', 
+            `-maxrate ${targetBitrate}`,
+            `-bufsize ${targetBitrate}`,
+            '-pix_fmt yuv420p',
+            '-profile:v main',
+            '-level 3.1',
+            '-r 30',
+            '-threads 0', // Multi-threading
+            '-c:a aac',
+            '-b:a 128k',
+            '-ar 44100',
+            '-ac 2',
+            '-movflags +faststart',
+            '-vf scale=trunc(iw/2)*2:trunc(ih/2)*2'
+          ]);
+        }
 
-              console.log(`[VideoProcessor] Successfully standardized video: ${outputFileName} (${resolutionStr}, ${videoDuration}s, ${finalFileSize} bytes)`);
-              resolve({
-                success: true,
-                processedVideoUrl: `/uploads/${outputFileName}`,
-                thumbnailUrl: `/uploads/${outputThumbName}`,
-                duration: maxDuration && videoDuration > maxDuration ? maxDuration : Math.round(videoDuration),
-                width: videoWidth,
-                height: videoHeight,
-                resolution: resolutionStr,
-                bitrate: videoBitrate,
-                fileSize: finalFileSize,
-                format: 'mp4'
-              });
-            })
-            .on('error', (err) => {
-              console.warn('[VideoProcessor] Transcoding warning/error, falling back to original file:', err.message);
-              const fallbackName = `${uniqueId}_orig.mp4`;
-              const fallbackPath = path.join(outputDir, fallbackName);
-              try {
-                fs.copyFileSync(inputFilePath, fallbackPath);
-                let fallbackSize = 0;
-                try {
-                  fallbackSize = fs.statSync(fallbackPath).size;
-                } catch {}
+        if (maxDuration && videoDuration > maxDuration) {
+          command = command.setDuration(maxDuration);
+        }
 
-                resolve({
-                  success: true,
-                  processedVideoUrl: `/uploads/${fallbackName}`,
-                  thumbnailUrl: fs.existsSync(outputThumbPath) ? `/uploads/${outputThumbName}` : '',
-                  duration: Math.round(videoDuration),
-                  width: videoWidth,
-                  height: videoHeight,
-                  resolution: resolutionStr,
-                  bitrate: videoBitrate,
-                  fileSize: fallbackSize,
-                  format: 'mp4'
-                });
-              } catch (copyErr: any) {
-                resolve({
-                  success: false,
-                  processedVideoUrl: '',
-                  thumbnailUrl: '',
-                  error: err.message || copyErr.message
-                });
-              }
-            });
-        })
-        .on('error', (thumbErr) => {
-          console.warn('[VideoProcessor] Thumbnail generation warning:', thumbErr.message);
-          ffmpeg(inputFilePath)
-            .outputOptions([
-              '-c:v libx264',
-              '-preset veryfast',
-              '-crf 25',
-              '-pix_fmt yuv420p',
-              '-profile:v main',
-              '-level 3.1',
-              '-r 30',
-              '-g 60',
-              '-keyint_min 60',
-              '-sc_threshold 0',
-              '-c:a aac',
-              '-b:a 96k',
-              '-ar 48000',
-              '-ac 2',
-              '-movflags +faststart',
-              '-vf scale=trunc(iw/2)*2:trunc(ih/2)*2'
-            ])
-            .toFormat('mp4')
-            .save(outputVideoPath)
-            .on('end', () => {
-              let finalFileSize = 0;
-              try {
-                finalFileSize = fs.statSync(outputVideoPath).size;
-              } catch {}
+        command
+          .toFormat('mp4')
+          .save(outputVideoPath)
+          .on('end', () => {
+            let size = 0;
+            try { size = fs.statSync(outputVideoPath).size; } catch {}
+            vResolve({ url: `/uploads/${outputFileName}`, size });
+          })
+          .on('error', (err) => {
+            console.warn('[VideoProcessor] Transcode failed, attempting fallback copy');
+            try {
+              fs.copyFileSync(inputFilePath, outputVideoPath);
+              let size = 0;
+              try { size = fs.statSync(outputVideoPath).size; } catch {}
+              vResolve({ url: `/uploads/${outputFileName}`, size });
+            } catch (copyErr: any) {
+              vResolve({ url: '', size: 0, error: err.message });
+            }
+          });
+      });
 
-              resolve({
-                success: true,
-                processedVideoUrl: `/uploads/${outputFileName}`,
-                thumbnailUrl: '',
-                duration: Math.round(videoDuration),
-                width: videoWidth,
-                height: videoHeight,
-                resolution: resolutionStr,
-                bitrate: videoBitrate,
-                fileSize: finalFileSize,
-                format: 'mp4'
-              });
-            })
-            .on('error', (err) => {
-              resolve({
-                success: false,
-                processedVideoUrl: '',
-                thumbnailUrl: '',
-                error: err.message
-              });
-            });
+      // Wait for both to complete
+      Promise.all([thumbPromise, transcodePromise]).then(([tUrl, vRes]) => {
+        if (!vRes.url) {
+          return resolve({
+            success: false,
+            processedVideoUrl: '',
+            thumbnailUrl: '',
+            error: vRes.error || 'Video processing failed completely.'
+          });
+        }
+
+        resolve({
+          success: true,
+          processedVideoUrl: vRes.url,
+          thumbnailUrl: tUrl,
+          duration: maxDuration && videoDuration > maxDuration ? maxDuration : Math.round(videoDuration),
+          width: videoWidth,
+          height: videoHeight,
+          resolution: resolutionStr,
+          bitrate: videoBitrate,
+          fileSize: vRes.size,
+          format: 'mp4'
         });
+      });
+    });
     });
   });
 }

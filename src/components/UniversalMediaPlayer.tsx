@@ -61,7 +61,7 @@ export const UniversalMediaPlayer: React.FC<UniversalMediaPlayerProps> = ({
   resourceId,
   format = 'auto',
   aspectRatio = 'auto',
-  fitMode = 'cover',
+  fitMode = 'contain',
   posterUrl,
   title,
   autoPlay = false,

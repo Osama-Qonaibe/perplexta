@@ -651,7 +651,7 @@ export async function checkAllDatabasesHealth(): Promise<{
       name: 'Media & Storage Cluster',
       nameAr: 'قاعدة الوسائط والمحتوى المرئي (Media)',
       description: 'Storage metadata for user uploaded attachments, ViralBook posts and video reels',
-      descriptionAr: 'بيانات وسائط المستخدمين ومنشورات فايرال بوك ومقاطع الفيديو والمرفقات',
+      descriptionAr: 'بيانات وسائط المستخدمين ومنشورات فيرال بوك ومقاطع الفيديو والمرفقات',
       url: registryOverrides['media'] || process.env.MEDIA_DATABASE_URL || ''
     }
   ];

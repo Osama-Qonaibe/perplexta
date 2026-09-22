@@ -2,6 +2,7 @@ import React from 'react';
 import { Edit3, X, Play, Film, Image as ImageIcon, Plus } from 'lucide-react';
 import { MediaGalleryItem } from '../../server/db/types';
 import { getMediaUrl } from '../utils/mediaUtils';
+import { StrictMediaContainer } from './StrictMediaContainer';
 
 interface ComposerMediaPreviewProps {
   mediaItems: MediaGalleryItem[];
@@ -85,9 +86,20 @@ export const ComposerMediaPreview: React.FC<ComposerMediaPreviewProps> = ({
   const renderCollageLayout = () => {
     // 1 Item
     if (totalCount === 1) {
+      const item = mediaItems[0];
+      const isVideo = item.type === 'video';
+      const mediaSrc = getMediaUrl(item.url);
+      const displayUrl = item.thumbnailUrl ? getMediaUrl(item.thumbnailUrl) : mediaSrc;
       return (
-        <div className="w-full h-[180px] xs:h-[220px] sm:h-[320px] md:h-[340px]">
-          {renderMediaThumbnail(mediaItems[0], 0)}
+        <div
+          onClick={onOpenMediaManager}
+          className="w-full overflow-hidden cursor-pointer rounded-b-[var(--radius-lg)] bg-[#0a0a0a]"
+        >
+          <StrictMediaContainer
+            type="feed"
+            src={isVideo ? mediaSrc : displayUrl}
+            isVideo={isVideo}
+          />
         </div>
       );
     }

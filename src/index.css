@@ -1927,18 +1927,18 @@ body,
    ========================================================================== */
 .vb-emoji-bar {
   display: flex !important;
-  flex-direction: column !important;
+  flex-direction: row !important;
   align-items: center !important;
   justify-content: center !important;
   width: fit-content !important;
   min-width: auto !important;
-  background-color: var(--surface-card, rgba(15, 23, 42, 0.9)) !important;
+  background-color: var(--surface-card, rgba(15, 23, 42, 0.95)) !important;
   backdrop-filter: blur(12px) !important;
-  padding: 0.375rem 0.25rem !important;
+  padding: 0.35rem 0.5rem !important;
   border-radius: 9999px !important;
   border: 1px solid var(--border-default, rgba(255,255,255,0.15)) !important;
   box-shadow: 0 12px 28px -5px rgba(0, 0, 0, 0.3) !important;
-  gap: 0.25rem !important;
+  gap: 0.35rem !important;
 }
 
 .vb-emoji-btn {
@@ -1958,7 +1958,7 @@ body,
 }
 
 .vb-emoji-btn:hover {
-  transform: scale(1.35) translateX(-2px) !important;
+  transform: scale(1.45) translateY(-6px) !important;
 }
 
 .vb-emoji-btn:active {

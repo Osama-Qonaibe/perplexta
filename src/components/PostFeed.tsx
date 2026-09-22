@@ -593,39 +593,18 @@ export const PostFeed: React.FC<PostFeedProps> = ({
               key={(ad as any)._virtualId || `bulletin-ad-${ad.id}-${index}`}
               initial={{ opacity: 0, y: 12 }}
               animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, x: isRtl ? -280 : 280, height: 0, marginBottom: 0, transition: { duration: 0.22 } }}
-              layout
-              className="relative overflow-hidden rounded-[var(--radius-md)] touch-pan-y"
+              exit={{ opacity: 0, height: 0, marginBottom: 0, transition: { duration: 0.22 } }}
+              className="relative overflow-hidden rounded-[var(--radius-md)]"
             >
-              {/* Background Indicator Revealed On Swipe */}
-              <div className="absolute inset-0 bg-rose-500/10 dark:bg-rose-950/30 border border-rose-500/30 rounded-[var(--radius-md)] flex items-center justify-between px-5 text-rose-600 dark:text-rose-400 font-extrabold text-xs pointer-events-none select-none">
-                <div className="flex items-center gap-1.5">
-                  <EyeOff size={15} />
-                  <span>{isRtl ? 'سحب لإخفاء الإعلان' : 'Swipe to hide'}</span>
-                </div>
-                <div className="flex items-center gap-1.5">
-                  <span>{isRtl ? 'سحب لإخفاء الإعلان' : 'Swipe to hide'}</span>
-                  <EyeOff size={15} />
-                </div>
-              </div>
-
-              {/* Swipable Card Content */}
-              <motion.article
+              {/* Standard Card Content without Swipe Gestures */}
+              <article
                 id={`bulletin-ad-${ad.id}`}
-                drag="x"
-                dragConstraints={{ left: 0, right: 0 }}
-                dragElastic={0.65}
-                onDragEnd={(event, info) => {
-                  if (Math.abs(info.offset.x) > 125 || Math.abs(info.velocity.x) > 500) {
-                    handleSwipeDismiss(ad);
-                  }
-                }}
                 className={`w-full rounded-[var(--radius-md)] bg-[var(--surface-card)] border border-[var(--border-default)] shadow-xs flex flex-col transition-theme relative z-10 ${
                   activeMoreMenuId === ad.id || reactionBarAdId === ad.id ? 'relative z-30 overflow-visible' : 'overflow-hidden'
                 }`}
               >
             {/* Header: Author / Merchant Page info */}
-            <div className="p-3 sm:p-4 flex items-center justify-between border-b border-[var(--border-default)] gap-2">
+            <div className="p-3 sm:p-4 flex items-center justify-between border-b border-[var(--border-default)] gap-2 shrink-0">
               <div className="flex items-center gap-2 min-w-0 flex-1">
                 <BulletinAvatar
                   src={ad.page_id ? (ad.page_avatar || ad.author_avatar) : ad.author_avatar}
@@ -827,7 +806,7 @@ export const PostFeed: React.FC<PostFeedProps> = ({
             )}
 
             {/* Content: Title, Text & Hashtags */}
-            <div className="p-4 space-y-3 flex-1">
+            <div className="p-4 space-y-3 w-full shrink-0 h-auto">
               {(() => {
                 const cleanTitle = (ad.title || '').trim();
                 const cleanDesc = (ad.description || '').trim();
@@ -854,28 +833,21 @@ export const PostFeed: React.FC<PostFeedProps> = ({
                       </h3>
                     )}
 
-                    <div className="text-[14px] sm:text-[15px] text-[var(--text-primary)] leading-relaxed space-y-1.5 font-normal">
-                      <div className="whitespace-pre-wrap break-words">
-                        {isLongText && !isTextExpanded
-                          ? renderRichPostText(postBodyText.slice(0, 280) + '...', searchQuery)
-                          : renderRichPostText(postBodyText, searchQuery)}
-                      </div>
-
-                      {isLongText && (
+                    <div className="w-full text-right dir-rtl">
+                      <p 
+                        data-expanded={isTextExpanded}
+                        className="text-sm text-[var(--text-primary)] leading-relaxed line-clamp-3 data-[expanded=true]:line-clamp-none transition-all duration-200 whitespace-pre-wrap break-words"
+                      >
+                        {renderRichPostText(postBodyText, searchQuery)}
+                      </p>
+                      {postBodyText.length > 180 && (
                         <button
                           onClick={() => toggleTextExpand(ad.id)}
-                          className="text-[#1877F2] dark:text-[#3880FF] font-bold hover:underline inline-flex items-center gap-1 text-xs cursor-pointer"
+                          className="text-xs font-semibold text-[var(--fg-accent)] hover:underline mt-1 inline-block cursor-pointer"
                         >
-                          <span>
-                            {isTextExpanded
-                              ? isRtl
-                                ? 'عرض أقل'
-                                : 'Show Less'
-                              : isRtl
-                              ? 'عرض المزيد...'
-                              : 'See More...'}
-                          </span>
-                          {isTextExpanded ? <ChevronUp size={13} /> : <ChevronDown size={13} />}
+                          {isTextExpanded 
+                            ? (isRtl ? 'عرض أقل' : 'Show Less') 
+                            : (isRtl ? 'عرض المزيد...' : 'See More...')}
                         </button>
                       )}
                     </div>
@@ -984,73 +956,16 @@ export const PostFeed: React.FC<PostFeedProps> = ({
             </div>
 
             {/* Multi-Media Gallery (Mixed Images & Videos with Facebook Collage & Captions) */}
-            {ad.media_gallery && Array.isArray(ad.media_gallery) && ad.media_gallery.length > 0 ? (
-              ad.media_gallery.length === 1 && ad.media_gallery[0].type === 'video' ? (
-                <div className="w-full overflow-hidden bg-black">
-                  <MediaFormatPlayer
-                    url={getMediaUrl(ad.media_gallery[0].url)}
-                    resourceId={ad.id}
-                    adFormat={ad.ad_format || 'feed'}
-                    aspectRatio={(ad as any).aspect_ratio && (ad as any).aspect_ratio !== 'grid' && (ad as any).aspect_ratio !== 'auto' ? (ad as any).aspect_ratio : (ad.ad_format === 'reel' || ad.ad_format === 'story' ? '9:16' : '16:9')}
-                    posterUrl={getMediaUrl(ad.media_gallery[0].thumbnailUrl || ad.image_url)}
-                    title={ad.title}
-                    isRtl={isRtl}
-                    onOpenReels={() => {
-                      try {
-                        document.querySelectorAll('video').forEach(v => {
-                          try {
-                            v.pause();
-                            v.muted = true;
-                          } catch (_) {}
-                        });
-                      } catch (_) {}
-                      if (onOpenReelFeed) {
-                        onOpenReelFeed(ad.id);
-                      } else {
-                        window.dispatchEvent(new CustomEvent('open-reel-fullscreen', {
-                          detail: { adId: ad.id, url: getMediaUrl(ad.media_gallery?.[0]?.url || '') }
-                        }));
-                      }
-                    }}
-                    className={ad.ad_format === 'reel' || ad.ad_format === 'story' ? 'max-h-[520px] mx-auto' : 'rounded-none'}
-                  />
-                </div>
-              ) : (
-                <MultiImageGallery
-                  mediaGallery={ad.media_gallery}
-                  layout={(ad as any).aspect_ratio || 'grid'}
-                  onOpenLightbox={(url, items, index) => onOpenLightbox(url, items, index, ad.title, ad.author_name, ad)}
-                  isRtl={isRtl}
-                  adTitle={ad.title}
-                  adFormat={ad.ad_format}
-                />
-              )
-            ) : (
-              <>
-                {/* Legacy Media Image: Aspect ratio based on format or MultiImage Gallery */}
-                {ad.image_url && !ad.video_url && (() => {
-                  const images = ad.image_url.split(',').map(img => getMediaUrl(img.trim())).filter(Boolean);
-                  return (
-                    <MultiImageGallery
-                      images={images}
-                      layout={(ad as any).aspect_ratio || 'grid'}
-                      onOpenLightbox={(url, items, index) => onOpenLightbox(url, items, index, ad.title, ad.author_name, ad)}
-                      isRtl={isRtl}
-                      adTitle={ad.title}
-                      adFormat={ad.ad_format}
-                    />
-                  );
-                })()}
-
-                {/* Legacy Promotional Video / Reels Media Section with Multi-Format Player */}
-                {ad.video_url && (
+            <div className="w-full shrink-0 overflow-hidden bg-transparent">
+              {ad.media_gallery && Array.isArray(ad.media_gallery) && ad.media_gallery.length > 0 ? (
+                ad.media_gallery.length === 1 && ad.media_gallery[0].type === 'video' ? (
                   <div className="w-full overflow-hidden bg-black">
                     <MediaFormatPlayer
-                      url={getMediaUrl(ad.video_url)}
+                      url={getMediaUrl(ad.media_gallery[0].url)}
                       resourceId={ad.id}
                       adFormat={ad.ad_format || 'feed'}
                       aspectRatio={(ad as any).aspect_ratio && (ad as any).aspect_ratio !== 'grid' && (ad as any).aspect_ratio !== 'auto' ? (ad as any).aspect_ratio : (ad.ad_format === 'reel' || ad.ad_format === 'story' ? '9:16' : '16:9')}
-                      posterUrl={getMediaUrl(ad.image_url)}
+                      posterUrl={getMediaUrl(ad.media_gallery[0].thumbnailUrl || ad.image_url)}
                       title={ad.title}
                       isRtl={isRtl}
                       onOpenReels={() => {
@@ -1066,21 +981,80 @@ export const PostFeed: React.FC<PostFeedProps> = ({
                           onOpenReelFeed(ad.id);
                         } else {
                           window.dispatchEvent(new CustomEvent('open-reel-fullscreen', {
-                            detail: { adId: ad.id, url: getMediaUrl(ad.video_url || '') }
+                            detail: { adId: ad.id, url: getMediaUrl(ad.media_gallery?.[0]?.url || '') }
                           }));
                         }
                       }}
                       className={ad.ad_format === 'reel' || ad.ad_format === 'story' ? 'max-h-[520px] mx-auto' : 'rounded-none'}
                     />
                   </div>
-                )}
-              </>
-            )}
+                ) : (
+                  <MultiImageGallery
+                    mediaGallery={ad.media_gallery}
+                    layout={(ad as any).aspect_ratio || 'grid'}
+                    onOpenLightbox={(url, items, index) => onOpenLightbox(url, items, index, ad.title, ad.author_name, ad)}
+                    isRtl={isRtl}
+                    adTitle={ad.title}
+                    adFormat={ad.ad_format}
+                  />
+                )
+              ) : (
+                <>
+                  {/* Legacy Media Image: Aspect ratio based on format or MultiImage Gallery */}
+                  {ad.image_url && !ad.video_url && (() => {
+                    const images = ad.image_url.split(',').map(img => getMediaUrl(img.trim())).filter(Boolean);
+                    return (
+                      <MultiImageGallery
+                        images={images}
+                        layout={(ad as any).aspect_ratio || 'grid'}
+                        onOpenLightbox={(url, items, index) => onOpenLightbox(url, items, index, ad.title, ad.author_name, ad)}
+                        isRtl={isRtl}
+                        adTitle={ad.title}
+                        adFormat={ad.ad_format}
+                      />
+                    );
+                  })()}
+
+                  {/* Legacy Promotional Video / Reels Media Section with Multi-Format Player */}
+                  {ad.video_url && (
+                    <div className="w-full overflow-hidden bg-black">
+                      <MediaFormatPlayer
+                        url={getMediaUrl(ad.video_url)}
+                        resourceId={ad.id}
+                        adFormat={ad.ad_format || 'feed'}
+                        aspectRatio={(ad as any).aspect_ratio && (ad as any).aspect_ratio !== 'grid' && (ad as any).aspect_ratio !== 'auto' ? (ad as any).aspect_ratio : (ad.ad_format === 'reel' || ad.ad_format === 'story' ? '9:16' : '16:9')}
+                        posterUrl={getMediaUrl(ad.image_url)}
+                        title={ad.title}
+                        isRtl={isRtl}
+                        onOpenReels={() => {
+                          try {
+                            document.querySelectorAll('video').forEach(v => {
+                              try {
+                                v.pause();
+                                v.muted = true;
+                              } catch (_) {}
+                            });
+                          } catch (_) {}
+                          if (onOpenReelFeed) {
+                            onOpenReelFeed(ad.id);
+                          } else {
+                            window.dispatchEvent(new CustomEvent('open-reel-fullscreen', {
+                              detail: { adId: ad.id, url: getMediaUrl(ad.video_url || '') }
+                            }));
+                          }
+                        }}
+                        className={ad.ad_format === 'reel' || ad.ad_format === 'story' ? 'max-h-[520px] mx-auto' : 'rounded-none'}
+                      />
+                    </div>
+                  )}
+                </>
+              )}
+            </div>
 
             {/* ========================================================== */}
             {/* UNIFIED COMPACT MERCHANDISING & ACTION ROW */}
             {/* ========================================================== */}
-            <div className="py-1 px-1.5 sm:px-4 bg-[var(--surface-subtle)]/30 flex items-center justify-between border-t border-[var(--border-default)] w-full">
+            <div className="py-1 px-1.5 sm:px-4 bg-[var(--surface-subtle)]/30 flex items-center justify-between border-t border-[var(--border-default)] w-full shrink-0">
               <div className="flex items-center justify-around w-full gap-1 sm:gap-2">
                 {/* 1. Boost / Promote Button */}
                 {onBoostAd ? (
@@ -1187,7 +1161,7 @@ export const PostFeed: React.FC<PostFeedProps> = ({
 
             {/* Stats Row (Likes, Comments, Shares) - Only shown if there is active engagement */}
             {(ad.likes_count > 0 || ad.comments_count > 0 || (ad.shares_count || 0) > 0) && (
-              <div className="flex items-center justify-between px-4 py-2.5 border-t border-[var(--border-default)] text-[13px] text-[var(--text-muted)]">
+              <div className="flex items-center justify-between px-4 py-2.5 border-t border-[var(--border-default)] text-[13px] text-[var(--text-muted)] shrink-0">
                 <div className="flex items-center gap-1">
                   {ad.likes_count > 0 && (
                     <div className="flex items-center gap-1">
@@ -1214,7 +1188,7 @@ export const PostFeed: React.FC<PostFeedProps> = ({
             )}
 
             {/* Action Bar (Like, Comment, Share, Save) */}
-            <div className="flex items-center justify-around w-full py-2 px-1 sm:px-6 border-t border-[var(--border-default)] relative z-20 bg-[var(--surface-card)]">
+            <div className="flex items-center justify-around w-full py-2 px-1 sm:px-6 border-t border-[var(--border-default)] relative z-20 bg-[var(--surface-card)] shrink-0">
                {/* Like Button with Hover Emoji Bar */}
                <div 
                  className="flex-1 flex items-center justify-center shrink-0 relative group"
@@ -1519,7 +1493,7 @@ export const PostFeed: React.FC<PostFeedProps> = ({
                 </motion.div>
               )}
             </AnimatePresence>
-              </motion.article>
+              </article>
             </motion.div>
           );
         })}

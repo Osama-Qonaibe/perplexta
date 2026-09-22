@@ -375,7 +375,7 @@ export const BulletinBoardPage: React.FC = () => {
       }
     }
     const single = secureStorage.getSync('perplexta_user_country');
-    return single && single !== 'all' ? [single] : ['فلسطين'];
+    return single && single !== 'all' ? [single] : [];
   });
   const [selectedCities, setSelectedCities] = useState<string[]>(() => {
     const raw = secureStorage.getSync('perplexta_user_cities');
@@ -1749,6 +1749,29 @@ export const BulletinBoardPage: React.FC = () => {
       }
     } catch (e) {}
   };
+
+  // Silent background geolocation & recommendation matching
+  useEffect(() => {
+    const detectBackgroundLocation = async () => {
+      try {
+        const stored = secureStorage.getSync('perplexta_user_countries');
+        if (!stored) {
+          const res = await fetch('https://ipapi.co/json/').catch(() => null);
+          if (res && res.ok) {
+            const data = await res.json();
+            if (data && data.country_name) {
+              const country = data.country_name;
+              setSelectedCountries([country]);
+              secureStorage.set('perplexta_user_countries', JSON.stringify([country]));
+            }
+          }
+        }
+      } catch (e) {
+        // Fallback silently
+      }
+    };
+    detectBackgroundLocation();
+  }, []);
 
   useEffect(() => {
     sessionStorage.removeItem('perplexta_bulletin_scroll_y');
@@ -3670,42 +3693,7 @@ export const BulletinBoardPage: React.FC = () => {
               )}
             </form>
 
-            {/* Location Filter Trigger (Universal Direct Pattern) */}
-            {activeTab === 'board' && (
-              <button
-                ref={headerLocationButtonRef}
-                type="button"
-                onClick={() => setIsLocationFlyoutOpen(true)}
-                className={`group/loc-btn relative flex h-8 px-2.5 rounded-shape-sm border transition-all duration-150 items-center justify-center shrink-0 active:scale-95 cursor-pointer shadow-2xs gap-1.5 ${
-                  selectedCities.length > 0 || selectedCountries.length > 0
-                    ? 'border-accent/40 bg-accent/15 text-accent font-bold'
-                    : 'border-[var(--border-default)] hover:border-[var(--border-accent)] bg-transparent hover:bg-[var(--surface-subtle)] text-[var(--text-secondary)] hover:text-[var(--text-primary)]'
-                }`}
-                title={
-                  selectedCities.length === 0 && selectedCountries.length === 0
-                    ? (isRtl ? 'البحث عن موقع (عرض مباشر)' : 'Search by Location')
-                    : (isRtl
-                        ? `الموقع المحدد: ${selectedCities[0] || selectedCountries[0]}`
-                        : `Selected Location: ${selectedCities[0] || selectedCountries[0]}`)
-                }
-              >
-                <MapPin
-                  size={14}
-                  className={`transition-transform duration-150 group-hover/loc-btn:scale-110 shrink-0 ${
-                    selectedCities.length > 0 || selectedCountries.length > 0 ? 'text-accent' : 'text-[var(--text-muted)] group-hover/loc-btn:text-[var(--text-primary)]'
-                  }`}
-                />
-                {selectedCities.length > 0 || selectedCountries.length > 0 ? (
-                  <span className="text-[11px] font-bold max-w-[90px] sm:max-w-[130px] truncate">
-                    {selectedCities[0] || selectedCountries[0]}
-                  </span>
-                ) : (
-                  <span className="text-[11px] font-medium hidden md:inline-block text-[var(--text-muted)] group-hover/loc-btn:text-[var(--text-primary)]">
-                    {isRtl ? 'الموقع' : 'Location'}
-                  </span>
-                )}
-              </button>
-            )}
+
           </div>
 
           {/* Right Controls */}
