@@ -100,7 +100,7 @@ export const UnifiedDropdown: React.FC<UnifiedDropdownProps> = ({
             onMouseDown={(e) => e.stopPropagation()}
             onTouchStart={(e) => e.stopPropagation()}
             className={`
-              absolute z-50 rounded-[var(--radius-md)]
+              absolute z-50 rounded-shape-md
               border border-[var(--border-default)]
               bg-[var(--surface-card)] text-[var(--text-primary)]
               backdrop-blur-xl shadow-2xl ring-1 ring-black/5 dark:ring-white/10

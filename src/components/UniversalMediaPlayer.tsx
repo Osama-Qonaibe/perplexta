@@ -436,19 +436,20 @@ export const UniversalMediaPlayer: React.FC<UniversalMediaPlayerProps> = ({
       const ratioNum = naturalWidth / naturalHeight;
       let calculatedRatio: MediaAspectRatio = '16:9';
 
-      if (ratioNum >= 2.0) {
+      if (ratioNum >= 1.9) {
         calculatedRatio = '21:9';
-      } else if (ratioNum >= 1.5) {
+      } else if (ratioNum > 1.15) {
         calculatedRatio = '16:9';
-      } else if (ratioNum >= 0.95 && ratioNum <= 1.05) {
+      } else if (ratioNum >= 0.92) {
         calculatedRatio = '1:1';
-      } else if (ratioNum >= 0.75 && ratioNum <= 0.85) {
+      } else if (ratioNum > 0.68) {
         calculatedRatio = '4:5';
-      } else if (ratioNum <= 0.65) {
+      } else {
         calculatedRatio = '9:16';
       }
 
-      if (aspectRatio === 'auto') {
+      // If aspectRatio is auto, or if default 16:9 was passed but the video is actually vertical or square, adapt dynamically
+      if (!aspectRatio || aspectRatio === 'auto' || (aspectRatio === '16:9' && (calculatedRatio === '9:16' || calculatedRatio === '4:5' || calculatedRatio === '1:1'))) {
         setDetectedRatio(calculatedRatio);
       }
 

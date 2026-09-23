@@ -158,7 +158,7 @@ export const ImageUploadDropzone: React.FC<ImageUploadDropzoneProps> = ({
         ) : (
           /* Empty Dropzone Placeholder */
           <div className="p-4 flex flex-col items-center justify-center text-center gap-1">
-            <div className="w-9 h-9 rounded-full bg-accent/10 text-accent flex items-center justify-center">
+            <div className="w-9 h-9 rounded-shape-sm bg-accent/10 text-accent flex items-center justify-center">
               <Upload size={18} />
             </div>
             <div className="text-xs font-bold text-[var(--text-primary)]">

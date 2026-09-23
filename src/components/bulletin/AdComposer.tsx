@@ -23,7 +23,7 @@ export const AdComposer: React.FC<AdComposerProps> = ({
   openReelUploadModal,
 }) => {
   return (
-    <div className="p-2.5 sm:p-4 bg-[var(--surface-card)] rounded-[var(--radius-md)] border border-[var(--border-default)] shadow-xs flex flex-col gap-2 sm:gap-3 w-full">
+    <div className="p-2.5 sm:p-4 bg-[var(--surface-card)] rounded-shape-md border border-[var(--border-default)] shadow-xs flex flex-col gap-2 sm:gap-3 w-full">
       <div className="flex items-center gap-2 sm:gap-2.5 w-full">
         <BulletinAvatar
           src={user?.avatar}

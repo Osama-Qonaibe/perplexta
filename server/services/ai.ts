@@ -1089,10 +1089,25 @@ export async function callAIProvider(
       const errJson = await clonedRes.json();
       const errorDetail = JSON.stringify(errJson);
       
-      const isQuotaOrOverloaded = res.status === 429 || res.status === 503 || errorDetail.includes('RESOURCE_EXHAUSTED') || errorDetail.includes('quota') || errorDetail.includes('overloaded');
+      const isQuotaOrOverloaded = res.status === 429 || res.status === 503 || errorDetail.includes('RESOURCE_EXHAUSTED') || errorDetail.includes('quota') || errorDetail.includes('overloaded') || errorDetail.includes('high demand') || errorDetail.includes('UNAVAILABLE');
       
       if (isQuotaOrOverloaded) {
-        console.warn(`[AI Service] Rate limit / Quota exhausted / Overloaded encountered for model ${cleanModel}. Deferring to Orchestrator dynamic database fallback chain.`);
+        console.warn(`[AI Service] Rate limit / High demand (${res.status}) encountered for model ${cleanModel}. Initiating fast retry for temporary demand spikes...`);
+        for (let attempt = 1; attempt <= 2; attempt++) {
+          const delayMs = attempt * 850;
+          await new Promise(resolve => setTimeout(resolve, delayMs));
+          try {
+            const retryRes = await fetch(url, { method: 'POST', headers, body: JSON.stringify(body) });
+            if (retryRes.ok) {
+              console.log(`[AI Service] Request recovered successfully from temporary spike on attempt ${attempt} for ${cleanModel}.`);
+              return handleResponse(retryRes);
+            }
+            res = retryRes;
+          } catch (retryErr) {
+            console.warn(`[AI Service] Fast retry attempt ${attempt} network error:`, retryErr);
+          }
+        }
+        console.warn(`[AI Service] Model ${cleanModel} still unavailable after retries. Deferring to Orchestrator dynamic database fallback chain.`);
       }
 
       const is404 = res.status === 404 || errorDetail.includes('NOT_FOUND') || errorDetail.includes('is not found') || errorDetail.includes('not found');

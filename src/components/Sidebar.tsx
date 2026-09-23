@@ -526,9 +526,9 @@ export const Sidebar: React.FC<{ activeLanguage?: string }> = ({ activeLanguage 
                       const active = isActive;
                       return (
                         <div 
-                          className={`${(item as any).className || 'flex'} items-center transition-all duration-fast w-full h-[34px] min-h-[34px] overflow-hidden flex-shrink-0 group relative rounded-shape-sm border cursor-pointer select-none ${
+                          className={`${(item as any).className || 'flex'} items-center transition-all duration-fast w-full h-[34px] min-h-[34px] overflow-hidden flex-shrink-0 group relative rounded-shape-sm cursor-pointer select-none ${
                             active 
-                              ? 'bg-[var(--bg-accent-muted)] text-[var(--fg-accent)] font-semibold border-[var(--border-accent)]/30'
+                              ? HOVER_STYLES.sidebarItemActive
                               : HOVER_STYLES.sidebarItem
                           }`}
                           style={{ paddingInlineStart: '8px', paddingInlineEnd: '8px' }}
@@ -565,7 +565,7 @@ export const Sidebar: React.FC<{ activeLanguage?: string }> = ({ activeLanguage 
                   <div className="my-1 pt-1 pb-0.5 border-t border-[var(--border-default)] transition-theme">
                     <button 
                       onClick={handleNewChat}
-                      className="flex items-center transition-all duration-fast w-full h-[34px] min-h-[34px] overflow-hidden flex-shrink-0 group cursor-pointer border border-transparent rounded-shape-sm text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--surface-subtle)]/20 select-none"
+                      className="flex items-center transition-all duration-fast w-full h-[34px] min-h-[34px] overflow-hidden flex-shrink-0 group cursor-pointer border border-transparent rounded-shape-sm text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--surface-subtle)]/25 active:scale-98 select-none"
                       style={{ paddingInlineStart: '8px', paddingInlineEnd: '8px' }}
                     >
                       <div className={`w-6 h-6 flex-shrink-0 flex items-center justify-center transition-colors duration-fast text-[var(--text-muted)] group-hover:text-[var(--text-primary)] ${isSidebarOpen ? 'my-auto' : '-translate-y-[0.5px]'}`}>
@@ -630,20 +630,11 @@ export const Sidebar: React.FC<{ activeLanguage?: string }> = ({ activeLanguage 
                               const isActive = activeChatId?.toString() === chat.id?.toString();
                               const isMenuOpen = activeOptionsMenuChatId === chat.id;
                               return (
-                                <motion.div
+                                <div
                                   key={`sidebar-chat-${chat.id}`}
-                                  animate={streamingChatId === chat.id ? {
-                                    backgroundColor: ["rgba(9,105,218,0)", "rgba(9,105,218,0.06)", "rgba(9,105,218,0)"],
-                                    borderColor: ["rgba(9,105,218,0)", "rgba(9,105,218,0.18)", "rgba(9,105,218,0)"]
-                                  } : {}}
-                                  transition={{
-                                    duration: 1.5,
-                                    repeat: Infinity,
-                                    ease: "easeInOut"
-                                  }}
-                                  className={`flex items-center w-full h-[34px] min-h-[34px] ${isMenuOpen ? 'overflow-visible z-30' : 'overflow-hidden'} flex-shrink-0 transition-all duration-fast group relative border rounded-shape-sm cursor-pointer select-none ${
+                                  className={`flex items-center w-full h-[34px] min-h-[34px] ${isMenuOpen ? 'overflow-visible z-30' : 'overflow-hidden'} flex-shrink-0 transition-all duration-fast group relative rounded-shape-sm cursor-pointer select-none ${
                                     isActive 
-                                      ? 'bg-[var(--bg-accent-muted)] text-[var(--fg-accent)] font-semibold border-[var(--border-accent)]/30' 
+                                      ? HOVER_STYLES.sidebarItemActive 
                                       : HOVER_STYLES.sidebarItem
                                   }`}
                                   style={{ paddingInlineStart: '8px', paddingInlineEnd: '6px' }}
@@ -659,7 +650,7 @@ export const Sidebar: React.FC<{ activeLanguage?: string }> = ({ activeLanguage 
                                       isActive 
                                         ? 'text-[var(--fg-accent)]' 
                                         : streamingChatId === chat.id 
-                                          ? 'text-[var(--fg-accent)]' 
+                                          ? 'text-[var(--fg-accent)] animate-pulse' 
                                           : 'text-[var(--text-muted)] group-hover:text-[var(--text-primary)]'
                                     }`}>
                                       <MessageSquare size={15} />
@@ -698,10 +689,10 @@ export const Sidebar: React.FC<{ activeLanguage?: string }> = ({ activeLanguage 
                                               setOptionsMenuTarget({ chatId: chat.id, rect });
                                             }
                                           }}
-                                          className={`w-6 h-6 flex items-center justify-center rounded-[var(--radius-xs)] border transition-all duration-fast cursor-pointer ${
+                                          className={`w-6 h-6 flex items-center justify-center rounded-shape-xs transition-all duration-fast cursor-pointer active:scale-95 ${
                                             optionsMenuTarget?.chatId === chat.id 
-                                              ? 'border-[var(--border-default)] bg-[var(--surface-card)] text-[var(--text-primary)]' 
-                                              : 'border-transparent text-[var(--text-muted)] hover:text-[var(--text-primary)] hover:bg-[var(--surface-subtle)]/30'
+                                              ? 'text-[var(--fg-accent)]' 
+                                              : 'text-[var(--text-muted)] group-hover:text-[var(--text-primary)] hover:text-[var(--fg-accent)]'
                                           }`}
                                           title={language === 'ar' ? 'خيارات' : 'Options'}
                                         >
@@ -710,7 +701,7 @@ export const Sidebar: React.FC<{ activeLanguage?: string }> = ({ activeLanguage 
                                       </motion.div>
                                     )}
                                   </AnimatePresence>
-                                </motion.div>
+                                </div>
                               );
                             })}
                           </React.Fragment>
@@ -718,116 +709,116 @@ export const Sidebar: React.FC<{ activeLanguage?: string }> = ({ activeLanguage 
                       </div>
                     ) : null}
                   </div>
-                </div>
 
-                {/* Context Summary Box in Sidebar */}
-                {isSidebarOpen && activeChatId && (
-                  <div className="mx-1.5 mb-1.5 p-2 rounded-shape-sm border border-[var(--border-default)] bg-[var(--surface-subtle)]/50 flex flex-col transition-all duration-fast">
-                    <div className="flex items-center justify-between cursor-pointer" onClick={() => setIsContextCollapsed(!isContextCollapsed)}>
-                      <div className="flex items-center gap-1 min-w-0">
-                        <BrainCircuit size={isMobile ? 12 : 14} className="text-[var(--accent)] flex-shrink-0" />
-                        <span className={`${isMobile ? 'text-[9.5px]' : 'text-[11px]'} font-bold uppercase tracking-wider text-[var(--text-muted)] truncate font-sans`}>
-                          {language === 'ar' ? 'ملخص السياق النشط' : 'Context Summary'}
-                        </span>
-                      </div>
-                      <div className="flex items-center gap-1" onClick={(e) => e.stopPropagation()}>
-                        {!isEditingContext && (
-                          <button
-                            onClick={() => setIsEditingContext(true)}
-                            className="w-5 h-5 flex items-center justify-center rounded-[var(--radius-xs)] text-[var(--text-muted)] hover:text-[var(--accent)] hover:bg-[var(--bg-accent-muted)] transition-all duration-fast"
-                            title={language === 'ar' ? 'تعديل المعرفة' : 'Edit Context'}
-                          >
-                            <Edit2 size={11} />
-                          </button>
-                        )}
-                        <button
-                          onClick={() => setIsContextCollapsed(!isContextCollapsed)}
-                          className={`w-5 h-5 flex items-center justify-center rounded-[var(--radius-xs)] text-[var(--text-muted)] hover:text-[var(--accent)] hover:bg-[var(--bg-accent-muted)] transition-all duration-fast transform ${isContextCollapsed ? 'rotate-180' : ''}`}
-                        >
-                          <ChevronLeft size={12} className="rotate-270" style={{ transform: isContextCollapsed ? 'rotate(90deg)' : 'rotate(-90deg)' }} />
-                        </button>
-                      </div>
-                    </div>
-
-                    <AnimatePresence initial={false}>
-                      {!isContextCollapsed && (
-                        <motion.div
-                          initial={{ opacity: 0, height: 0 }}
-                          animate={{ opacity: 1, height: 'auto' }}
-                          exit={{ opacity: 0, height: 0 }}
-                          transition={{ duration: 0.25, ease: [0.2, 0, 0, 1] }}
-                          className="overflow-hidden"
-                        >
-                          {isEditingContext ? (
-                            <div className="flex flex-col gap-2 mt-2">
-                              <textarea
-                                value={editedContext}
-                                onChange={(e) => setEditedContext(e.target.value)}
-                                className="w-full h-20 text-[10.5px] font-sans p-2 rounded-[var(--radius-xs)] bg-[var(--surface-inset)] text-[var(--text-primary)] border border-[var(--border-default)] focus:border-[var(--border-focus)] focus:ring-1 focus:ring-[var(--focus-outline)]/30 outline-none resize-none transition-all duration-fast"
-                                placeholder={language === 'ar' ? 'اكتب سياق المعرفة هنا...' : 'Type active context summary here...'}
-                                disabled={isSavingContext}
-                                autoFocus
-                              />
-                              <div className="flex items-center justify-end gap-1">
-                                <button
-                                  onClick={() => {
-                                    setIsEditingContext(false);
-                                    setEditedContext(currentChat?.context_summary || '');
-                                  }}
-                                  disabled={isSavingContext}
-                                  className="text-[10px] text-[var(--text-muted)] hover:text-[var(--text-primary)] hover:bg-[var(--surface-subtle)] transition-all duration-fast rounded-[var(--radius-xs)] px-2 py-1 flex items-center gap-1 font-semibold"
-                                >
-                                  <X size={10} />
-                                  {language === 'ar' ? 'إلغاء' : 'Cancel'}
-                                </button>
-                                <button
-                                  onClick={handleSaveContext}
-                                  disabled={isSavingContext}
-                                  className="text-[10px] text-[var(--fg-on-emphasis)] bg-[var(--accent)] hover:opacity-90 transition-all duration-fast rounded-[var(--radius-xs)] px-2.5 py-1 flex items-center gap-1 font-bold shadow-xs"
-                                >
-                                  {isSavingContext ? (
-                                    <Loader2 size={10} className="animate-spin" />
-                                  ) : (
-                                    <Check size={10} />
-                                  )}
-                                  {language === 'ar' ? 'حفظ' : 'Save'}
-                                </button>
-                              </div>
-                            </div>
-                          ) : (
-                            <div className="flex flex-col gap-1 mt-1.5">
-                              <div className="text-[10px] text-[var(--text-secondary)] font-sans leading-relaxed tracking-wide select-text whitespace-pre-wrap max-h-[120px] overflow-y-auto custom-scrollbar p-2 bg-[var(--surface-inset)] border border-[var(--border-default)] rounded-[var(--radius-xs)]">
-                                {editedContext ? (
-                                  editedContext
-                                ) : (
-                                  <span className="text-[var(--text-muted)] italic">
-                                    {language === 'ar'
-                                      ? 'لم يتم إنشاء ملخص سياق بعد لهذه المحادثة. يبدأ النموذج بالتلخيص قريباً.'
-                                      : 'No active context summary generated yet for this chat.'}
-                                  </span>
-                                )}
-                              </div>
-                              {!editedContext && (
-                                <button
-                                  onClick={() => setIsEditingContext(true)}
-                                  className="self-start text-[8.5px] font-bold text-[var(--accent)] hover:opacity-80 transition-all duration-fast flex items-center gap-1 mt-0.5"
-                                >
-                                  <Plus size={9} />
-                                  {language === 'ar' ? 'إضافة ملخص يدوي' : 'Add summary manually'}
-                                </button>
-                              )}
-                              <span className="text-[8.5px] text-[var(--text-muted)] leading-snug">
-                                {language === 'ar'
-                                  ? '💡 يمثل هذا السياق النشط الذي يتم تضمينه في ذاكرة الذكاء الاصطناعي لفهم محتوى المحادثة الحالي.'
-                                  : '💡 This represents the active context synthesized for the AI model to track key objectives.'}
-                              </span>
-                            </div>
+                  {/* Context Summary Box in Sidebar - Seamless single scroll layer flow */}
+                  {isSidebarOpen && activeChatId && (
+                    <div className="mt-3 p-2 rounded-shape-sm border border-[var(--border-default)] bg-[var(--surface-subtle)]/40 flex flex-col transition-all duration-fast">
+                      <div className="flex items-center justify-between cursor-pointer" onClick={() => setIsContextCollapsed(!isContextCollapsed)}>
+                        <div className="flex items-center gap-1 min-w-0">
+                          <BrainCircuit size={isMobile ? 12 : 14} className="text-[var(--accent)] flex-shrink-0" />
+                          <span className={`${isMobile ? 'text-[9.5px]' : 'text-[11px]'} font-bold uppercase tracking-wider text-[var(--text-muted)] truncate font-sans`}>
+                            {language === 'ar' ? 'ملخص السياق النشط' : 'Context Summary'}
+                          </span>
+                        </div>
+                        <div className="flex items-center gap-1" onClick={(e) => e.stopPropagation()}>
+                          {!isEditingContext && (
+                            <button
+                              onClick={() => setIsEditingContext(true)}
+                              className="w-5 h-5 flex items-center justify-center rounded-shape-xs text-[var(--text-muted)] hover:text-[var(--accent)] hover:bg-[var(--bg-accent-muted)] transition-all duration-fast active:scale-95 cursor-pointer"
+                              title={language === 'ar' ? 'تعديل المعرفة' : 'Edit Context'}
+                            >
+                              <Edit2 size={11} />
+                            </button>
                           )}
-                        </motion.div>
-                      )}
-                    </AnimatePresence>
-                  </div>
-                )}
+                          <button
+                            onClick={() => setIsContextCollapsed(!isContextCollapsed)}
+                            className={`w-5 h-5 flex items-center justify-center rounded-shape-xs text-[var(--text-muted)] hover:text-[var(--accent)] hover:bg-[var(--bg-accent-muted)] transition-all duration-fast active:scale-95 cursor-pointer transform ${isContextCollapsed ? 'rotate-180' : ''}`}
+                          >
+                            <ChevronLeft size={12} className="rotate-270" style={{ transform: isContextCollapsed ? 'rotate(90deg)' : 'rotate(-90deg)' }} />
+                          </button>
+                        </div>
+                      </div>
+
+                      <AnimatePresence initial={false}>
+                        {!isContextCollapsed && (
+                          <motion.div
+                            initial={{ opacity: 0, height: 0 }}
+                            animate={{ opacity: 1, height: 'auto' }}
+                            exit={{ opacity: 0, height: 0 }}
+                            transition={{ duration: 0.25, ease: [0.2, 0, 0, 1] }}
+                            className="overflow-hidden"
+                          >
+                            {isEditingContext ? (
+                              <div className="flex flex-col gap-2 mt-2">
+                                <textarea
+                                  value={editedContext}
+                                  onChange={(e) => setEditedContext(e.target.value)}
+                                  className="w-full h-20 text-[10.5px] font-sans p-2 rounded-shape-xs bg-[var(--surface-inset)] text-[var(--text-primary)] border border-[var(--border-default)] focus:border-[var(--border-focus)] focus:ring-1 focus:ring-[var(--focus-outline)]/30 outline-none resize-none transition-all duration-fast"
+                                  placeholder={language === 'ar' ? 'اكتب سياق المعرفة هنا...' : 'Type active context summary here...'}
+                                  disabled={isSavingContext}
+                                  autoFocus
+                                />
+                                <div className="flex items-center justify-end gap-1">
+                                  <button
+                                    onClick={() => {
+                                      setIsEditingContext(false);
+                                      setEditedContext(currentChat?.context_summary || '');
+                                    }}
+                                    disabled={isSavingContext}
+                                    className="text-[10px] text-[var(--text-muted)] hover:text-[var(--text-primary)] hover:bg-[var(--surface-subtle)] transition-all duration-fast rounded-shape-xs px-2 py-1 flex items-center gap-1 font-semibold active:scale-95 cursor-pointer"
+                                  >
+                                    <X size={10} />
+                                    {language === 'ar' ? 'إلغاء' : 'Cancel'}
+                                  </button>
+                                  <button
+                                    onClick={handleSaveContext}
+                                    disabled={isSavingContext}
+                                    className="text-[10px] text-[var(--fg-on-emphasis)] bg-[var(--accent)] hover:opacity-90 transition-all duration-fast rounded-shape-xs px-2.5 py-1 flex items-center gap-1 font-bold shadow-xs active:scale-95 cursor-pointer"
+                                  >
+                                    {isSavingContext ? (
+                                      <Loader2 size={10} className="animate-spin" />
+                                    ) : (
+                                      <Check size={10} />
+                                    )}
+                                    {language === 'ar' ? 'حفظ' : 'Save'}
+                                  </button>
+                                </div>
+                              </div>
+                            ) : (
+                              <div className="flex flex-col gap-1 mt-1.5">
+                                <div className="text-[10px] text-[var(--text-secondary)] font-sans leading-relaxed tracking-wide select-text whitespace-pre-wrap p-2 bg-[var(--surface-inset)] border border-[var(--border-default)] rounded-shape-xs">
+                                  {editedContext ? (
+                                    editedContext
+                                  ) : (
+                                    <span className="text-[var(--text-muted)] italic">
+                                      {language === 'ar'
+                                        ? 'لم يتم إنشاء ملخص سياق بعد لهذه المحادثة. يبدأ النموذج بالتلخيص قريباً.'
+                                        : 'No active context summary generated yet for this chat.'}
+                                    </span>
+                                  )}
+                                </div>
+                                {!editedContext && (
+                                  <button
+                                    onClick={() => setIsEditingContext(true)}
+                                    className="self-start text-[8.5px] font-bold text-[var(--accent)] hover:opacity-80 transition-all duration-fast flex items-center gap-1 mt-0.5"
+                                  >
+                                    <Plus size={9} />
+                                    {language === 'ar' ? 'إضافة ملخص يدوي' : 'Add summary manually'}
+                                  </button>
+                                )}
+                                <span className="text-[8.5px] text-[var(--text-muted)] leading-snug">
+                                  {language === 'ar'
+                                    ? '💡 يمثل هذا السياق النشط الذي يتم تضمينه في ذاكرة الذكاء الاصطناعي لفهم محتوى المحادثة الحالي.'
+                                    : '💡 This represents the active context synthesized for the AI model to track key objectives.'}
+                                </span>
+                              </div>
+                            )}
+                          </motion.div>
+                        )}
+                      </AnimatePresence>
+                    </div>
+                  )}
+                </div>
               </div>
             )}
 
@@ -839,17 +830,17 @@ export const Sidebar: React.FC<{ activeLanguage?: string }> = ({ activeLanguage 
                     const rect = e.currentTarget.getBoundingClientRect();
                     setProfileMenuTarget(profileMenuTarget ? null : { rect });
                   }}
-                  className={`flex items-center group cursor-pointer w-full h-[36px] overflow-hidden flex-shrink-0 rounded-shape-sm border transition-all duration-fast select-none ${
+                  className={`flex items-center group cursor-pointer w-full h-[36px] overflow-hidden flex-shrink-0 rounded-shape-sm transition-all duration-fast select-none active:scale-98 ${
                     profileMenuTarget
-                      ? 'bg-[var(--surface-card)] text-[var(--text-primary)] border-[var(--border-default)]' 
-                      : 'border-transparent text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--surface-subtle)]/20'
+                      ? HOVER_STYLES.sidebarItemActive
+                      : HOVER_STYLES.sidebarItem
                   }`}
                   style={{ paddingInlineStart: '8px', paddingInlineEnd: '8px' }}
                 >
                   <div className="flex items-center h-full overflow-hidden w-full relative text-[var(--text-primary)]">
                     <div className="w-7 h-[34px] flex-shrink-0 flex items-center justify-center relative">
                       <div 
-                        className="w-7 h-7 rounded-shape-xs bg-[var(--surface-subtle)] flex items-center justify-center flex-shrink-0 overflow-hidden border transition-all duration-fast relative z-10 group-hover:border-[var(--border-accent)]"
+                        className="w-7 h-7 rounded-shape-xs flex items-center justify-center flex-shrink-0 overflow-hidden border transition-colors duration-fast relative z-10"
                         style={{ 
                           borderColor: user.subscription?.plan_color || 'var(--border-default)'
                         }}
@@ -890,7 +881,7 @@ export const Sidebar: React.FC<{ activeLanguage?: string }> = ({ activeLanguage 
                 </div>
               ) : (
                 <div 
-                  className="flex items-center group cursor-pointer w-full h-[36px] overflow-hidden flex-shrink-0 transition-all duration-fast rounded-shape-sm border border-transparent text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--surface-subtle)]/20 select-none"
+                  className={`flex items-center group cursor-pointer w-full h-[36px] overflow-hidden flex-shrink-0 transition-all duration-fast rounded-shape-sm select-none active:scale-98 ${HOVER_STYLES.sidebarItem}`}
                   style={{ paddingInlineStart: '8px', paddingInlineEnd: '8px' }}
                   onClick={() => {
                     setIsAuthModalOpen(true);
@@ -900,7 +891,7 @@ export const Sidebar: React.FC<{ activeLanguage?: string }> = ({ activeLanguage 
                   }}
                 >
                   <div className="w-7 h-[34px] flex-shrink-0 flex items-center justify-center relative">
-                    <div className="w-7 h-7 rounded-shape-xs bg-[var(--surface-subtle)] flex items-center justify-center flex-shrink-0 relative z-10 transition-colors duration-fast border border-[var(--border-default)] group-hover:border-[var(--border-accent)]">
+                    <div className="w-7 h-7 rounded-shape-xs flex items-center justify-center flex-shrink-0 relative z-10 transition-colors duration-fast border border-[var(--border-default)]">
                       <User size={15} className="text-[var(--text-muted)] group-hover:text-[var(--text-primary)] transition-colors duration-fast" />
                     </div>
                   </div>
@@ -920,34 +911,34 @@ export const Sidebar: React.FC<{ activeLanguage?: string }> = ({ activeLanguage 
                 </div>
               )}
               
-              <div className="flex flex-col w-full h-3 px-1.5 mt-0.5 overflow-hidden flex-shrink-0 relative">
+              <div className="flex flex-col w-full h-auto px-1.5 py-1 overflow-hidden flex-shrink-0 relative">
                 <AnimatePresence initial={false}>
                   {isSidebarOpen && (
                     <motion.div 
                       key="legal-footer"
                       {...sidebarTextMotion}
-                      className="flex items-center justify-between opacity-50 hover:opacity-100 transition-all duration-fast pointer-events-auto w-full overflow-hidden"
+                      className="flex items-center justify-between opacity-60 hover:opacity-100 transition-all duration-fast pointer-events-auto w-full overflow-hidden"
                     >
-                      <NavLink to="/terms" className="text-[6.5px] font-bold text-[var(--text-muted)] hover:text-[var(--accent)] transition-all duration-fast whitespace-nowrap">
+                      <NavLink to="/terms" className="text-[10px] font-semibold text-[var(--text-muted)] hover:text-[var(--accent)] transition-all duration-fast whitespace-nowrap">
                         {t('termsOfUse')}
                       </NavLink>
-                      <span className="w-0.5 h-0.5 rounded-full bg-[var(--border-default)] flex-shrink-0" />
-                      <NavLink to="/privacy" className="text-[6.5px] font-bold text-[var(--text-muted)] hover:text-[var(--accent)] transition-all duration-fast whitespace-nowrap">
+                      <span className="w-1 h-1 rounded-shape-full bg-[var(--border-default)] flex-shrink-0" />
+                      <NavLink to="/privacy" className="text-[10px] font-semibold text-[var(--text-muted)] hover:text-[var(--accent)] transition-all duration-fast whitespace-nowrap">
                         {t('privacyPolicy')}
                       </NavLink>
-                      <span className="w-0.5 h-0.5 rounded-full bg-[var(--border-default)] flex-shrink-0" />
-                      <NavLink to="/about" className="text-[6.5px] font-bold text-[var(--text-muted)] hover:text-[var(--accent)] transition-all duration-fast whitespace-nowrap">
+                      <span className="w-1 h-1 rounded-shape-full bg-[var(--border-default)] flex-shrink-0" />
+                      <NavLink to="/about" className="text-[10px] font-semibold text-[var(--text-muted)] hover:text-[var(--accent)] transition-all duration-fast whitespace-nowrap">
                         {language === 'ar' ? 'عن المنصة' : 'About'}
                       </NavLink>
-                      <span className="hidden md:inline-block w-0.5 h-0.5 rounded-full bg-[var(--border-default)] flex-shrink-0" />
+                      <span className="hidden md:inline-block w-1 h-1 rounded-shape-full bg-[var(--border-default)] flex-shrink-0" />
                       <a
                         href="/docs/legal"
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="hidden md:inline-block text-[6.5px] font-bold text-[var(--text-muted)] hover:text-[var(--accent)] transition-all duration-fast whitespace-nowrap"
+                        className="hidden md:inline-block text-[10px] font-semibold text-[var(--text-muted)] hover:text-[var(--accent)] transition-all duration-fast whitespace-nowrap"
                         title={language === 'ar' ? 'الوثائق القانونية' : 'Legal Docs'}
                       >
-                        {language === 'ar' ? 'الوثائق القانونية' : 'Legal Docs'}
+                        {language === 'ar' ? 'الوثائق' : 'Docs'}
                       </a>
                     </motion.div>
                   )}
@@ -984,7 +975,7 @@ export const Sidebar: React.FC<{ activeLanguage?: string }> = ({ activeLanguage 
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.95, y: 15 }}
               transition={{ duration: 0.18, ease: [0.16, 1, 0.3, 1] }}
-              className="relative max-w-sm w-full p-6 rounded-[var(--radius-md)] border border-[var(--border-default)] bg-[var(--surface-card)] text-[var(--text-primary)] shadow-2xl z-10"
+              className="relative max-w-sm w-full p-6 rounded-shape-md border border-[var(--border-default)] bg-[var(--surface-card)] text-[var(--text-primary)] shadow-2xl z-10"
             >
               <h3 className="text-base font-bold tracking-tight font-sans text-start text-[var(--text-primary)]">
                 {language === 'ar' ? 'حذف الجلسة؟' : 'Delete session?'}
@@ -994,7 +985,7 @@ export const Sidebar: React.FC<{ activeLanguage?: string }> = ({ activeLanguage 
                 {language === 'ar' ? 'سيؤدي هذا إلى حذف الجلسة نهائيًا:' : 'This will permanently delete the session:'}
               </p>
               
-              <div className="mt-3 p-3 rounded-[var(--radius-sm)] text-xs font-bold leading-relaxed break-all text-start border border-[var(--border-default)] bg-[var(--surface-inset)] text-[var(--text-primary)]">
+              <div className="mt-3 p-3 rounded-shape-sm text-xs font-bold leading-relaxed break-all text-start border border-[var(--border-default)] bg-[var(--surface-inset)] text-[var(--text-primary)]">
                 {deletingChatTitle}
               </div>
               
@@ -1002,7 +993,7 @@ export const Sidebar: React.FC<{ activeLanguage?: string }> = ({ activeLanguage 
                 <button
                   type="button"
                   onClick={() => setDeletingChatConfirmId(null)}
-                  className="px-4 py-2 text-xs font-semibold rounded-[var(--radius-sm)] font-sans transition-all duration-fast text-[var(--text-muted)] hover:text-[var(--text-primary)] hover:bg-[var(--surface-subtle)] cursor-pointer"
+                  className="px-4 py-2 text-xs font-semibold rounded-shape-sm font-sans transition-all duration-fast text-[var(--text-muted)] hover:text-[var(--text-primary)] hover:bg-[var(--surface-subtle)] active:scale-95 cursor-pointer border border-[var(--border-default)]"
                 >
                   {language === 'ar' ? 'إلغاء' : 'Cancel'}
                 </button>
@@ -1013,7 +1004,7 @@ export const Sidebar: React.FC<{ activeLanguage?: string }> = ({ activeLanguage 
                     await handleDelete(e, deletingChatConfirmId);
                     setDeletingChatConfirmId(null);
                   }}
-                  className="px-4 py-2 text-xs font-bold bg-[var(--fg-danger)] hover:opacity-90 text-white rounded-[var(--radius-sm)] font-sans transition-all duration-fast shadow-xs cursor-pointer"
+                  className="px-4 py-2 text-xs font-bold bg-[var(--fg-danger)] hover:opacity-90 text-white rounded-shape-sm font-sans transition-all duration-fast shadow-xs active:scale-95 cursor-pointer"
                 >
                   {language === 'ar' ? 'حذف' : 'Delete'}
                 </button>
@@ -1041,7 +1032,7 @@ export const Sidebar: React.FC<{ activeLanguage?: string }> = ({ activeLanguage 
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.95, y: 15 }}
               transition={{ duration: 0.18, ease: [0.16, 1, 0.3, 1] }}
-              className="relative max-w-sm w-full p-6 rounded-[var(--radius-md)] border border-[var(--border-default)] bg-[var(--surface-card)] text-[var(--text-primary)] shadow-2xl z-10"
+              className="relative max-w-sm w-full p-6 rounded-shape-md border border-[var(--border-default)] bg-[var(--surface-card)] text-[var(--text-primary)] shadow-2xl z-10"
             >
               <h3 className="text-base font-bold tracking-tight font-sans text-start text-[var(--text-primary)]">
                 {language === 'ar' ? 'إعادة تسمية الجلسة؟' : 'Rename session?'}
@@ -1062,7 +1053,7 @@ export const Sidebar: React.FC<{ activeLanguage?: string }> = ({ activeLanguage 
                     }
                     if (e.key === 'Escape') setEditingChatId(null);
                   }}
-                  className="w-full px-3 py-2 text-xs font-semibold leading-relaxed text-start border border-[var(--border-default)] rounded-[var(--radius-sm)] bg-[var(--surface-inset)] text-[var(--text-primary)] focus:border-[var(--border-focus)] focus:ring-1 focus:ring-[var(--focus-outline)]/30 outline-none transition-all duration-fast"
+                  className="w-full px-3 py-2 text-xs font-semibold leading-relaxed text-start border border-[var(--border-default)] rounded-shape-sm bg-[var(--surface-inset)] text-[var(--text-primary)] focus:border-[var(--border-focus)] focus:ring-1 focus:ring-[var(--focus-outline)]/30 outline-none transition-all duration-fast"
                   autoFocus
                   placeholder={language === 'ar' ? 'اسم الجلسة...' : 'Session name...'}
                 />
@@ -1072,7 +1063,7 @@ export const Sidebar: React.FC<{ activeLanguage?: string }> = ({ activeLanguage 
                 <button
                   type="button"
                   onClick={() => setEditingChatId(null)}
-                  className="px-4 py-2 text-xs font-semibold rounded-[var(--radius-sm)] font-sans transition-all duration-fast text-[var(--text-muted)] hover:text-[var(--text-primary)] hover:bg-[var(--surface-subtle)] cursor-pointer"
+                  className="px-4 py-2 text-xs font-semibold rounded-shape-sm font-sans transition-all duration-fast text-[var(--text-muted)] hover:text-[var(--text-primary)] hover:bg-[var(--surface-subtle)] active:scale-95 cursor-pointer border border-[var(--border-default)]"
                 >
                   {language === 'ar' ? 'إلغاء' : 'Cancel'}
                 </button>
@@ -1085,7 +1076,7 @@ export const Sidebar: React.FC<{ activeLanguage?: string }> = ({ activeLanguage 
                       await handleRename(editingChatId);
                     }
                   }}
-                  className="px-4 py-2 text-xs font-bold bg-[var(--accent)] hover:opacity-90 disabled:opacity-50 text-[var(--fg-on-emphasis)] rounded-[var(--radius-sm)] font-sans transition-all duration-fast shadow-xs cursor-pointer"
+                  className="px-4 py-2 text-xs font-bold bg-[var(--accent)] hover:opacity-90 disabled:opacity-50 text-[var(--fg-on-emphasis)] rounded-shape-sm font-sans transition-all duration-fast shadow-xs active:scale-95 cursor-pointer"
                 >
                   {language === 'ar' ? 'حفظ' : 'Save'}
                 </button>
@@ -1221,24 +1212,24 @@ export const Sidebar: React.FC<{ activeLanguage?: string }> = ({ activeLanguage 
                       e.stopPropagation();
                       item.action();
                     }}
-                    className={`group w-full h-[36px] min-h-[36px] flex items-center gap-2.5 px-3 py-2 rounded-shape-sm border border-transparent transition-all duration-fast cursor-pointer select-none text-start ${
+                    className={`group w-full h-[36px] min-h-[36px] flex items-center gap-2.5 px-3 py-2 rounded-shape-sm border border-transparent transition-all duration-fast cursor-pointer select-none text-start active:scale-98 ${
                       isDanger
-                        ? 'bg-transparent hover:bg-rose-500/10 text-rose-500'
-                        : 'bg-transparent hover:bg-[var(--surface-subtle)] text-[var(--text-secondary)] hover:text-[var(--text-primary)]'
+                        ? 'bg-transparent hover:bg-red-500/10 text-[var(--fg-danger)]'
+                        : 'bg-transparent hover:bg-[var(--surface-subtle)]/25 text-[var(--text-secondary)] hover:text-[var(--text-primary)]'
                     }`}
                   >
                     <Icon
                       size={14}
                       className={`shrink-0 transition-colors duration-fast ${
                         isDanger
-                          ? 'text-rose-500 group-hover:text-rose-400'
+                          ? 'text-[var(--fg-danger)] group-hover:text-[var(--fg-danger)]'
                           : 'text-[var(--text-muted)] group-hover:text-[var(--accent)]'
                       }`}
                     />
                     <span
                       className={`truncate min-w-0 flex-1 text-xs transition-colors duration-fast ${
                         isDanger
-                          ? 'font-bold text-rose-500 group-hover:text-rose-400'
+                          ? 'font-bold text-[var(--fg-danger)] group-hover:text-[var(--fg-danger)]'
                           : 'font-medium text-[var(--text-primary)] group-hover:text-[var(--text-primary)]'
                       }`}
                     >
@@ -1299,9 +1290,9 @@ export const Sidebar: React.FC<{ activeLanguage?: string }> = ({ activeLanguage 
           return (
             <div className="flex flex-col p-1.5 gap-0.5 font-sans w-full max-w-full" dir={dir}>
               {/* User profile header summary */}
-              <div className="flex items-center gap-2.5 px-3 py-2 rounded-shape-sm bg-[var(--surface-subtle)] border border-[var(--border-default)] mb-1 overflow-hidden shadow-2xs">
+              <div className="flex items-center gap-2.5 px-2.5 py-2 border-b border-[var(--border-default)] mb-1 overflow-hidden">
                 <div 
-                  className="w-7 h-7 rounded-shape-sm bg-[var(--surface-card)] flex items-center justify-center flex-shrink-0 overflow-hidden border shadow-2xs"
+                  className="w-7 h-7 rounded-shape-xs flex items-center justify-center flex-shrink-0 overflow-hidden border transition-colors duration-fast"
                   style={{ borderColor: user.subscription?.plan_color || 'var(--border-default)' }}
                 >
                   {user.avatar ? (
@@ -1338,9 +1329,9 @@ export const Sidebar: React.FC<{ activeLanguage?: string }> = ({ activeLanguage 
                       setProfileMenuTarget(null);
                       if (isMobile) setIsSidebarOpen(false);
                     }}
-                    className="group w-full h-[36px] min-h-[36px] flex items-center gap-2.5 px-3 py-2 rounded-shape-sm border border-transparent bg-transparent hover:bg-[var(--surface-subtle)] transition-colors duration-fast cursor-pointer select-none text-start text-xs font-medium text-[var(--text-secondary)] hover:text-[var(--text-primary)]"
+                    className="group w-full h-[36px] min-h-[36px] flex items-center gap-2.5 px-3 py-2 rounded-shape-sm border border-transparent bg-transparent hover:bg-[var(--surface-subtle)]/25 transition-all duration-fast cursor-pointer select-none text-start text-xs font-medium text-[var(--text-secondary)] hover:text-[var(--text-primary)] active:scale-98"
                   >
-                    <Icon size={14} className="text-[var(--text-muted)] group-hover:text-[var(--accent)] shrink-0 transition-colors duration-fast" />
+                    <Icon size={14} className="text-[var(--text-muted)] group-hover:text-[var(--fg-accent)] shrink-0 transition-colors duration-fast" />
                     <span className="truncate min-w-0 flex-1 text-xs font-medium text-[var(--text-primary)] group-hover:text-[var(--text-primary)] transition-colors duration-fast">
                       {item.label}
                     </span>
@@ -1358,10 +1349,10 @@ export const Sidebar: React.FC<{ activeLanguage?: string }> = ({ activeLanguage 
                   setProfileMenuTarget(null);
                   if (isMobile) setIsSidebarOpen(false);
                 }}
-                className="group w-full h-[36px] min-h-[36px] flex items-center gap-2.5 px-3 py-2 rounded-shape-sm border border-transparent bg-transparent hover:bg-rose-500/10 text-rose-500 transition-colors duration-fast cursor-pointer select-none text-start"
+                className="group w-full h-[36px] min-h-[36px] flex items-center gap-2.5 px-3 py-2 rounded-shape-sm border border-transparent bg-transparent hover:bg-red-500/10 text-[var(--fg-danger)] transition-all duration-fast cursor-pointer select-none text-start active:scale-98"
               >
-                <LogOut size={14} className="text-rose-500 group-hover:text-rose-400 shrink-0 transition-colors duration-fast" />
-                <span className="truncate min-w-0 flex-1 text-xs font-bold text-rose-500 group-hover:text-rose-400 transition-colors duration-fast">
+                <LogOut size={14} className="text-[var(--fg-danger)] group-hover:opacity-90 shrink-0 transition-colors duration-fast" />
+                <span className="truncate min-w-0 flex-1 text-xs font-bold text-[var(--fg-danger)] group-hover:opacity-90 transition-colors duration-fast">
                   {t('logout') || (dir === 'rtl' ? 'تسجيل الخروج' : 'Logout')}
                 </span>
               </button>

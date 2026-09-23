@@ -288,10 +288,10 @@ export const Header: React.FC<{ activeLanguage?: string }> = ({ activeLanguage }
 
   const getNotifIcon = (type: string) => {
     switch (type) {
-      case 'finance': return <Landmark size={14} className="text-amber-500" />;
-      case 'support': return <MessageSquare size={14} className="text-accent" />;
-      case 'kyc': return <ShieldCheck size={14} className="text-blue-500" />;
-      default: return <Bell size={14} className="text-pink-500" />;
+      case 'finance': return <Landmark size={14} className="text-[var(--status-warning)]" />;
+      case 'support': return <MessageSquare size={14} className="text-[var(--fg-accent)]" />;
+      case 'kyc': return <ShieldCheck size={14} className="text-[var(--fg-accent)]" />;
+      default: return <Bell size={14} className="text-[var(--fg-accent)]" />;
     }
   };
 
@@ -322,7 +322,7 @@ export const Header: React.FC<{ activeLanguage?: string }> = ({ activeLanguage }
               triggerHaptic('medium');
               setIsSidebarOpen(true);
             }}
-            className="group/logo-btn relative w-8 h-8 rounded-[var(--radius-sm)] overflow-hidden border border-[var(--border-default)] hover:border-[var(--accent-foreground)]/60 bg-transparent hover:bg-[var(--surface-subtle)] transition-all duration-fast flex items-center justify-center flex-shrink-0 cursor-pointer active:scale-95 before:absolute before:-inset-1.5 before:content-['']"
+            className="group/logo-btn relative w-8 h-8 rounded-shape-sm overflow-hidden border border-[var(--border-default)] hover:border-[var(--accent-foreground)]/60 bg-transparent hover:bg-[var(--surface-subtle)] transition-all duration-fast flex items-center justify-center flex-shrink-0 cursor-pointer active:scale-95 before:absolute before:-inset-1.5 before:content-['']"
             title={language === 'ar' ? 'فتح الشريط الجانبي' : 'Open Sidebar'}
             aria-label="Open Sidebar"
           >
@@ -368,7 +368,7 @@ export const Header: React.FC<{ activeLanguage?: string }> = ({ activeLanguage }
 
             {/* Full Glassy Outward Arrow Button Effect on Hover */}
             <div className="absolute inset-0 flex items-center justify-center opacity-0 scale-75 group-hover/logo-btn:opacity-100 group-hover/logo-btn:scale-100 transition-all duration-fast pointer-events-none bg-[var(--surface-subtle)]">
-              <div className="w-6 h-6 rounded-[var(--radius-xs)] bg-[var(--surface-card)] border border-[var(--border-default)] text-[var(--text-primary)] flex items-center justify-center shadow-2xs">
+              <div className="w-6 h-6 rounded-shape-xs bg-[var(--surface-card)] border border-[var(--border-default)] text-[var(--text-primary)] flex items-center justify-center shadow-2xs">
                 {language === 'ar' ? <ChevronLeft size={14} className="stroke-[2.5]" /> : <ChevronRight size={14} className="stroke-[2.5]" />}
               </div>
             </div>
@@ -377,7 +377,7 @@ export const Header: React.FC<{ activeLanguage?: string }> = ({ activeLanguage }
           <NavLink 
             to="/" 
             onClick={handleNewChat} 
-            className="group/logo-link relative w-8 h-8 rounded-[var(--radius-sm)] overflow-hidden border border-[var(--border-default)] hover:border-[var(--accent-foreground)]/60 bg-transparent hover:bg-[var(--surface-subtle)] transition-all duration-fast flex items-center justify-center flex-shrink-0 active:scale-95 before:absolute before:-inset-1.5 before:content-['']"
+            className="group/logo-link relative w-8 h-8 rounded-shape-sm overflow-hidden border border-[var(--border-default)] hover:border-[var(--accent-foreground)]/60 bg-transparent hover:bg-[var(--surface-subtle)] transition-all duration-fast flex items-center justify-center flex-shrink-0 active:scale-95 before:absolute before:-inset-1.5 before:content-['']"
             title={brandName}
           >
             {(siteSettings.logoBase64 || siteSettings.logoLightBase64) ? (
@@ -446,7 +446,7 @@ export const Header: React.FC<{ activeLanguage?: string }> = ({ activeLanguage }
       {!isPathBlocked('/viralbook', siteSettings?.blocked_paths, isMobileView) && (
         <NavLink
           to="/viralbook"
-          className={`hidden sm:flex items-center justify-center w-8 h-8 rounded-[var(--radius-sm)] border transition-all duration-fast active:scale-95 group shrink-0 relative cursor-pointer before:absolute before:-inset-1.5 before:content-[''] ${
+          className={`hidden sm:flex items-center justify-center w-8 h-8 rounded-shape-sm border transition-all duration-fast active:scale-95 group shrink-0 relative cursor-pointer before:absolute before:-inset-1.5 before:content-[''] ${
             isViralbookActive
               ? 'bg-[var(--surface-card)] text-[var(--text-primary)] border-[var(--border-default)] font-bold shadow-2xs' 
               : 'bg-transparent border-[var(--border-default)] hover:border-[var(--border-accent)]/60 hover:bg-[var(--surface-subtle)] text-[var(--text-secondary)] hover:text-[var(--text-primary)]'
@@ -467,7 +467,7 @@ export const Header: React.FC<{ activeLanguage?: string }> = ({ activeLanguage }
       {!isPathBlocked('/studio', siteSettings?.blocked_paths, isMobileView) && (
         <NavLink
           to="/Studio"
-          className={`flex items-center justify-center w-8 h-8 rounded-[var(--radius-sm)] border transition-all duration-fast active:scale-95 group shrink-0 relative cursor-pointer before:absolute before:-inset-1.5 before:content-[''] ${
+          className={`flex items-center justify-center w-8 h-8 rounded-shape-sm border transition-all duration-fast active:scale-95 group shrink-0 relative cursor-pointer before:absolute before:-inset-1.5 before:content-[''] ${
             location.pathname === '/Studio' || location.pathname === '/studio' 
               ? 'bg-[var(--surface-card)] text-[var(--text-primary)] border-[var(--border-default)] font-bold shadow-2xs' 
               : 'bg-transparent border-[var(--border-default)] hover:border-[var(--border-accent)]/60 hover:bg-[var(--surface-subtle)] text-[var(--text-secondary)] hover:text-[var(--text-primary)]'
@@ -513,7 +513,7 @@ export const Header: React.FC<{ activeLanguage?: string }> = ({ activeLanguage }
           triggerHaptic('light');
           toggleLanguage();
         }}
-        className={`items-center justify-center w-8 h-8 rounded-[var(--radius-sm)] bg-transparent border border-[var(--border-default)] hover:border-[var(--border-accent)]/60 hover:bg-[var(--surface-subtle)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-all duration-fast active:scale-95 group shrink-0 cursor-pointer relative before:absolute before:-inset-1.5 before:content-[''] ${
+        className={`items-center justify-center w-8 h-8 rounded-shape-sm bg-transparent border border-[var(--border-default)] hover:border-[var(--border-accent)]/60 hover:bg-[var(--surface-subtle)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-all duration-fast active:scale-95 group shrink-0 cursor-pointer relative before:absolute before:-inset-1.5 before:content-[''] ${
           isChatPage && chatHeaderData && chatHeaderData.hasMessages ? 'hidden sm:flex' : 'flex'
         }`}
         title={language === 'ar' ? 'تغيير اللغة (English)' : 'Change Language (العربية)'}
@@ -525,7 +525,7 @@ export const Header: React.FC<{ activeLanguage?: string }> = ({ activeLanguage }
       <ThemeToggleButton 
         variant="icon-button" 
         size="sm" 
-        className={`rounded-[var(--radius-sm)] relative before:absolute before:-inset-1.5 before:content-[''] ${
+        className={`rounded-shape-sm relative before:absolute before:-inset-1.5 before:content-[''] ${
           isChatPage && chatHeaderData && chatHeaderData.hasMessages ? 'hidden sm:flex' : 'flex'
         }`} 
       />
@@ -540,7 +540,7 @@ export const Header: React.FC<{ activeLanguage?: string }> = ({ activeLanguage }
                 navigate('/viralbook/inquiries');
                 window.dispatchEvent(new CustomEvent('open-bulletin-inquiries'));
               }}
-              className={`hidden sm:flex items-center justify-center w-8 h-8 rounded-[var(--radius-sm)] border transition-all duration-fast relative active:scale-95 group shrink-0 cursor-pointer before:absolute before:-inset-1.5 before:content-[''] ${
+              className={`hidden sm:flex items-center justify-center w-8 h-8 rounded-shape-sm border transition-all duration-fast relative active:scale-95 group shrink-0 cursor-pointer before:absolute before:-inset-1.5 before:content-[''] ${
                 location.pathname.includes('/inquiries') || location.search.includes('tab=inquiries')
                   ? 'bg-[var(--surface-card)] text-[var(--text-primary)] border-[var(--border-default)] font-bold shadow-2xs'
                   : 'bg-transparent border-[var(--border-default)] hover:border-[var(--border-accent)]/60 hover:bg-[var(--surface-subtle)] text-[var(--text-secondary)] hover:text-[var(--text-primary)]'
@@ -566,7 +566,7 @@ export const Header: React.FC<{ activeLanguage?: string }> = ({ activeLanguage }
                 setIsNotifOpen(!isNotifOpen);
               }}
               aria-label={language === 'ar' ? 'الإشعارات' : 'Notifications'}
-              className={`flex items-center justify-center w-8 h-8 rounded-[var(--radius-sm)] bg-transparent border transition-all duration-fast relative active:scale-95 group shrink-0 cursor-pointer before:absolute before:-inset-1.5 before:content-[''] ${
+              className={`flex items-center justify-center w-8 h-8 rounded-shape-sm bg-transparent border transition-all duration-fast relative active:scale-95 group shrink-0 cursor-pointer before:absolute before:-inset-1.5 before:content-[''] ${
                 isNotifOpen 
                   ? 'bg-[var(--surface-card)] text-[var(--text-primary)] border-[var(--border-default)] shadow-2xs' 
                   : 'border-[var(--border-default)] hover:border-[var(--border-accent)]/60 hover:bg-[var(--surface-subtle)] text-[var(--text-secondary)] hover:text-[var(--text-primary)]'
@@ -585,7 +585,7 @@ export const Header: React.FC<{ activeLanguage?: string }> = ({ activeLanguage }
                   animate={{ opacity: 1, scale: 1 }}
                   exit={{ opacity: 0, scale: 0.96 }}
                   transition={{ duration: 0.14, ease: [0.16, 1, 0.3, 1] }}
-                  className={`absolute top-full mt-2 w-[280px] xs:w-80 sm:w-96 max-h-[350px] sm:max-h-[480px] overflow-hidden rounded-[var(--radius-md)] border shadow-2xl z-[100] flex flex-col bg-[var(--surface-card)] border-[var(--border-default)] overscroll-contain ${
+                  className={`absolute top-full mt-2 w-[280px] xs:w-80 sm:w-96 max-h-[350px] sm:max-h-[480px] overflow-hidden rounded-shape-md border shadow-2xl z-[100] flex flex-col bg-[var(--surface-card)] border-[var(--border-default)] overscroll-contain ${
                     dir === 'rtl' ? 'left-0 origin-top-left' : 'right-0 origin-top-right'
                   }`}
                 >
@@ -639,7 +639,7 @@ export const Header: React.FC<{ activeLanguage?: string }> = ({ activeLanguage }
                           }`}
                           dir={dir}
                         >
-                          <div className={`mt-0.5 h-7 w-7 sm:h-8 sm:w-8 rounded-[var(--radius-sm)] flex items-center justify-center shrink-0 transition-all duration-fast overflow-hidden ${
+                          <div className={`mt-0.5 h-7 w-7 sm:h-8 sm:w-8 rounded-shape-sm flex items-center justify-center shrink-0 transition-all duration-fast overflow-hidden ${
                             !notif.is_read ? 'bg-[var(--bg-accent-muted)] text-[var(--fg-accent)] font-bold' : 'bg-[var(--surface-subtle)] text-[var(--text-muted)]'
                           }`}>
                             <NotificationIconRenderer 
@@ -766,7 +766,7 @@ export const Header: React.FC<{ activeLanguage?: string }> = ({ activeLanguage }
                       triggerHaptic('light');
                       window.dispatchEvent(new CustomEvent('chat-set-tab', { detail: 'answer' }));
                     }}
-                    className={`w-8 h-8 rounded-[var(--radius-sm)] border flex items-center justify-center transition-all duration-fast cursor-pointer shrink-0 relative active:scale-95 group ${
+                    className={`w-8 h-8 rounded-shape-sm border flex items-center justify-center transition-all duration-fast cursor-pointer shrink-0 relative active:scale-95 group ${
                       chatHeaderData.activeChatTab === 'answer'
                         ? 'bg-[var(--surface-card)] text-[var(--text-primary)] border-[var(--border-default)] font-bold shadow-2xs'
                         : 'bg-transparent border-[var(--border-default)] hover:border-[var(--border-accent)]/60 hover:bg-[var(--surface-subtle)] text-[var(--text-secondary)] hover:text-[var(--text-primary)]'
@@ -787,7 +787,7 @@ export const Header: React.FC<{ activeLanguage?: string }> = ({ activeLanguage }
                       triggerHaptic('light');
                       window.dispatchEvent(new CustomEvent('chat-set-tab', { detail: 'links' }));
                     }}
-                    className={`h-8 min-w-[32px] px-1.5 rounded-[var(--radius-sm)] border flex items-center justify-center gap-1 transition-all duration-fast cursor-pointer shrink-0 relative active:scale-95 group ${
+                    className={`h-8 min-w-[32px] px-1.5 rounded-shape-sm border flex items-center justify-center gap-1 transition-all duration-fast cursor-pointer shrink-0 relative active:scale-95 group ${
                       chatHeaderData.activeChatTab === 'links'
                         ? 'bg-[var(--surface-card)] text-[var(--text-primary)] border-[var(--border-default)] font-bold shadow-2xs'
                         : 'bg-transparent border-[var(--border-default)] hover:border-[var(--border-accent)]/60 hover:bg-[var(--surface-subtle)] text-[var(--text-secondary)] hover:text-[var(--text-primary)]'
@@ -809,7 +809,7 @@ export const Header: React.FC<{ activeLanguage?: string }> = ({ activeLanguage }
                       triggerHaptic('light');
                       window.dispatchEvent(new CustomEvent('chat-set-tab', { detail: 'images' }));
                     }}
-                    className={`h-8 min-w-[32px] px-1.5 rounded-[var(--radius-sm)] border flex items-center justify-center gap-1 transition-all duration-fast cursor-pointer shrink-0 relative active:scale-95 group ${
+                    className={`h-8 min-w-[32px] px-1.5 rounded-shape-sm border flex items-center justify-center gap-1 transition-all duration-fast cursor-pointer shrink-0 relative active:scale-95 group ${
                       chatHeaderData.activeChatTab === 'images'
                         ? 'bg-[var(--surface-card)] text-[var(--text-primary)] border-[var(--border-default)] font-bold shadow-2xs'
                         : 'bg-transparent border-[var(--border-default)] hover:border-[var(--border-accent)]/60 hover:bg-[var(--surface-subtle)] text-[var(--text-secondary)] hover:text-[var(--text-primary)]'
@@ -835,7 +835,7 @@ export const Header: React.FC<{ activeLanguage?: string }> = ({ activeLanguage }
                         triggerHaptic('light');
                         window.dispatchEvent(new CustomEvent('chat-action-pinned'));
                       }}
-                      className="h-8 px-2.5 rounded-[var(--radius-sm)] text-amber-500 border border-amber-500/30 bg-amber-500/10 hover:bg-amber-500/20 flex items-center justify-center gap-1 transition-all duration-fast cursor-pointer shrink-0 box-border relative active:scale-95"
+                      className="h-8 px-2.5 rounded-shape-sm text-amber-500 border border-amber-500/30 bg-amber-500/10 hover:bg-amber-500/20 flex items-center justify-center gap-1 transition-all duration-fast cursor-pointer shrink-0 box-border relative active:scale-95"
                       title={globalLang === 'ar' ? 'الرسائل المثبتة' : 'Pinned'}
                     >
                       <Pin size={13} className="fill-amber-500 shrink-0" />
@@ -856,7 +856,7 @@ export const Header: React.FC<{ activeLanguage?: string }> = ({ activeLanguage }
                         setHeaderMenuTarget({ rect });
                       }
                     }}
-                    className={`w-8 h-8 rounded-[var(--radius-sm)] border border-[var(--border-default)] hover:border-[var(--border-accent)]/60 hover:bg-[var(--surface-subtle)] flex items-center justify-center transition-all duration-fast cursor-pointer shrink-0 relative active:scale-95 group bg-transparent ${
+                    className={`w-8 h-8 rounded-shape-sm border border-[var(--border-default)] hover:border-[var(--border-accent)]/60 hover:bg-[var(--surface-subtle)] flex items-center justify-center transition-all duration-fast cursor-pointer shrink-0 relative active:scale-95 group bg-transparent ${
                       headerMenuTarget 
                         ? 'bg-[var(--surface-card)] text-[var(--text-primary)] shadow-2xs' 
                         : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)]'
@@ -882,7 +882,7 @@ export const Header: React.FC<{ activeLanguage?: string }> = ({ activeLanguage }
                     triggerHaptic('light');
                     window.dispatchEvent(new CustomEvent('chat-set-tab', { detail: 'answer' }));
                   }}
-                  className={`w-7 h-7 rounded-[var(--radius-sm)] border flex items-center justify-center transition-all duration-fast cursor-pointer shrink-0 relative active:scale-95 group ${
+                  className={`w-7 h-7 rounded-shape-sm border flex items-center justify-center transition-all duration-fast cursor-pointer shrink-0 relative active:scale-95 group ${
                     chatHeaderData.activeChatTab === 'answer'
                       ? 'bg-[var(--surface-card)] text-[var(--text-primary)] border-[var(--border-default)] font-bold shadow-2xs'
                       : 'bg-transparent border-[var(--border-default)] hover:border-[var(--border-accent)]/60 hover:bg-[var(--surface-subtle)] text-[var(--text-secondary)] hover:text-[var(--text-primary)]'
@@ -902,7 +902,7 @@ export const Header: React.FC<{ activeLanguage?: string }> = ({ activeLanguage }
                     triggerHaptic('light');
                     window.dispatchEvent(new CustomEvent('chat-set-tab', { detail: 'links' }));
                   }}
-                  className={`h-7 min-w-[28px] px-1 rounded-[var(--radius-sm)] border flex items-center justify-center gap-1 transition-all duration-fast cursor-pointer shrink-0 relative active:scale-95 group ${
+                  className={`h-7 min-w-[28px] px-1 rounded-shape-sm border flex items-center justify-center gap-1 transition-all duration-fast cursor-pointer shrink-0 relative active:scale-95 group ${
                     chatHeaderData.activeChatTab === 'links'
                       ? 'bg-[var(--surface-card)] text-[var(--text-primary)] border-[var(--border-default)] font-bold shadow-2xs'
                       : 'bg-transparent border-[var(--border-default)] hover:border-[var(--border-accent)]/60 hover:bg-[var(--surface-subtle)] text-[var(--text-secondary)] hover:text-[var(--text-primary)]'
@@ -923,7 +923,7 @@ export const Header: React.FC<{ activeLanguage?: string }> = ({ activeLanguage }
                     triggerHaptic('light');
                     window.dispatchEvent(new CustomEvent('chat-set-tab', { detail: 'images' }));
                   }}
-                  className={`h-7 min-w-[28px] px-1 rounded-[var(--radius-sm)] border flex items-center justify-center gap-1 transition-all duration-fast cursor-pointer shrink-0 relative active:scale-95 group ${
+                  className={`h-7 min-w-[28px] px-1 rounded-shape-sm border flex items-center justify-center gap-1 transition-all duration-fast cursor-pointer shrink-0 relative active:scale-95 group ${
                     chatHeaderData.activeChatTab === 'images'
                       ? 'bg-[var(--surface-card)] text-[var(--text-primary)] border-[var(--border-default)] font-bold shadow-2xs'
                       : 'bg-transparent border-[var(--border-default)] hover:border-[var(--border-accent)]/60 hover:bg-[var(--surface-subtle)] text-[var(--text-secondary)] hover:text-[var(--text-primary)]'
@@ -945,7 +945,7 @@ export const Header: React.FC<{ activeLanguage?: string }> = ({ activeLanguage }
                       triggerHaptic('light');
                       window.dispatchEvent(new CustomEvent('chat-action-pinned'));
                     }}
-                    className="h-7 px-1.5 rounded-[var(--radius-sm)] text-amber-500 border border-amber-500/30 bg-amber-500/10 hover:bg-amber-500/20 flex items-center justify-center gap-1 transition-all duration-fast cursor-pointer shrink-0 box-border relative active:scale-95"
+                    className="h-7 px-1.5 rounded-shape-sm text-amber-500 border border-amber-500/30 bg-amber-500/10 hover:bg-amber-500/20 flex items-center justify-center gap-1 transition-all duration-fast cursor-pointer shrink-0 box-border relative active:scale-95"
                     title={globalLang === 'ar' ? 'الرسائل المثبتة' : 'Pinned'}
                   >
                     <Pin size={12} className="fill-amber-500 shrink-0" />
@@ -966,7 +966,7 @@ export const Header: React.FC<{ activeLanguage?: string }> = ({ activeLanguage }
                       setHeaderMenuTarget({ rect });
                     }
                   }}
-                  className={`w-7 h-7 rounded-[var(--radius-sm)] border border-[var(--border-default)] hover:border-[var(--border-accent)]/60 hover:bg-[var(--surface-subtle)] flex items-center justify-center transition-all duration-fast cursor-pointer shrink-0 relative active:scale-95 group bg-transparent ${
+                  className={`w-7 h-7 rounded-shape-sm border border-[var(--border-default)] hover:border-[var(--border-accent)]/60 hover:bg-[var(--surface-subtle)] flex items-center justify-center transition-all duration-fast cursor-pointer shrink-0 relative active:scale-95 group bg-transparent ${
                     headerMenuTarget 
                       ? 'bg-[var(--surface-card)] text-[var(--text-primary)] shadow-2xs' 
                       : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)]'

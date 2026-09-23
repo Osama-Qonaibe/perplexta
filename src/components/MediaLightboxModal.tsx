@@ -125,6 +125,7 @@ export const MediaLightboxModal: React.FC<MediaLightboxModalProps> = ({
   const [commentsCount, setCommentsCount] = useState(ad?.comments_count || 0);
   const [isHoveringReactions, setIsHoveringReactions] = useState(false);
   const [hoveredReactionId, setHoveredReactionId] = useState<string | null>(null);
+  const hoverIntentTimerRef = useRef<any>(null);
   const hoverReactionTimerRef = useRef<any>(null);
   const touchTimerRef = useRef<any>(null);
 
@@ -485,16 +486,28 @@ export const MediaLightboxModal: React.FC<MediaLightboxModalProps> = ({
     }
   };
 
-  // Reaction picker hover & touch handlers (Rock-solid Facebook-grade stability)
+  // Reaction picker hover & touch handlers (Rock-solid inward containment & deliberate delay)
   const handleLikeMouseEnter = () => {
     if (hoverReactionTimerRef.current) {
       clearTimeout(hoverReactionTimerRef.current);
       hoverReactionTimerRef.current = null;
     }
-    setIsHoveringReactions(true);
+    if (isHoveringReactions) return;
+
+    if (hoverIntentTimerRef.current) {
+      clearTimeout(hoverIntentTimerRef.current);
+    }
+    hoverIntentTimerRef.current = setTimeout(() => {
+      setIsHoveringReactions(true);
+      hoverIntentTimerRef.current = null;
+    }, 260);
   };
 
   const handleLikeMouseLeave = () => {
+    if (hoverIntentTimerRef.current) {
+      clearTimeout(hoverIntentTimerRef.current);
+      hoverIntentTimerRef.current = null;
+    }
     if (hoverReactionTimerRef.current) {
       clearTimeout(hoverReactionTimerRef.current);
     }
@@ -502,13 +515,28 @@ export const MediaLightboxModal: React.FC<MediaLightboxModalProps> = ({
       setIsHoveringReactions(false);
       setHoveredReactionId(null);
       hoverReactionTimerRef.current = null;
-    }, 650);
+    }, 250);
+  };
+
+  const handleBarMouseEnter = () => {
+    if (hoverIntentTimerRef.current) {
+      clearTimeout(hoverIntentTimerRef.current);
+      hoverIntentTimerRef.current = null;
+    }
+    if (hoverReactionTimerRef.current) {
+      clearTimeout(hoverReactionTimerRef.current);
+      hoverReactionTimerRef.current = null;
+    }
+    setIsHoveringReactions(true);
   };
 
   const handleTouchStartLike = () => {
+    if (touchTimerRef.current) {
+      clearTimeout(touchTimerRef.current);
+    }
     touchTimerRef.current = setTimeout(() => {
       setIsHoveringReactions(true);
-    }, 350);
+    }, 320);
   };
 
   const handleTouchEndLike = () => {
@@ -519,6 +547,10 @@ export const MediaLightboxModal: React.FC<MediaLightboxModalProps> = ({
   };
 
   const handleSelectReaction = (reactionId: string) => {
+    if (hoverIntentTimerRef.current) {
+      clearTimeout(hoverIntentTimerRef.current);
+      hoverIntentTimerRef.current = null;
+    }
     if (hoverReactionTimerRef.current) {
       clearTimeout(hoverReactionTimerRef.current);
       hoverReactionTimerRef.current = null;
@@ -544,6 +576,10 @@ export const MediaLightboxModal: React.FC<MediaLightboxModalProps> = ({
 
   const handleDirectLikeClick = (e: React.MouseEvent) => {
     e.stopPropagation();
+    if (hoverIntentTimerRef.current) {
+      clearTimeout(hoverIntentTimerRef.current);
+      hoverIntentTimerRef.current = null;
+    }
     if (hoverReactionTimerRef.current) {
       clearTimeout(hoverReactionTimerRef.current);
       hoverReactionTimerRef.current = null;
@@ -899,8 +935,8 @@ export const MediaLightboxModal: React.FC<MediaLightboxModalProps> = ({
           <AnimatePresence>
             {isHoveringReactions && (
               <div
-                className={`absolute ${isRtl ? 'right-0' : 'left-0'} bottom-full pb-2.5 z-50 pointer-events-auto`}
-                onMouseEnter={handleLikeMouseEnter}
+                className={`absolute ${isRtl ? 'right-0 origin-bottom-right' : 'left-0 origin-bottom-left'} bottom-full pb-2.5 z-50 pointer-events-auto max-w-[calc(100vw-24px)]`}
+                onMouseEnter={handleBarMouseEnter}
                 onMouseLeave={handleLikeMouseLeave}
               >
                 <motion.div
@@ -908,8 +944,8 @@ export const MediaLightboxModal: React.FC<MediaLightboxModalProps> = ({
                   animate={{ opacity: 1, y: 0, scale: 1 }}
                   exit={{ opacity: 0, y: 4, scale: 0.88 }}
                   transition={{ duration: 0.16, ease: 'easeOut' }}
-                  className="vb-emoji-bar select-none"
-                  onMouseEnter={handleLikeMouseEnter}
+                  className="vb-emoji-bar select-none shadow-xl"
+                  onMouseEnter={handleBarMouseEnter}
                   onMouseLeave={handleLikeMouseLeave}
                 >
                   {FB_REACTIONS.map((reac) => (
@@ -922,7 +958,7 @@ export const MediaLightboxModal: React.FC<MediaLightboxModalProps> = ({
                         handleSelectReaction(reac.id);
                       }}
                       onMouseEnter={() => {
-                        handleLikeMouseEnter();
+                        handleBarMouseEnter();
                         setHoveredReactionId(reac.id);
                       }}
                       onMouseLeave={() => setHoveredReactionId(null)}

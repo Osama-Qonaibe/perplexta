@@ -835,6 +835,10 @@ const mediaMimeTypes: Record<string, string> = {
   '.ogv': 'video/ogg',
   '.flv': 'video/x-flv',
   '.wmv': 'video/x-ms-wmv',
+  '.ts': 'video/mp2t',
+  '.mts': 'video/mp2t',
+  '.m2ts': 'video/mp2t',
+  '.vob': 'video/dvd',
   '.ogg': 'audio/ogg',
   '.mp3': 'audio/mpeg',
   '.wav': 'audio/wav',
@@ -854,15 +858,23 @@ async function checkIsPublicFile(filename: string): Promise<boolean> {
 
   // System brand assets, default images, and standard public upload media are always public
   const ext = path.extname(cleanName).toLowerCase();
-  const publicMediaExtensions = ['.png', '.jpg', '.jpeg', '.gif', '.webp', '.svg', '.ico', '.avif', '.heic', '.jfif', '.mp4', '.webm', '.mp3', '.wav', '.mov'];
-  const isStandardMedia = publicMediaExtensions.includes(ext);
+  const isRecognizedMedia = Object.keys(mediaMimeTypes).includes(ext) ||
+    cleanName.startsWith('pvid_') ||
+    cleanName.startsWith('vid_') ||
+    cleanName.startsWith('reel_') ||
+    cleanName.startsWith('story_') ||
+    cleanName.startsWith('thumb_') ||
+    cleanName.startsWith('ad_') ||
+    cleanName.includes('_thumb') ||
+    cleanName.includes('_processed') ||
+    cleanName.includes('_opt');
 
   if (
     cleanPath.startsWith('brand/') || 
     cleanPath.startsWith('brand\\') || 
     cleanPath === 'brand' || 
     cleanPath === 'default_video_poster.jpg' ||
-    isStandardMedia
+    isRecognizedMedia
   ) {
     return true;
   }
@@ -1076,8 +1088,8 @@ app.use('/uploads', async (req: express.Request, res: express.Response, next: ex
 
     const actualExt = path.extname(resolvedPath).toLowerCase();
     const mimeType = mediaMimeTypes[actualExt] || 'application/octet-stream';
-    const isVideoOrAudio = ['.mp4', '.webm', '.mp3', '.wav', '.mov', '.ogg'].includes(actualExt);
-    const isMedia = ['.png', '.jpg', '.jpeg', '.gif', '.webp', '.svg', '.ico', '.mp4', '.webm', '.mp3', '.wav', '.mov', '.ogg'].includes(actualExt);
+    const isVideoOrAudio = mimeType.startsWith('video/') || mimeType.startsWith('audio/') || ['.mp4', '.webm', '.mp3', '.wav', '.mov', '.ogg', '.mkv', '.avi', '.m4v', '.3gp', '.3g2', '.ogv', '.flv', '.wmv', '.ts', '.mts', '.m2ts', '.vob', '.m4a', '.aac', '.flac', '.opus'].includes(actualExt);
+    const isMedia = isVideoOrAudio || mimeType.startsWith('image/') || Object.keys(mediaMimeTypes).includes(actualExt);
 
     const serveFile = async (pathToSend: string) => {
       const resolvedToSend = path.resolve(pathToSend);
@@ -1197,7 +1209,10 @@ app.use('/uploads', async (req: express.Request, res: express.Response, next: ex
         if (parts[1] && parts[1].trim() !== '') {
           end = parseInt(parts[1], 10);
         } else {
-          end = fileSize - 1;
+          // Dynamic adaptive chunking for open-ended ranges (e.g. Range: bytes=0-)
+          // Delivers initial audio/video frames in milliseconds without waiting for the full file
+          const dynamicChunk = calculateDynamicChunkSize();
+          end = Math.min(start + dynamicChunk - 1, fileSize - 1);
         }
 
         if (end >= fileSize) {

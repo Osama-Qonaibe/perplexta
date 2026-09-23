@@ -1,5 +1,4 @@
 import React from 'react';
-import { MapPin, ChevronDown, Compass, RefreshCw, Loader2 } from 'lucide-react';
 import { StoriesBar, StoriesBarProps } from './StoriesBar';
 import { AdComposer, AdComposerProps } from './AdComposer';
 import { PostFeed } from '../PostFeed';
@@ -116,58 +115,16 @@ export const BoardFeed: React.FC<BoardFeedProps> = ({
   setSavedAds,
 }) => {
   return (
-    <div className="space-y-4 sm:space-y-6">
-      {/* Mobile Smart Quick-Filter Bar (Location Pill + GPS Button) */}
-      <div className="lg:hidden flex items-center justify-between gap-2 py-1 px-1">
-        <div className="flex items-center gap-1.5 w-full justify-between">
-          <button
-            type="button"
-            onClick={() => setIsLocationFlyoutOpen(true)}
-            className="h-8 flex items-center gap-1.5 px-3 rounded-shape-sm bg-[var(--surface-card)] hover:bg-[var(--surface-subtle)] text-[var(--text-primary)] hover:text-accent text-xs font-bold border border-[var(--border-default)] hover:border-accent/40 transition-all duration-fast shadow-2xs truncate active:scale-95 cursor-pointer"
-          >
-            <MapPin size={13} className="text-accent shrink-0" />
-            <span className="truncate">
-              {selectedCities.length > 0
-                ? `${selectedCities.length} ${isRtl ? 'مدن' : 'cities'} (${selectedCities.slice(0, 2).join('، ')}${selectedCities.length > 2 ? '...' : ''})`
-                : selectedCountries.length > 0
-                ? `${selectedCountries.length} ${isRtl ? 'دول' : 'countries'} (${selectedCountries.slice(0, 2).join('، ')}${selectedCountries.length > 2 ? '...' : ''})`
-                : selectedCity === 'all'
-                ? isRtl
-                  ? 'كافة المدن'
-                  : 'All Cities'
-                : `${selectedCity}${selectedRadius !== 'all' ? ` (+${selectedRadius}كم)` : ''}`}
-            </span>
-            <ChevronDown size={12} className="text-[var(--text-muted)] shrink-0" />
-          </button>
-
-          <div className="flex items-center gap-1.5 shrink-0">
-            <button
-              type="button"
-              onClick={handleDetectGpsLocation}
-              disabled={isDetectingGps}
-              className="h-8 px-2.5 rounded-shape-sm bg-accent/10 hover:bg-accent/20 text-accent text-xs font-bold flex items-center gap-1 border border-accent/30 transition-all duration-fast shadow-2xs active:scale-95 disabled:opacity-50 shrink-0 cursor-pointer"
-              title={isRtl ? 'استخدام موقعي الحالي (GPS)' : 'GPS Location'}
-            >
-              {isDetectingGps ? <Loader2 size={13} className="animate-spin text-accent" /> : <Compass size={13} />}
-              <span className="text-[11px] font-bold">{isRtl ? 'موقعي' : 'GPS'}</span>
-            </button>
-
-            <button
-              type="button"
-              onClick={triggerFeedRefresh}
-              disabled={isRefreshing}
-              className="h-8 px-2.5 rounded-shape-sm bg-[var(--surface-card)] hover:bg-[var(--surface-subtle)] text-[var(--text-primary)] hover:text-accent text-xs font-bold flex items-center gap-1 border border-[var(--border-default)] hover:border-accent/40 transition-all duration-fast shadow-2xs active:scale-95 disabled:opacity-50 shrink-0 cursor-pointer"
-              title={isRtl ? 'تحديث خلاصة الإعلانات' : 'Refresh Feed'}
-            >
-              <RefreshCw size={13} className={isRefreshing ? 'animate-spin text-accent' : ''} />
-              <span className="text-[11px] font-bold">{isRtl ? 'تحديث' : 'Refresh'}</span>
-            </button>
-          </div>
-        </div>
-      </div>
-
-      {/* Stories / Reels Highlights Carousel Bar */}
-      <StoriesBar {...storiesProps} />
+    <div className="space-y-3 sm:space-y-5">
+      {/* Stories / Reels Highlights Carousel Bar with Integrated City Selector */}
+      <StoriesBar
+        {...storiesProps}
+        selectedCity={selectedCity}
+        selectedRadius={selectedRadius}
+        selectedCities={selectedCities}
+        selectedCountries={selectedCountries}
+        setIsLocationFlyoutOpen={setIsLocationFlyoutOpen}
+      />
 
       {/* Facebook Post Creation Bar (Composer Box) */}
       <AdComposer {...composerProps} />

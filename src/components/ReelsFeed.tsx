@@ -656,23 +656,48 @@ export const ReelsFeed: React.FC<ReelsFeedProps> = ({
 
   const [isHoveringReactions, setIsHoveringReactions] = useState(false);
   const [hoveredReactionId, setHoveredReactionId] = useState<string | null>(null);
+  const hoverIntentTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const hoverReactionTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
   const commentsScrollRef = useRef<HTMLDivElement | null>(null);
 
   const handleLikeMouseEnter = () => {
     if (hoverReactionTimerRef.current) clearTimeout(hoverReactionTimerRef.current);
-    setIsHoveringReactions(true);
+    if (isHoveringReactions) return;
+
+    if (hoverIntentTimerRef.current) clearTimeout(hoverIntentTimerRef.current);
+    hoverIntentTimerRef.current = setTimeout(() => {
+      setIsHoveringReactions(true);
+      hoverIntentTimerRef.current = null;
+    }, 260);
   };
 
   const handleLikeMouseLeave = () => {
+    if (hoverIntentTimerRef.current) {
+      clearTimeout(hoverIntentTimerRef.current);
+      hoverIntentTimerRef.current = null;
+    }
+    if (hoverReactionTimerRef.current) clearTimeout(hoverReactionTimerRef.current);
     hoverReactionTimerRef.current = setTimeout(() => {
       setIsHoveringReactions(false);
       setHoveredReactionId(null);
-    }, 350);
+    }, 250);
+  };
+
+  const handleBarMouseEnter = () => {
+    if (hoverIntentTimerRef.current) {
+      clearTimeout(hoverIntentTimerRef.current);
+      hoverIntentTimerRef.current = null;
+    }
+    if (hoverReactionTimerRef.current) clearTimeout(hoverReactionTimerRef.current);
+    setIsHoveringReactions(true);
   };
 
   const handleSelectReaction = (reelId: number, reactionId: string) => {
+    if (hoverIntentTimerRef.current) {
+      clearTimeout(hoverIntentTimerRef.current);
+      hoverIntentTimerRef.current = null;
+    }
     if (hoverReactionTimerRef.current) clearTimeout(hoverReactionTimerRef.current);
     setIsHoveringReactions(false);
     setHoveredReactionId(null);
@@ -1725,7 +1750,7 @@ export const ReelsFeed: React.FC<ReelsFeedProps> = ({
             <X size={20} />
           </button>
         )}
-        <div className="w-16 h-16 rounded-full bg-accent/10 text-accent flex items-center justify-center mb-4">
+        <div className="w-16 h-16 rounded-shape-md bg-accent/10 text-accent flex items-center justify-center mb-4 border border-accent/20 shadow-xs">
           <Film size={32} />
         </div>
         <h3 className="text-lg font-extrabold mb-1">
@@ -2434,7 +2459,7 @@ export const ReelsFeed: React.FC<ReelsFeedProps> = ({
                       </span>
 
                       {reel.location_city && (
-                        <span className="px-2 py-0.5 rounded-full bg-black/50 text-[10px] font-bold text-white/90 backdrop-blur-md border border-white/20 flex items-center gap-1 shadow-xs">
+                        <span className="px-2 py-0.5 rounded-shape-sm bg-black/50 text-[10px] font-bold text-white/90 backdrop-blur-md border border-white/20 flex items-center gap-1 shadow-xs">
                           <MapPin size={10} className="text-accent" />
                           {reel.location_city}
                         </span>
@@ -2504,7 +2529,7 @@ export const ReelsFeed: React.FC<ReelsFeedProps> = ({
                   <div className="relative group mb-1 flex flex-col items-center">
                     <div
                       onClick={() => reel.page_id && onOpenPageDetail && onOpenPageDetail(reel.page_id)}
-                      className="w-12 h-12 rounded-full p-0.5 bg-gradient-to-tr from-accent to-pink-500 shadow-xl cursor-pointer active:scale-95 transition-transform overflow-hidden flex items-center justify-center bg-black/40"
+                      className="w-12 h-12 rounded-shape-sm p-0.5 bg-gradient-to-tr from-accent to-pink-500 shadow-xl cursor-pointer active:scale-95 transition-transform overflow-hidden flex items-center justify-center bg-black/40"
                     >
                       <BulletinAvatar
                         src={reel.author_avatar}
@@ -2515,7 +2540,7 @@ export const ReelsFeed: React.FC<ReelsFeedProps> = ({
                     </div>
                     <button
                       onClick={(e) => handleFollowToggle(e, reel.id, reel.author_name)}
-                      className={`absolute -bottom-1 start-1/2 -translate-x-1/2 w-5 h-5 rounded-full flex items-center justify-center text-white border-2 border-black/80 transition-theme cursor-pointer shadow-md active:scale-90 ${
+                      className={`absolute -bottom-1 start-1/2 -translate-x-1/2 w-5 h-5 rounded-shape-xs flex items-center justify-center text-white border-2 border-black/80 transition-theme cursor-pointer shadow-md active:scale-90 ${
                         isFollowing ? 'bg-[var(--status-success)]' : 'bg-[var(--status-danger)] hover:opacity-90'
                       }`}
                       title={isFollowing ? (isRtl ? 'تتابع بالفعل' : 'Following') : (isRtl ? 'متابعة' : 'Follow')}
@@ -2686,7 +2711,7 @@ export const ReelsFeed: React.FC<ReelsFeedProps> = ({
             <motion.div
               animate={{ y: [0, -6, 0] }}
               transition={{ repeat: Infinity, duration: 1.8, ease: 'easeInOut' }}
-              className="flex items-center gap-2 bg-black/60 backdrop-blur-md px-3.5 py-1.5 rounded-full border border-white/20 text-white shadow-xl"
+              className="flex items-center gap-2 bg-black/60 backdrop-blur-md px-3.5 py-1.5 rounded-shape-sm border border-white/20 text-white shadow-xl"
             >
               <ChevronUp size={16} className="text-white animate-bounce" />
               <span className="text-[11px] font-bold text-white">
@@ -3187,8 +3212,8 @@ export const ReelsFeed: React.FC<ReelsFeedProps> = ({
                   <AnimatePresence>
                     {isHoveringReactions && (
                       <div
-                        className={`absolute ${isRtl ? 'right-0' : 'left-0'} bottom-full pb-2.5 z-50 pointer-events-auto`}
-                        onMouseEnter={handleLikeMouseEnter}
+                        className={`absolute ${isRtl ? 'right-0 origin-bottom-right' : 'left-0 origin-bottom-left'} bottom-full pb-2.5 z-50 pointer-events-auto max-w-[calc(100vw-24px)]`}
+                        onMouseEnter={handleBarMouseEnter}
                         onMouseLeave={handleLikeMouseLeave}
                       >
                         <motion.div
@@ -3196,7 +3221,9 @@ export const ReelsFeed: React.FC<ReelsFeedProps> = ({
                           animate={{ opacity: 1, y: 0, scale: 1 }}
                           exit={{ opacity: 0, y: 4, scale: 0.88 }}
                           transition={{ duration: 0.16, ease: 'easeOut' }}
-                          className="vb-emoji-bar select-none"
+                          className="vb-emoji-bar select-none shadow-xl"
+                          onMouseEnter={handleBarMouseEnter}
+                          onMouseLeave={handleLikeMouseLeave}
                         >
                           {FB_REACTIONS.map((reac) => (
                             <button
@@ -3208,7 +3235,7 @@ export const ReelsFeed: React.FC<ReelsFeedProps> = ({
                                 handleSelectReaction(activeReel.id, reac.id);
                               }}
                               onMouseEnter={() => {
-                                handleLikeMouseEnter();
+                                handleBarMouseEnter();
                                 setHoveredReactionId(reac.id);
                               }}
                               onMouseLeave={() => setHoveredReactionId(null)}

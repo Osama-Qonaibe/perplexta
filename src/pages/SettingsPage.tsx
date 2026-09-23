@@ -335,13 +335,13 @@ export const SettingsPage: React.FC = () => {
               <button
                 key={`settings-tab-${tab.id}-${tabIdx}`}
                 onClick={() => handleTabChange(tab.id)}
-                className={`w-full flex items-center gap-3 px-3.5 py-2.5 rounded-shape-sm transition-all duration-150 group cursor-pointer border ${
+                className={`w-full flex items-center gap-3 px-3.5 py-2.5 rounded-shape-sm transition-all duration-fast group cursor-pointer border border-transparent select-none active:scale-98 ${
                   isActive 
-                    ? 'bg-[var(--surface-subtle)] border-[var(--border-default)] text-[var(--text-primary)] font-bold shadow-2xs' 
-                    : 'border-transparent text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--surface-subtle)]'
+                    ? 'text-[var(--fg-accent)] font-bold hover:bg-[var(--surface-subtle)]/25' 
+                    : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--surface-subtle)]/25'
                 }`}
               >
-                <span className={`shrink-0 transition-all duration-150 ${
+                <span className={`shrink-0 transition-colors duration-fast ${
                   isActive ? 'text-[var(--fg-accent)]' : 'text-[var(--text-muted)] group-hover:text-[var(--text-primary)]'
                 }`}>
                    {tab.icon}

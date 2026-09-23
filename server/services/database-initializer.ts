@@ -1,10 +1,65 @@
-import { pool } from '../db/index.js';
+import { pool, mediaPool } from '../db/index.js';
 import { tools } from '../config/constants.js';
 import { encrypt } from '../utils/crypto.js';
 import { syncProviderModelsInternal } from './ai.js';
 import { invalidateApiKeysVaultCache, invalidateOrchestratorConfigCache } from '../db/queries.js';
 import { ensureMapProvidersTable } from './mapProvidersService.js';
 import { ensureLocationCacheTable } from './locationCache.js';
+
+/**
+ * Ensures the media_assets table exists on the media database (or core pool)
+ * with all required columns, indexes, and correct public defaults.
+ */
+export async function ensureMediaAssetsTable(): Promise<void> {
+  const targetMediaPool = mediaPool || pool;
+  if (!targetMediaPool) return;
+
+  try {
+    await targetMediaPool.query(`
+      CREATE TABLE IF NOT EXISTS media_assets (
+        id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+        stored_path TEXT NOT NULL UNIQUE,
+        original_filename TEXT NOT NULL,
+        context TEXT NOT NULL DEFAULT 'general',
+        format TEXT NOT NULL DEFAULT 'webp',
+        width INT NOT NULL DEFAULT 0,
+        height INT NOT NULL DEFAULT 0,
+        size_bytes BIGINT NOT NULL DEFAULT 0,
+        sha256_hash TEXT,
+        is_public BOOLEAN DEFAULT TRUE,
+        user_id INTEGER,
+        metadata JSONB DEFAULT '{}',
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        file_data BYTEA
+      );
+    `);
+
+    // Ensure columns exist if table was previously created with older schema
+    await targetMediaPool.query(`
+      ALTER TABLE media_assets ADD COLUMN IF NOT EXISTS user_id INTEGER;
+      ALTER TABLE media_assets ADD COLUMN IF NOT EXISTS metadata JSONB DEFAULT '{}';
+      ALTER TABLE media_assets ADD COLUMN IF NOT EXISTS file_data BYTEA;
+      ALTER TABLE media_assets ADD COLUMN IF NOT EXISTS is_public BOOLEAN DEFAULT TRUE;
+      ALTER TABLE media_assets ADD COLUMN IF NOT EXISTS size_bytes BIGINT DEFAULT 0;
+      ALTER TABLE media_assets DROP CONSTRAINT IF EXISTS chk_media_assets_context;
+      ALTER TABLE media_assets DROP CONSTRAINT IF EXISTS media_assets_context_check;
+    `).catch(() => {});
+
+    // Ensure indexes for fast query resolution
+    await targetMediaPool.query(`
+      CREATE INDEX IF NOT EXISTS idx_media_assets_stored_path ON media_assets(stored_path);
+      CREATE INDEX IF NOT EXISTS idx_media_assets_sha256 ON media_assets(sha256_hash);
+      CREATE INDEX IF NOT EXISTS idx_media_assets_user_id ON media_assets(user_id);
+      CREATE INDEX IF NOT EXISTS idx_media_assets_context ON media_assets(context);
+      CREATE INDEX IF NOT EXISTS idx_media_assets_is_public ON media_assets(is_public);
+    `).catch(() => {});
+
+    console.log('[DatabaseInitializer] Successfully ensured media_assets table and indexes in Media Database.');
+  } catch (err: any) {
+    console.warn('[DatabaseInitializer] Warning ensuring media_assets table:', err?.message || err);
+  }
+}
 
 /**
  * Database Initializer Service
@@ -22,6 +77,7 @@ export async function ensureDatabaseTables(): Promise<void> {
     // Ensure map providers & cached locations tables
     await ensureMapProvidersTable().catch(err => console.warn('[DatabaseInitializer] Map providers table notice:', err?.message));
     await ensureLocationCacheTable().catch(err => console.warn('[DatabaseInitializer] Location cache table notice:', err?.message));
+    await ensureMediaAssetsTable().catch(err => console.warn('[DatabaseInitializer] Media assets table notice:', err?.message));
 
     await targetPool.query(`
       CREATE TABLE IF NOT EXISTS studio_workspaces (

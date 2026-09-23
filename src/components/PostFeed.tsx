@@ -273,10 +273,11 @@ export const PostFeed: React.FC<PostFeedProps> = ({
     toast.success(isRtl ? 'تم إخفاء الإعلان من خلاصتك' : 'Post hidden from feed');
   };
 
-  // Facebook-style reactions bar state (Rock-solid stability & clickability)
+  // Facebook-style reactions bar state (Rock-solid stability & inward containment)
   const [reactionBarAdId, setReactionBarAdId] = useState<number | null>(null);
   const [hoveredReactionId, setHoveredReactionId] = useState<string | null>(null);
   const [postReactions, setPostReactions] = useState<Record<number, string>>({});
+  const hoverIntentTimerRef = useRef<any>(null);
   const reactionTimerRef = useRef<any>(null);
   const touchReactionTimerRef = useRef<any>(null);
 
@@ -285,10 +286,23 @@ export const PostFeed: React.FC<PostFeedProps> = ({
       clearTimeout(reactionTimerRef.current);
       reactionTimerRef.current = null;
     }
-    setReactionBarAdId(adId);
+    if (reactionBarAdId === adId) return;
+
+    // Intentional delay (260ms) to ensure it only appears on deliberate hover, preventing annoying accidental popups during mouse movement
+    if (hoverIntentTimerRef.current) {
+      clearTimeout(hoverIntentTimerRef.current);
+    }
+    hoverIntentTimerRef.current = setTimeout(() => {
+      setReactionBarAdId(adId);
+      hoverIntentTimerRef.current = null;
+    }, 260);
   };
 
   const handleLikeMouseLeave = () => {
+    if (hoverIntentTimerRef.current) {
+      clearTimeout(hoverIntentTimerRef.current);
+      hoverIntentTimerRef.current = null;
+    }
     if (reactionTimerRef.current) {
       clearTimeout(reactionTimerRef.current);
     }
@@ -296,13 +310,29 @@ export const PostFeed: React.FC<PostFeedProps> = ({
       setReactionBarAdId(null);
       setHoveredReactionId(null);
       reactionTimerRef.current = null;
-    }, 650);
+    }, 250);
+  };
+
+  const handleBarMouseEnter = (adId: number) => {
+    if (hoverIntentTimerRef.current) {
+      clearTimeout(hoverIntentTimerRef.current);
+      hoverIntentTimerRef.current = null;
+    }
+    if (reactionTimerRef.current) {
+      clearTimeout(reactionTimerRef.current);
+      reactionTimerRef.current = null;
+    }
+    setReactionBarAdId(adId);
   };
 
   const handleTouchStartLike = (adId: number) => {
+    if (touchReactionTimerRef.current) {
+      clearTimeout(touchReactionTimerRef.current);
+    }
+    // Deliberate touch/hold required on mobile so casual scrolling or taps don't pop it up
     touchReactionTimerRef.current = setTimeout(() => {
       setReactionBarAdId(adId);
-    }, 350);
+    }, 320);
   };
 
   const handleTouchEndLike = () => {
@@ -313,6 +343,10 @@ export const PostFeed: React.FC<PostFeedProps> = ({
   };
 
   const handleSelectPostReaction = (adId: number, reactionId: string) => {
+    if (hoverIntentTimerRef.current) {
+      clearTimeout(hoverIntentTimerRef.current);
+      hoverIntentTimerRef.current = null;
+    }
     if (reactionTimerRef.current) {
       clearTimeout(reactionTimerRef.current);
       reactionTimerRef.current = null;
@@ -340,6 +374,10 @@ export const PostFeed: React.FC<PostFeedProps> = ({
   };
 
   const handleDirectPostLikeClick = (ad: BulletinAd) => {
+    if (hoverIntentTimerRef.current) {
+      clearTimeout(hoverIntentTimerRef.current);
+      hoverIntentTimerRef.current = null;
+    }
     if (reactionTimerRef.current) {
       clearTimeout(reactionTimerRef.current);
       reactionTimerRef.current = null;
@@ -520,7 +558,7 @@ export const PostFeed: React.FC<PostFeedProps> = ({
   if (ads.length === 0) {
     return (
       <div className="text-center py-12 px-4 space-y-3 w-full">
-        <div className="w-10 h-10 rounded-full bg-[var(--surface-subtle)] text-[var(--text-muted)] flex items-center justify-center mx-auto">
+        <div className="w-10 h-10 rounded-shape-sm bg-[var(--surface-subtle)] text-[var(--text-muted)] flex items-center justify-center mx-auto border border-[var(--border-default)] shadow-2xs">
           <Megaphone size={20} />
         </div>
         <div className="space-y-1">
@@ -964,7 +1002,7 @@ export const PostFeed: React.FC<PostFeedProps> = ({
                       url={getMediaUrl(ad.media_gallery[0].url)}
                       resourceId={ad.id}
                       adFormat={ad.ad_format || 'feed'}
-                      aspectRatio={(ad as any).aspect_ratio && (ad as any).aspect_ratio !== 'grid' && (ad as any).aspect_ratio !== 'auto' ? (ad as any).aspect_ratio : (ad.ad_format === 'reel' || ad.ad_format === 'story' ? '9:16' : '16:9')}
+                      aspectRatio={(ad as any).aspect_ratio && (ad as any).aspect_ratio !== 'grid' && (ad as any).aspect_ratio !== 'auto' ? (ad as any).aspect_ratio : (ad.ad_format === 'reel' || ad.ad_format === 'story' ? '9:16' : 'auto')}
                       posterUrl={getMediaUrl(ad.media_gallery[0].thumbnailUrl || ad.image_url)}
                       title={ad.title}
                       isRtl={isRtl}
@@ -1022,7 +1060,7 @@ export const PostFeed: React.FC<PostFeedProps> = ({
                         url={getMediaUrl(ad.video_url)}
                         resourceId={ad.id}
                         adFormat={ad.ad_format || 'feed'}
-                        aspectRatio={(ad as any).aspect_ratio && (ad as any).aspect_ratio !== 'grid' && (ad as any).aspect_ratio !== 'auto' ? (ad as any).aspect_ratio : (ad.ad_format === 'reel' || ad.ad_format === 'story' ? '9:16' : '16:9')}
+                        aspectRatio={(ad as any).aspect_ratio && (ad as any).aspect_ratio !== 'grid' && (ad as any).aspect_ratio !== 'auto' ? (ad as any).aspect_ratio : (ad.ad_format === 'reel' || ad.ad_format === 'story' ? '9:16' : 'auto')}
                         posterUrl={getMediaUrl(ad.image_url)}
                         title={ad.title}
                         isRtl={isRtl}
@@ -1198,8 +1236,12 @@ export const PostFeed: React.FC<PostFeedProps> = ({
                  <AnimatePresence>
                    {reactionBarAdId === ad.id && (
                      <div
-                       className="absolute bottom-full pb-2 z-50 pointer-events-auto left-1/2 -translate-x-1/2 w-auto"
-                       onMouseEnter={() => handleLikeMouseEnter(ad.id)}
+                       className={`absolute bottom-full pb-2.5 z-50 pointer-events-auto ${
+                         isRtl
+                           ? 'right-0 sm:right-1 origin-bottom-right'
+                           : 'left-0 sm:left-1 origin-bottom-left'
+                       } max-w-[calc(100vw-24px)]`}
+                       onMouseEnter={() => handleBarMouseEnter(ad.id)}
                        onMouseLeave={handleLikeMouseLeave}
                      >
                        <motion.div
@@ -1207,8 +1249,8 @@ export const PostFeed: React.FC<PostFeedProps> = ({
                          animate={{ opacity: 1, y: 0, scale: 1 }}
                          exit={{ opacity: 0, y: 4, scale: 0.88 }}
                          transition={{ duration: 0.16, ease: 'easeOut' }}
-                         className="vb-emoji-bar w-auto select-none"
-                         onMouseEnter={() => handleLikeMouseEnter(ad.id)}
+                         className="vb-emoji-bar w-auto select-none shadow-xl"
+                         onMouseEnter={() => handleBarMouseEnter(ad.id)}
                          onMouseLeave={handleLikeMouseLeave}
                        >
                          {FB_REACTIONS.map((reac) => (
@@ -1220,7 +1262,7 @@ export const PostFeed: React.FC<PostFeedProps> = ({
                                handleSelectPostReaction(ad.id, reac.id);
                              }}
                              onMouseEnter={() => {
-                               handleLikeMouseEnter(ad.id);
+                               handleBarMouseEnter(ad.id);
                                setHoveredReactionId(reac.id);
                              }}
                              onMouseLeave={() => setHoveredReactionId(null)}

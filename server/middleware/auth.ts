@@ -74,7 +74,7 @@ export const authenticateToken = (req: Request, res: Response, next: NextFunctio
         return;
       }
 
-      jwt.verify(token, jwtSecret, async (err: any, user: any) => {
+      jwt.verify(token, jwtSecret, { algorithms: ['HS256'] }, async (err: any, user: any) => {
         if (err) {
           try {
             const { publicKeyPem } = getOrCreateSigningKeys();

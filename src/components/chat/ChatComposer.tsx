@@ -510,14 +510,14 @@ export const ChatComposer: React.FC<ChatComposerProps> = ({
                 ? (dir === 'rtl' ? 'يرجى تفعيل باقة اشتراك أو شحن الرصيد للبدء بالاستخدام...' : 'Please activate a subscription plan or top up your balance to start...')
                 : (dir === 'rtl' ? 'اكتب موضوع البحث أو التحليل المطلوب...' : 'Type search topic or required analysis...')
             }
-            className={`w-full bg-transparent text-[16px] sm:text-sm text-[var(--text-primary)] placeholder:text-[var(--text-muted)] focus:outline-none resize-none leading-relaxed font-sans min-h-[48px] ${dir === 'rtl' ? 'text-right' : 'text-left'} ${isInputDisabled ? 'cursor-not-allowed opacity-60' : ''}`}
+            className={`w-full bg-transparent text-[16px] sm:text-sm text-[var(--text-primary)] placeholder:text-[var(--text-muted)] focus:outline-none resize-none leading-relaxed font-sans min-h-[48px] custom-scrollbar ${dir === 'rtl' ? 'text-right' : 'text-left'} ${isInputDisabled ? 'cursor-not-allowed opacity-60' : ''}`}
             dir={dir || "rtl"}
             rows={2}
             style={{ minHeight: '48px', maxHeight: '200px', height: '48px' }}
           />
 
           {query.length > 500 && (
-            <span className={`absolute bottom-[60px] ${dir === 'rtl' ? 'left-4' : 'right-4'} text-[10px] font-mono select-none pointer-events-none transition-theme ${query.length > 15000 ? 'text-red-500 font-bold drop-shadow-[0_0_4px_rgba(239,68,68,0.5)]' : 'text-[var(--text-muted)]'}`}>
+            <span className={`absolute bottom-[60px] ${dir === 'rtl' ? 'left-4' : 'right-4'} text-[10px] font-mono select-none pointer-events-none transition-theme ${query.length > 15000 ? 'text-[var(--fg-danger)] font-bold' : 'text-[var(--text-muted)]'}`}>
               {query.length.toLocaleString()} / 16,000
             </span>
           )}
@@ -546,7 +546,7 @@ export const ChatComposer: React.FC<ChatComposerProps> = ({
                                   setIsAdvancedToolsOpen(false);
                                 }
                               }}
-                              className={`w-8 h-8 sm:w-auto sm:px-2.5 sm:h-8 flex items-center justify-center gap-1 sm:gap-1.5 rounded-shape-sm border border-[var(--border-default)] hover:border-[var(--border-accent)]/60 transition-colors duration-200 text-xs font-mono cursor-pointer shrink-0 bg-transparent ${
+                              className={`w-8 h-8 sm:w-auto sm:px-2.5 sm:h-8 flex items-center justify-center gap-1 sm:gap-1.5 rounded-shape-sm border border-[var(--border-default)] hover:border-[var(--border-accent)]/60 transition-all duration-200 active:scale-95 text-xs font-mono cursor-pointer shrink-0 bg-transparent ${
                                 isModelActive 
                                   ? 'text-[var(--text-primary)]' 
                                   : 'text-[var(--text-muted)] hover:text-[var(--text-primary)] shadow-2xs'
@@ -659,7 +659,7 @@ export const ChatComposer: React.FC<ChatComposerProps> = ({
                                   setIsModelMenuOpen(false);
                                 }
                               }}
-                              className={`w-8 h-8 sm:w-auto sm:px-2.5 sm:h-8 flex items-center justify-center gap-1 sm:gap-1.5 rounded-shape-sm border border-[var(--border-default)] hover:border-[var(--border-accent)]/60 transition-colors duration-200 text-xs font-medium cursor-pointer shrink-0 bg-transparent ${
+                              className={`w-8 h-8 sm:w-auto sm:px-2.5 sm:h-8 flex items-center justify-center gap-1 sm:gap-1.5 rounded-shape-sm border border-[var(--border-default)] hover:border-[var(--border-accent)]/60 transition-all duration-200 active:scale-95 text-xs font-medium cursor-pointer shrink-0 bg-transparent ${
                                 isToolActive 
                                   ? 'text-[var(--text-primary)]' 
                                   : 'text-[var(--text-muted)] hover:text-[var(--text-primary)] shadow-2xs'
@@ -709,7 +709,7 @@ export const ChatComposer: React.FC<ChatComposerProps> = ({
                                           setActiveDropdown('tool');
                                           setIsAdvancedToolsOpen(false);
                                         }}
-                                        className={`group flex items-center justify-between w-full h-[36px] min-h-[36px] px-3 py-2 rounded-shape-sm transition-all duration-fast text-xs font-medium cursor-pointer select-none ${
+                                        className={`group flex items-center justify-between w-full h-[36px] min-h-[36px] px-3 py-2 rounded-shape-sm transition-all duration-fast text-xs font-medium cursor-pointer select-none active:scale-98 ${
                                           isLocked 
                                             ? 'opacity-40 cursor-not-allowed text-[var(--text-disabled)]'
                                             : isSelected 
@@ -770,13 +770,13 @@ export const ChatComposer: React.FC<ChatComposerProps> = ({
                       type="button"
                       onClick={toggleRecording}
                       disabled={isInputDisabled}
-                      className={`w-8 h-8 sm:w-auto sm:px-2.5 sm:h-8 flex items-center justify-center gap-1 sm:gap-1.5 rounded-shape-sm border transition-colors duration-200 text-xs font-medium disabled:opacity-30 disabled:cursor-not-allowed shrink-0 cursor-pointer bg-transparent ${
+                      className={`w-8 h-8 sm:w-auto sm:px-2.5 sm:h-8 flex items-center justify-center gap-1 sm:gap-1.5 rounded-shape-sm border transition-all duration-200 active:scale-95 text-xs font-medium disabled:opacity-30 disabled:cursor-not-allowed shrink-0 cursor-pointer bg-transparent ${
                         isRecording 
-                          ? 'border-rose-500/60 hover:border-rose-400 text-[var(--text-primary)] animate-pulse' 
+                          ? 'border-[var(--fg-danger)]/60 text-[var(--fg-danger)] animate-pulse' 
                           : 'border-[var(--border-default)] hover:border-[var(--border-accent)]/60 text-[var(--text-muted)] hover:text-[var(--text-primary)] shadow-2xs'
                       }`}
                     >
-                      <Mic className={`w-3.5 h-3.5 shrink-0 transition-all duration-300 ${isRecording ? 'text-rose-500 dark:text-rose-400 drop-shadow-[0_0_8px_rgba(244,63,94,0.95)]' : 'text-[var(--text-muted)]'}`} />
+                      <Mic className={`w-3.5 h-3.5 shrink-0 transition-all duration-300 ${isRecording ? 'text-[var(--fg-danger)]' : 'text-[var(--text-muted)]'}`} />
                       <span className="hidden sm:inline whitespace-nowrap">{isRecording ? (dir === 'rtl' ? 'تسجيل...' : 'Recording...') : (dir === 'rtl' ? 'صوت' : 'Voice')}</span>
                     </button>
               </div>
@@ -790,7 +790,7 @@ export const ChatComposer: React.FC<ChatComposerProps> = ({
                   }
                 }}
                 disabled={isInputDisabled}
-                className="w-8 h-8 sm:w-auto sm:px-2.5 sm:h-8 flex items-center justify-center gap-1 sm:gap-1.5 rounded-shape-sm border border-[var(--border-default)] bg-transparent hover:border-[var(--border-accent)]/60 text-[var(--text-muted)] hover:text-[var(--text-primary)] transition-colors duration-200 text-xs font-medium disabled:opacity-30 disabled:cursor-not-allowed shrink-0 cursor-pointer shadow-2xs"
+                className="w-8 h-8 sm:w-auto sm:px-2.5 sm:h-8 flex items-center justify-center gap-1 sm:gap-1.5 rounded-shape-sm border border-[var(--border-default)] bg-transparent hover:border-[var(--border-accent)]/60 text-[var(--text-muted)] hover:text-[var(--text-primary)] transition-all duration-200 active:scale-95 text-xs font-medium disabled:opacity-30 disabled:cursor-not-allowed shrink-0 cursor-pointer shadow-2xs"
               >
                 <Paperclip className="w-3.5 h-3.5 text-[var(--text-muted)] shrink-0" />
                 <span className="hidden sm:inline whitespace-nowrap">{dir === 'rtl' ? 'إرفاق' : 'Attach'}</span>
@@ -804,9 +804,9 @@ export const ChatComposer: React.FC<ChatComposerProps> = ({
                 handleSendOrStop();
               }}
               disabled={!query.trim() && !isGenerating}
-              className={`w-8 h-8 rounded-shape-sm flex items-center justify-center shrink-0 active:scale-[0.98] transition-all duration-fast border cursor-pointer ${
+              className={`w-8 h-8 rounded-shape-sm flex items-center justify-center shrink-0 active:scale-95 transition-all duration-fast border cursor-pointer ${
                 isGenerating
-                  ? 'bg-rose-500 text-white border-rose-500 hover:bg-rose-600 font-bold shadow-md shadow-rose-500/20 animate-pulse'
+                  ? 'bg-[var(--fg-danger)] text-white border-[var(--fg-danger)] hover:opacity-90 font-bold shadow-md animate-pulse'
                   : query.trim()
                     ? 'bg-[var(--accent)] text-[var(--fg-on-emphasis)] border-[var(--border-accent)] hover:opacity-90 font-bold shadow-xs'
                     : 'bg-[var(--surface-card)] text-[var(--text-muted)] border-[var(--border-default)] opacity-40 cursor-not-allowed'

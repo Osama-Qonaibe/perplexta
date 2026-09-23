@@ -87,8 +87,8 @@ export const getToolDetails = (toolId: string | undefined, dir: 'ltr' | 'rtl', t
       return {
         label: dir === 'rtl' ? 'مساعد الإعلانات' : 'Ads Copilot',
         icon: Megaphone,
-        colorClass: 'text-amber-500',
-        bgClass: 'bg-amber-500/10 border-amber-500/20'
+        colorClass: 'text-[var(--status-warning)]',
+        bgClass: 'bg-[var(--surface-subtle)] border-[var(--border-default)]'
       };
     case 'audio_studio':
     case 'canvas':
@@ -96,21 +96,21 @@ export const getToolDetails = (toolId: string | undefined, dir: 'ltr' | 'rtl', t
         label: dir === 'rtl' ? 'استوديو الصوتيات' : 'Audio Studio',
         icon: Music,
         colorClass: 'text-[var(--fg-accent)]',
-        bgClass: 'bg-[var(--bg-accent-muted)] border-[var(--border-accent)]/20'
+        bgClass: 'bg-[var(--surface-subtle)] border-[var(--border-default)]'
       };
     case 'tts':
       return {
         label: dir === 'rtl' ? 'صوتيات' : 'Text to Speech',
         icon: Volume2,
-        colorClass: 'text-blue-500',
-        bgClass: 'bg-blue-500/10 border-blue-500/20'
+        colorClass: 'text-[var(--fg-accent)]',
+        bgClass: 'bg-[var(--surface-subtle)] border-[var(--border-default)]'
       };
     case 'stt':
       return {
         label: dir === 'rtl' ? 'مسجل صوتی' : 'Speech to Text',
         icon: Mic,
-        colorClass: 'text-orange-500',
-        bgClass: 'bg-orange-500/10 border-orange-500/20'
+        colorClass: 'text-[var(--status-warning)]',
+        bgClass: 'bg-[var(--surface-subtle)] border-[var(--border-default)]'
       };
     default:
       return {

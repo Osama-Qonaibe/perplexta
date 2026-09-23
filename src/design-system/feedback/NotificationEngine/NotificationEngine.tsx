@@ -103,7 +103,35 @@ const formatConciseText = (rawMessage?: string, rawTitle?: string, type: Notific
       if (cleaned.includes('فشل') || cleaned.includes('خطأ') || type === 'error') return 'فشل الحذف';
       return 'تم الحذف';
     }
-    if (cleaned.includes('نشر') || cleaned.toLowerCase().includes('publish') || cleaned.toLowerCase().includes('posted')) {
+    if (cleaned.includes('رفع') || cleaned.toLowerCase().includes('upload') || cleaned.toLowerCase().includes('uploaded')) {
+      if (cleaned.includes('فشل') || cleaned.includes('خطأ') || type === 'error') return 'فشل الرفع';
+      return 'تم الرفع';
+    }
+    if (cleaned.includes('تجهيز') || cleaned.includes('جاهز') || cleaned.toLowerCase().includes('ready')) {
+      return 'تم التجهيز';
+    }
+    if (cleaned.includes('قص') || cleaned.toLowerCase().includes('trim') || cleaned.toLowerCase().includes('trimmed')) {
+      return 'تم الضبط والقص';
+    }
+    // Specific media, cover, and card attachment events MUST NOT be collapsed to 'تم النشر'
+    if (cleaned.includes('غلاف') || cleaned.includes('لقطة') || cleaned.toLowerCase().includes('cover') || cleaned.toLowerCase().includes('frame')) {
+      return 'تم اختيار الغلاف';
+    }
+    if (cleaned.includes('إرفاق') || cleaned.includes('إضافة') || cleaned.includes('تطبيق') || cleaned.toLowerCase().includes('attach') || cleaned.toLowerCase().includes('added')) {
+      if (cleaned.includes('فيديو') || cleaned.toLowerCase().includes('video')) return 'تم إرفاق الفيديو';
+      if (cleaned.includes('صورة') || cleaned.toLowerCase().includes('image') || cleaned.toLowerCase().includes('photo')) return 'تم إرفاق الصورة';
+      return 'تم الإرفاق';
+    }
+
+    // Strip noun forms of 'post' ('منشور', 'المنشور', 'منشورك', etc.) so they do not falsely trigger the verb 'نشر' (to publish)
+    const textWithoutPostNoun = cleaned.replace(/المنشورات|المنشور|منشورات|منشورك|منشوره|منشورها|منشورهم|منشور/gu, '');
+    const isExplicitPublish = 
+      /تم(\s+)?نشر|جاري(\s+)?نشر|فشل(\s+)?نشر|تمت(\s+)?عملية(\s+)?النشر|نشرت|نُشر/gu.test(cleaned) ||
+      (textWithoutPostNoun.includes('نشر') || cleaned.toLowerCase().includes('published') || cleaned.toLowerCase().includes('publish '));
+
+    // Only return 'تم النشر' if this is an explicit post publication event, not a preparation/upload event
+    const isPreparation = cleaned.includes('جاهز') || cleaned.includes('تجهيز') || cleaned.includes('تحميل') || cleaned.includes('رفع') || cleaned.includes('معاينة') || cleaned.includes('قص') || cleaned.includes('ضبط');
+    if (!isPreparation && isExplicitPublish) {
       if (cleaned.includes('فشل') || cleaned.includes('خطأ') || type === 'error') return 'فشل النشر';
       return 'تم النشر';
     }
@@ -125,7 +153,18 @@ const formatConciseText = (rawMessage?: string, rawTitle?: string, type: Notific
       if (cleaned.toLowerCase().includes('fail') || cleaned.toLowerCase().includes('error') || type === 'error') return 'Delete failed';
       return 'Deleted';
     }
-    if (cleaned.toLowerCase().includes('publish') || cleaned.toLowerCase().includes('post') || cleaned.toLowerCase().includes('posted')) {
+    if (cleaned.toLowerCase().includes('upload') || cleaned.toLowerCase().includes('uploaded')) {
+      if (cleaned.toLowerCase().includes('fail') || cleaned.toLowerCase().includes('error') || type === 'error') return 'Upload failed';
+      return 'Uploaded';
+    }
+    if (cleaned.toLowerCase().includes('ready') || cleaned.toLowerCase().includes('prepared')) {
+      return 'Ready';
+    }
+    if (cleaned.toLowerCase().includes('trim') || cleaned.toLowerCase().includes('trimmed')) {
+      return 'Trimmed';
+    }
+    const isPrepEn = cleaned.toLowerCase().includes('ready') || cleaned.toLowerCase().includes('upload') || cleaned.toLowerCase().includes('preview');
+    if (!isPrepEn && (cleaned.toLowerCase().includes('publish') || cleaned.toLowerCase().includes('posted') || cleaned.toLowerCase().includes('published'))) {
       if (cleaned.toLowerCase().includes('fail') || cleaned.toLowerCase().includes('error') || type === 'error') return 'Publish failed';
       return 'Published';
     }

@@ -6,6 +6,7 @@ import { authenticateAdmin } from '../middleware/auth.js';
 import { Advertisement } from '../db/types.js';
 import { formatDatabaseError } from '../utils/dbErrors.js';
 import { getCachedSystemSettings } from '../db/queries.js';
+import { getMasterAdCategories, getCategoryGroups } from '../services/system.js';
 
 const router = express.Router();
 
@@ -76,6 +77,41 @@ async function verifyImageUrl(url?: string | null): Promise<string> {
   }
   return fallback;
 }
+
+/**
+ * GET /api/ads/categories
+ * Fetch the master list of business, technology, and industry categories for targeted advertising
+ */
+router.get('/categories', async (req, res) => {
+  try {
+    const { q, search, group, groupId, featured, limit, offset } = req.query;
+    const queryTerm = (q || search || '') as string;
+    const groupTerm = (groupId || group || 'all') as string;
+    const isFeatured = featured === 'true' ? true : (featured === 'false' ? false : undefined);
+    const parsedLimit = limit ? Math.min(200, Math.max(1, parseInt(String(limit), 10))) : 100;
+    const parsedOffset = offset ? Math.max(0, parseInt(String(offset), 10)) : 0;
+
+    const data = await getMasterAdCategories({
+      query: queryTerm,
+      groupId: groupTerm,
+      isFeatured,
+      limit: parsedLimit,
+      offset: parsedOffset
+    });
+
+    res.json({
+      success: true,
+      categories: data.categories,
+      groups: data.groups,
+      total: data.total,
+      limit: parsedLimit,
+      offset: parsedOffset
+    });
+  } catch (error: any) {
+    console.error('[Ads API] Error fetching ad categories:', error?.message || error);
+    res.status(500).json({ error: 'Failed to fetch categories for targeted advertising' });
+  }
+});
 
 /**
  * GET /api/ads

@@ -235,7 +235,7 @@ export const MobileWalletView: React.FC<MobileWalletViewProps> = ({
             <Plus size={20} strokeWidth={2.5} />
           </div>
           <span className={`text-[11px] font-bold leading-none ${activeTab === 'deposit' ? 'text-white' : 'text-[var(--text-primary)]'}`}>
-            {isRtl ? 'إيداع' : 'Top Up'}
+            {isRtl ? 'إيداع رصيد' : 'Deposit Funds'}
           </span>
         </button>
 
@@ -397,7 +397,7 @@ export const MobileWalletView: React.FC<MobileWalletViewProps> = ({
                 </div>
                 <div>
                   <h3 className="text-xs font-black text-[var(--text-primary)]">
-                    {isRtl ? 'شحن رصيد المحفظة الفوري' : 'Instant Top Up Portal'}
+                    {isRtl ? 'بوابة إيداع الرصيد المباشر' : 'Instant Deposit Portal'}
                   </h3>
                   <p className="text-[10px] text-[var(--text-muted)]">
                     {isRtl ? 'الحد الأدنى: 10$ | الحد الأقصى: 1000$' : 'Min: $10 | Max: $1,000 USD'}

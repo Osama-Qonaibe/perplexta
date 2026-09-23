@@ -499,7 +499,7 @@ export const StoryViewerModal: React.FC<StoryViewerModalProps> = ({
                     type="button"
                     onClick={(e) => { e.stopPropagation(); setIsMuted(!isMuted); }}
                     aria-label={isMuted ? 'Unmute' : 'Mute'}
-                    className="w-9 h-9 min-h-[44px] min-w-[44px] rounded-full bg-black/40 backdrop-blur-md flex items-center justify-center text-white hover:bg-white/20 transition-colors cursor-pointer"
+                    className="w-9 h-9 min-h-[44px] min-w-[44px] rounded-shape-sm bg-black/40 backdrop-blur-md flex items-center justify-center text-white hover:bg-white/20 transition-colors cursor-pointer"
                   >
                     {isMuted ? <VolumeX size={18} /> : <Volume2 size={18} />}
                   </button>
@@ -508,7 +508,7 @@ export const StoryViewerModal: React.FC<StoryViewerModalProps> = ({
                   type="button"
                   onClick={(e) => { e.stopPropagation(); onClose(); }}
                   aria-label="Close"
-                  className="w-9 h-9 min-h-[44px] min-w-[44px] rounded-full bg-black/40 backdrop-blur-md flex items-center justify-center text-white hover:bg-white/20 transition-colors cursor-pointer"
+                  className="w-9 h-9 min-h-[44px] min-w-[44px] rounded-shape-sm bg-black/40 backdrop-blur-md flex items-center justify-center text-white hover:bg-white/20 transition-colors cursor-pointer"
                 >
                   <X size={20} />
                 </button>

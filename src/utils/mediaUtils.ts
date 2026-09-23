@@ -54,7 +54,7 @@ export function parseVideoUrl(url: string): VideoInfo {
 export function getAspectRatioClass(aspectRatio?: string, adFormat?: string): string {
   // Vertical 9:16 Reels/Stories inside newsfeed cards
   if (aspectRatio === '9:16' || adFormat === 'reel' || adFormat === 'story') {
-    return 'aspect-[9/16] sm:aspect-[4/5] max-h-[520px] mx-auto';
+    return 'aspect-[9/16] max-h-[540px] mx-auto';
   }
   if (aspectRatio === '4:5' || adFormat === 'portrait') {
     return 'aspect-[4/5] max-h-[500px] mx-auto';
@@ -115,18 +115,16 @@ export interface VideoExtractedMetadata {
 
 export async function extractVideoMetadata(videoSource: File | string, seekTimeSeconds = 1.0): Promise<VideoExtractedMetadata> {
   return new Promise((resolve) => {
-    const video = document.createElement('video');
-    video.crossOrigin = 'anonymous';
-    video.muted = true;
-    video.playsInline = true;
-
-    let objectUrl = '';
-    if (typeof videoSource === 'string') {
-      video.src = videoSource;
-    } else {
-      objectUrl = URL.createObjectURL(videoSource);
-      video.src = objectUrl;
-    }
+    let isSettled = false;
+    const finish = (res: VideoExtractedMetadata) => {
+      if (isSettled) return;
+      isSettled = true;
+      clearTimeout(timer);
+      if (objectUrl) {
+        try { URL.revokeObjectURL(objectUrl); } catch (_) {}
+      }
+      resolve(res);
+    };
 
     const result: VideoExtractedMetadata = {
       thumbnail: '',
@@ -137,6 +135,27 @@ export async function extractVideoMetadata(videoSource: File | string, seekTimeS
       isVertical: false
     };
 
+    // Safety timeout: resolve within 3.5s max so UI never hangs
+    const timer = setTimeout(() => {
+      finish(result);
+    }, 3500);
+
+    const video = document.createElement('video');
+    if (typeof videoSource === 'string' && !videoSource.startsWith('blob:') && !videoSource.startsWith('data:')) {
+      video.crossOrigin = 'anonymous';
+    }
+    video.muted = true;
+    video.playsInline = true;
+    video.preload = 'metadata';
+
+    let objectUrl = '';
+    if (typeof videoSource === 'string') {
+      video.src = videoSource;
+    } else {
+      objectUrl = URL.createObjectURL(videoSource);
+      video.src = objectUrl;
+    }
+
     video.addEventListener('loadedmetadata', () => {
       result.duration = video.duration || 0;
       result.width = video.videoWidth || 0;
@@ -144,25 +163,30 @@ export async function extractVideoMetadata(videoSource: File | string, seekTimeS
 
       if (result.width > 0 && result.height > 0) {
         const ratioNum = result.width / result.height;
-        if (ratioNum <= 0.65) {
+        if (ratioNum <= 0.68) {
           result.aspectRatio = '9:16';
           result.isVertical = true;
-        } else if (ratioNum >= 0.75 && ratioNum <= 0.85) {
+        } else if (ratioNum > 0.68 && ratioNum < 0.92) {
           result.aspectRatio = '4:5';
           result.isVertical = true;
-        } else if (ratioNum >= 0.95 && ratioNum <= 1.05) {
+        } else if (ratioNum >= 0.92 && ratioNum <= 1.15) {
           result.aspectRatio = '1:1';
           result.isVertical = false;
-        } else if (ratioNum >= 2.0) {
-          result.aspectRatio = '21:9';
+        } else if (ratioNum > 1.15 && ratioNum < 1.9) {
+          result.aspectRatio = '16:9';
           result.isVertical = false;
         } else {
-          result.aspectRatio = '16:9';
+          result.aspectRatio = '21:9';
           result.isVertical = false;
         }
       }
 
-      video.currentTime = Math.max(0, Math.min(seekTimeSeconds, video.duration ? video.duration - 0.1 : 0.5));
+      const targetSeek = Math.max(0, Math.min(seekTimeSeconds, video.duration ? Math.max(0.1, video.duration - 0.1) : 0.5));
+      try {
+        video.currentTime = targetSeek;
+      } catch (_) {
+        finish(result);
+      }
     });
 
     video.addEventListener('seeked', () => {
@@ -179,16 +203,129 @@ export async function extractVideoMetadata(videoSource: File | string, seekTimeS
       } catch {
         // Fallthrough
       }
-      if (objectUrl) URL.revokeObjectURL(objectUrl);
-      resolve(result);
+      finish(result);
     });
 
     video.addEventListener('error', () => {
-      if (objectUrl) URL.revokeObjectURL(objectUrl);
-      resolve(result);
+      finish(result);
     });
 
     video.load();
+  });
+}
+
+export interface RecommendedFrameItem {
+  time: number;
+  timeLabel: string;
+  dataUrl: string;
+}
+
+/**
+ * Rapidly extracts 5-7 recommended stopping/cover keyframes from a video file or URL.
+ * Designed for sub-second execution with non-blocking per-frame timeouts.
+ */
+export async function extractRecommendedVideoFrames(
+  videoSource: File | string,
+  targetCount = 6
+): Promise<RecommendedFrameItem[]> {
+  return new Promise((resolve) => {
+    let objectUrl = '';
+    const src = typeof videoSource === 'string' ? videoSource : (objectUrl = URL.createObjectURL(videoSource));
+    
+    const video = document.createElement('video');
+    if (typeof videoSource === 'string' && !videoSource.startsWith('blob:') && !videoSource.startsWith('data:')) {
+      video.crossOrigin = 'anonymous';
+    }
+    video.muted = true;
+    video.playsInline = true;
+    video.preload = 'metadata';
+    video.src = src;
+
+    const cleanup = () => {
+      if (objectUrl) {
+        try { URL.revokeObjectURL(objectUrl); } catch (_) {}
+      }
+    };
+
+    // Overall fail-safe timeout
+    const overallTimeout = setTimeout(() => {
+      cleanup();
+      resolve([]);
+    }, 8000);
+
+    video.onloadedmetadata = async () => {
+      const dur = video.duration || 1;
+      // Calculate evenly spaced time positions across the duration
+      const points = [];
+      const step = dur / (targetCount + 1);
+      for (let i = 1; i <= targetCount; i++) {
+        points.push(Math.min(dur - 0.05, Math.max(0.1, i * step)));
+      }
+
+      const results: RecommendedFrameItem[] = [];
+
+      for (const t of points) {
+        try {
+          const frameUrl = await new Promise<string>((res) => {
+            let done = false;
+            const singleTimer = setTimeout(() => {
+              if (!done) { done = true; res(''); }
+            }, 1200);
+
+            const onSeeked = () => {
+              if (done) return;
+              done = true;
+              clearTimeout(singleTimer);
+              video.removeEventListener('seeked', onSeeked);
+              try {
+                const canvas = document.createElement('canvas');
+                const vw = video.videoWidth || 640;
+                const vh = video.videoHeight || 480;
+                const maxDim = 480;
+                const scale = Math.min(1, maxDim / Math.max(vw, vh));
+                canvas.width = Math.max(80, Math.round(vw * scale));
+                canvas.height = Math.max(80, Math.round(vh * scale));
+                const ctx = canvas.getContext('2d');
+                if (ctx) {
+                  ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+                  res(canvas.toDataURL('image/jpeg', 0.82));
+                  return;
+                }
+              } catch (_) {}
+              res('');
+            };
+
+            video.addEventListener('seeked', onSeeked, { once: true });
+            if (typeof (video as any).fastSeek === 'function') {
+              try {
+                (video as any).fastSeek(t);
+              } catch (_) {
+                video.currentTime = t;
+              }
+            } else {
+              video.currentTime = t;
+            }
+          });
+
+          if (frameUrl) {
+            const mins = Math.floor(t / 60);
+            const secs = Math.floor(t % 60);
+            const timeLabel = `${mins < 10 ? '0' : ''}${mins}:${secs < 10 ? '0' : ''}${secs}`;
+            results.push({ time: t, timeLabel, dataUrl: frameUrl });
+          }
+        } catch (_) {}
+      }
+
+      clearTimeout(overallTimeout);
+      cleanup();
+      resolve(results);
+    };
+
+    video.onerror = () => {
+      clearTimeout(overallTimeout);
+      cleanup();
+      resolve([]);
+    };
   });
 }
 

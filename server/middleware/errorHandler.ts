@@ -72,8 +72,14 @@ export function errorHandler(
     `);
   }
 
+  const isProd = process.env.NODE_ENV === 'production';
+  const isInternal500 = statusCode >= 500 && !(err as AppError).isOperational;
+  const safeMessage = (isProd && isInternal500) ? 'An internal server error occurred' : err.message;
+  const safeMessageAr = (isProd && isInternal500) ? 'حدث خطأ داخلي في الخادم، يرجى المحاولة لاحقاً' : undefined;
+
   res.status(statusCode).json({
-    error: err.message,
+    error: safeMessage,
+    error_ar: safeMessageAr,
     code,
     ...(process.env.NODE_ENV !== 'production' && { stack: err.stack })
   });

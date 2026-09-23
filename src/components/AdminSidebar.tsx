@@ -118,10 +118,10 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({
                 onClick={() => {
                   if (onClose) onClose();
                 }}
-                className={`group relative flex items-center gap-2 px-2.5 py-1.5 min-h-[36px] rounded-shape-sm transition-all duration-fast border cursor-pointer select-none ${
+                className={`group relative flex items-center gap-2 px-2.5 py-1.5 min-h-[36px] rounded-shape-sm transition-all duration-fast cursor-pointer select-none ${
                   isItemActive
-                    ? 'bg-[var(--bg-accent-muted)] text-[var(--fg-accent)] font-semibold border-[var(--border-accent)]/30'
-                    : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--surface-subtle)]/20 border-transparent'
+                    ? HOVER_STYLES.sidebarItemActive
+                    : HOVER_STYLES.sidebarItem
                 }`}
               >
                 <div className={`w-5 h-5 flex-shrink-0 flex items-center justify-center transition-colors duration-fast ${

@@ -762,6 +762,9 @@ export interface BulletinAd {
   boosted_until?: Date | string | null;
   boost_tier?: string | null;
   boost_price?: number;
+  boost_goal?: string | null;
+  boost_daily_budget?: number;
+  boost_settings?: any;
   starts_at?: Date | string | null;
   expires_at?: Date | string | null;
   created_at: Date | string;

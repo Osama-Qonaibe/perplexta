@@ -779,6 +779,22 @@ export const CORE_SCHEMA_TABLES: { name: string; query: string }[] = [
       )`
   },
   {
+    name: 'platform_categories',
+    query: `CREATE TABLE IF NOT EXISTS platform_categories (
+        id VARCHAR(100) PRIMARY KEY,
+        name_ar VARCHAR(255) NOT NULL,
+        name_en VARCHAR(255) NOT NULL,
+        group_id VARCHAR(100) NOT NULL,
+        group_ar VARCHAR(255) NOT NULL,
+        group_en VARCHAR(255) NOT NULL,
+        icon VARCHAR(50) DEFAULT 'Layers',
+        audience_reach BIGINT DEFAULT 150000,
+        keywords TEXT[] DEFAULT '{}',
+        is_featured BOOLEAN DEFAULT false,
+        created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+      )`
+  },
+  {
     name: 'user_media_preferences',
     query: `CREATE TABLE IF NOT EXISTS user_media_preferences (
         id SERIAL PRIMARY KEY,
@@ -1234,7 +1250,10 @@ export async function applyCoreColumnEnforcements(targetPool: QueryClient) {
     is_partnership: { type: 'BOOLEAN', default: false },
     partnership_brand: { type: 'VARCHAR(255)' },
     deleted_at: { type: 'TIMESTAMP' },
-    archived_at: { type: 'TIMESTAMP' }
+    archived_at: { type: 'TIMESTAMP' },
+    boost_goal: { type: 'VARCHAR(100)', default: "'whatsapp_leads'" },
+    boost_daily_budget: { type: 'NUMERIC(10,2)', default: 2.00 },
+    boost_settings: { type: 'JSONB', default: "'{}'" }
   });
 
   await ensureColumnsBulk(targetPool, 'bulletin_pages', {

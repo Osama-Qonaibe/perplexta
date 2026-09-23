@@ -5,6 +5,7 @@ import { TABLE_POOL_REGISTRY, hashStringToAdvisoryLockKey } from "./types.js";
 import { ensureColumnsBulk, ensureForeignKey, tableExists, columnExists, sanitizeForLogging, isValidIdentifier, safeQueryClient } from "./helpers.js";
 import { encrypt, decrypt } from "../../utils/crypto.js";
 import { syncAllContentSeoMetadata } from "../../services/seoSync.js";
+import { syncMasterCategoriesToDatabase } from "../../services/system.js";
 
 export async function runVersionedMigrations(
   client: any,
@@ -2663,6 +2664,90 @@ export async function runVersionedMigrations(
           .replace(/[\s_]+/g, '-') + '-' + pg.id;
         await tx.query(`UPDATE bulletin_pages SET slug = $1 WHERE id = $2 AND (slug IS NULL OR slug = '')`, [cleanSlug, pg.id]).catch(() => {});
       }
+    });
+
+    await runVersioned('v121_production_query_indexes_optimization', 'Create composite indexes on bulletin_ads, messages, and ledger_transactions for high-concurrency production', async (tx) => {
+      // 1. Core DB: Feed & Location composite indexes
+      await tx.query(`
+        CREATE INDEX IF NOT EXISTS idx_bulletin_ads_feed ON bulletin_ads (status, is_boosted DESC, created_at DESC) WHERE deleted_at IS NULL;
+        CREATE INDEX IF NOT EXISTS idx_bulletin_ads_location ON bulletin_ads (location_city, status, created_at DESC);
+        CREATE INDEX IF NOT EXISTS idx_messages_chat_created ON messages (chat_id, created_at ASC);
+      `).catch((err: any) => {
+        console.warn('[Migration v121] Notice creating core production indexes:', err.message);
+      });
+
+      // 2. Ledger DB: Ledger transactions composite index (strict segregation)
+      await ledgerTarget.query(`
+        CREATE INDEX IF NOT EXISTS idx_ledger_tx_user_created ON ledger_transactions (user_id, created_at DESC) WHERE is_hidden IS NOT TRUE;
+      `).catch((err: any) => {
+        console.warn('[Migration v121] Notice creating ledger production indexes:', err.message);
+      });
+    });
+
+    await runVersioned('v122_repair_gemini_orchestrator_fallbacks', 'Configure multi-layer silent fallbacks and update primary models in tool_orchestrator for 503 high-demand resilience', async (tx) => {
+      await tx.query(`
+        -- Fast chat & search tools: Primary gemini-3.8-flash, Fallback 1 gemini-3.6-flash, Fallback 2 gemini-3.1-flash-lite
+        UPDATE tool_orchestrator
+        SET primary_provider = 'google',
+            primary_model = 'models/gemini-3.8-flash',
+            fallback_1_provider = 'google',
+            fallback_1_model = 'models/gemini-3.6-flash',
+            fallback_2_provider = 'google',
+            fallback_2_model = 'models/gemini-3.1-flash-lite'
+        WHERE tool_id IN ('chat_fast', 'sovereign_search', 'ads_copilot', 'x402_api');
+
+        -- Deep reasoning & code tools: Primary gemini-3.8-flash, Fallback 1 gemini-3.1-pro-preview, Fallback 2 gemini-3.6-flash
+        UPDATE tool_orchestrator
+        SET primary_provider = 'google',
+            primary_model = 'models/gemini-3.8-flash',
+            fallback_1_provider = 'google',
+            fallback_1_model = 'models/gemini-3.1-pro-preview',
+            fallback_2_provider = 'google',
+            fallback_2_model = 'models/gemini-3.6-flash'
+        WHERE tool_id IN ('chat_pro', 'chat_reasoning', 'code', 'perplexta_analysis');
+
+        -- Ensure any other tool currently stuck on only gemini-3.6-flash has fallback protection
+        UPDATE tool_orchestrator
+        SET primary_model = 'models/gemini-3.8-flash',
+            fallback_1_provider = 'google',
+            fallback_1_model = 'models/gemini-3.6-flash'
+        WHERE primary_model = 'models/gemini-3.6-flash'
+          AND (fallback_1_model IS NULL OR fallback_1_model = '' OR fallback_1_model = 'models/gemini-3.6-flash')
+          AND tool_id NOT IN ('vision', 'perplexta_vision', 'image', 'video', 'canvas', 'stt', 'tts', 'perplexta_music');
+      `).catch((err: any) => {
+        console.warn('[Migration v122] Notice configuring orchestrator fallbacks:', err.message);
+      });
+    });
+
+    await runVersioned('v123_bulletin_ad_boost_settings', 'Add boost_goal, boost_daily_budget, boost_settings to bulletin_ads', async (tx) => {
+      await tx.query(`ALTER TABLE bulletin_ads ADD COLUMN IF NOT EXISTS boost_goal VARCHAR(100) DEFAULT 'whatsapp_leads'`);
+      await tx.query(`ALTER TABLE bulletin_ads ADD COLUMN IF NOT EXISTS boost_daily_budget NUMERIC(10,2) DEFAULT 2.00`);
+      await tx.query(`ALTER TABLE bulletin_ads ADD COLUMN IF NOT EXISTS boost_settings JSONB DEFAULT '{}'`);
+    });
+
+    await runVersioned('v124_platform_categories_and_targeting', 'Create and populate platform_categories table for rich business and interest targeting', async (tx) => {
+      await tx.query(`
+        CREATE TABLE IF NOT EXISTS platform_categories (
+          id VARCHAR(100) PRIMARY KEY,
+          name_ar VARCHAR(255) NOT NULL,
+          name_en VARCHAR(255) NOT NULL,
+          group_id VARCHAR(100) NOT NULL,
+          group_ar VARCHAR(255) NOT NULL,
+          group_en VARCHAR(255) NOT NULL,
+          icon VARCHAR(50) DEFAULT 'Layers',
+          audience_reach BIGINT DEFAULT 150000,
+          keywords TEXT[] DEFAULT '{}',
+          is_featured BOOLEAN DEFAULT false,
+          created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+        );
+
+        CREATE INDEX IF NOT EXISTS idx_platform_categories_group ON platform_categories (group_id);
+        CREATE INDEX IF NOT EXISTS idx_platform_categories_featured ON platform_categories (is_featured);
+      `);
+    });
+
+    await runVersioned('v125_ad_targeting_categories_seed', 'Seed master business and technology categories into platform_categories table for targeted advertising', async (tx) => {
+      await syncMasterCategoriesToDatabase(tx);
     });
     
   console.log("[Migrations] All versioned migrations completed successfully.");

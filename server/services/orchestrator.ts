@@ -629,12 +629,21 @@ Real-time verified web sources have been retrieved for this request and supplied
 ${contextSummary}${userMemoriesStr}
 ${refinedSystemPromptSegment}`.trim();
 
-  const modelsToTry = [
+  const rawModelsToTry = [
     { provider: route.primary_provider, model: route.primary_model },
     { provider: route.fallback_1_provider, model: route.fallback_1_model },
     { provider: route.fallback_2_provider, model: route.fallback_2_model },
     { provider: route.fallback_3_provider, model: route.fallback_3_model }
   ].filter(m => m.provider && m.model);
+
+  // Deduplicate sequential targets to prevent retrying the exact same failed model
+  const seenTargets = new Set<string>();
+  const modelsToTry = rawModelsToTry.filter(m => {
+    const key = `${(m.provider || '').toLowerCase().trim()}:${(m.model || '').toLowerCase().trim()}`;
+    if (seenTargets.has(key)) return false;
+    seenTargets.add(key);
+    return true;
+  });
 
   const vaultMap = new Map<string, any>();
   if (activeKeys && activeKeys.length > 0) {
@@ -838,10 +847,22 @@ ${refinedSystemPromptSegment}`.trim();
         console.error(`[Orchestrator] Failure on ${target.provider}/${displayModel}:`, innerErr);
 
         const errMessage = innerErr.message || '';
-        const isTemporaryRateLimit = errMessage.includes('429') || errMessage.toLowerCase().includes('rate limit') || errMessage.toLowerCase().includes('too many requests') || errMessage.toLowerCase().includes('resource_exhausted') || errMessage.toLowerCase().includes('quota') || errMessage.toLowerCase().includes('generativelanguage');
+        const isTemporaryRateLimit = 
+          errMessage.includes('429') || 
+          errMessage.includes('503') ||
+          errMessage.toLowerCase().includes('rate limit') || 
+          errMessage.toLowerCase().includes('too many requests') || 
+          errMessage.toLowerCase().includes('resource_exhausted') || 
+          errMessage.toLowerCase().includes('quota') || 
+          errMessage.toLowerCase().includes('high demand') ||
+          errMessage.toLowerCase().includes('unavailable') ||
+          errMessage.toLowerCase().includes('spikes in demand') ||
+          errMessage.toLowerCase().includes('overloaded') ||
+          errMessage.toLowerCase().includes('generativelanguage');
 
         if (isTemporaryRateLimit) {
-          console.warn(`[Orchestrator] Temporary 429 rate limit hit on provider "${target.provider}" / model "${target.model}". Proceeding to fallback if available.`);
+          const statusLabel = errMessage.includes('503') ? '503 high demand' : '429 rate limit / temporary overload';
+          console.warn(`[Orchestrator] Temporary ${statusLabel} on provider "${target.provider}" / model "${target.model}". Silently transitioning to next fallback in chain.`);
         }
 
         const isQuotaOrAuthExhausted =

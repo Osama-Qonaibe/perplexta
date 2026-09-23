@@ -1932,62 +1932,54 @@ body,
   justify-content: center !important;
   width: fit-content !important;
   min-width: auto !important;
+  max-width: 95vw !important;
   background-color: var(--surface-card, rgba(15, 23, 42, 0.95)) !important;
-  backdrop-filter: blur(12px) !important;
-  padding: 0.35rem 0.5rem !important;
+  backdrop-filter: blur(16px) !important;
+  padding: 0.25rem 0.4rem !important;
   border-radius: 9999px !important;
   border: 1px solid var(--border-default, rgba(255,255,255,0.15)) !important;
-  box-shadow: 0 12px 28px -5px rgba(0, 0, 0, 0.3) !important;
-  gap: 0.35rem !important;
+  box-shadow: 0 10px 25px -3px rgba(0, 0, 0, 0.28), 0 4px 6px -2px rgba(0, 0, 0, 0.15) !important;
+  gap: 0.25rem !important;
+  touch-action: pan-y !important;
 }
 
 .vb-emoji-btn {
   display: flex !important;
   align-items: center !important;
   justify-content: center !important;
-  width: 2.25rem !important; /* 36px */
-  height: 2.25rem !important; /* 36px */
+  width: 2.1rem !important; /* ~34px */
+  height: 2.1rem !important; /* ~34px */
   font-size: 1.25rem !important; /* text-xl */
-  transition: transform 150ms cubic-bezier(0.4, 0, 0.2, 1) !important;
+  transition: transform 140ms cubic-bezier(0.34, 1.56, 0.64, 1) !important;
   border-radius: 9999px !important;
   cursor: pointer !important;
   border: none !important;
   background-color: transparent !important;
   user-select: none !important;
   position: relative !important;
+  flex-shrink: 0 !important;
 }
 
 .vb-emoji-btn:hover {
-  transform: scale(1.45) translateY(-6px) !important;
+  transform: scale(1.35) translateY(-4px) !important;
 }
 
 .vb-emoji-btn:active {
-  transform: scale(0.95) !important;
+  transform: scale(0.92) !important;
 }
 
-/* Compact Vertical Floating Capsule Bar for Mobile Devices */
 @media (max-width: 639px) {
   .vb-emoji-bar {
-    flex-direction: column !important;
-    align-items: center !important;
-    justify-content: center !important;
-    width: fit-content !important;
-    min-width: auto !important;
-    padding: 0.375rem 0.25rem !important;
-    gap: 0.25rem !important;
-    border-radius: 9999px !important;
-    background-color: var(--surface-card, rgba(15, 23, 42, 0.92)) !important;
-    border: 1px solid var(--border-default, rgba(255,255,255,0.18)) !important;
-    box-shadow: 0 14px 30px -5px rgba(0, 0, 0, 0.35) !important;
+    padding: 0.2rem 0.35rem !important;
+    gap: 0.15rem !important;
   }
 
   .vb-emoji-btn {
-    width: 2.125rem !important; /* 34px */
-    height: 2.125rem !important; /* 34px */
+    width: 1.95rem !important; /* ~31px */
+    height: 1.95rem !important; /* ~31px */
+    font-size: 1.125rem !important;
     justify-content: center !important;
     padding: 0 !important;
-    gap: 0 !important;
-    border-radius: 9999px !important;
   }
 
   .vb-emoji-btn:hover,
@@ -2763,6 +2755,30 @@ html[data-theme="dark"] .perplexta-codeblock .token.variable {
   to {
     opacity: 1;
     transform: translateY(0);
+  }
+}
+
+@keyframes popIn {
+  0% {
+    opacity: 0;
+    transform: scale(0.65) translateY(18px);
+  }
+  70% {
+    opacity: 1;
+    transform: scale(1.04) translateY(-3px);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+@keyframes progressCountdown {
+  0% {
+    width: 100%;
+  }
+  100% {
+    width: 0%;
   }
 }
 

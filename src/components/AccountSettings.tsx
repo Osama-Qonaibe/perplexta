@@ -201,7 +201,7 @@ export const AccountSettings: React.FC<AccountSettingsProps> = ({ user, onUpdate
             <button 
               type="button"
               onClick={() => handleStartEdit(field, field === 'password' ? '' : value)}
-              className="text-[var(--text-primary)] text-xs font-bold flex items-center gap-1 transition-all duration-fast px-3 py-1.5 rounded-[var(--radius-sm)] bg-[var(--surface-subtle)] hover:bg-[var(--bg-accent-muted)] hover:text-[var(--fg-accent)] hover:border-[var(--border-accent)]/20 border border-[var(--border-default)] cursor-pointer"
+              className="text-[var(--text-secondary)] hover:text-[var(--fg-accent)] text-xs font-bold flex items-center gap-1 transition-all duration-fast px-3 py-1.5 rounded-shape-sm bg-transparent hover:bg-[var(--surface-subtle)]/25 border border-[var(--border-default)] hover:border-[var(--border-accent)]/40 cursor-pointer active:scale-95 select-none"
             >
               <Edit2 size={13} />
               <span>{t('edit').toUpperCase()}</span>
@@ -221,8 +221,8 @@ export const AccountSettings: React.FC<AccountSettingsProps> = ({ user, onUpdate
       {/* SECTION 1: Profile & Account Information Card */}
       <div className="ide-card p-3.5 sm:p-6 shadow-xs space-y-1">
         <div className="flex items-center gap-2 sm:gap-3 pb-3 border-b border-[var(--border-default)] mb-1">
-          <div className="p-1.5 sm:p-2 rounded-[var(--radius-xs)] bg-[var(--bg-accent-muted)] border border-[var(--border-accent)]/20 text-[var(--fg-accent)] shrink-0">
-            <User size={16} />
+          <div className="text-[var(--fg-accent)] shrink-0 flex items-center justify-center">
+            <User size={18} />
           </div>
           <div>
             <h2 className="text-xs sm:text-sm font-black uppercase tracking-wider text-[var(--text-primary)]">
@@ -251,19 +251,19 @@ export const AccountSettings: React.FC<AccountSettingsProps> = ({ user, onUpdate
                   src={resolveImageUrl(user.avatar, 'avatar')} 
                   alt="Avatar" 
                   onError={() => setAvatarLoadError(true)}
-                  className="w-12 h-12 sm:w-16 sm:h-16 rounded-[var(--radius-sm)] object-cover border-2 transition-all duration-fast"
+                  className="w-12 h-12 sm:w-16 sm:h-16 rounded-shape-sm object-cover border transition-all duration-fast"
                   style={{ borderColor: user.subscription?.plan_color || 'var(--border-default)' }}
                   referrerPolicy="no-referrer"
                 />
               ) : (
                 <div 
-                  className="w-12 h-12 sm:w-16 sm:h-16 rounded-[var(--radius-sm)] bg-[var(--surface-subtle)] border border-[var(--border-default)] flex items-center justify-center text-[var(--text-muted)] group-hover:text-[var(--fg-accent)] group-hover:border-[var(--border-accent)]/30 transition-all duration-fast"
+                  className="w-12 h-12 sm:w-16 sm:h-16 rounded-shape-sm bg-[var(--surface-subtle)] border border-[var(--border-default)] flex items-center justify-center text-[var(--text-muted)] group-hover:text-[var(--fg-accent)] group-hover:border-[var(--border-accent)]/30 transition-all duration-fast"
                 >
                   {isUploading ? <Loader2 className="animate-spin" size={16} /> : <Camera size={18} />}
                 </div>
               )}
               <div 
-                className="absolute -bottom-1 -right-1 p-1 sm:p-1.5 bg-[var(--accent)] rounded-[var(--radius-xs)] text-[var(--fg-on-emphasis)] cursor-pointer hover:opacity-90 active:scale-95 transition-all shadow-xs" 
+                className="absolute -bottom-1 -right-1 p-1 sm:p-1.5 bg-[var(--surface-card)] border border-[var(--border-default)] rounded-shape-xs text-[var(--text-secondary)] hover:text-[var(--fg-accent)] cursor-pointer hover:border-[var(--border-accent)]/50 active:scale-95 transition-all shadow-2xs" 
                 onClick={() => fileInputRef.current?.click()}
               >
                 {isUploading ? <Loader2 size={10} className="animate-spin" /> : <Camera size={10} />}
@@ -273,7 +273,7 @@ export const AccountSettings: React.FC<AccountSettingsProps> = ({ user, onUpdate
               <p className="text-[10px] font-bold text-[var(--text-muted)] uppercase tracking-wider mb-0.5">{t('avatar')}</p>
               <div className="flex flex-wrap items-center gap-1">
                 {user.subscription?.plan_name_en && (
-                  <span className="px-2 py-0.5 rounded-[var(--radius-xs)] text-[9px] font-bold uppercase tracking-wider bg-[var(--bg-accent-muted)] text-[var(--fg-accent)] border border-[var(--border-accent)]/20">
+                  <span className="px-2 py-0.5 rounded-shape-xs text-[9px] font-bold uppercase tracking-wider border border-[var(--border-default)] text-[var(--text-primary)]">
                     {user.subscription.plan_name_en}
                   </span>
                 )}
@@ -287,7 +287,7 @@ export const AccountSettings: React.FC<AccountSettingsProps> = ({ user, onUpdate
             type="button"
             onClick={() => fileInputRef.current?.click()}
             disabled={isUploading}
-            className="text-[var(--text-primary)] text-xs font-bold flex items-center gap-1 transition-all duration-fast p-2 sm:px-3 sm:py-1.5 rounded-[var(--radius-sm)] bg-[var(--surface-subtle)] hover:bg-[var(--bg-accent-muted)] hover:text-[var(--fg-accent)] hover:border-[var(--border-accent)]/20 border border-[var(--border-default)] shrink-0 cursor-pointer"
+            className="text-[var(--text-secondary)] hover:text-[var(--fg-accent)] text-xs font-bold flex items-center gap-1 transition-all duration-fast p-2 sm:px-3 sm:py-1.5 rounded-shape-sm bg-transparent hover:bg-[var(--surface-subtle)]/25 border border-[var(--border-default)] hover:border-[var(--border-accent)]/40 shrink-0 cursor-pointer active:scale-95 select-none"
             title={t('edit')}
           >
             <Edit2 size={13} className="sm:hidden" />

@@ -185,7 +185,7 @@ export const MediaManagerModal: React.FC<MediaManagerModalProps> = ({
                                   type="button"
                                   onClick={() => handleMoveItem(idx, idx - 1)}
                                   aria-label={isRtl ? 'تحريك للأمام' : 'Move left'}
-                                  className="w-6 h-6 sm:w-7 sm:h-7 rounded-shape-full bg-black/70 hover:bg-black text-white flex items-center justify-center backdrop-blur-xs transition-all cursor-pointer"
+                                  className="w-6 h-6 sm:w-7 sm:h-7 rounded-shape-sm bg-black/70 hover:bg-black text-white flex items-center justify-center backdrop-blur-xs transition-all cursor-pointer border border-white/20 shadow-xs"
                                   title={isRtl ? 'تقديم الترتيب' : 'Move left'}
                                 >
                                   {isRtl ? <ArrowRight size={12} className="sm:size-[14px]" /> : <ArrowLeft size={12} className="sm:size-[14px]" />}
@@ -196,7 +196,7 @@ export const MediaManagerModal: React.FC<MediaManagerModalProps> = ({
                                   type="button"
                                   onClick={() => handleMoveItem(idx, idx + 1)}
                                   aria-label={isRtl ? 'تحريك للخلف' : 'Move right'}
-                                  className="w-6 h-6 sm:w-7 sm:h-7 rounded-shape-full bg-black/70 hover:bg-black text-white flex items-center justify-center backdrop-blur-xs transition-all cursor-pointer"
+                                  className="w-6 h-6 sm:w-7 sm:h-7 rounded-shape-sm bg-black/70 hover:bg-black text-white flex items-center justify-center backdrop-blur-xs transition-all cursor-pointer border border-white/20 shadow-xs"
                                   title={isRtl ? 'تأخير الترتيب' : 'Move right'}
                                 >
                                   {isRtl ? <ArrowLeft size={12} className="sm:size-[14px]" /> : <ArrowRight size={12} className="sm:size-[14px]" />}
@@ -206,7 +206,7 @@ export const MediaManagerModal: React.FC<MediaManagerModalProps> = ({
                                 type="button"
                                 onClick={() => handleRemoveItem(idx)}
                                 aria-label={isRtl ? 'حذف هذه الوسيطة' : 'Remove this media'}
-                                className="w-6 h-6 sm:w-7 sm:h-7 rounded-shape-full bg-[var(--status-danger)] hover:opacity-90 text-white flex items-center justify-center transition-all cursor-pointer shadow-xs"
+                                className="w-6 h-6 sm:w-7 sm:h-7 rounded-shape-sm bg-[var(--status-danger)] hover:opacity-90 text-white flex items-center justify-center transition-all cursor-pointer shadow-xs border border-white/20"
                                 title={isRtl ? 'حذف هذا العنصر' : 'Delete item'}
                               >
                                 <Trash2 size={12} className="sm:size-[14px]" />

@@ -26,7 +26,7 @@ import { SavedPostsTab } from '../components/bulletin/SavedPostsTab';
 import { InquiriesTab } from '../components/bulletin/InquiriesTab';
 import { LiveStreamModal } from '../components/bulletin/LiveStreamModal';
 import { AdMessengerHub } from '../components/AdMessengerHub';
-import { BoostPostModal } from '../components/BoostPostModal';
+import { AdPromotionStudioView } from '../components/AdPromotionStudioView';
 import { RecommendationWidget } from '../components/RecommendationWidget';
 import { MediaFormatPlayer } from '../components/MediaFormatPlayer';
 import { VideoTrimmerModal } from '../components/VideoTrimmerModal';
@@ -34,7 +34,7 @@ import { VideoPreviewer } from '../components/VideoPreviewer';
 import { ReelsFeed } from '../components/ReelsFeed';
 import { StoryUploadModal } from '../components/StoryUploadModal';
 import { StoryViewerModal } from '../components/StoryViewerModal';
-import { VideoFrameCapture } from '../components/VideoFrameCapture';
+import { CreationSuccessPop, CreationSuccessItem } from '../components/bulletin/CreationSuccessPop';
 import { MediaManagerModal } from '../components/MediaManagerModal';
 import { ComposerMediaPreview } from '../components/ComposerMediaPreview';
 import { MediaLightboxModal, LightboxMediaItem } from '../components/MediaLightboxModal';
@@ -50,6 +50,8 @@ import { ThemeToggleButton } from '../components/ThemeToggleButton';
 import { AppModal, toast, useConfirm } from '@/design-system';
 import { SearchableSelect } from '../components/SearchableSelect';
 import { LocationAutocompleteInput } from '../components/LocationAutocompleteInput';
+import { CategoryAutocompleteInput } from '../components/CategoryAutocompleteInput';
+import { CATEGORY_GROUPS } from '../constants/categories';
 import { UniversalLocationModal } from '../components/common/UniversalLocationModal';
 import {
   normalizeGeoText,
@@ -57,15 +59,19 @@ import {
 } from '../constants/geoData';
 
 const VIRALBOOK_CATEGORIES = [
-  { id: 'all', labelAr: 'كافة الفئات', labelEn: 'All Categories' },
-  { id: 'تجارة إلكترونية / E-Commerce', labelAr: 'تجارة إلكترونية', labelEn: 'E-Commerce' },
-  { id: 'عقارات / Real Estate', labelAr: 'عقارات', labelEn: 'Real Estate' },
-  { id: 'سيارات ومحركات / Vehicles', labelAr: 'سيارات ومحركات', labelEn: 'Vehicles' },
-  { id: 'وظائف وتوظيف / Jobs', labelAr: 'وظائف وتوظيف', labelEn: 'Jobs & Careers' },
-  { id: 'خدمات وأعمال / Services', labelAr: 'خدمات وأعمال', labelEn: 'Services' },
-  { id: 'أجهزة وإلكترونيات / Electronics', labelAr: 'أجهزة وإلكترونيات', labelEn: 'Electronics' },
-  { id: 'أزياء وموضة / Fashion', labelAr: 'أزياء وموضة', labelEn: 'Fashion' },
-  { id: 'أطعمة ومطاعم / Food & Dining', labelAr: 'أطعمة ومطاعم', labelEn: 'Food & Dining' },
+  { id: 'all', labelAr: 'كافة الفئات والقطاعات', labelEn: 'All Categories' },
+  { id: 'تجارة إلكترونية وتجزئة / E-Commerce', labelAr: 'التجارة الإلكترونية والتسوق', labelEn: 'E-Commerce & Retail' },
+  { id: 'تكنولوجيا وبرمجيات / Tech & Software', labelAr: 'التكنولوجيا والبرمجيات والذكاء الاصطناعي', labelEn: 'Tech & AI' },
+  { id: 'بناء وديكور ومقاولات / Construction & Home', labelAr: 'البناء والديكور والمقاولات والمنزل', labelEn: 'Construction & Home' },
+  { id: 'عقارات واستثمار / Real Estate', labelAr: 'العقارات والاستثمار العقاري', labelEn: 'Real Estate' },
+  { id: 'سيارات ومحركات وقطع غيار / Automotive', labelAr: 'السيارات والمحركات وقطع الغيار', labelEn: 'Automotive & Vehicles' },
+  { id: 'صحة وطب ورعاية / Health & Medical', labelAr: 'الصحة والطب والرعاية والتجميل', labelEn: 'Health & Medical' },
+  { id: 'مطاعم وأغذية وضيافة / Food & Dining', labelAr: 'المطاعم والأغذية والمقاهي والحلويات', labelEn: 'Food & Dining' },
+  { id: 'تعليم وتدريب واستشارات / Education', labelAr: 'التعليم والتدريب واللغات والجامعات', labelEn: 'Education & Training' },
+  { id: 'خدمات وأعمال ومهن حرة / Services', labelAr: 'الخدمات المهنية والأعمال والتسويق', labelEn: 'Business & Professional Services' },
+  { id: 'سياحة وسفر وفنادق / Tourism & Travel', labelAr: 'السياحة والسفر والفنادق والترفيه', labelEn: 'Tourism & Travel' },
+  { id: 'صناعة وزراعة وإنتاج / Industry & Agriculture', labelAr: 'الصناعة والزراعة والمعدات الثقيلة', labelEn: 'Industry & Agriculture' },
+  { id: 'وظائف وتوظيف / Jobs', labelAr: 'فرص العمل والتوظيف', labelEn: 'Jobs & Careers' }
 ];
 
 const VIRALBOOK_SORT_OPTIONS = [
@@ -1017,6 +1023,7 @@ export const BulletinBoardPage: React.FC = () => {
   };
 
   const [isMediaManagerOpen, setIsMediaManagerOpen] = useState(false);
+  const [creationSuccessItem, setCreationSuccessItem] = useState<CreationSuccessItem | null>(null);
 
   const [isTrimmerModalOpen, setIsTrimmerModalOpen] = useState(false);
   const [trimmerVideoUrl, setTrimmerVideoUrl] = useState('');
@@ -1030,6 +1037,34 @@ export const BulletinBoardPage: React.FC = () => {
     localVideoUrl?: string;
   }>({ processingStage: 'done' });
 
+  // Cleanup helper to revoke object URLs and eliminate memory leaks
+  const cleanupComposerMediaUrls = React.useCallback(() => {
+    if (videoMetadataInfo.localVideoUrl && videoMetadataInfo.localVideoUrl.startsWith('blob:')) {
+      try {
+        URL.revokeObjectURL(videoMetadataInfo.localVideoUrl);
+      } catch (_) {}
+    }
+    if (adFormData.video_url && adFormData.video_url.startsWith('blob:')) {
+      try {
+        URL.revokeObjectURL(adFormData.video_url);
+      } catch (_) {}
+    }
+    (adFormData.media_gallery || []).forEach(item => {
+      if (item.url && item.url.startsWith('blob:')) {
+        try {
+          URL.revokeObjectURL(item.url);
+        } catch (_) {}
+      }
+    });
+  }, [videoMetadataInfo.localVideoUrl, adFormData.video_url, adFormData.media_gallery]);
+
+  // Clean up any allocated client-side blob URLs when unmounting or navigating away
+  useEffect(() => {
+    return () => {
+      cleanupComposerMediaUrls();
+    };
+  }, [cleanupComposerMediaUrls]);
+
   const [composerView, setComposerView] = useState<'main' | 'feelings' | 'location' | 'tagging' | 'emojis'>('main');
   const [userSearch, setUserSearch] = useState('');
   const [locationSuggestions, setLocationSuggestions] = useState<any[]>([]);
@@ -1038,6 +1073,7 @@ export const BulletinBoardPage: React.FC = () => {
   const [customLocationSearch, setCustomLocationSearch] = useState<string>('');
 
   const openReelUploadModal = () => {
+    cleanupComposerMediaUrls();
     setAdFormData({
       title: '',
       description: '',
@@ -1068,6 +1104,7 @@ export const BulletinBoardPage: React.FC = () => {
   };
 
   const openPostUploadModal = () => {
+    cleanupComposerMediaUrls();
     setAdFormData({
       title: '',
       description: '',
@@ -2660,11 +2697,24 @@ export const BulletinBoardPage: React.FC = () => {
 
       if (data.success) {
         toast.clear();
+        const isReel = payload.ad_format === 'reel';
+        const createdAd = data.ad || payload;
+
         if (isEditMode) {
           toast.success(isRtl ? 'تم تحديث المنشور بنجاح! ✨' : 'Post updated successfully! ✨');
         } else {
-          toast.success(isRtl ? 'تم نشر منشورك بنجاح! 🎉' : 'Your post has been published successfully! 🎉');
+          setCreationSuccessItem({
+            type: isReel ? 'reel' : 'post',
+            title: createdAd.title || payload.title,
+            description: createdAd.description || payload.description,
+            mediaUrl: createdAd.image_url || payload.image_url || (payload.media_gallery?.[0]?.url),
+            videoUrl: createdAd.video_url || payload.video_url,
+            authorName: user?.name,
+            authorAvatar: user?.avatar,
+            id: createdAd.id,
+          });
         }
+        cleanupComposerMediaUrls();
         setIsAdModalOpen(false);
         setIsEditMode(false);
         setEditingAdId(null);
@@ -2867,6 +2917,13 @@ export const BulletinBoardPage: React.FC = () => {
     }
   };
 
+  const isVideoFile = (file: File): boolean => {
+    if (file.type && file.type.startsWith('video/')) return true;
+    const ext = file.name.split('.').pop()?.toLowerCase();
+    const videoExts = ['mp4', 'mov', 'webm', 'mkv', 'avi', 'm4v', '3gp', '3g2', 'wmv', 'flv', 'ogv', 'ts', 'mts', 'm2ts', 'vob'];
+    return !!(ext && videoExts.includes(ext));
+  };
+
   const handleImageFileUpload = (e: any) => handleMixedMediaUpload(e);
 
   const handleVideoFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -2878,6 +2935,15 @@ export const BulletinBoardPage: React.FC = () => {
     }
 
     setIsAdModalOpen(true);
+
+    // 1. Revoke any previously allocated local blob URL to prevent memory leaks
+    if (videoMetadataInfo.localVideoUrl && videoMetadataInfo.localVideoUrl.startsWith('blob:')) {
+      try {
+        URL.revokeObjectURL(videoMetadataInfo.localVideoUrl);
+      } catch (_) {}
+    }
+
+    // 2. High-Performance Instant Local Preview via URL.createObjectURL
     const localUrl = URL.createObjectURL(file);
 
     setVideoMetadataInfo({
@@ -2888,28 +2954,51 @@ export const BulletinBoardPage: React.FC = () => {
       processingStage: 'uploading'
     });
 
+    // 3. Immediately set adFormData so ComposerMediaPreview, Trimmer, and VideoFrameCapture render the video instantly
+    setAdFormData(prev => {
+      const gallery = (prev.media_gallery || []).filter(m => m.type !== 'video');
+      gallery.unshift({
+        id: `vid-temp-${Date.now()}`,
+        url: localUrl,
+        type: 'video',
+        caption: ''
+      });
+      return {
+        ...prev,
+        video_url: localUrl,
+        media_gallery: gallery
+      };
+    });
+
+    // 4. Client-side Instant Metadata & Frame extraction (0ms wait for server upload)
+    extractVideoMetadata(file).then(meta => {
+      if (meta) {
+        setAdFormData(prev => ({
+          ...prev,
+          image_url: prev.image_url || meta.thumbnail,
+          aspect_ratio: meta.aspectRatio || prev.aspect_ratio || '16:9',
+          ad_format: meta.isVertical ? 'reel' : ((prev.ad_format as string) === 'banner' ? 'post' : (prev.ad_format || 'post'))
+        }));
+        setVideoMetadataInfo(prev => ({
+          ...prev,
+          duration: meta.duration || prev.duration,
+          resolution: meta.width && meta.height ? `${meta.width}x${meta.height}` : prev.resolution
+        }));
+      }
+    }).catch(err => console.warn('Instant video metadata extraction notice:', err));
+
     const formDataUpload = new FormData();
     formDataUpload.append('file', file);
 
-    const handleUploadFallback = (f: File, url: string) => {
-      console.error('Video upload failed, falling back to local object URL');
+    const handleUploadFallback = (_f: File, url: string) => {
+      console.warn('Video server upload warning, continuing with local preview');
       setAdFormData(prev => ({ ...prev, video_url: url }));
       setVideoMetadataInfo(prev => ({
         ...prev,
         processingStage: 'done',
         uploadProgress: 100
       }));
-      toast.success(isRtl ? 'تم تحميل المقطع محلياً وجاهز للنشر!' : 'Video loaded locally and ready!');
-      extractVideoMetadata(f).then(meta => {
-        if (meta.thumbnail) {
-          setAdFormData(prev => ({
-            ...prev,
-            image_url: prev.image_url || meta.thumbnail,
-            aspect_ratio: meta.aspectRatio,
-            ad_format: meta.isVertical ? 'reel' : (prev.ad_format || 'post')
-          }));
-        }
-      }).catch(() => {});
+      toast.success(isRtl ? 'تم تجهيز مقطع الفيديو للمعاينة' : 'Video loaded for preview');
     };
 
     const authToken = token || secureStorage.getSync('app_token') || '';
@@ -2946,21 +3035,26 @@ export const BulletinBoardPage: React.FC = () => {
             } catch (_) {}
 
             setAdFormData(prev => {
-              const gallery = [...(prev.media_gallery || [])];
+              const gallery = (prev.media_gallery || []).map(m => {
+                if (m.type === 'video' && (m.url === localUrl || m.url.startsWith('blob:'))) {
+                  return { ...m, url: fileUrl, thumbnailUrl: prev.image_url || thumb };
+                }
+                return m;
+              });
               if (!gallery.some(m => m.url === fileUrl)) {
                 gallery.push({
                   id: `vid-${Date.now()}`,
                   url: fileUrl,
                   type: 'video',
                   caption: '',
-                  thumbnailUrl: thumb
+                  thumbnailUrl: prev.image_url || thumb
                 });
               }
               return {
                 ...prev,
                 video_url: fileUrl,
                 media_gallery: gallery,
-                aspect_ratio: videoRatio,
+                aspect_ratio: videoRatio || prev.aspect_ratio || '16:9',
                 image_url: prev.image_url || thumb,
                 ad_format: isVertical ? 'reel' : ((prev.ad_format as string) === 'banner' ? 'post' : (prev.ad_format || 'post'))
               };
@@ -2975,7 +3069,14 @@ export const BulletinBoardPage: React.FC = () => {
               uploadProgress: 100
             }));
 
-            toast.success(isRtl ? 'تم رفع وتشغيل مقطع الفيديو بنجاح!' : 'Video uploaded & ready!');
+            // Once server URL is securely registered in form data, revoke the temporary localUrl
+            if (localUrl.startsWith('blob:')) {
+              try {
+                URL.revokeObjectURL(localUrl);
+              } catch (_) {}
+            }
+
+            toast.success(isRtl ? 'تم رفع مقطع الفيديو بنجاح!' : 'Video uploaded successfully!');
           } else {
              handleUploadFallback(file, localUrl);
           }
@@ -3041,7 +3142,7 @@ export const BulletinBoardPage: React.FC = () => {
 
     const fileList = Array.from(files);
     for (const file of fileList) {
-      if (file.type.startsWith('video/')) {
+      if (isVideoFile(file)) {
         const fakeEvent = { target: { files: [file] } } as unknown as React.ChangeEvent<HTMLInputElement>;
         handleVideoFileUpload(fakeEvent);
       } else if (file.type.startsWith('image/')) {
@@ -3086,7 +3187,7 @@ export const BulletinBoardPage: React.FC = () => {
       return;
     }
 
-    if (!file.type.startsWith('video/')) {
+    if (!isVideoFile(file)) {
       toast.error(isRtl ? 'يرجى اختيار مقطع فيديو فقط لرفع الريلز القياسي (9:16)' : 'Please select a video file for standard Reels (9:16)');
       return;
     }
@@ -3469,12 +3570,12 @@ export const BulletinBoardPage: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen-safe w-full bg-[var(--surface-page)] text-[var(--text-primary)] transition-theme pb-24 overflow-x-hidden">
+    <div className="min-h-screen-safe w-full bg-[var(--surface-page)] text-[var(--text-primary)] transition-theme pb-24 overflow-x-clip">
 
-      {}
+      {/* Main Persistent ViralBook Top Header */}
       <header
         dir={isRtl ? 'rtl' : 'ltr'}
-        className="sticky top-0 z-[160] h-[calc(52px+env(safe-area-inset-top,0px))] lg:h-[calc(56px+env(safe-area-inset-top,0px))] pt-[env(safe-area-inset-top,0px)] bg-[var(--surface-page)]/95 backdrop-blur-md border-b border-[var(--border-default)] transition-theme shadow-xs"
+        className="sticky top-0 z-[160] w-full shrink-0 h-[calc(52px+env(safe-area-inset-top,0px))] lg:h-[calc(56px+env(safe-area-inset-top,0px))] pt-[env(safe-area-inset-top,0px)] bg-[var(--surface-page)]/95 backdrop-blur-md border-b border-[var(--border-default)] transition-theme shadow-xs select-none"
       >
         <div className="w-full max-w-[1536px] 2xl:max-w-[1680px] mx-auto h-full px-3 sm:px-4 lg:px-6 flex items-center justify-between gap-2 sm:gap-4">
 
@@ -3996,8 +4097,21 @@ export const BulletinBoardPage: React.FC = () => {
           )}
         </AnimatePresence>
 
-        {}
-        {activeTab === 'analytics' && !selectedPageDetail ? (
+        {boostingAd ? (
+          <AdPromotionStudioView
+            ad={boostingAd}
+            walletBalance={walletBalance}
+            token={token}
+            isRtl={isRtl}
+            onBack={() => {
+              setBoostingAd(null);
+              setIsBoostModalOpen(false);
+            }}
+            onSuccess={handleBoostSuccess}
+            onNavigateToWallet={() => { window.location.href = '/wallet'; }}
+            onRequestDepositModal={() => { window.location.href = '/wallet'; }}
+          />
+        ) : activeTab === 'analytics' && !selectedPageDetail ? (
           <div className="space-y-6">
             <div className="flex items-center justify-between p-4 rounded-[var(--radius-md)] bg-[var(--surface-card)] border border-[var(--border-default)]">
               <div className="flex items-center gap-3">
@@ -5642,7 +5756,10 @@ export const BulletinBoardPage: React.FC = () => {
       {}
       <AppModal
         open={isAdModalOpen}
-        onClose={() => setIsAdModalOpen(false)}
+        onClose={() => {
+          cleanupComposerMediaUrls();
+          setIsAdModalOpen(false);
+        }}
         size="md"
         layer="modal"
         closeOnBackdrop={false}
@@ -5690,7 +5807,7 @@ export const BulletinBoardPage: React.FC = () => {
                         <button
                           type="button"
                           onClick={() => setComposerView('main')}
-                          className="w-7 h-7 rounded-lg bg-[var(--surface-subtle)] hover:bg-[var(--surface-inset)] text-[var(--text-primary)] transition-all border border-[var(--border-default)] flex items-center justify-center cursor-pointer shrink-0 shadow-xs"
+                          className="w-8 h-8 rounded-shape-sm bg-[var(--surface-subtle)] hover:bg-[var(--surface-inset)] text-[var(--text-primary)] transition-all border border-[var(--border-default)] flex items-center justify-center cursor-pointer shrink-0 shadow-xs"
                           title={isRtl ? 'رجوع' : 'Back'}
                         >
                           <ArrowLeft size={15} className={isRtl ? 'rotate-180' : ''} />
@@ -5719,10 +5836,14 @@ export const BulletinBoardPage: React.FC = () => {
                     <button
                       type="button"
                       onClick={() => {
-                        if (composerView === 'main') setIsAdModalOpen(false);
-                        else setComposerView('main');
+                        if (composerView === 'main') {
+                          cleanupComposerMediaUrls();
+                          setIsAdModalOpen(false);
+                        } else {
+                          setComposerView('main');
+                        }
                       }}
-                      className="w-7 h-7 rounded-lg bg-[var(--surface-subtle)] hover:bg-[var(--surface-inset)] text-[var(--text-muted)] hover:text-[var(--text-primary)] transition-all border border-[var(--border-default)] flex items-center justify-center cursor-pointer shrink-0"
+                      className="w-8 h-8 rounded-shape-sm bg-[var(--surface-subtle)] hover:bg-[var(--surface-inset)] text-[var(--text-muted)] hover:text-[var(--text-primary)] transition-all border border-[var(--border-default)] flex items-center justify-center cursor-pointer shrink-0"
                       title={isRtl ? 'إغلاق' : 'Close'}
                     >
                       <X size={15} />
@@ -5972,12 +6093,12 @@ export const BulletinBoardPage: React.FC = () => {
                       id="composer-mixed-media-input"
                       type="file"
                       multiple
-                      accept="image/*,video/*"
+                      accept="image/*,video/*,.mp4,.mov,.webm,.mkv,.avi,.3gp,.m4v,.wmv,.flv,.ogv,.ts,.mts,.m2ts"
                       onChange={handleMixedMediaSelect}
                       className="hidden"
                     />
 
-                    {/* Media Loaded State: Preview and Gallery Manager */}
+                    {/* Media Loaded State: Single Video or Collage Preview */}
                     {Boolean(
                       (adFormData.media_gallery && adFormData.media_gallery.length > 0) ||
                       adFormData.image_url ||
@@ -5987,31 +6108,30 @@ export const BulletinBoardPage: React.FC = () => {
                       <div>
                         <ComposerMediaPreview
                           mediaItems={
-                            adFormData.media_gallery && adFormData.media_gallery.length > 0
-                              ? adFormData.media_gallery
-                              : [
-                                  ...(adFormData.image_url
+                            adFormData.video_url || videoMetadataInfo.localVideoUrl
+                              ? [
+                                  {
+                                    id: 'vid-0',
+                                    url: adFormData.video_url || videoMetadataInfo.localVideoUrl || '',
+                                    type: 'video' as const,
+                                    caption: '',
+                                    thumbnailUrl: adFormData.image_url || undefined
+                                  }
+                                ]
+                              : adFormData.media_gallery && adFormData.media_gallery.length > 0
+                                ? adFormData.media_gallery
+                                : (adFormData.image_url
                                     ? adFormData.image_url.split(',').map((u, i) => ({
                                         id: `img-${i}`,
                                         url: u.trim(),
                                         type: 'image' as const,
                                         caption: ''
                                       }))
-                                    : []),
-                                  ...(adFormData.video_url
-                                    ? [
-                                        {
-                                          id: 'vid-0',
-                                          url: adFormData.video_url,
-                                          type: 'video' as const,
-                                          caption: ''
-                                        }
-                                      ]
                                     : [])
-                                ]
                           }
                           onOpenMediaManager={() => setIsMediaManagerOpen(true)}
                           onClearAll={() => {
+                            cleanupComposerMediaUrls();
                             setAdFormData(prev => ({
                               ...prev,
                               image_url: '',
@@ -6024,24 +6144,49 @@ export const BulletinBoardPage: React.FC = () => {
                             const input = document.getElementById('composer-mixed-media-input') as HTMLInputElement;
                             if (input) input.click();
                           }}
+                          onSelectCover={(coverUrl, file) => {
+                            setAdFormData(prev => ({
+                              ...prev,
+                              image_url: coverUrl,
+                              media_gallery: prev.media_gallery?.map(item =>
+                                item.type === 'video' ? { ...item, thumbnailUrl: coverUrl } : item
+                              )
+                            }));
+                            toast.success(isRtl ? 'تم تعيين صورة الغلاف' : 'Cover image selected');
+                            if (file) {
+                              const formData = new FormData();
+                              formData.append('file', file);
+                              fetch('/api/files/upload', {
+                                method: 'POST',
+                                headers: {
+                                  'Authorization': `Bearer ${token || secureStorage.getSync('app_token') || ''}`
+                                },
+                                body: formData
+                              })
+                                .then(res => res.json())
+                                .then(data => {
+                                  const uploadedUrl = data.fileUrl || data.file?.file_url || data.file?.url || data.url;
+                                  if (uploadedUrl) {
+                                    const finalUrl = getMediaUrl(uploadedUrl);
+                                    setAdFormData(prev => ({
+                                      ...prev,
+                                      image_url: finalUrl,
+                                      media_gallery: prev.media_gallery?.map(item =>
+                                        item.type === 'video' ? { ...item, thumbnailUrl: finalUrl } : item
+                                      )
+                                    }));
+                                  }
+                                })
+                                .catch(() => {});
+                            }
+                          }}
+                          onOpenTrimmer={() => {
+                            setTrimmerVideoUrl(adFormData.video_url || videoMetadataInfo.localVideoUrl || '');
+                            setIsTrimmerModalOpen(true);
+                          }}
                           isRtl={isRtl}
                         />
                       </div>
-                    )}
-
-                    {/* Video Frame Cover Selector (if video attached) */}
-                    {(adFormData.video_url || videoMetadataInfo.localVideoUrl) && (
-                      <VideoFrameCapture
-                        videoUrl={adFormData.video_url || videoMetadataInfo.localVideoUrl || ''}
-                        currentCoverUrl={adFormData.image_url}
-                        onSelectCover={(coverUrl) => {
-                          setAdFormData(prev => ({ ...prev, image_url: coverUrl }));
-                        }}
-                        onRemoveCover={() => {
-                          setAdFormData(prev => ({ ...prev, image_url: '' }));
-                        }}
-                        isRtl={isRtl}
-                      />
                     )}
 
                     {/* WhatsApp CTA Action Card (if enabled) */}
@@ -6074,11 +6219,11 @@ export const BulletinBoardPage: React.FC = () => {
                     )}
 
                     {/* "Add to Your Post" Toolbar (Facebook Standard) */}
-                    <div className="px-3 py-2 rounded-xl border border-[var(--border-default)] bg-[var(--surface-subtle)]/40 flex items-center justify-between shadow-2xs">
+                    <div className="px-3 py-2 rounded-shape-sm border border-[var(--border-default)] bg-[var(--surface-subtle)]/40 flex items-center justify-between shadow-2xs">
                       <span className="text-xs font-bold text-[var(--text-primary)] shrink-0">
                         {isRtl ? 'إضافة إلى منشورك' : 'Add to your post'}
                       </span>
-                      <div className="flex items-center gap-1">
+                      <div className="flex items-center gap-1.5">
                         {/* Media Upload Icon */}
                         <button
                           type="button"
@@ -6086,7 +6231,7 @@ export const BulletinBoardPage: React.FC = () => {
                             const input = document.getElementById('composer-mixed-media-input') as HTMLInputElement;
                             if (input) input.click();
                           }}
-                          className={`w-8 h-8 rounded-lg flex items-center justify-center cursor-pointer transition-colors ${
+                          className={`w-8 h-8 rounded-shape-sm flex items-center justify-center cursor-pointer transition-colors ${
                             Boolean(adFormData.media_gallery?.length || adFormData.image_url || adFormData.video_url)
                               ? 'bg-[#22c55e]/20 text-[#22c55e]'
                               : 'hover:bg-[var(--surface-card)] text-[#22c55e]'
@@ -6100,7 +6245,7 @@ export const BulletinBoardPage: React.FC = () => {
                         <button
                           type="button"
                           onClick={() => setComposerView('tagging')}
-                          className="w-8 h-8 rounded-lg hover:bg-[var(--surface-card)] text-[#3b82f6] flex items-center justify-center transition-colors cursor-pointer"
+                          className="w-8 h-8 rounded-shape-sm hover:bg-[var(--surface-card)] text-[#3b82f6] flex items-center justify-center transition-colors cursor-pointer"
                           title={isRtl ? 'إشارة إلى أشخاص' : 'Tag people'}
                         >
                           <Users size={18} />
@@ -6119,7 +6264,7 @@ export const BulletinBoardPage: React.FC = () => {
                               toast.success(isRtl ? 'تم إرفاق زر الواتساب' : 'WhatsApp CTA attached');
                             }
                           }}
-                          className={`w-8 h-8 rounded-lg flex items-center justify-center transition-colors cursor-pointer ${
+                          className={`w-8 h-8 rounded-shape-sm flex items-center justify-center transition-colors cursor-pointer ${
                             adFormData.has_whatsapp_button ? 'bg-[#25D366]/20 text-[#25D366]' : 'hover:bg-[var(--surface-card)] text-[#25D366]'
                           }`}
                           title={isRtl ? 'زر مراسلة واتساب' : 'WhatsApp Button'}
@@ -6131,7 +6276,7 @@ export const BulletinBoardPage: React.FC = () => {
                         <button
                           type="button"
                           onClick={() => setComposerView('location')}
-                          className={`w-8 h-8 rounded-lg flex items-center justify-center transition-colors cursor-pointer ${
+                          className={`w-8 h-8 rounded-shape-sm flex items-center justify-center transition-colors cursor-pointer ${
                             adFormData.location_city ? 'bg-rose-500/20 text-rose-500' : 'hover:bg-[var(--surface-card)] text-rose-500'
                           }`}
                           title={isRtl ? 'الموقع' : 'Location'}
@@ -6143,7 +6288,7 @@ export const BulletinBoardPage: React.FC = () => {
                         <button
                           type="button"
                           onClick={() => setComposerView('feelings')}
-                          className={`w-8 h-8 rounded-lg flex items-center justify-center transition-colors cursor-pointer ${
+                          className={`w-8 h-8 rounded-shape-sm flex items-center justify-center transition-colors cursor-pointer ${
                             adFormData.feeling ? 'bg-amber-500/20 text-amber-500' : 'hover:bg-[var(--surface-card)] text-amber-500'
                           }`}
                           title={isRtl ? 'الشعور / النشاط' : 'Feeling / Activity'}
@@ -6155,7 +6300,7 @@ export const BulletinBoardPage: React.FC = () => {
                         <button
                           type="button"
                           onClick={() => setIsAddToPostModalOpen(true)}
-                          className="w-8 h-8 rounded-lg hover:bg-[var(--surface-card)] text-[var(--text-secondary)] flex items-center justify-center transition-colors cursor-pointer"
+                          className="w-8 h-8 rounded-shape-sm hover:bg-[var(--surface-card)] text-[var(--text-secondary)] flex items-center justify-center transition-colors cursor-pointer"
                           title={isRtl ? 'المزيد' : 'More'}
                         >
                           <SlidersHorizontal size={17} />
@@ -6168,7 +6313,7 @@ export const BulletinBoardPage: React.FC = () => {
                       <button
                         type="submit"
                         disabled={isSubmittingAd || (!adFormData.description && !adFormData.image_url && !adFormData.video_url)}
-                        className="w-full py-2.5 sm:py-2.8 rounded-xl bg-accent hover:opacity-90 disabled:opacity-40 disabled:cursor-not-allowed text-slate-950 font-black text-xs sm:text-sm shadow-xs transition-all active:scale-[0.99] cursor-pointer flex items-center justify-center gap-2"
+                        className="w-full py-2.5 sm:py-2.8 rounded-shape-sm bg-accent hover:opacity-90 disabled:opacity-40 disabled:cursor-not-allowed text-slate-950 font-black text-xs sm:text-sm shadow-xs transition-all active:scale-[0.99] cursor-pointer flex items-center justify-center gap-2"
                       >
                         {isSubmittingAd ? (
                           <>
@@ -6461,7 +6606,7 @@ export const BulletinBoardPage: React.FC = () => {
                               }}
                               className="w-full flex items-center gap-3 p-3 rounded-shape-md hover:bg-accent/10 transition-colors cursor-pointer text-start border border-dashed border-accent/40"
                             >
-                              <div className="w-9 h-9 rounded-full bg-accent/15 text-accent flex items-center justify-center shrink-0">
+                              <div className="w-9 h-9 rounded-shape-sm bg-accent/15 text-accent flex items-center justify-center shrink-0">
                                 <MapPin size={17} />
                               </div>
                               <div className="min-w-0 flex-1">
@@ -6770,7 +6915,7 @@ export const BulletinBoardPage: React.FC = () => {
               <input
                 type="file"
                 multiple
-                accept="image/*,video/*"
+                accept="image/*,video/*,.mp4,.mov,.webm,.mkv,.avi,.3gp,.m4v,.wmv,.flv,.ogv,.ts,.mts,.m2ts"
                 onChange={handleMixedMediaSelect}
                 className="hidden"
               />
@@ -6992,14 +7137,13 @@ export const BulletinBoardPage: React.FC = () => {
                   </div>
 
                   <div>
-                    <label className="block text-xs font-bold mb-1 text-[var(--text-secondary)]">{isRtl ? 'الصنف التجاري / الفئة:' : 'Business Category:'}</label>
-                    <input
-                      type="text"
-                      required
+                    <label className="block text-xs font-bold mb-1 text-[var(--text-secondary)]">{isRtl ? 'الصنف التجاري / الفئة المعتمدة:' : 'Business Category:'}</label>
+                    <CategoryAutocompleteInput
                       value={pageFormData.category}
-                      onChange={(e) => setPageFormData({ ...pageFormData, category: e.target.value })}
-                      placeholder={isRtl ? 'تجارة إلكترونية، خدمات برمجية، مطاعم...' : 'E-Commerce, Services, Retail...'}
-                      className="w-full px-3 py-2 text-xs rounded-[var(--radius-md)] bg-[var(--surface-subtle)] border border-[var(--border-default)] text-[var(--text-primary)]"
+                      onChange={(category) => setPageFormData(prev => ({ ...prev, category }))}
+                      required
+                      isRtl={isRtl}
+                      placeholder={isRtl ? 'ابحث أو اختر الفئة (مثل: بناء، تكنولوجيا، تجارة، مطاعم...)' : 'Search category (e.g. Construction, Tech...)'}
                     />
                   </div>
                 </div>
@@ -7174,8 +7318,8 @@ export const BulletinBoardPage: React.FC = () => {
               </button>
             </div>
 
-            <div className="p-2.5 rounded-[var(--radius-md)] bg-[var(--surface-subtle)] flex items-center gap-2.5 border border-[var(--border-default)]">
-              <img src={getMediaUrl(inquireAd.image_url)} alt={inquireAd.title} className="w-12 h-12 rounded-[var(--radius-sm)] object-cover" />
+            <div className="p-2.5 rounded-shape-md bg-[var(--surface-subtle)] flex items-center gap-2.5 border border-[var(--border-default)]">
+              <img src={getMediaUrl(inquireAd.image_url)} alt={inquireAd.title} className="w-12 h-12 rounded-shape-sm object-cover" />
               <div className="min-w-0 flex-1">
                 <h4 className="text-xs font-bold truncate text-[var(--text-primary)]">{inquireAd.title}</h4>
                 <p className="text-[10px] text-[var(--text-muted)]">{inquireAd.author_name}</p>
@@ -7191,18 +7335,18 @@ export const BulletinBoardPage: React.FC = () => {
                   value={inquiryText}
                   onChange={(e) => setInquiryText(e.target.value)}
                   placeholder={isRtl ? 'مرحباً، أود معرفة أسعار ومكونات هذا المنتج...' : 'Message...'}
-                  className="w-full px-3 py-2 text-xs rounded-[var(--radius-md)] bg-[var(--surface-subtle)] border border-[var(--border-default)] text-[var(--text-primary)] resize-none"
+                  className="w-full px-3 py-2 text-xs rounded-shape-sm bg-[var(--surface-subtle)] border border-[var(--border-default)] text-[var(--text-primary)] resize-none focus:border-accent outline-none"
                 />
               </div>
 
               <div>
-                <label className="block text-[11px] font-bold mb-1 text-[var(--text-secondary)]">{isRtl ? 'رقم هاتفك / الواتساب للتواصل contigo:' : 'Your Phone/WhatsApp:'}</label>
+                <label className="block text-[11px] font-bold mb-1 text-[var(--text-secondary)]">{isRtl ? 'رقم هاتفك / الواتساب للتواصل معك:' : 'Your Phone/WhatsApp:'}</label>
                 <input
                   type="text"
                   value={inquiryPhone}
                   onChange={(e) => setInquiryPhone(e.target.value)}
                   placeholder="+970599111222"
-                  className="w-full px-3 py-2 text-xs rounded-[var(--radius-md)] bg-[var(--surface-subtle)] border border-[var(--border-default)] text-[var(--text-primary)]"
+                  className="w-full px-3 py-2 text-xs rounded-shape-sm bg-[var(--surface-subtle)] border border-[var(--border-default)] text-[var(--text-primary)] focus:border-accent outline-none"
                 />
               </div>
 
@@ -7211,7 +7355,7 @@ export const BulletinBoardPage: React.FC = () => {
                   type="button"
                   onClick={() => handleMessageAdvertiser(inquireAd, inquiryText)}
                   disabled={messagingAdId === inquireAd.id}
-                  className="w-full py-2.5 rounded-[var(--radius-md)] bg-accent text-[var(--text-primary)] font-bold text-xs flex items-center justify-center gap-2 transition-theme hover:opacity-90 disabled:opacity-50"
+                  className="w-full min-h-[40px] py-2.5 rounded-shape-sm bg-accent text-[var(--text-primary)] font-bold text-xs flex items-center justify-center gap-2 transition-all duration-fast hover:opacity-90 active:scale-95 disabled:opacity-50 cursor-pointer shadow-xs border border-[var(--border-main)]"
                 >
                   {messagingAdId === inquireAd.id ? (
                     <Loader2 size={14} className="animate-spin" />
@@ -7224,7 +7368,7 @@ export const BulletinBoardPage: React.FC = () => {
                 <button
                   type="submit"
                   disabled={isSendingInquiry}
-                  className="w-full py-2 rounded-[var(--radius-md)] bg-[var(--surface-subtle)] hover:bg-[var(--surface-inset)] text-[var(--text-secondary)] font-bold text-xs flex items-center justify-center gap-2 transition-theme"
+                  className="w-full min-h-[38px] py-2 rounded-shape-sm bg-[var(--surface-subtle)] hover:bg-[var(--surface-inset)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] font-bold text-xs flex items-center justify-center gap-2 transition-all duration-fast active:scale-95 border border-[var(--border-default)] cursor-pointer"
                 >
                   <Send size={13} />
                   <span>{isSendingInquiry ? (isRtl ? 'جاري الإرسال...' : 'Sending...') : (isRtl ? 'إرسال كاستفسار سريع فقط' : 'Send Quick Inquiry Only')}</span>
@@ -7235,22 +7379,6 @@ export const BulletinBoardPage: React.FC = () => {
         )}
       </AppModal>
 
-      {/* Boost Modal */}
-      {boostingAd && (
-        <BoostPostModal
-          isOpen={isBoostModalOpen}
-          onClose={() => {
-            setIsBoostModalOpen(false);
-            setBoostingAd(null);
-          }}
-          ad={boostingAd}
-          walletBalance={walletBalance}
-          token={token}
-          isRtl={isRtl}
-          onSuccess={handleBoostSuccess}
-        />
-      )}
-
       {/* Stream Setup AppModal */}
       <AppModal
         open={isStreamSetupOpen}
@@ -7260,7 +7388,7 @@ export const BulletinBoardPage: React.FC = () => {
       >
         <div className="space-y-6 text-[var(--text-primary)]">
           <div className="text-center space-y-2">
-            <div className="w-14 h-14 rounded-[var(--radius-sm)] bg-red-500/10 flex items-center justify-center mx-auto mb-4 border border-red-500/20 shadow-xs">
+            <div className="w-14 h-14 rounded-shape-sm bg-red-500/10 flex items-center justify-center mx-auto mb-4 border border-red-500/20 shadow-xs">
               <Radio size={28} className="text-red-500 animate-pulse" />
             </div>
             <h3 className="text-xl font-black tracking-tight">{isRtl ? 'إعداد البث المباشر' : 'Live Stream Setup'}</h3>
@@ -7276,7 +7404,7 @@ export const BulletinBoardPage: React.FC = () => {
                 value={streamTitleInput}
                 onChange={(e) => setStreamTitleInput(e.target.value)}
                 placeholder={isRtl ? 'مثلاً: جولة في مكتبي الجديد...' : 'e.g., Tour of my new office...'}
-                className="w-full bg-[var(--surface-subtle)] border border-[var(--border-default)] rounded-[var(--radius-sm)] px-4 py-3 text-sm text-[var(--text-primary)] focus:outline-none focus:ring-2 focus:ring-red-500/20 focus:border-red-500/50 transition-theme font-bold"
+                className="w-full bg-[var(--surface-subtle)] border border-[var(--border-default)] rounded-shape-sm px-4 py-3 text-sm text-[var(--text-primary)] focus:outline-none focus:ring-2 focus:ring-red-500/20 focus:border-red-500/50 transition-theme font-bold"
                 autoFocus
               />
               <div className="absolute right-4 top-1/2 -translate-y-1/2 text-[var(--text-muted)] pointer-events-none transition-colors group-focus-within:text-red-500/50">
@@ -7290,7 +7418,7 @@ export const BulletinBoardPage: React.FC = () => {
                   setIsStreamSetupOpen(false);
                   setStreamTitleInput('');
                 }}
-                className="flex-1 py-3 rounded-[var(--radius-sm)] bg-[var(--surface-subtle)] hover:bg-[var(--surface-inset)] text-[var(--text-secondary)] font-bold text-xs transition-theme active:scale-95 border border-[var(--border-default)]"
+                className="flex-1 min-h-[40px] py-2.5 rounded-shape-sm bg-[var(--surface-subtle)] hover:bg-[var(--surface-inset)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] font-bold text-xs transition-theme active:scale-95 border border-[var(--border-default)] cursor-pointer"
               >
                 {isRtl ? 'إلغاء' : 'Cancel'}
               </button>
@@ -7303,7 +7431,7 @@ export const BulletinBoardPage: React.FC = () => {
                   setIsStreamSetupOpen(false);
                   setIsLiveStreamOpen(true);
                 }}
-                className="flex-[2] py-3 rounded-[var(--radius-sm)] bg-red-600 hover:bg-red-700 text-white font-bold text-xs shadow-sm transition-theme active:scale-95 flex items-center justify-center gap-2 cursor-pointer"
+                className="flex-[2] min-h-[40px] py-2.5 rounded-shape-sm bg-red-600 hover:bg-red-700 text-white font-bold text-xs shadow-sm transition-theme active:scale-95 flex items-center justify-center gap-2 cursor-pointer"
               >
                 <span>{isRtl ? 'بدء البث المباشر 🚀' : 'Start Streaming 🚀'}</span>
               </button>
@@ -7505,6 +7633,36 @@ export const BulletinBoardPage: React.FC = () => {
         initialMode={storyUploadMode}
         onStoryCreated={(newStory) => {
           fetchStories();
+          setCreationSuccessItem({
+            type: 'story',
+            title: newStory?.title || (isRtl ? 'قصة جديدة' : 'New Story'),
+            description: newStory?.description,
+            mediaUrl: newStory?.image_url,
+            videoUrl: newStory?.video_url,
+            gradientClass: newStory?.gradientClass,
+            authorName: newStory?.page_id ? newStory?.page_name : (newStory?.author_name || user?.name),
+            authorAvatar: newStory?.page_id ? newStory?.page_avatar : (newStory?.author_avatar || user?.avatar),
+            id: newStory?.id,
+          });
+        }}
+      />
+
+      {/* Immediate Celebratory Pop Animation upon Successful Story/Reel/Post Creation */}
+      <CreationSuccessPop
+        item={creationSuccessItem}
+        onClose={() => setCreationSuccessItem(null)}
+        isRtl={isRtl}
+        onViewItem={(item) => {
+          if (item.type === 'story') {
+            setSelectedStoryIndex(0);
+            setIsStoryViewerOpen(true);
+          } else if (item.type === 'reel') {
+            setActiveTab('reels');
+            if (item.id) setActiveReelModalId(Number(item.id));
+          } else {
+            setActiveTab('board');
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+          }
         }}
       />
 
@@ -7522,7 +7680,7 @@ export const BulletinBoardPage: React.FC = () => {
         onStoryDeleted={handleStoryDeleted}
       />
 
-      {}
+      {/* Video Trimmer Modal */}
       <VideoTrimmerModal
         isOpen={isTrimmerModalOpen}
         onClose={() => setIsTrimmerModalOpen(false)}
@@ -7538,7 +7696,6 @@ export const BulletinBoardPage: React.FC = () => {
         }}
       />
 
-      {}
       <MediaManagerModal
         isOpen={isMediaManagerOpen}
         onClose={() => setIsMediaManagerOpen(false)}
@@ -7892,7 +8049,7 @@ export const BulletinBoardPage: React.FC = () => {
                       <button
                         type="button"
                         onClick={() => setProfileFormData(prev => ({ ...prev, is_domain_verified: !prev.is_domain_verified }))}
-                        className={`px-3 py-1 rounded-full font-bold text-[11px] transition-colors ${
+                        className={`px-3 py-1 rounded-shape-sm font-bold text-[11px] transition-colors ${
                           profileFormData.is_domain_verified
                             ? 'bg-emerald-500 text-white'
                             : 'bg-[var(--surface-card)] text-[var(--text-muted)] border border-[var(--border-default)]'
@@ -8002,14 +8159,14 @@ export const BulletinBoardPage: React.FC = () => {
                     <button
                       type="button"
                       onClick={() => setIsProfileEditModalOpen(false)}
-                      className="px-4 py-2 rounded-[var(--radius-md)] border border-[var(--border-default)] text-xs font-bold hover:bg-[var(--surface-subtle)]"
+                      className="min-h-[38px] px-4 py-2 rounded-shape-sm border border-[var(--border-default)] text-xs font-bold hover:bg-[var(--surface-subtle)] active:scale-95 transition-all cursor-pointer"
                     >
                       {isRtl ? 'إلغاء' : 'Cancel'}
                     </button>
                     <button
                       type="submit"
                       disabled={isSubmittingProfile}
-                      className="px-5 py-2 rounded-[var(--radius-md)] bg-accent text-[var(--text-primary)] text-xs font-bold shadow-md hover:opacity-90 transition-opacity"
+                      className="min-h-[38px] px-5 py-2 rounded-shape-sm bg-accent text-[var(--text-primary)] text-xs font-bold shadow-xs hover:opacity-90 active:scale-95 transition-all cursor-pointer border border-[var(--border-main)]"
                     >
                       {isSubmittingProfile ? (isRtl ? 'جاري حفظ التغييرات...' : 'Saving...') : (isRtl ? 'حفظ إعدادات الملف الشخصي ✨' : 'Save Profile Settings')}
                     </button>
@@ -8030,7 +8187,7 @@ export const BulletinBoardPage: React.FC = () => {
                   )}
 
                   {user.kyc_status === 'pending' && (
-                    <div className="p-4 rounded-[var(--radius-md)] bg-yellow-500/10 border border-yellow-500/20 text-center space-y-2">
+                    <div className="p-4 rounded-shape-md bg-yellow-500/10 border border-yellow-500/20 text-center space-y-2">
                       <div className="flex justify-center">
                         <div className="w-10 h-10 rounded-shape-full border-4 border-yellow-500 border-t-transparent animate-spin" />
                       </div>
@@ -8044,12 +8201,12 @@ export const BulletinBoardPage: React.FC = () => {
                   {(user.kyc_status === 'none' || user.kyc_status === 'rejected' || !user.kyc_status) && (
                     <form onSubmit={handleKycSubmit} className="space-y-4">
                       {user.kyc_status === 'rejected' && (
-                        <div className="p-3 rounded-[var(--radius-md)] bg-red-500/10 border border-red-500/20 text-xs text-red-500">
+                        <div className="p-3 rounded-shape-sm bg-red-500/10 border border-red-500/20 text-xs text-red-500">
                           {isRtl ? 'تم رفض طلب التوثيق السابق. يرجى تقديم الاسم الحقيقي ومستند واضح للتحقق.' : 'Previous verification request was rejected. Please submit valid documents.'}
                         </div>
                       )}
 
-                      <div className="p-3.5 rounded-[var(--radius-md)] bg-accent/5 border border-accent/10 space-y-1">
+                      <div className="p-3.5 rounded-shape-md bg-accent/5 border border-accent/10 space-y-1">
                         <h4 className="text-xs font-extrabold text-accent">{isRtl ? 'احصل على الشارة الزرقاء في بيربليكستا بورد 🛡️' : 'Get the Blue Verification Badge on Perplexta Board'}</h4>
                         <p className="text-[10px] text-[var(--text-secondary)] leading-relaxed">
                           {isRtl ? 'توثيق الهوية يضمن للعملاء سلامة الصفقات ويمنح منشوراتك الأولوية التامة في محركات البحث والتوصيات بالمنصة.' : 'Verifying your identity builds trust and boosts search priority.'}
@@ -8064,7 +8221,7 @@ export const BulletinBoardPage: React.FC = () => {
                             required
                             value={kycFullName}
                             onChange={(e) => setKycFullName(e.target.value)}
-                            className="w-full px-3 py-2 text-xs rounded-[var(--radius-md)] bg-[var(--surface-inset)] border border-[var(--border-default)]"
+                            className="w-full px-3 py-2 text-xs rounded-shape-sm bg-[var(--surface-inset)] border border-[var(--border-default)]"
                             placeholder={isRtl ? 'مثال: محمد أحمد علي' : 'Legal Name'}
                           />
                         </div>
@@ -8076,7 +8233,7 @@ export const BulletinBoardPage: React.FC = () => {
                             required
                             value={kycIDNumber}
                             onChange={(e) => setKycIDNumber(e.target.value)}
-                            className="w-full px-3 py-2 text-xs rounded-[var(--radius-md)] bg-[var(--surface-inset)] border border-[var(--border-default)]"
+                            className="w-full px-3 py-2 text-xs rounded-shape-sm bg-[var(--surface-inset)] border border-[var(--border-default)]"
                             placeholder="E.g., 401234567"
                           />
                         </div>
@@ -8089,10 +8246,10 @@ export const BulletinBoardPage: React.FC = () => {
                               required
                               value={kycSelfieUrl}
                               onChange={(e) => setKycSelfieUrl(e.target.value)}
-                              className="flex-1 px-3 py-2 text-xs rounded-[var(--radius-md)] bg-[var(--surface-inset)] border border-[var(--border-default)]"
+                              className="flex-1 px-3 py-2 text-xs rounded-shape-sm bg-[var(--surface-inset)] border border-[var(--border-default)]"
                               placeholder="https://..."
                             />
-                            <label className="px-3 py-2 rounded-[var(--radius-md)] bg-accent text-[var(--text-primary)] text-xs font-bold cursor-pointer flex items-center justify-center shrink-0">
+                            <label className="px-3 py-2 rounded-shape-sm bg-accent text-[var(--text-primary)] text-xs font-bold cursor-pointer flex items-center justify-center shrink-0 border border-[var(--border-main)]">
                               <Upload size={14} />
                               <input
                                 type="file"
@@ -8109,14 +8266,14 @@ export const BulletinBoardPage: React.FC = () => {
                         <button
                           type="button"
                           onClick={() => setIsProfileEditModalOpen(false)}
-                          className="px-4 py-2 rounded-[var(--radius-md)] border border-[var(--border-default)] text-xs font-bold"
+                          className="min-h-[38px] px-4 py-2 rounded-shape-sm border border-[var(--border-default)] text-xs font-bold hover:bg-[var(--surface-subtle)] active:scale-95 transition-all cursor-pointer"
                         >
                           {isRtl ? 'إلغاء' : 'Cancel'}
                         </button>
                         <button
                           type="submit"
                           disabled={isSubmittingProfile}
-                          className="px-4 py-2 rounded-[var(--radius-md)] bg-accent text-[var(--text-primary)] text-xs font-bold"
+                          className="min-h-[38px] px-4 py-2 rounded-shape-sm bg-accent text-[var(--text-primary)] text-xs font-bold hover:opacity-90 active:scale-95 transition-all cursor-pointer border border-[var(--border-main)]"
                         >
                           {isSubmittingProfile ? (isRtl ? 'جاري الإرسال...' : 'Submitting...') : (isRtl ? 'إرسال طلب التوثيق' : 'Submit Verification')}
                         </button>
@@ -8160,19 +8317,18 @@ export const BulletinBoardPage: React.FC = () => {
                         required
                         value={editPageFormData.name}
                         onChange={(e) => setEditPageFormData({ ...editPageFormData, name: e.target.value })}
-                        className="w-full px-3 py-2 text-xs rounded-[var(--radius-md)] bg-[var(--surface-inset)] border border-[var(--border-default)]"
+                        className="w-full px-3 py-2 text-xs rounded-shape-sm bg-[var(--surface-inset)] border border-[var(--border-default)] focus:border-accent outline-none"
                       />
                     </div>
 
                     <div>
-                      <label className="block text-xs font-bold mb-1">{isRtl ? 'الصنف / الفئة:' : 'Category:'}</label>
-                      <input
-                        type="text"
-                        required
+                      <label className="block text-xs font-bold mb-1">{isRtl ? 'الصنف التجاري / الفئة المعتمدة:' : 'Business Category:'}</label>
+                      <CategoryAutocompleteInput
                         value={editPageFormData.category}
-                        onChange={(e) => setEditPageFormData({ ...editPageFormData, category: e.target.value })}
-                        className="w-full px-3 py-2 text-xs rounded-[var(--radius-md)] bg-[var(--surface-inset)] border border-[var(--border-default)]"
-                        placeholder="E.g., E-Commerce"
+                        onChange={(category) => setEditPageFormData(prev => ({ ...prev, category }))}
+                        required
+                        isRtl={isRtl}
+                        placeholder={isRtl ? 'ابحث أو اختر الفئة (مثل: بناء، تكنولوجيا، تجارة، مطاعم...)' : 'Search category (e.g. Construction, Tech...)'}
                       />
                     </div>
                   </div>
@@ -8224,7 +8380,7 @@ export const BulletinBoardPage: React.FC = () => {
                           type="text"
                           value={editPageFormData.address}
                           onChange={(e) => setEditPageFormData({ ...editPageFormData, address: e.target.value })}
-                          className="w-full px-3 py-2 text-xs rounded-[var(--radius-md)] bg-[var(--surface-inset)] border border-[var(--border-default)] font-medium text-[var(--text-primary)]"
+                          className="w-full px-3 py-2 text-xs rounded-shape-sm bg-[var(--surface-inset)] border border-[var(--border-default)] font-medium text-[var(--text-primary)] focus:border-accent outline-none"
                           placeholder={isRtl ? 'مثال: شارع عمر المختار - عمارة الشروق - الطابق الثاني' : 'E.g., Remal Street, Shorouk Tower, 2nd Fl'}
                         />
                       </div>
@@ -8237,7 +8393,7 @@ export const BulletinBoardPage: React.FC = () => {
                             <span>{isRtl ? 'إحداثيات الموقع الجغرافي الدقيقة:' : 'Exact Business GPS Coordinates (Lat/Lon):'}</span>
                           </label>
                           {editPageFormData.lat && editPageFormData.lon && (
-                            <span className="text-[10px] font-mono font-bold text-accent px-2 py-0.5 rounded-full bg-accent/10 border border-accent/20 flex items-center gap-1">
+                            <span className="text-[10px] font-mono font-bold text-accent px-2 py-0.5 rounded-shape-full bg-accent/10 border border-accent/20 flex items-center gap-1">
                               <Check size={11} />
                               <span>{editPageFormData.lat}, {editPageFormData.lon}</span>
                             </span>
@@ -8257,7 +8413,7 @@ export const BulletinBoardPage: React.FC = () => {
                               value={editPageFormData.lat}
                               onChange={(e) => setEditPageFormData({ ...editPageFormData, lat: e.target.value })}
                               placeholder="31.768319"
-                              className="w-full px-3 py-1.5 text-xs font-mono rounded-[var(--radius-md)] bg-[var(--surface-inset)] border border-[var(--border-default)] focus:border-accent text-[var(--text-primary)] outline-none"
+                              className="w-full px-3 py-1.5 text-xs font-mono rounded-shape-sm bg-[var(--surface-inset)] border border-[var(--border-default)] focus:border-accent text-[var(--text-primary)] outline-none"
                             />
                           </div>
 
@@ -8273,7 +8429,7 @@ export const BulletinBoardPage: React.FC = () => {
                               value={editPageFormData.lon}
                               onChange={(e) => setEditPageFormData({ ...editPageFormData, lon: e.target.value })}
                               placeholder="35.213710"
-                              className="w-full px-3 py-1.5 text-xs font-mono rounded-[var(--radius-md)] bg-[var(--surface-inset)] border border-[var(--border-default)] focus:border-accent text-[var(--text-primary)] outline-none"
+                              className="w-full px-3 py-1.5 text-xs font-mono rounded-shape-sm bg-[var(--surface-inset)] border border-[var(--border-default)] focus:border-accent text-[var(--text-primary)] outline-none"
                             />
                           </div>
                         </div>
@@ -8360,11 +8516,10 @@ export const BulletinBoardPage: React.FC = () => {
                       required
                       value={editPageFormData.description}
                       onChange={(e) => setEditPageFormData({ ...editPageFormData, description: e.target.value })}
-                      className="w-full px-3 py-2 text-xs rounded-[var(--radius-md)] bg-[var(--surface-inset)] border border-[var(--border-default)]"
+                      className="w-full px-3 py-2 text-xs rounded-shape-sm bg-[var(--surface-inset)] border border-[var(--border-default)] focus:border-accent outline-none"
                     />
                   </div>
 
-                  {}
                   <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                     <div>
                       <label className="block text-xs font-bold mb-1">{isRtl ? 'رقم الواتساب:' : 'WhatsApp:'}</label>
@@ -8372,7 +8527,7 @@ export const BulletinBoardPage: React.FC = () => {
                         type="text"
                         value={editPageFormData.whatsapp_number}
                         onChange={(e) => setEditPageFormData({ ...editPageFormData, whatsapp_number: e.target.value })}
-                        className="w-full px-3 py-2 text-xs rounded-[var(--radius-md)] bg-[var(--surface-inset)] border border-[var(--border-default)]"
+                        className="w-full px-3 py-2 text-xs rounded-shape-sm bg-[var(--surface-inset)] border border-[var(--border-default)] focus:border-accent outline-none"
                         placeholder="970599..."
                       />
                     </div>
@@ -8383,7 +8538,7 @@ export const BulletinBoardPage: React.FC = () => {
                         type="text"
                         value={editPageFormData.phone_number}
                         onChange={(e) => setEditPageFormData({ ...editPageFormData, phone_number: e.target.value })}
-                        className="w-full px-3 py-2 text-xs rounded-[var(--radius-md)] bg-[var(--surface-inset)] border border-[var(--border-default)]"
+                        className="w-full px-3 py-2 text-xs rounded-shape-sm bg-[var(--surface-inset)] border border-[var(--border-default)] focus:border-accent outline-none"
                       />
                     </div>
 
@@ -8393,7 +8548,7 @@ export const BulletinBoardPage: React.FC = () => {
                         type="text"
                         value={editPageFormData.website_url}
                         onChange={(e) => setEditPageFormData({ ...editPageFormData, website_url: e.target.value })}
-                        className="w-full px-3 py-2 text-xs rounded-[var(--radius-md)] bg-[var(--surface-inset)] border border-[var(--border-default)]"
+                        className="w-full px-3 py-2 text-xs rounded-shape-sm bg-[var(--surface-inset)] border border-[var(--border-default)] focus:border-accent outline-none"
                         placeholder="https://..."
                       />
                     </div>
@@ -8468,7 +8623,7 @@ export const BulletinBoardPage: React.FC = () => {
                               type="email"
                               value={newManagerEmail}
                               onChange={(e) => setNewManagerEmail(e.target.value)}
-                              className="w-full px-3 py-2 text-xs rounded-[var(--radius-md)] bg-[var(--surface-inset)] border border-[var(--border-default)]"
+                              className="w-full px-3 py-2 text-xs rounded-shape-sm bg-[var(--surface-inset)] border border-[var(--border-default)] focus:border-accent outline-none"
                               placeholder="manager@example.com"
                             />
                           </div>
@@ -8505,21 +8660,20 @@ export const BulletinBoardPage: React.FC = () => {
                               };
                               setEditPageManagers([...editPageManagers, newMgr]);
                               setNewManagerEmail('');
-                              toast.success(isRtl ? 'تمت إضافة المسؤول للقايمة مؤقتاً! يرجى حفظ الصفحة لتأكيد الحفظ بالخادم.' : 'Manager added to list! Save page to persist.');
+                              toast.success(isRtl ? 'تمت إضافة المسؤول للقائمة مؤقتاً! يرجى حفظ الصفحة لتأكيد الحفظ بالخادم.' : 'Manager added to list! Save page to persist.');
                             }}
-                            className="px-3 py-2 bg-accent text-[var(--text-primary)] text-xs font-bold rounded-[var(--radius-md)] h-9 flex items-center justify-center shrink-0 cursor-pointer"
+                            className="px-3 py-2 bg-accent text-[var(--text-primary)] text-xs font-bold rounded-shape-sm h-9 flex items-center justify-center shrink-0 cursor-pointer hover:opacity-90 active:scale-95 transition-all border border-[var(--border-main)]"
                           >
                             <span>{isRtl ? 'إضافة' : 'Add'}</span>
                           </button>
                         </div>
                       </div>
                     ) : (
-                      <div className="p-3 rounded-[var(--radius-md)] bg-[var(--surface-subtle)] text-center text-xs text-[var(--text-muted)]">
+                      <div className="p-3 rounded-shape-sm bg-[var(--surface-subtle)] text-center text-xs text-[var(--text-muted)]">
                         {isRtl ? 'صلاحية إضافة وإزالة المسؤولين مقتصرة على مالك الصفحة الأساسي.' : 'Only page owner can manage managers.'}
                       </div>
                     )}
 
-                    {}
                     <div className="space-y-1.5">
                       <p className="text-[10px] font-bold text-[var(--text-muted)]">{isRtl ? 'قائمة المسؤولين الحاليين:' : 'Current Managers List:'}</p>
                       {editPageManagers.length === 0 ? (
@@ -8527,13 +8681,13 @@ export const BulletinBoardPage: React.FC = () => {
                       ) : (
                         <div className="grid grid-cols-1 gap-1.5">
                           {editPageManagers.map((mgr, mIdx) => (
-                            <div key={`edit-mgr-${mIdx}`} className="p-2.5 rounded-[var(--radius-md)] border border-[var(--border-default)] bg-[var(--surface-inset)] flex items-center justify-between gap-2">
+                            <div key={`edit-mgr-${mIdx}`} className="p-2.5 rounded-shape-sm border border-[var(--border-default)] bg-[var(--surface-inset)] flex items-center justify-between gap-2">
                               <div className="min-w-0">
                                 <span className="text-xs font-extrabold truncate block">{mgr.name || mgr.email}</span>
                                 <span className="text-[10px] text-[var(--text-muted)] truncate block">{mgr.email}</span>
                               </div>
                               <div className="flex items-center gap-2 shrink-0">
-                                <span className={`text-[10px] font-bold px-2 py-0.5 rounded-md ${
+                                <span className={`text-[10px] font-bold px-2 py-0.5 rounded-shape-full ${
                                   mgr.role === 'full'
                                     ? 'bg-accent/10 text-accent border border-accent/20'
                                     : 'bg-orange-500/10 text-orange-500 border border-orange-500/20'
@@ -8549,7 +8703,7 @@ export const BulletinBoardPage: React.FC = () => {
                                       setEditPageManagers(editPageManagers.filter((_, idx) => idx !== mIdx));
                                       toast.info(isRtl ? 'تم حذف المسؤول من القائمة! يرجى حفظ الصفحة لتأكيد التغيير.' : 'Manager removed! Save page to persist.');
                                     }}
-                                    className="p-1 rounded-md text-red-500 hover:bg-red-500/10 transition-theme"
+                                    className="p-1 rounded-shape-sm text-red-500 hover:bg-red-500/10 transition-theme cursor-pointer"
                                     title={isRtl ? 'إزالة المسؤول' : 'Remove Manager'}
                                   >
                                     <Trash2 size={14} />
@@ -8569,14 +8723,14 @@ export const BulletinBoardPage: React.FC = () => {
                   <button
                     type="button"
                     onClick={() => { setIsEditPageModalOpen(false); setEditingPageData(null); }}
-                    className="px-4 py-2 rounded-[var(--radius-md)] border border-[var(--border-default)] text-xs font-bold"
+                    className="min-h-[38px] px-4 py-2 rounded-shape-sm border border-[var(--border-default)] text-xs font-bold hover:bg-[var(--surface-subtle)] active:scale-95 transition-all cursor-pointer"
                   >
                     {isRtl ? 'إلغاء' : 'Cancel'}
                   </button>
                   <button
                     type="submit"
                     disabled={isSubmittingPageEdit}
-                    className="px-4 py-2 rounded-[var(--radius-md)] bg-accent text-[var(--text-primary)] text-xs font-bold"
+                    className="min-h-[38px] px-4 py-2 rounded-shape-sm bg-accent text-[var(--text-primary)] text-xs font-bold hover:opacity-90 active:scale-95 transition-all cursor-pointer border border-[var(--border-main)]"
                   >
                     {isSubmittingPageEdit ? (isRtl ? 'جاري الحفظ...' : 'Saving...') : (isRtl ? 'حفظ التعديلات' : 'Save Changes')}
                   </button>

@@ -1,8 +1,9 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { createPortal } from 'react-dom';
-import { X, Scissors, Play, Pause, Check, Clock, RotateCcw, Volume2, VolumeX, Sparkles } from 'lucide-react';
+import { X, Scissors, Play, Pause, Check, Clock, RotateCcw, Volume2, VolumeX, Sparkles, Upload } from 'lucide-react';
 import { getAspectRatioClass } from '../utils/mediaUtils';
 import { Button, toast } from '@/design-system';
+import { triggerHaptic } from '../utils/haptics';
 
 export interface VideoTrimmerModalProps {
   isOpen: boolean;
@@ -34,16 +35,18 @@ const VIDEO_FILTERS = [
 export const VideoTrimmerModal: React.FC<VideoTrimmerModalProps> = ({
   isOpen,
   onClose,
-  videoUrl,
+  videoUrl: initialVideoUrl,
   videoDuration = 0,
   isRtl = true,
   onTrimComplete,
 }) => {
   const videoRef = useRef<HTMLVideoElement>(null);
+  const [currentVideoUrl, setCurrentVideoUrl] = useState<string>(initialVideoUrl);
   const [isPlaying, setIsPlaying] = useState(false);
   const [isMuted, setIsMuted] = useState(false);
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(videoDuration);
+  const [isDraggingVideo, setIsDraggingVideo] = useState(false);
 
   const [startTime, setStartTime] = useState(0);
   const [endTime, setEndTime] = useState(videoDuration || 10);
@@ -52,6 +55,10 @@ export const VideoTrimmerModal: React.FC<VideoTrimmerModalProps> = ({
   const [aspectRatio, setAspectRatio] = useState<'9:16' | '16:9' | '1:1' | '4:5'>('1:1');
   const [selectedFilter, setSelectedFilter] = useState<string>('normal');
   const [isProcessing, setIsProcessing] = useState(false);
+
+  useEffect(() => {
+    setCurrentVideoUrl(initialVideoUrl);
+  }, [initialVideoUrl]);
 
   useEffect(() => {
     if (videoDuration && videoDuration > 0) {
@@ -93,6 +100,28 @@ export const VideoTrimmerModal: React.FC<VideoTrimmerModalProps> = ({
 
   if (!isOpen) return null;
 
+  const handleVideoFileDrop = (files: File[]) => {
+    if (!files || files.length === 0) return;
+    const file = files[0];
+    const isVid = file.type.startsWith('video/') || ['mp4', 'mov', 'avi', 'webm', 'mkv'].some(ext => file.name.toLowerCase().endsWith('.' + ext));
+
+    if (!isVid) {
+      toast.error(isRtl ? 'يرجى إفلات مقطع فيديو صالح' : 'Please drop a valid video file');
+      return;
+    }
+
+    if (file.size > 100 * 1024 * 1024) {
+      toast.error(isRtl ? 'حجم الفيديو كبير جداً (الأقصى 100 ميجابايت)' : 'Video file too large (Max 100MB)');
+      return;
+    }
+
+    triggerHaptic('medium');
+    const newUrl = URL.createObjectURL(file);
+    setCurrentVideoUrl(newUrl);
+    setStartTime(0);
+    toast.success(isRtl ? 'تم استبدال مقطع الفيديو بنجاح!' : 'Video replaced successfully!');
+  };
+
   const togglePlay = () => {
     const video = videoRef.current;
     if (!video) return;
@@ -123,10 +152,10 @@ export const VideoTrimmerModal: React.FC<VideoTrimmerModalProps> = ({
       await new Promise(r => setTimeout(r, 1200));
 
       toast.dismiss(toastId);
-      toast.success(isRtl ? 'تم قص وضبط المقطع بنجاح وجاهز للنشر!' : 'Video trimmed & ready for publication!');
+      toast.success(isRtl ? 'تم قص وضبط مقطع الفيديو بنجاح' : 'Video trimmed successfully');
       
       onTrimComplete({
-        videoUrl,
+        videoUrl: currentVideoUrl,
         startTime,
         endTime,
         duration: Math.round(endTime - startTime),
@@ -144,12 +173,44 @@ export const VideoTrimmerModal: React.FC<VideoTrimmerModalProps> = ({
   };
 
   return createPortal(
-    <div className="fixed inset-0 z-[80] flex items-center justify-center p-2 sm:p-4 bg-[var(--surface-overlay)] backdrop-blur-md">
-      <div className="bg-[var(--surface-card)] border border-[var(--border-default)] rounded-2xl sm:rounded-[var(--radius-lg)] w-full max-w-3xl overflow-hidden shadow-2xl flex flex-col text-[var(--text-primary)] max-h-[94vh] sm:max-h-[88vh]">
+    <div 
+      className="fixed inset-0 z-[80] flex items-center justify-center p-2 sm:p-4 bg-[var(--surface-overlay)] backdrop-blur-md"
+      onDragOver={(e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        setIsDraggingVideo(true);
+      }}
+      onDragLeave={(e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        if (e.currentTarget === e.target) setIsDraggingVideo(false);
+      }}
+      onDrop={(e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        setIsDraggingVideo(false);
+        const files = e.dataTransfer.files ? Array.from(e.dataTransfer.files) : [];
+        if (files.length > 0) handleVideoFileDrop(files);
+      }}
+    >
+      <div className="relative bg-[var(--surface-card)] border border-[var(--border-default)] rounded-shape-lg w-full max-w-3xl overflow-hidden shadow-2xl flex flex-col text-[var(--text-primary)] max-h-[94vh] sm:max-h-[88vh]">
+        
+        {/* Drop Overlay */}
+        {isDraggingVideo && (
+          <div className="absolute inset-0 z-[90] bg-[var(--surface-card)]/95 backdrop-blur-md p-6 flex flex-col items-center justify-center text-center gap-3 border-2 border-dashed border-[var(--fg-accent)] rounded-shape-lg select-none">
+            <div className="w-14 h-14 rounded-shape-md bg-[var(--surface-subtle)] text-[var(--fg-accent)] flex items-center justify-center shadow-lg border border-[var(--border-accent)]/40 animate-bounce">
+              <Upload size={28} />
+            </div>
+            <p className="text-sm font-extrabold text-[var(--text-primary)]">
+              {isRtl ? 'أفلت مقطع الفيديو هنا لاستبداله فوراً' : 'Drop video clip here to replace instantly'}
+            </p>
+          </div>
+        )}
+
         {/* Modal Header */}
         <div className="px-3.5 py-2.5 sm:px-6 sm:py-4 border-b border-[var(--border-default)] flex items-center justify-between bg-[var(--surface-subtle)]">
           <div className="flex items-center gap-2">
-            <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-[var(--radius-sm)] bg-[var(--bg-accent-muted)] border border-[var(--border-accent)]/30 flex items-center justify-center text-[var(--fg-accent)] shrink-0">
+            <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-shape-sm bg-[var(--surface-subtle)] border border-[var(--border-accent)]/30 flex items-center justify-center text-[var(--fg-accent)] shrink-0">
               <Scissors size={17} className="sm:size-[20px]" />
             </div>
             <div className="min-w-0">
@@ -157,7 +218,7 @@ export const VideoTrimmerModal: React.FC<VideoTrimmerModalProps> = ({
                 {isRtl ? 'محرر وقص الفيديو الاحترافي' : 'Professional Video Trimmer & Editor'}
               </h3>
               <p className="text-[10px] sm:text-xs text-[var(--text-secondary)] truncate">
-                {isRtl ? 'تحديد نقطتي البداية والنهاية وضبط الأبعاد' : 'Select start/end points & standardize aspect ratio'}
+                {isRtl ? 'تحديد نقطتي البداية والنهاية وضبط الأبعاد (يدعم السحب والإفلات)' : 'Standardize aspect ratio & trim (Supports drag and drop)'}
               </p>
             </div>
           </div>
@@ -165,7 +226,7 @@ export const VideoTrimmerModal: React.FC<VideoTrimmerModalProps> = ({
             type="button"
             onClick={onClose}
             aria-label="Close trimmer"
-            className="w-7 h-7 sm:w-8 sm:h-8 rounded-full flex items-center justify-center text-[var(--text-muted)] hover:text-[var(--text-primary)] hover:bg-[var(--surface-subtle)] transition-colors cursor-pointer shrink-0 ms-2"
+            className="w-7 h-7 sm:w-8 sm:h-8 rounded-shape-sm flex items-center justify-center text-[var(--text-muted)] hover:text-[var(--text-primary)] hover:bg-[var(--surface-subtle)] border border-[var(--border-default)] transition-colors cursor-pointer shrink-0 ms-2"
           >
             <X size={16} className="sm:size-[18px]" />
           </button>
@@ -174,10 +235,25 @@ export const VideoTrimmerModal: React.FC<VideoTrimmerModalProps> = ({
         {/* Modal Body */}
         <div className="p-3 sm:p-6 flex flex-col gap-3 sm:gap-6 overflow-y-auto max-h-[82vh] scrollbar-thin">
           {/* Video Preview Stage */}
-          <div className="relative w-full aspect-video max-h-[180px] xs:max-h-[220px] sm:max-h-[340px] bg-[var(--surface-inset)] rounded-[var(--radius-md)] overflow-hidden border border-[var(--border-default)] flex items-center justify-center shadow-inner">
+          <div 
+            onDragOver={(e) => { e.preventDefault(); e.stopPropagation(); }}
+            onDrop={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              const files = e.dataTransfer.files ? Array.from(e.dataTransfer.files) : [];
+              if (files.length > 0) handleVideoFileDrop(files);
+            }}
+            className={`relative w-full ${
+              aspectRatio === '9:16' || adFormat === 'reel' || adFormat === 'story'
+                ? 'aspect-[9/16] max-h-[320px] sm:max-h-[420px] mx-auto'
+                : aspectRatio === '1:1'
+                ? 'aspect-square max-h-[260px] sm:max-h-[360px] mx-auto'
+                : 'aspect-video max-h-[180px] xs:max-h-[220px] sm:max-h-[340px]'
+            } bg-[var(--surface-inset)] rounded-shape-md overflow-hidden border border-[var(--border-default)] flex items-center justify-center shadow-inner`}
+          >
             <video
               ref={videoRef}
-              src={videoUrl}
+              src={currentVideoUrl}
               muted={isMuted}
               playsInline
               style={{
@@ -191,26 +267,26 @@ export const VideoTrimmerModal: React.FC<VideoTrimmerModalProps> = ({
               <button
                 onClick={togglePlay}
                 aria-label="Play"
-                className="absolute inset-0 m-auto w-10 h-10 sm:w-14 sm:h-14 rounded-full bg-[var(--bg-accent-emphasis)] text-[var(--fg-on-emphasis)] flex items-center justify-center shadow-lg transition-transform hover:scale-105 active:scale-95 cursor-pointer z-10"
+                className="absolute inset-0 m-auto w-10 h-10 sm:w-14 sm:h-14 rounded-shape-md bg-[var(--bg-accent-emphasis)] text-[var(--fg-on-emphasis)] flex items-center justify-center shadow-lg transition-transform hover:scale-105 active:scale-95 cursor-pointer z-10"
               >
                 <Play size={20} className="sm:size-[26px] translate-x-0.5 fill-current" />
               </button>
             )}
 
-            <div className="absolute top-2 left-2 sm:top-3 sm:left-3 px-2 py-0.5 sm:px-2.5 sm:py-1 rounded-[var(--radius-xs)] bg-[var(--surface-overlay)] backdrop-blur-md text-[var(--fg-accent)] text-[10px] sm:text-xs font-mono border border-[var(--border-accent)]/30 flex items-center gap-1 z-20">
+            <div className="absolute top-2 left-2 sm:top-3 sm:left-3 px-2 py-0.5 sm:px-2.5 sm:py-1 rounded-shape-xs bg-[var(--surface-overlay)] backdrop-blur-md text-[var(--fg-accent)] text-[10px] sm:text-xs font-mono border border-[var(--border-accent)]/30 flex items-center gap-1 z-20">
               <Sparkles size={11} className="sm:size-[12px]" />
               <span className="uppercase font-bold">{adFormat} ({aspectRatio})</span>
             </div>
 
             {selectedFilter !== 'normal' && (
-              <div className="absolute top-2 right-2 sm:top-3 sm:right-3 px-2 py-0.5 sm:px-2.5 sm:py-1 rounded-[var(--radius-xs)] bg-[var(--bg-accent-emphasis)] text-[var(--fg-on-emphasis)] text-[9px] sm:text-[11px] font-bold shadow-lg z-20">
+              <div className="absolute top-2 right-2 sm:top-3 sm:right-3 px-2 py-0.5 sm:px-2.5 sm:py-1 rounded-shape-xs bg-[var(--bg-accent-emphasis)] text-[var(--fg-on-emphasis)] text-[9px] sm:text-[11px] font-bold shadow-lg z-20">
                 {isRtl ? VIDEO_FILTERS.find(f => f.id === selectedFilter)?.nameAr : VIDEO_FILTERS.find(f => f.id === selectedFilter)?.nameEn}
               </div>
             )}
           </div>
 
           {/* Player Controls Bar */}
-          <div className="flex items-center justify-between bg-[var(--surface-subtle)] p-2 sm:p-3 rounded-[var(--radius-sm)] border border-[var(--border-default)]">
+          <div className="flex items-center justify-between bg-[var(--surface-subtle)] p-2 sm:p-3 rounded-shape-sm border border-[var(--border-default)]">
             <div className="flex items-center gap-2 sm:gap-3">
               <Button
                 variant="primary"
@@ -224,18 +300,18 @@ export const VideoTrimmerModal: React.FC<VideoTrimmerModalProps> = ({
                 type="button"
                 onClick={() => setIsMuted(!isMuted)}
                 aria-label="Toggle mute"
-                className="w-7 h-7 sm:w-8 sm:h-8 rounded-[var(--radius-sm)] bg-[var(--surface-card)] border border-[var(--border-default)] flex items-center justify-center text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--surface-subtle)] transition-colors cursor-pointer"
+                className="w-7 h-7 sm:w-8 sm:h-8 rounded-shape-sm bg-[var(--surface-card)] border border-[var(--border-default)] flex items-center justify-center text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--surface-subtle)] transition-colors cursor-pointer"
               >
                 {isMuted ? <VolumeX size={14} className="sm:size-[16px] text-[var(--fg-danger)]" /> : <Volume2 size={14} className="sm:size-[16px]" />}
               </button>
             </div>
-            <div className="text-[10.5px] sm:text-xs font-mono text-[var(--fg-accent)] bg-[var(--bg-accent-muted)] px-2.5 py-1 rounded-[var(--radius-xs)] border border-[var(--border-accent)]/20">
+            <div className="text-[10.5px] sm:text-xs font-mono text-[var(--fg-accent)] bg-[var(--surface-subtle)] px-2.5 py-1 rounded-shape-xs border border-[var(--border-accent)]/20">
               {formatTime(currentTime)} / {formatTime(duration)}
             </div>
           </div>
 
           {/* Trimmer Sliders */}
-          <div className="flex flex-col gap-2.5 sm:gap-3 bg-[var(--surface-subtle)] p-2.5 sm:p-4 rounded-[var(--radius-md)] border border-[var(--border-default)]">
+          <div className="flex flex-col gap-2.5 sm:gap-3 bg-[var(--surface-subtle)] p-2.5 sm:p-4 rounded-shape-md border border-[var(--border-default)]">
             <div className="flex items-center justify-between text-[11px] sm:text-xs text-[var(--text-secondary)] font-medium flex-wrap gap-1">
               <span className="flex items-center gap-1">
                 <Clock size={12} className="sm:size-[14px] text-[var(--fg-accent)]" />
@@ -310,7 +386,7 @@ export const VideoTrimmerModal: React.FC<VideoTrimmerModalProps> = ({
                       if (fmt.id === 'reel' || fmt.id === 'story') setAspectRatio('9:16');
                       else setAspectRatio('1:1');
                     }}
-                    className={`py-1.5 px-2 rounded-[var(--radius-sm)] text-[11px] sm:text-xs font-bold transition-colors duration-fast border cursor-pointer ${
+                    className={`py-1.5 px-2 rounded-shape-sm text-[11px] sm:text-xs font-bold transition-colors duration-fast border cursor-pointer ${
                       adFormat === fmt.id
                         ? 'bg-[var(--bg-accent-emphasis)] text-[var(--fg-on-emphasis)] border-[var(--border-accent)] shadow-xs'
                         : 'bg-[var(--surface-subtle)] text-[var(--text-secondary)] border-[var(--border-default)] hover:bg-[var(--surface-card)]'
@@ -332,9 +408,9 @@ export const VideoTrimmerModal: React.FC<VideoTrimmerModalProps> = ({
                     key={ratio}
                     type="button"
                     onClick={() => setAspectRatio(ratio as any)}
-                    className={`h-8 sm:h-9 rounded-[var(--radius-sm)] text-[11px] sm:text-xs font-mono font-bold transition-colors duration-fast border cursor-pointer flex items-center justify-center ${
+                    className={`h-8 sm:h-9 rounded-shape-sm text-[11px] sm:text-xs font-mono font-bold transition-colors duration-fast border cursor-pointer flex items-center justify-center ${
                       aspectRatio === ratio
-                        ? 'text-[var(--fg-accent)] font-extrabold border-[var(--border-accent)] bg-[var(--bg-accent-muted)]'
+                        ? 'text-[var(--fg-accent)] font-extrabold border-[var(--border-accent)] bg-[var(--surface-subtle)]'
                         : 'border-[var(--border-default)] bg-[var(--surface-subtle)] text-[var(--text-muted)] hover:text-[var(--fg-accent)] hover:bg-[var(--surface-card)]'
                     }`}
                   >
@@ -359,14 +435,14 @@ export const VideoTrimmerModal: React.FC<VideoTrimmerModalProps> = ({
                   key={flt.id}
                   type="button"
                   onClick={() => setSelectedFilter(flt.id)}
-                  className={`py-1.5 px-1.5 rounded-[var(--radius-sm)] text-[10px] sm:text-xs font-medium transition-colors duration-fast border flex flex-col items-center gap-1 cursor-pointer ${
+                  className={`py-1.5 px-1.5 rounded-shape-sm text-[10px] sm:text-xs font-medium transition-colors duration-fast border flex flex-col items-center gap-1 cursor-pointer ${
                     selectedFilter === flt.id
                       ? 'bg-[var(--bg-accent-emphasis)] text-[var(--fg-on-emphasis)] border-[var(--border-accent)] shadow-xs ring-1 ring-[var(--focus-outline)]/30'
                       : 'bg-[var(--surface-subtle)] text-[var(--text-secondary)] border-[var(--border-default)] hover:bg-[var(--surface-card)]'
                   }`}
                 >
                   <div
-                    className="w-full h-6 sm:h-8 rounded-[var(--radius-xs)] bg-[var(--surface-inset)] overflow-hidden relative border border-[var(--border-default)] flex items-center justify-center"
+                    className="w-full h-6 sm:h-8 rounded-shape-xs bg-[var(--surface-inset)] overflow-hidden relative border border-[var(--border-default)] flex items-center justify-center"
                     style={{ filter: flt.filter }}
                   >
                     <div className="absolute inset-0 bg-gradient-to-tr from-black/40 to-white/20" />
@@ -396,7 +472,7 @@ export const VideoTrimmerModal: React.FC<VideoTrimmerModalProps> = ({
             onClick={handleApplyTrim}
           >
             <Check size={14} className="sm:size-[16px]" />
-            <span>{isRtl ? 'تطبيق ونشر' : 'Apply & Publish'}</span>
+            <span>{isRtl ? 'تطبيق وضبط الفيديو' : 'Apply & Save Video'}</span>
           </Button>
         </div>
       </div>

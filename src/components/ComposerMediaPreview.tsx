@@ -1,7 +1,8 @@
-import React from 'react';
-import { Edit3, X, Play, Film, Image as ImageIcon, Plus } from 'lucide-react';
+import React, { useState, useEffect, useRef } from 'react';
+import { Edit3, X, Film, Plus, Scissors, Play, Camera, Check, RefreshCw, ImagePlus, UploadCloud } from 'lucide-react';
+import { toast } from '@/design-system';
 import { MediaGalleryItem } from '../../server/db/types';
-import { getMediaUrl } from '../utils/mediaUtils';
+import { getMediaUrl, extractRecommendedVideoFrames, RecommendedFrameItem } from '../utils/mediaUtils';
 import { StrictMediaContainer } from './StrictMediaContainer';
 
 interface ComposerMediaPreviewProps {
@@ -10,6 +11,8 @@ interface ComposerMediaPreviewProps {
   onClearAll: () => void;
   onAddMoreClick: () => void;
   isRtl: boolean;
+  onSelectCover?: (coverUrl: string, file?: File) => void;
+  onOpenTrimmer?: () => void;
 }
 
 export const ComposerMediaPreview: React.FC<ComposerMediaPreviewProps> = ({
@@ -17,11 +20,315 @@ export const ComposerMediaPreview: React.FC<ComposerMediaPreviewProps> = ({
   onOpenMediaManager,
   onClearAll,
   onAddMoreClick,
-  isRtl
+  isRtl,
+  onSelectCover,
+  onOpenTrimmer
 }) => {
+  const coverObjectUrlRef = useRef<string | null>(null);
+  const coverFileInputRef = useRef<HTMLInputElement | null>(null);
+  const playerVideoRef = useRef<HTMLVideoElement | null>(null);
+  const [videoAspect, setVideoAspect] = useState<'9:16' | '4:5' | '1:1' | '16:9'>('16:9');
+  
+  // Recommended stopping frames (keyframes) state
+  const [recommendedFrames, setRecommendedFrames] = useState<RecommendedFrameItem[]>([]);
+  const [isExtractingFrames, setIsExtractingFrames] = useState<boolean>(false);
+  const [selectedFrameUrl, setSelectedFrameUrl] = useState<string>('');
+
+  useEffect(() => {
+    return () => {
+      if (coverObjectUrlRef.current && coverObjectUrlRef.current.startsWith('blob:')) {
+        try {
+          URL.revokeObjectURL(coverObjectUrlRef.current);
+        } catch (_) {}
+      }
+    };
+  }, []);
+
+  // Single video keyframe extraction for recommended stopping frames
+  const singleVideoItem = (mediaItems && mediaItems.length === 1 && mediaItems[0].type === 'video') ? mediaItems[0] : null;
+  const singleVideoUrl = singleVideoItem?.url || '';
+
+  useEffect(() => {
+    if (!singleVideoUrl) {
+      setRecommendedFrames([]);
+      setIsExtractingFrames(false);
+      return;
+    }
+
+    let isCancelled = false;
+    setIsExtractingFrames(true);
+
+    extractRecommendedVideoFrames(singleVideoUrl, 6)
+      .then((frames) => {
+        if (isCancelled) return;
+        setRecommendedFrames(frames);
+        setIsExtractingFrames(false);
+        // If no cover is selected yet and we found frames, default to the first frame
+        if (!selectedFrameUrl && frames.length > 0 && onSelectCover) {
+          handlePickFrame(frames[0].dataUrl);
+        }
+      })
+      .catch(() => {
+        if (!isCancelled) setIsExtractingFrames(false);
+      });
+
+    return () => {
+      isCancelled = true;
+    };
+  }, [singleVideoUrl]);
+
   if (!mediaItems || mediaItems.length === 0) return null;
 
   const totalCount = mediaItems.length;
+
+  const handlePickFrame = (dataUrl: string) => {
+    setSelectedFrameUrl(dataUrl);
+    if (!onSelectCover) return;
+
+    try {
+      fetch(dataUrl)
+        .then(res => res.blob())
+        .then(blob => {
+          const file = new File([blob], `cover_frame_${Date.now()}.jpg`, { type: 'image/jpeg' });
+          onSelectCover(dataUrl, file);
+        })
+        .catch(() => {
+          onSelectCover(dataUrl);
+        });
+    } catch (_) {
+      onSelectCover(dataUrl);
+    }
+  };
+
+  const handleCoverFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (!file.type.startsWith('image/')) {
+      toast.error(isRtl ? 'يرجى اختيار ملف صورة صالح' : 'Please select a valid image file');
+      return;
+    }
+
+    if (coverObjectUrlRef.current && coverObjectUrlRef.current.startsWith('blob:')) {
+      try {
+        URL.revokeObjectURL(coverObjectUrlRef.current);
+      } catch (_) {}
+    }
+
+    const previewUrl = URL.createObjectURL(file);
+    coverObjectUrlRef.current = previewUrl;
+    setSelectedFrameUrl(previewUrl);
+
+    if (onSelectCover) {
+      onSelectCover(previewUrl, file);
+    }
+    toast.success(isRtl ? 'تم رفع وتعيين صورة الغلاف بنجاح' : 'Cover image uploaded and set as cover');
+
+    e.target.value = '';
+  };
+
+  const handleCaptureCurrentPlaybackFrame = () => {
+    const video = playerVideoRef.current;
+    if (!video) return;
+
+    try {
+      const canvas = document.createElement('canvas');
+      canvas.width = Math.min(1280, video.videoWidth || 640);
+      canvas.height = Math.min(720, video.videoHeight || 360);
+      const ctx = canvas.getContext('2d');
+      if (ctx) {
+        ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+        const dataUrl = canvas.toDataURL('image/jpeg', 0.88);
+        handlePickFrame(dataUrl);
+        toast.success(isRtl ? 'تم التقاط وتعيين لقطة التوقف الحالية كغلاف' : 'Current frame captured and set as cover');
+      }
+    } catch (e) {
+      console.warn('Playback frame capture error:', e);
+    }
+  };
+
+  // Single Video Mode: Ultra-clean card with dynamic aspect ratio and recommended stopping frames
+  if (totalCount === 1 && mediaItems[0].type === 'video') {
+    const item = mediaItems[0];
+    const mediaSrc = getMediaUrl(item.url);
+    const posterUrl = selectedFrameUrl || (item.thumbnailUrl ? getMediaUrl(item.thumbnailUrl) : undefined);
+
+    return (
+      <div className="relative w-full rounded-shape-md overflow-hidden border border-[var(--border-default)] bg-black shadow-xs mt-2 sm:mt-3 select-none">
+        {/* Top Minimal Action Overlay */}
+        <div className="absolute top-2 inset-x-2 z-20 flex items-center justify-between pointer-events-none">
+          {/* Professional Cover Upload Button (غلاف مخصص مدمج وليس محتوى إضافي) */}
+          <div className="pointer-events-auto flex items-center">
+            <input
+              ref={coverFileInputRef}
+              type="file"
+              accept="image/jpeg,image/png,image/webp,image/jpg"
+              className="hidden"
+              onChange={handleCoverFileUpload}
+            />
+            <button
+              type="button"
+              onClick={() => coverFileInputRef.current?.click()}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-shape-sm bg-black/75 hover:bg-black/95 backdrop-blur-md text-white border border-white/20 hover:border-accent/60 transition-all cursor-pointer shadow-md active:scale-95 text-xs font-bold group/cover"
+              title={isRtl ? 'رفع صورة غلاف مخصصة للفيديو' : 'Upload custom cover image'}
+            >
+              <ImagePlus size={14} className="text-accent group-hover/cover:scale-110 transition-transform" />
+              <span>{isRtl ? (selectedFrameUrl ? 'تغيير الغلاف' : 'رفع غلاف') : (selectedFrameUrl ? 'Change Cover' : 'Upload Cover')}</span>
+              {selectedFrameUrl && (
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+              )}
+            </button>
+          </div>
+
+          {/* Minimal controls: Trim & Remove */}
+          <div className="pointer-events-auto flex items-center gap-1">
+            {onOpenTrimmer && (
+              <button
+                type="button"
+                onClick={onOpenTrimmer}
+                className="w-7 h-7 rounded-shape-sm bg-black/70 hover:bg-black/90 backdrop-blur-md text-white border border-white/10 hover:border-white/30 flex items-center justify-center transition-all cursor-pointer shadow-xs active:scale-95"
+                title={isRtl ? 'قص وضبط الفيديو' : 'Trim video'}
+              >
+                <Scissors size={13} />
+              </button>
+            )}
+
+            <button
+              type="button"
+              onClick={onClearAll}
+              className="w-7 h-7 rounded-shape-sm bg-black/70 hover:bg-red-600/90 backdrop-blur-md text-white border border-white/10 hover:border-red-500/40 flex items-center justify-center transition-all cursor-pointer shadow-xs active:scale-95"
+              title={isRtl ? 'إزالة الفيديو' : 'Remove video'}
+            >
+              <X size={14} />
+            </button>
+          </div>
+        </div>
+
+        {/* Dynamic Aspect Ratio Video Player Stage - Adapts to 9:16 vertical, 4:5, 1:1, or 16:9 widescreen */}
+        <div className={`relative w-full overflow-hidden bg-black flex items-center justify-center transition-all duration-300 ${
+          videoAspect === '9:16' ? 'aspect-[9/16] max-h-[480px] sm:max-h-[520px] mx-auto' :
+          videoAspect === '4:5' ? 'aspect-[4/5] max-h-[440px] sm:max-h-[480px] mx-auto' :
+          videoAspect === '1:1' ? 'aspect-square max-h-[380px] sm:max-h-[420px] mx-auto' :
+          'aspect-video max-h-[340px] sm:max-h-[380px] mx-auto'
+        }`}>
+          {/* Ambient Video Blur Backdrop */}
+          <video
+            src={mediaSrc}
+            muted
+            playsInline
+            className="absolute inset-0 w-full h-full object-cover blur-2xl opacity-20 pointer-events-none scale-110"
+          />
+          <video
+            ref={playerVideoRef}
+            src={mediaSrc}
+            poster={posterUrl}
+            controls
+            playsInline
+            preload="metadata"
+            crossOrigin={!mediaSrc.startsWith('blob:') && !mediaSrc.startsWith('data:') ? 'anonymous' : undefined}
+            onLoadedMetadata={(e) => {
+              const v = e.currentTarget;
+              if (v.videoWidth && v.videoHeight) {
+                const r = v.videoWidth / v.videoHeight;
+                if (r <= 0.68) setVideoAspect('9:16');
+                else if (r < 0.92) setVideoAspect('4:5');
+                else if (r <= 1.15) setVideoAspect('1:1');
+                else setVideoAspect('16:9');
+              }
+            }}
+            className="relative z-10 w-full h-full object-contain mx-auto"
+          />
+        </div>
+
+        {/* Recommended Stopping Frames (لقطات موصى بها للتوقف) Section */}
+        <div className="bg-[var(--surface-card)] border-t border-[var(--border-default)] p-2.5 sm:p-3 space-y-2">
+          <div className="flex items-center justify-between gap-2">
+            <div className="flex items-center gap-1.5 text-xs font-bold text-[var(--text-primary)]">
+              <Camera size={14} className="text-accent" />
+              <span>{isRtl ? 'لقطات موصى بها للتوقف (صورة الغلاف)' : 'Recommended Stopping Frames (Cover)'}</span>
+              {isExtractingFrames && (
+                <span className="flex items-center gap-1 text-[10px] text-accent font-normal">
+                  <RefreshCw size={10} className="animate-spin" />
+                  <span>{isRtl ? 'جارٍ الاستخراج...' : 'Extracting...'}</span>
+                </span>
+              )}
+            </div>
+
+            {/* Instant Capture from current video playback */}
+            <button
+              type="button"
+              onClick={handleCaptureCurrentPlaybackFrame}
+              className="px-2.5 py-1 text-[11px] font-bold rounded-shape-sm bg-[var(--surface-subtle)] hover:bg-[var(--surface-inset)] text-[var(--text-primary)] border border-[var(--border-default)] hover:border-[var(--border-accent)] flex items-center gap-1.5 transition-all shadow-2xs cursor-pointer active:scale-95 shrink-0"
+              title={isRtl ? 'التقاط الموضع الحالي المتوقف عنده الفيديو' : 'Capture current video frame'}
+            >
+              <Camera size={12} className="text-accent" />
+              <span>{isRtl ? 'التقاط الموضع الحالي' : 'Capture Frame'}</span>
+            </button>
+          </div>
+
+          {/* Recommended Frames Strip with Aspect-Aware Thumbnails */}
+          <div className="flex items-center gap-2 overflow-x-auto pb-1 pt-0.5 scrollbar-thin">
+            {isExtractingFrames && recommendedFrames.length === 0 ? (
+              // Loading skeleton placeholders
+              Array.from({ length: 6 }).map((_, i) => (
+                <div
+                  key={i}
+                  className={`rounded-shape-sm bg-[var(--surface-subtle)] animate-pulse shrink-0 border border-[var(--border-subtle)] ${
+                    videoAspect === '9:16' ? 'w-11 sm:w-13 h-16 sm:h-20 aspect-[9/16]' :
+                    videoAspect === '1:1' ? 'w-14 sm:w-16 h-14 sm:h-16 aspect-square' :
+                    videoAspect === '4:5' ? 'w-12 sm:w-14 h-16 sm:h-18 aspect-[4/5]' :
+                    'w-20 sm:w-24 h-12 sm:h-14 aspect-video'
+                  }`}
+                />
+              ))
+            ) : recommendedFrames.length > 0 ? (
+              recommendedFrames.map((frame, index) => {
+                const isSelected = selectedFrameUrl === frame.dataUrl;
+                return (
+                  <button
+                    key={index}
+                    type="button"
+                    onClick={() => handlePickFrame(frame.dataUrl)}
+                    className={`relative rounded-shape-sm overflow-hidden shrink-0 border transition-all cursor-pointer group/frame active:scale-95 ${
+                      videoAspect === '9:16' ? 'w-11 sm:w-13 h-16 sm:h-20 aspect-[9/16]' :
+                      videoAspect === '1:1' ? 'w-14 sm:w-16 h-14 sm:h-16 aspect-square' :
+                      videoAspect === '4:5' ? 'w-12 sm:w-14 h-16 sm:h-18 aspect-[4/5]' :
+                      'w-20 sm:w-24 h-12 sm:h-14 aspect-video'
+                    } ${
+                      isSelected
+                        ? 'ring-2 ring-accent border-accent shadow-xs'
+                        : 'border-[var(--border-default)] hover:border-[var(--border-accent)] opacity-85 hover:opacity-100'
+                    }`}
+                    title={isRtl ? `تحديد لقطة ${frame.timeLabel} كغلاف` : `Select frame at ${frame.timeLabel}`}
+                  >
+                    <img
+                      src={frame.dataUrl}
+                      alt={`Frame ${frame.timeLabel}`}
+                      className="w-full h-full object-cover"
+                    />
+                    {/* Timestamp Badge */}
+                    <span className="absolute bottom-1 end-1 px-1 py-0.2 rounded-shape-xs bg-black/75 text-white text-[9px] font-mono font-bold pointer-events-none">
+                      {frame.timeLabel}
+                    </span>
+                    {/* Selected Checkmark Badge */}
+                    {isSelected && (
+                      <div className="absolute top-1 start-1 w-4 h-4 rounded-full bg-accent text-white flex items-center justify-center shadow-xs">
+                        <Check size={10} strokeWidth={3} />
+                      </div>
+                    )}
+                  </button>
+                );
+              })
+            ) : (
+              <div className="text-[11px] text-[var(--text-muted)] py-1">
+                {isRtl ? 'شغّل المقطع وتوقف عند أي لقطة ثم اضغط على "التقاط الموضع الحالي"' : 'Play video, pause at desired point and click "Capture Frame"'}
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   const renderMediaThumbnail = (item: MediaGalleryItem, index: number, isLastWithMore = false, remainingCount = 0) => {
     const isVideo = item.type === 'video';
