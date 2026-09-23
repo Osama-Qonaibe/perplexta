@@ -2,7 +2,7 @@ import express from 'express';
 import { pool } from '../db/index.js';
 import { io } from '../config/socket.js';
 import { callAIProvider, getProviderKey, getProviderUrlKey, invalidateVaultCache } from './ai.js';
-import { checkAndIncrementQuota, incrementUserUsage } from './quota.js';
+import { checkAndIncrementQuota, incrementUserUsage, getToolFriendlyName } from './quota.js';
 import { logSecurityAlert, logSystemActivity } from './notifications.js';
 import { forensicScanPDF } from './extractor.js';
 import { perplextaTTS } from './tts.js';
@@ -345,19 +345,23 @@ Instruction: You MUST explicitly disclose this forensic audit to the user. Descr
     if (!quotaCheck.allowed) {
       const userRes = await pool.query('SELECT language FROM users WHERE id = $1', [userId]).catch(() => ({ rows: [] }));
       const isAr = (userRes.rows[0]?.language || 'ar') === 'ar';
-      const periodLabel = quotaCheck.period === 'monthly' 
-        ? (isAr ? 'الشهري' : 'monthly') 
-        : (isAr ? 'اليومي' : 'daily');
+      const periodLabelAr = quotaCheck.period === 'monthly' ? 'الشهري' : 'اليومي';
+      const periodLabelEn = quotaCheck.period === 'monthly' ? 'monthly' : 'daily';
       const limitVal = quotaCheck.limit !== undefined ? quotaCheck.limit : 0;
       const currentVal = quotaCheck.currentUsage !== undefined ? quotaCheck.currentUsage : limitVal;
+      
+      const friendlyNameAr = getToolFriendlyName(toolIdStr, 'ar');
+      const friendlyNameEn = getToolFriendlyName(toolIdStr, 'en');
 
       throw new Error(JSON.stringify({
-        error: `Daily or monthly usage limit reached for '${toolIdStr}'. (${currentVal}/${limitVal})`,
-        error_ar: `لقد استنفدت الحد الأقصى المتاح لاستخدام أداة '${toolIdStr}'. الحد الـ${periodLabel} المخصص لحسابك هو ${limitVal} طلب.`,
+        error: `You have reached your ${periodLabelEn} limit for '${friendlyNameEn}' (${currentVal}/${limitVal} requests). Please upgrade your plan for higher capacity.`,
+        error_ar: `لقد استنفدت الحد ${periodLabelAr} المتاح لأداة "${friendlyNameAr}" (${currentVal}/${limitVal} طلب). يمكنك ترقية باقتك للحصول على سعة استخدام أعلى.`,
         type: "QUOTA_EXCEEDED",
         limit: limitVal,
         currentUsage: currentVal,
-        period: quotaCheck.period
+        period: quotaCheck.period,
+        tool: toolIdStr,
+        toolName: isAr ? friendlyNameAr : friendlyNameEn
       }));
     }
 

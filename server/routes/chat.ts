@@ -445,7 +445,28 @@ router.post("/sync-message", authenticateToken, chatLimiter, verifyBillingFunds,
 
     res.json({ success: true, messageId: assistantMessageId });
   } catch (error: any) {
-    console.error('[SyncMessage Error]:', error);
+    let status = 500;
+    let errBody = { error: error.message || 'Failed to sync message in background' };
+    let isExpectedBusinessLimit = false;
+
+    try {
+      const parsed = JSON.parse(error.message);
+      if (parsed.type === 'QUOTA_EXCEEDED' || parsed.type === 'DUPLICATE_REQUEST_IN_FLIGHT') {
+        status = 429;
+        errBody = parsed;
+        isExpectedBusinessLimit = true;
+      } else if (parsed.type === 'SYSTEM_INACTIVE') {
+        status = 503;
+        errBody = parsed;
+        isExpectedBusinessLimit = true;
+      }
+    } catch (_) {}
+
+    if (isExpectedBusinessLimit) {
+      console.info(`[SyncMessage Notice]: User ${req.user?.id} received ${(errBody as any).type || 'notice'}: ${(errBody as any).error || error.message}`);
+    } else {
+      console.error('[SyncMessage Error]:', error);
+    }
     
     if (!messageSaved) {
       if (typeof assistantMessageId !== 'undefined' && assistantMessageId > 0) {
@@ -457,19 +478,6 @@ router.post("/sync-message", authenticateToken, chatLimiter, verifyBillingFunds,
     } else {
       console.info('[SyncMessage] Generation succeeded and saved. Skipping deletion cleanup despite post-generation write/socket error.');
     }
-
-    let status = 500;
-    let errBody = { error: error.message || 'Failed to sync message in background' };
-    try {
-      const parsed = JSON.parse(error.message);
-      if (parsed.type === 'QUOTA_EXCEEDED' || parsed.type === 'DUPLICATE_REQUEST_IN_FLIGHT') {
-        status = 429;
-        errBody = parsed;
-      } else if (parsed.type === 'SYSTEM_INACTIVE') {
-        status = 503;
-        errBody = parsed;
-      }
-    } catch (_) {}
 
     res.status(status).json(errBody);
   }

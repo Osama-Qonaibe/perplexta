@@ -202,24 +202,27 @@ export async function incrementUserUsage(userId: number, toolId: string): Promis
 
 // ─── Quota Warning Engine ─────────────────────────────────────────────────────
 
-const TOOL_NAMES: Record<string, { en: string; ar: string }> = {
+export const TOOL_NAMES: Record<string, { en: string; ar: string }> = {
   chat:               { en: 'Strategic Assistant',         ar: 'المساعد الاستراتيجي'    },
   chat_fast:          { en: 'Fast Technical AI',           ar: 'الذكاء التقني السريع'    },
   chat_pro:           { en: 'Reasoning Pro Engine',        ar: 'محرك الاستنتاج المتقدم'  },
   chat_reasoning:     { en: 'Advanced Reasoning Protocol', ar: 'بروتوكول التفكير المعقد' },
-  perplexta_analysis: { en: 'Analysis',                    ar: 'تحليل'                  },
-  image:              { en: 'Image',                       ar: 'صورة'                  },
-  video:              { en: 'Video',                       ar: 'فيديو'                  },
-  code:               { en: 'Code',                        ar: 'كود'                    },
-  ads_copilot:        { en: 'Ads Copilot',                 ar: 'مساعد الإعلانات'        },
+  perplexta_analysis: { en: 'Financial & Technical Analysis', ar: 'التحليل الفني والمالي' },
+  image:              { en: 'Image Studio',                ar: 'استوديو الصور'          },
+  video:              { en: 'Video Generator',             ar: 'توليد الفيديو'          },
+  code:               { en: 'Code Engineering',            ar: 'هندسة الأكواد والبرمجيات' },
+  ads_copilot:        { en: 'Ads Copilot',                 ar: 'مساعد الإعلانات الذكي'  },
   sovereign_search:   { en: 'Research & Studies',          ar: 'البحوث والدراسات'       },
   research_studies:   { en: 'Research & Studies',          ar: 'البحوث والدراسات'       },
+  search:             { en: 'Sovereign Search',            ar: 'البحث السيادي'          },
+  deep_research:      { en: 'Deep Research',               ar: 'البحث المتعمق'          },
   tts:                { en: 'Voice Synthesis Engine',      ar: 'محرك التوليد الصوتي'     },
   stt:                { en: 'Speech Transcription',        ar: 'التحويل الصوتي للنص'     },
   perplexta_music:    { en: 'Music & Songs',               ar: 'الموسيقى والأغاني'      },
+  x402_api:           { en: 'API Credits',                 ar: 'رصيد الـ API'           },
 };
 
-function getToolFriendlyName(toolId: string, lang: 'en' | 'ar'): string {
+export function getToolFriendlyName(toolId: string, lang: 'en' | 'ar'): string {
   return TOOL_NAMES[toolId]?.[lang] ?? toolId;
 }
 

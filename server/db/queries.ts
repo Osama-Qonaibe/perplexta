@@ -801,7 +801,8 @@ export async function warmupSeoAndSystemCache(): Promise<void> {
 
 /** Get cached SEO settings for a specific route */
 export async function getCachedRouteSeo(route: string): Promise<any> {
-  const cached = seoNodeCache.get<any>(`route:${route}`);
+  const normKey = (route || '/').toLowerCase().trim();
+  const cached = seoNodeCache.get<any>(`route:${normKey}`) ?? seoNodeCache.get<any>(`route:${route}`);
   if (cached !== undefined) {
     trackSeoCache(route, 'Settings', true);
     return cached;
@@ -809,27 +810,29 @@ export async function getCachedRouteSeo(route: string): Promise<any> {
 
   trackSeoCache(route, 'Settings', false);
   if (!pool) {
-    seoNodeCache.set(`route:${route}`, null);
+    seoNodeCache.set(`route:${normKey}`, null);
     return null;
   }
   try {
     const result = await pool.query(
-      'SELECT * FROM route_seo_settings WHERE route = $1 LIMIT 1',
-      [route]
+      'SELECT * FROM route_seo_settings WHERE LOWER(route) = $1 OR route = $2 LIMIT 1',
+      [normKey, route]
     );
     const data = result.rows[0] || null;
+    seoNodeCache.set(`route:${normKey}`, data);
     seoNodeCache.set(`route:${route}`, data);
     return data;
   } catch (err: any) {
     console.warn('[Queries] getCachedRouteSeo failed:', err.message);
-    seoNodeCache.set(`route:${route}`, null);
+    seoNodeCache.set(`route:${normKey}`, null);
     return null;
   }
 }
 
 /** Get cached SEO metadata for a specific route */
 export async function getCachedRouteSeoMetadata(routePath: string): Promise<any> {
-  const cached = seoNodeCache.get<any>(`meta:${routePath}`);
+  const normKey = (routePath || '/').toLowerCase().trim();
+  const cached = seoNodeCache.get<any>(`meta:${normKey}`) ?? seoNodeCache.get<any>(`meta:${routePath}`);
   if (cached !== undefined) {
     trackSeoCache(routePath, 'Metadata', true);
     return cached;
@@ -837,20 +840,21 @@ export async function getCachedRouteSeoMetadata(routePath: string): Promise<any>
 
   trackSeoCache(routePath, 'Metadata', false);
   if (!pool) {
-    seoNodeCache.set(`meta:${routePath}`, null);
+    seoNodeCache.set(`meta:${normKey}`, null);
     return null;
   }
   try {
     const result = await pool.query(
-      'SELECT * FROM route_seo_metadata WHERE route_path = $1 LIMIT 1',
-      [routePath]
+      'SELECT * FROM route_seo_metadata WHERE LOWER(route_path) = $1 OR route_path = $2 LIMIT 1',
+      [normKey, routePath]
     );
     const data = result.rows[0] || null;
+    seoNodeCache.set(`meta:${normKey}`, data);
     seoNodeCache.set(`meta:${routePath}`, data);
     return data;
   } catch (err: any) {
     console.warn('[Queries] getCachedRouteSeoMetadata failed:', err.message);
-    seoNodeCache.set(`meta:${routePath}`, null);
+    seoNodeCache.set(`meta:${normKey}`, null);
     return null;
   }
 }
