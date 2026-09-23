@@ -159,6 +159,7 @@ async function ensurePlatformCategoriesTable() {
  * Query master platform categories & industry sectors with dynamic search
  */
 router.get('/categories', async (req, res) => {
+  res.setHeader('Cache-Control', 'public, max-age=300, stale-while-revalidate=600');
   try {
     const q = typeof req.query.q === 'string' ? req.query.q.trim().toLowerCase() : '';
     const group = typeof req.query.group === 'string' ? req.query.group.trim() : '';

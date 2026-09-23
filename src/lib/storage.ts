@@ -106,6 +106,65 @@ class SecureStorage {
         }
     }
 
+    async clear(preserveKeys: string[] = []): Promise<void> {
+        const preserved: Map<string, string> = new Map();
+        for (const k of preserveKeys) {
+            const val = this.getSync(k);
+            if (val !== null) preserved.set(k, val);
+        }
+
+        this.memoryCache.clear();
+
+        try {
+            if (typeof window !== 'undefined') {
+                localStorage.clear();
+            }
+        } catch (_) {}
+
+        if (isNative) {
+            try {
+                await Preferences.clear();
+            } catch (_) {}
+        }
+
+        for (const [k, v] of preserved.entries()) {
+            await this.set(k, v);
+        }
+    }
+
+    clearSync(preserveKeys: string[] = []): void {
+        const preserved: Map<string, string> = new Map();
+        for (const k of preserveKeys) {
+            const val = this.getSync(k);
+            if (val !== null) preserved.set(k, val);
+        }
+
+        this.memoryCache.clear();
+
+        try {
+            if (typeof window !== 'undefined') {
+                localStorage.clear();
+            }
+        } catch (_) {}
+
+        for (const [k, v] of preserved.entries()) {
+            this.memoryCache.set(k, v);
+            try {
+                if (typeof window !== 'undefined') {
+                    localStorage.setItem(k, v);
+                }
+            } catch (_) {}
+        }
+
+        if (isNative) {
+            Preferences.clear().then(() => {
+                for (const [k, v] of preserved.entries()) {
+                    Preferences.set({ key: k, value: v }).catch(() => {});
+                }
+            }).catch(() => {});
+        }
+    }
+
     // Synchronous read - guaranteed instant return from synchronized in-memory cache
     getSync(key: string): string | null {
         if (this.memoryCache.has(key)) {

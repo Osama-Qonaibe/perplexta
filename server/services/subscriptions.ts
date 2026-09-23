@@ -3,24 +3,59 @@ import { deductFromWallet, refundToWallet } from './wallet.js';
 import { createNotification } from './notifications.js';
 import { io } from '../config/socket.js';
 
-export async function purchaseSubscription(userId: string, planId: string, billingCycle: 'monthly' | 'annual') {
+export async function purchaseSubscription(userId: string, planId: string, billingCycle: 'monthly' | 'annual' | 'daily') {
   if (!pool) throw new Error('Database initializing');
 
   const planRes = await pool.query('SELECT * FROM plans WHERE id = $1 AND is_active = true', [planId]);
   if (planRes.rows.length === 0) throw new Error('Plan not found or inactive');
   const plan = planRes.rows[0];
 
-  const price = billingCycle === 'annual' ? Number(plan.annual_price) : Number(plan.monthly_price);
-  
-  try {
-    await deductFromWallet(userId, price, 'subscription_payment', `Payment for ${plan.name_en} (${billingCycle})`);
-  } catch (err: any) {
-    if (err.message === 'Insufficient balance') throw err;
-    throw new Error('Failed to process payment');
+  const isMonthlyEnabled = plan.is_monthly_enabled !== false;
+  const isAnnualEnabled = plan.is_annual_enabled !== false;
+  const isDailyEnabled = Boolean(plan.is_daily_enabled);
+
+  // Strict Cycle Validation
+  if (billingCycle === 'daily') {
+    if (!isDailyEnabled) {
+      throw new Error('Daily / Custom period billing is not enabled for this plan');
+    }
+  } else if (billingCycle === 'annual') {
+    if (!isAnnualEnabled) {
+      throw new Error('Annual billing is not enabled for this plan');
+    }
+  } else if (billingCycle === 'monthly') {
+    if (!isMonthlyEnabled) {
+      throw new Error('Monthly billing is not enabled for this plan');
+    }
+  } else {
+    throw new Error('Invalid billing cycle');
+  }
+
+  let price = 0;
+  let cycleDays = 30;
+
+  if (billingCycle === 'daily') {
+    price = Number(plan.daily_price || 0);
+    cycleDays = Number(plan.daily_days || 7);
+  } else if (billingCycle === 'annual') {
+    price = Number(plan.annual_price || 0);
+    cycleDays = 365;
+  } else {
+    // monthly
+    price = Number(plan.monthly_price || 0);
+    cycleDays = 30;
+  }
+
+  if (price > 0) {
+    try {
+      await deductFromWallet(userId, price, 'subscription_payment', `Payment for ${plan.name_en} (${billingCycle})`);
+    } catch (err: any) {
+      if (err.message === 'Insufficient balance') throw err;
+      throw new Error('Failed to process payment');
+    }
   }
 
   try {
-    const cycleDays = billingCycle === 'annual' ? 365 : 30;
     const periodEnd = new Date();
     periodEnd.setDate(periodEnd.getDate() + cycleDays);
 
@@ -35,13 +70,16 @@ export async function purchaseSubscription(userId: string, planId: string, billi
         updated_at = CURRENT_TIMESTAMP
     `, [userId, planId, billingCycle, periodEnd]);
 
+    const periodLabelEn = billingCycle === 'daily' ? `${cycleDays} Days` : (billingCycle === 'annual' ? 'Annual' : 'Monthly');
+    const periodLabelAr = billingCycle === 'daily' ? `${cycleDays} يوم` : (billingCycle === 'annual' ? 'سنوي' : 'شهري');
+
     await createNotification(
       userId, 
       'success',
       'Subscription Activated',
       'تم تفعيل الاشتراك',
-      `Your ${plan.name_en} subscription is now active.`,
-      `اشتراكك في باقة ${plan.name_ar} فعال الآن.`
+      `Your ${plan.name_en} (${periodLabelEn}) subscription is now active.`,
+      `اشتراكك في باقة ${plan.name_ar} (${periodLabelAr}) فعال الآن.`
     );
     
     if (io) {
@@ -52,10 +90,12 @@ export async function purchaseSubscription(userId: string, planId: string, billi
     return { success: true, message: 'Subscription activated' };
   } catch (error) {
     console.error('[SubscriptionService] Core DB update failed, attempting refund:', error);
-    try {
-      await refundToWallet(userId, price, 'subscription_refund', `Refund due to system error during ${plan.name_en} activation`);
-    } catch (refundErr) {
-      console.error('[SubscriptionService] CRITICAL: Refund failed after Core DB error:', refundErr);
+    if (price > 0) {
+      try {
+        await refundToWallet(userId, price, 'subscription_refund', `Refund due to system error during ${plan.name_en} activation`);
+      } catch (refundErr) {
+        console.error('[SubscriptionService] CRITICAL: Refund failed after Core DB error:', refundErr);
+      }
     }
     throw new Error('Failed to update subscription. Payment was refunded.');
   }

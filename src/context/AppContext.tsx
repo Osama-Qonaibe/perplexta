@@ -122,8 +122,8 @@ interface AppContextType {
   setSiteSettings: (settings: SiteSettings) => void;
   economySettings: any;
   setEconomySettings: (settings: any) => void;
-  payWithBalance: (planId: string, billingCycle: 'monthly' | 'annual') => Promise<{ success: boolean, message?: string, error?: string }>;
-  stripeCheckout: (planId: string, billingCycle: 'monthly' | 'annual') => Promise<{ url?: string, error?: string }>;
+  payWithBalance: (planId: string, billingCycle: 'monthly' | 'annual' | 'daily') => Promise<{ success: boolean, message?: string, error?: string }>;
+  stripeCheckout: (planId: string, billingCycle: 'monthly' | 'annual' | 'daily') => Promise<{ url?: string, error?: string }>;
   refreshUser: () => Promise<any>;
   notifications: any[];
   setNotifications: (notifications: any[]) => void;
@@ -1787,13 +1787,38 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     }
   }, [user]);
 
+  const isJwtExpired = (jwtToken: string | null): boolean => {
+    if (!jwtToken || jwtToken === 'null' || jwtToken === 'undefined' || jwtToken === '') return true;
+    try {
+      const parts = jwtToken.split('.');
+      if (parts.length !== 3) return false;
+      const base64Url = parts[1];
+      const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+      const jsonPayload = decodeURIComponent(
+        atob(base64)
+          .split('')
+          .map((c) => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2))
+          .join('')
+      );
+      const parsed = JSON.parse(jsonPayload);
+      if (!parsed || !parsed.exp) return false;
+      return (parsed.exp * 1000) <= (Date.now() + 5000);
+    } catch {
+      return false;
+    }
+  };
+
   const [token, setToken] = useState<string | null>(() => {
     try {
       const rawToken = secureStorage.getSync('app_token');
       if (!rawToken || rawToken === 'null' || rawToken === 'undefined' || rawToken === '') return null;
+      if (isJwtExpired(rawToken)) {
+        secureStorage.remove('app_token');
+        secureStorage.remove('app_refresh_token');
+        return null;
+      }
       return rawToken;
     } catch (e) {
-
       return null;
     }
   });
@@ -2383,7 +2408,10 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   }, [isAuthReady]);
 
   const fetchUserProfile = async (retryCount = 0) => {
-    if (!token) {
+    if (!token || isJwtExpired(token)) {
+      if (token && isJwtExpired(token)) {
+        purgeSession(false);
+      }
       completeBoot();
       return;
     }
@@ -2665,6 +2693,10 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       } catch (e) {}
     }
 
+    userRef.current = null;
+    profileFetched.current = false;
+    isSyncingAuth.current = false;
+
     setIsAuthModalOpen(false);
     setSocket(null);
     setToken(null);
@@ -2674,7 +2706,6 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     setBalanceUSD(0);
     setNotifications([]);
     setMilestoneData(null);
-    isSyncingAuth.current = false;
 
     SessionPurge.purgeAll({
       queryClient,
@@ -2683,7 +2714,10 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     });
 
     if (forceRedirect) {
-      secureStorage.set('app_logged_out_toast', '1');
+      try {
+        secureStorage.set('app_logged_out_toast', '1');
+      } catch {}
+      // Perform clean hard reload / redirect to reset all background hooks and memory state
       window.location.replace('/');
     } else {
       secureStorage.remove('app_loader_type');
@@ -2693,25 +2727,33 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const logout = async (forceRedirect = true) => {
     const hasActiveSession = !!(token || userRef.current || user);
     if (hasActiveSession) {
-      logUserActivity('LOGOUT');
-    }
-    if (!token && !user) {
-      purgeSession(forceRedirect);
-      return;
+      try {
+        logUserActivity('LOGOUT');
+      } catch {}
     }
 
-    const storedToken = token;
+    const storedToken = token || secureStorage.getSync('app_token');
     const storedRefreshToken = secureStorage.getSync('app_refresh_token');
 
-    if (storedToken) {
-      fetch(`${API_BASE_URL}/api/auth/logout`, {
-        method: 'POST',
-        headers: { 
-          'Authorization': `Bearer ${storedToken}`,
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ refreshToken: storedRefreshToken })
-      }).catch(() => {});
+    // Notify server to revoke all sessions and blacklist tokens
+    if ((storedToken && !isJwtExpired(storedToken)) || storedRefreshToken) {
+      try {
+        const logoutPromise = fetch(`${API_BASE_URL}/api/auth/logout`, {
+          method: 'POST',
+          headers: { 
+            ...(storedToken ? { 'Authorization': `Bearer ${storedToken}` } : {}),
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ refreshToken: storedRefreshToken, token: storedToken }),
+          keepalive: true
+        });
+
+        // Give server request a quick window to finish or dispatch without freezing UI
+        await Promise.race([
+          logoutPromise,
+          new Promise(resolve => setTimeout(resolve, 350))
+        ]).catch(() => {});
+      } catch (e) {}
     }
 
     purgeSession(forceRedirect);
@@ -3072,7 +3114,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   }, [token, language, t]);
 
   const markAsRead = async (id: number) => {
-    if (!token) return;
+    if (!token || isJwtExpired(token)) return;
     try {
       const res = await fetch(`/api/notifications/${id}/read`, {
         method: 'PATCH',
@@ -3087,7 +3129,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   };
 
   const markAllAsRead = async () => {
-    if (!token) return;
+    if (!token || isJwtExpired(token)) return;
     try {
       const res = await fetch('/api/notifications/read-all', {
         method: 'PATCH',
@@ -3102,7 +3144,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   };
 
   const deleteNotification = async (id: number) => {
-    if (!token) return;
+    if (!token || isJwtExpired(token)) return;
     try {
       const res = await fetch(`/api/notifications/${id}`, {
         method: 'DELETE',
@@ -3117,7 +3159,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   };
 
   const clearAllNotifications = async () => {
-    if (!token) return;
+    if (!token || isJwtExpired(token)) return;
     try {
       const res = await fetch('/api/notifications/all', {
         method: 'DELETE',
@@ -3132,7 +3174,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   };
 
   useEffect(() => {
-    if (!token) return;
+    if (!token || isJwtExpired(token)) return;
 
     let isMounted = true;
     let timeoutId: any = null;
@@ -3149,7 +3191,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     };
 
     const fetchNotificationsSecure = async () => {
-      if (!isMounted) return;
+      if (!isMounted || !token || isJwtExpired(token)) return;
       if (isFetching) return;
 
       if (document.visibilityState === 'hidden') {
@@ -3223,7 +3265,12 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   }, [token]);
 
   const refreshUser = async () => {
-    if (!token) return;
+    if (!token || isJwtExpired(token)) {
+      if (token && isJwtExpired(token)) {
+        purgeSession(false);
+      }
+      return null;
+    }
     try {
       const res = await fetch(`/api/user/me`, {
         headers: { Authorization: `Bearer ${token}` }
@@ -3250,7 +3297,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     return null;
   };
 
-  const payWithBalance = async (planId: string, billingCycle: 'monthly' | 'annual') => {
+  const payWithBalance = async (planId: string, billingCycle: 'monthly' | 'annual' | 'daily') => {
     if (!token) {
       setIsAuthModalOpen(true);
       return { success: false, error: 'Auth required' };
@@ -3271,7 +3318,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         if (typeof window !== 'undefined' && (window as any).gtag) {
           (window as any).gtag('event', 'purchase', {
             transaction_id: `bal_${Date.now()}`,
-            value: billingCycle === 'annual' ? 99.0 : 9.9, 
+            value: billingCycle === 'annual' ? 99.0 : (billingCycle === 'daily' ? 4.9 : 9.9), 
             currency: 'USD',
             items: [{ item_id: planId, item_name: `Plan_${planId}`, item_category: 'subscription' }],
             method: 'balance'
@@ -3286,7 +3333,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     }
   };
 
-  const stripeCheckout = async (planId: string, billingCycle: 'monthly' | 'annual') => {
+  const stripeCheckout = async (planId: string, billingCycle: 'monthly' | 'annual' | 'daily') => {
     if (!token) {
       setIsAuthModalOpen(true);
       return { error: 'Auth required' };
@@ -3305,7 +3352,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
         if (typeof window !== 'undefined' && (window as any).gtag) {
           (window as any).gtag('event', 'begin_checkout', {
-            value: billingCycle === 'annual' ? 99.0 : 9.9,
+            value: billingCycle === 'annual' ? 99.0 : (billingCycle === 'daily' ? 4.9 : 9.9),
             currency: 'USD',
             items: [{ item_id: planId, item_name: `Plan_${planId}`, item_category: 'subscription' }]
           });
@@ -3424,6 +3471,11 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
               hideTools: p.hide_tools ?? false,
               monthlyPrice: parseFloat(p.monthly_price || 0),
               annualPrice: parseFloat(p.annual_price || 0),
+              isMonthlyEnabled: p.is_monthly_enabled !== false,
+              isAnnualEnabled: p.is_annual_enabled !== false,
+              isDailyEnabled: Boolean(p.is_daily_enabled),
+              dailyPrice: parseFloat(p.daily_price || 0),
+              dailyDays: parseInt(p.daily_days || 7, 10),
               color: p.color || '#334155',
               planType: p.plan_type || 'user',
               features,

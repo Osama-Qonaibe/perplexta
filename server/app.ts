@@ -1624,9 +1624,11 @@ app.post('/api/activity/log', async (req, res) => {
 });
 
 app.get('/api/theme-customizations', async (req, res) => {
+  res.setHeader('Cache-Control', 'public, max-age=300, stale-while-revalidate=600');
   try {
-    if (!pool) return res.json({ success: true, customizations: { light: {}, dark: {} }, updated_at: null });
-    const result = await pool.query('SELECT theme_mode, tokens, updated_at FROM admin_theme_customizations');
+    const targetPool = pool || getDatabasePool('core');
+    if (!targetPool) return res.json({ success: true, customizations: { light: {}, dark: {} }, updated_at: null });
+    const result = await targetPool.query('SELECT theme_mode, tokens, updated_at FROM admin_theme_customizations');
     const customizations: Record<string, any> = { light: {}, dark: {} };
     let latestUpdate: string | null = null;
     for (const row of result.rows) {
@@ -1644,6 +1646,7 @@ app.get('/api/theme-customizations', async (req, res) => {
 });
 
 app.get('/api/seo-routes', async (req, res) => {
+  res.setHeader('Cache-Control', 'public, max-age=300, stale-while-revalidate=600');
   try {
     if (!pool) return res.json([]);
     const rows = await getCachedAllActiveRouteSeo();
@@ -1654,6 +1657,7 @@ app.get('/api/seo-routes', async (req, res) => {
 });
 
 app.get('/api/seo-metadata', async (req, res) => {
+  res.setHeader('Cache-Control', 'public, max-age=300, stale-while-revalidate=600');
   try {
     const route = req.query.route ? String(req.query.route) : null;
     if (route) {
@@ -1856,25 +1860,6 @@ app.use('/api/ai', aiRoutes);
 app.use("/api/push", pushRoutes);
 app.use('/api/v1/scene-architect', sceneArchitectRoutes);
 app.use('/api/scene-architect', sceneArchitectRoutes);
-
-app.get('/api/theme-customizations', async (req, res) => {
-  try {
-    const targetPool = pool || getDatabasePool('core');
-    if (!targetPool) return res.json({ success: true, customizations: {} });
-    const result = await targetPool.query('SELECT theme_mode, tokens, updated_at FROM admin_theme_customizations');
-    const customizations: Record<string, any> = {};
-    let latestUpdate: Date | null = null;
-    for (const row of result.rows) {
-      customizations[row.theme_mode] = row.tokens || {};
-      if (row.updated_at && (!latestUpdate || new Date(row.updated_at) > latestUpdate)) {
-        latestUpdate = new Date(row.updated_at);
-      }
-    }
-    res.json({ success: true, customizations, updated_at: latestUpdate ? latestUpdate.toISOString() : null });
-  } catch (err) {
-    res.json({ success: true, customizations: {} });
-  }
-});
 
 function escapeHtmlAttribute(str: string): string {
   if (!str) return '';

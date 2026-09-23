@@ -99,8 +99,13 @@ export const PlansSubscriptionsView = ({
           isActive: p.is_active,
           isVisible: p.is_visible,
           hideTools: p.hide_tools,
-          monthlyPrice: parseFloat(p.monthly_price),
-          annualPrice: parseFloat(p.annual_price),
+          monthlyPrice: parseFloat(p.monthly_price || 0),
+          annualPrice: parseFloat(p.annual_price || 0),
+          isMonthlyEnabled: p.is_monthly_enabled !== false,
+          isAnnualEnabled: p.is_annual_enabled !== false,
+          isDailyEnabled: Boolean(p.is_daily_enabled),
+          dailyPrice: parseFloat(p.daily_price || 0),
+          dailyDays: parseInt(p.daily_days || 7, 10),
           color: p.color,
           planType: p.plan_type || "user",
           features:
@@ -154,6 +159,11 @@ export const PlansSubscriptionsView = ({
         isActive: plan.isActive !== undefined ? plan.isActive : true,
         isVisible: plan.isVisible !== undefined ? plan.isVisible : true,
         hideTools: plan.hideTools !== undefined ? plan.hideTools : false,
+        isMonthlyEnabled: plan.isMonthlyEnabled !== undefined ? plan.isMonthlyEnabled : true,
+        isAnnualEnabled: plan.isAnnualEnabled !== undefined ? plan.isAnnualEnabled : true,
+        isDailyEnabled: plan.isDailyEnabled !== undefined ? plan.isDailyEnabled : false,
+        dailyPrice: plan.dailyPrice !== undefined ? plan.dailyPrice : 0,
+        dailyDays: plan.dailyDays !== undefined ? plan.dailyDays : 7,
         planType: plan.planType || "user",
         limits,
       });
@@ -176,6 +186,11 @@ export const PlansSubscriptionsView = ({
         hideTools: false,
         monthlyPrice: 0,
         annualPrice: 0,
+        isMonthlyEnabled: true,
+        isAnnualEnabled: true,
+        isDailyEnabled: false,
+        dailyPrice: 0,
+        dailyDays: 7,
         color: "#334155",
         features: [],
         planType: "user",
@@ -202,11 +217,33 @@ export const PlansSubscriptionsView = ({
       return;
     }
 
-    if (
-      editingPlan.monthlyPrice === undefined ||
-      editingPlan.annualPrice === undefined
-    ) {
-      showToast(t("toastPricingRequired"), "error");
+    // Ensure at least one billing cycle is enabled
+    const isMonthlyOn = editingPlan.isMonthlyEnabled !== false;
+    const isAnnualOn = editingPlan.isAnnualEnabled !== false;
+    const isDailyOn = Boolean(editingPlan.isDailyEnabled);
+
+    if (!isMonthlyOn && !isAnnualOn && !isDailyOn) {
+      showToast(
+        dir === "rtl" 
+          ? "يجب تفعيل خيار فوترة واحد على الأقل (أيام أو شهري أو سنوي)" 
+          : "At least one billing cycle must be enabled (Days, Monthly, or Annual)", 
+        "error"
+      );
+      return;
+    }
+
+    if (isMonthlyOn && (editingPlan.monthlyPrice === undefined || editingPlan.monthlyPrice < 0)) {
+      showToast(dir === "rtl" ? "يرجى تحديد سعر شهري صالح" : "Please specify a valid monthly price", "error");
+      return;
+    }
+
+    if (isAnnualOn && (editingPlan.annualPrice === undefined || editingPlan.annualPrice < 0)) {
+      showToast(dir === "rtl" ? "يرجى تحديد سعر سنوي صالح" : "Please specify a valid annual price", "error");
+      return;
+    }
+
+    if (isDailyOn && (!editingPlan.dailyDays || editingPlan.dailyDays <= 0)) {
+      showToast(dir === "rtl" ? "يرجى تحديد عدد أيام صالح لخطة الأيام" : "Please specify valid days duration", "error");
       return;
     }
 
@@ -238,12 +275,17 @@ export const PlansSubscriptionsView = ({
         desc_en: editingPlan.descEn,
         desc_ar: editingPlan.descAr,
         badge: editingPlan.badge,
-        discount: editingPlan.discount,
+        discount: Number(editingPlan.discount || 0),
         is_active: editingPlan.isActive,
         is_visible: editingPlan.isVisible,
         hide_tools: editingPlan.hideTools,
-        monthly_price: editingPlan.monthlyPrice,
-        annual_price: editingPlan.annualPrice,
+        monthly_price: Number(editingPlan.monthlyPrice || 0),
+        annual_price: Number(editingPlan.annualPrice || 0),
+        is_monthly_enabled: isMonthlyOn,
+        is_annual_enabled: isAnnualOn,
+        is_daily_enabled: isDailyOn,
+        daily_price: Number(editingPlan.dailyPrice || 0),
+        daily_days: parseInt(editingPlan.dailyDays || 7, 10),
         color: editingPlan.color,
         features: editingPlan.features,
         limits: editingPlan.limits,
@@ -456,14 +498,54 @@ export const PlansSubscriptionsView = ({
                         <p className="text-sm text-[var(--text-muted)] mt-1">
                           {dir === "rtl" ? plan.descAr : plan.descEn}
                         </p>
+                        {/* Enabled Billing Cycles Badges */}
+                        <div className="flex flex-wrap gap-1.5 mt-2">
+                          {plan.isDailyEnabled && (
+                            <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20">
+                              {dir === "rtl" ? `${plan.dailyDays || 7} أيام ($${plan.dailyPrice || 0})` : `${plan.dailyDays || 7} Days ($${plan.dailyPrice || 0})`}
+                            </span>
+                          )}
+                          {plan.isMonthlyEnabled && (
+                            <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-blue-500/10 text-blue-600 dark:text-blue-400 border border-blue-500/20">
+                              {dir === "rtl" ? `شهري ($${plan.monthlyPrice})` : `Monthly ($${plan.monthlyPrice})`}
+                            </span>
+                          )}
+                          {plan.isAnnualEnabled && (
+                            <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">
+                              {dir === "rtl" ? `سنوي ($${plan.annualPrice})` : `Annual ($${plan.annualPrice})`}
+                            </span>
+                          )}
+                        </div>
                       </div>
-                      <div className="text-right">
-                        <p className="text-2xl font-bold text-accent">
-                          ${plan.monthlyPrice}
-                        </p>
-                        <p className="text-xs text-[var(--text-muted)]">
-                          / {t("monthly")}
-                        </p>
+                      <div className="text-right shrink-0">
+                        {plan.isMonthlyEnabled ? (
+                          <>
+                            <p className="text-2xl font-bold text-accent">
+                              ${plan.monthlyPrice}
+                            </p>
+                            <p className="text-xs text-[var(--text-muted)]">
+                              / {t("monthly")}
+                            </p>
+                          </>
+                        ) : plan.isDailyEnabled ? (
+                          <>
+                            <p className="text-2xl font-bold text-amber-500">
+                              ${plan.dailyPrice || 0}
+                            </p>
+                            <p className="text-xs text-[var(--text-muted)]">
+                              / {plan.dailyDays || 7} {dir === "rtl" ? "يوم" : "Days"}
+                            </p>
+                          </>
+                        ) : (
+                          <>
+                            <p className="text-2xl font-bold text-emerald-500">
+                              ${plan.annualPrice}
+                            </p>
+                            <p className="text-xs text-[var(--text-muted)]">
+                              / {t("annual")}
+                            </p>
+                          </>
+                        )}
                       </div>
                     </div>
 
@@ -607,14 +689,54 @@ export const PlansSubscriptionsView = ({
                           <p className="text-sm text-[var(--text-muted)] mt-1">
                             {dir === "rtl" ? plan.descAr : plan.descEn}
                           </p>
+                          {/* Enabled Billing Cycles Badges */}
+                          <div className="flex flex-wrap gap-1.5 mt-2">
+                            {plan.isDailyEnabled && (
+                              <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20">
+                                {dir === "rtl" ? `${plan.dailyDays || 7} أيام ($${plan.dailyPrice || 0})` : `${plan.dailyDays || 7} Days ($${plan.dailyPrice || 0})`}
+                              </span>
+                            )}
+                            {plan.isMonthlyEnabled && (
+                              <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-blue-500/10 text-blue-600 dark:text-blue-400 border border-blue-500/20">
+                                {dir === "rtl" ? `شهري ($${plan.monthlyPrice})` : `Monthly ($${plan.monthlyPrice})`}
+                              </span>
+                            )}
+                            {plan.isAnnualEnabled && (
+                              <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">
+                                {dir === "rtl" ? `سنوي ($${plan.annualPrice})` : `Annual ($${plan.annualPrice})`}
+                              </span>
+                            )}
+                          </div>
                         </div>
-                        <div className="text-right">
-                          <p className="text-2xl font-bold text-[var(--fg-accent)]">
-                            ${plan.monthlyPrice}
-                          </p>
-                          <p className="text-xs text-[var(--text-muted)]">
-                            / {t("monthly")}
-                          </p>
+                        <div className="text-right shrink-0">
+                          {plan.isMonthlyEnabled ? (
+                            <>
+                              <p className="text-2xl font-bold text-[var(--fg-accent)]">
+                                ${plan.monthlyPrice}
+                              </p>
+                              <p className="text-xs text-[var(--text-muted)]">
+                                / {t("monthly")}
+                              </p>
+                            </>
+                          ) : plan.isDailyEnabled ? (
+                            <>
+                              <p className="text-2xl font-bold text-amber-500">
+                                ${plan.dailyPrice || 0}
+                              </p>
+                              <p className="text-xs text-[var(--text-muted)]">
+                                / {plan.dailyDays || 7} {dir === "rtl" ? "يوم" : "Days"}
+                              </p>
+                            </>
+                          ) : (
+                            <>
+                              <p className="text-2xl font-bold text-emerald-500">
+                                ${plan.annualPrice}
+                              </p>
+                              <p className="text-xs text-[var(--text-muted)]">
+                                / {t("annual")}
+                              </p>
+                            </>
+                          )}
                         </div>
                       </div>
 
@@ -1062,61 +1184,285 @@ export const PlansSubscriptionsView = ({
                     </div>
                   </div>
 
-                  <div className="grid grid-cols-2 gap-4 pt-4">
-                    <div className="space-y-2">
-                      <label className="text-xs font-medium text-[var(--text-muted)] px-1">
-                        {t("monthly")}
-                      </label>
-                      <div className="relative">
-                        <span className="absolute left-3 top-1/2 -translate-y-1/2 text-[var(--text-muted)]">
-                          $
-                        </span>
-                        <input
-                          type="number"
-                          value={editingPlan.monthlyPrice}
-                          onChange={(e) => {
-                            const m = Number(e.target.value);
-                            const d = Number(editingPlan.discount);
-                            const a = m * 12 * (1 - d / 100);
-                            setEditingPlan({
-                              ...editingPlan,
-                              monthlyPrice: m,
-                              annualPrice: Number(a.toFixed(2)),
-                            });
-                          }}
-                          className="w-full h-11 pl-8 pr-3 rounded-md border bg-[var(--surface-subtle)] border-[var(--border-default)] text-[var(--text-primary)] focus:outline-none focus:border-accent/50 transition-theme"
-                          dir="ltr"
-                        />
+                  {/* Billing Cycles & Pricing Control Section */}
+                  <div className="space-y-4 pt-4 border-t border-[var(--border-default)]">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <Calendar size={16} className="text-accent" />
+                        <h4 className="text-xs font-bold text-[var(--text-primary)] uppercase tracking-wider">
+                          {dir === "rtl" ? "خيارات وفترات الفوترة والاشتراك" : "Billing Cycles & Pricing Control"}
+                        </h4>
                       </div>
+                      <span className="text-[10px] font-bold text-[var(--text-muted)] bg-[var(--surface-card)] px-2 py-0.5 rounded border border-[var(--border-default)]">
+                        {dir === "rtl" ? "تحكم صارم في خيارات المشترك" : "Strict Subscriber Options"}
+                      </span>
                     </div>
-                    <div className="space-y-2">
-                      <label className="text-xs font-medium text-[var(--text-muted)] px-1">
-                        {t("annual")}
-                      </label>
-                      <div className="relative">
-                        <span className="absolute left-3 top-1/2 -translate-y-1/2 text-[var(--text-muted)]">
-                          $
-                        </span>
-                        <input
-                          type="number"
-                          value={editingPlan.annualPrice}
-                          onChange={(e) => {
-                            const a = Number(e.target.value);
-                            const m = Number(editingPlan.monthlyPrice);
-                            let d = 0;
-                            if (m > 0) {
-                              d = Math.round((1 - a / (m * 12)) * 100);
+
+                    {/* Cycle 1: Daily / Custom Days Plan */}
+                    <div className={`p-3.5 rounded-lg border transition-all ${
+                      editingPlan.isDailyEnabled 
+                        ? 'bg-amber-500/5 border-amber-500/30' 
+                        : 'bg-[var(--surface-subtle)] border-[var(--border-default)] opacity-70'
+                    }`}>
+                      <div className="flex items-center justify-between mb-3">
+                        <label className="flex items-center gap-2.5 cursor-pointer">
+                          <input
+                            type="checkbox"
+                            checked={editingPlan.isDailyEnabled || false}
+                            onChange={(e) =>
+                              setEditingPlan({
+                                ...editingPlan,
+                                isDailyEnabled: e.target.checked,
+                              })
                             }
-                            setEditingPlan({
-                              ...editingPlan,
-                              annualPrice: a,
-                              discount: d,
-                            });
-                          }}
-                          className="w-full h-11 pl-8 pr-3 rounded-md border bg-[var(--surface-subtle)] border-[var(--border-default)] text-[var(--text-primary)] focus:outline-none focus:border-accent/50 transition-theme"
-                          dir="ltr"
-                        />
+                            className="w-4 h-4 rounded border-[var(--border-default)] text-amber-500 focus:ring-amber-500 cursor-pointer"
+                          />
+                          <div>
+                            <span className="text-xs font-bold text-[var(--text-primary)] flex items-center gap-1.5">
+                              <Clock size={13} className="text-amber-500" />
+                              {dir === "rtl" ? "تفعيل خطة الأيام / الفترة المحددة (أسبوعي/مؤقت)" : "Enable Custom Days / Fixed Period Plan"}
+                            </span>
+                            <p className="text-[10px] text-[var(--text-muted)]">
+                              {dir === "rtl" ? "خطة محددة بعدد أيام (مثلاً: مجانية أو أسبوعية لـ 7 أيام)" : "Fixed duration plan (e.g. 7-day free trial or 7-day pass)"}
+                            </p>
+                          </div>
+                        </label>
+                        <span className={`text-[10px] font-bold px-2 py-0.5 rounded uppercase ${editingPlan.isDailyEnabled ? 'bg-amber-500/20 text-amber-600 dark:text-amber-400' : 'bg-[var(--surface-card)] text-[var(--text-muted)]'}`}>
+                          {editingPlan.isDailyEnabled ? (dir === "rtl" ? "مفعل" : "Active") : (dir === "rtl" ? "معطل" : "Disabled")}
+                        </span>
                       </div>
+
+                      {editingPlan.isDailyEnabled && (
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2 border-t border-amber-500/20">
+                          <div className="space-y-1.5">
+                            <label className="text-[11px] font-bold text-[var(--text-secondary)] px-1">
+                              {dir === "rtl" ? "عدد الأيام (المدة)" : "Number of Days"}
+                            </label>
+                            <input
+                              type="number"
+                              min="1"
+                              value={editingPlan.dailyDays || 7}
+                              onChange={(e) =>
+                                setEditingPlan({
+                                  ...editingPlan,
+                                  dailyDays: Math.max(1, parseInt(e.target.value, 10) || 1),
+                                })
+                              }
+                              className="w-full h-10 px-3 rounded-md border bg-[var(--surface-card)] border-[var(--border-default)] text-[var(--text-primary)] font-bold text-sm focus:outline-none focus:border-amber-500/50"
+                              dir="ltr"
+                            />
+                            <div className="flex gap-1.5 pt-1">
+                              {[1, 3, 7, 14, 30].map((d) => (
+                                <button
+                                  key={`preset-day-${d}`}
+                                  type="button"
+                                  onClick={() => setEditingPlan({ ...editingPlan, dailyDays: d })}
+                                  className={`text-[9px] font-bold px-1.5 py-0.5 rounded border cursor-pointer transition-colors ${
+                                    (editingPlan.dailyDays || 7) === d
+                                      ? 'bg-amber-500 text-white border-amber-600'
+                                      : 'bg-[var(--surface-card)] text-[var(--text-secondary)] border-[var(--border-default)] hover:border-amber-500/40'
+                                  }`}
+                                >
+                                  {d} {dir === "rtl" ? "يوم" : "d"}
+                                </button>
+                              ))}
+                            </div>
+                          </div>
+
+                          <div className="space-y-1.5">
+                            <label className="text-[11px] font-bold text-[var(--text-secondary)] px-1">
+                              {dir === "rtl" ? "سعر المدة ($ 0 للمجاني)" : "Period Price ($ 0 for free)"}
+                            </label>
+                            <div className="relative">
+                              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-[var(--text-muted)] font-bold">
+                                $
+                              </span>
+                              <input
+                                type="number"
+                                step="0.01"
+                                min="0"
+                                value={editingPlan.dailyPrice !== undefined ? editingPlan.dailyPrice : 0}
+                                onChange={(e) =>
+                                  setEditingPlan({
+                                    ...editingPlan,
+                                    dailyPrice: Math.max(0, Number(e.target.value) || 0),
+                                  })
+                                }
+                                className="w-full h-10 pl-8 pr-3 rounded-md border bg-[var(--surface-card)] border-[var(--border-default)] text-[var(--text-primary)] font-bold text-sm focus:outline-none focus:border-amber-500/50"
+                                dir="ltr"
+                              />
+                            </div>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Cycle 2: Monthly Plan */}
+                    <div className={`p-3.5 rounded-lg border transition-all ${
+                      editingPlan.isMonthlyEnabled !== false 
+                        ? 'bg-blue-500/5 border-blue-500/30' 
+                        : 'bg-[var(--surface-subtle)] border-[var(--border-default)] opacity-70'
+                    }`}>
+                      <div className="flex items-center justify-between mb-3">
+                        <label className="flex items-center gap-2.5 cursor-pointer">
+                          <input
+                            type="checkbox"
+                            checked={editingPlan.isMonthlyEnabled !== false}
+                            onChange={(e) =>
+                              setEditingPlan({
+                                ...editingPlan,
+                                isMonthlyEnabled: e.target.checked,
+                              })
+                            }
+                            className="w-4 h-4 rounded border-[var(--border-default)] text-blue-500 focus:ring-blue-500 cursor-pointer"
+                          />
+                          <div>
+                            <span className="text-xs font-bold text-[var(--text-primary)] flex items-center gap-1.5">
+                              <Calendar size={13} className="text-blue-500" />
+                              {dir === "rtl" ? "تفعيل الاشتراك الشهري" : "Enable Monthly Billing"}
+                            </span>
+                            <p className="text-[10px] text-[var(--text-muted)]">
+                              {dir === "rtl" ? "يتيح للمستخدمين الاشتراك على أساس شهري متجدد" : "Allows users to subscribe on a monthly recurring basis"}
+                            </p>
+                          </div>
+                        </label>
+                        <span className={`text-[10px] font-bold px-2 py-0.5 rounded uppercase ${editingPlan.isMonthlyEnabled !== false ? 'bg-blue-500/20 text-blue-600 dark:text-blue-400' : 'bg-[var(--surface-card)] text-[var(--text-muted)]'}`}>
+                          {editingPlan.isMonthlyEnabled !== false ? (dir === "rtl" ? "مفعل" : "Active") : (dir === "rtl" ? "معطل" : "Disabled")}
+                        </span>
+                      </div>
+
+                      {editingPlan.isMonthlyEnabled !== false && (
+                        <div className="pt-2 border-t border-blue-500/20">
+                          <div className="space-y-1.5">
+                            <label className="text-[11px] font-bold text-[var(--text-secondary)] px-1">
+                              {dir === "rtl" ? "سعر الاشتراك الشهري ($)" : "Monthly Subscription Price ($)"}
+                            </label>
+                            <div className="relative">
+                              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-[var(--text-muted)] font-bold">
+                                $
+                              </span>
+                              <input
+                                type="number"
+                                step="0.01"
+                                min="0"
+                                value={editingPlan.monthlyPrice}
+                                onChange={(e) => {
+                                  const m = Number(e.target.value);
+                                  const d = Number(editingPlan.discount || 0);
+                                  const a = m * 12 * (1 - d / 100);
+                                  setEditingPlan({
+                                    ...editingPlan,
+                                    monthlyPrice: m,
+                                    annualPrice: Number(a.toFixed(2)),
+                                  });
+                                }}
+                                className="w-full h-10 pl-8 pr-3 rounded-md border bg-[var(--surface-card)] border-[var(--border-default)] text-[var(--text-primary)] font-bold text-sm focus:outline-none focus:border-blue-500/50"
+                                dir="ltr"
+                              />
+                            </div>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Cycle 3: Annual Plan */}
+                    <div className={`p-3.5 rounded-lg border transition-all ${
+                      editingPlan.isAnnualEnabled !== false 
+                        ? 'bg-emerald-500/5 border-emerald-500/30' 
+                        : 'bg-[var(--surface-subtle)] border-[var(--border-default)] opacity-70'
+                    }`}>
+                      <div className="flex items-center justify-between mb-3">
+                        <label className="flex items-center gap-2.5 cursor-pointer">
+                          <input
+                            type="checkbox"
+                            checked={editingPlan.isAnnualEnabled !== false}
+                            onChange={(e) =>
+                              setEditingPlan({
+                                ...editingPlan,
+                                isAnnualEnabled: e.target.checked,
+                              })
+                            }
+                            className="w-4 h-4 rounded border-[var(--border-default)] text-emerald-500 focus:ring-emerald-500 cursor-pointer"
+                          />
+                          <div>
+                            <span className="text-xs font-bold text-[var(--text-primary)] flex items-center gap-1.5">
+                              <Sparkles size={13} className="text-emerald-500" />
+                              {dir === "rtl" ? "تفعيل الاشتراك السنوي" : "Enable Annual Billing"}
+                            </span>
+                            <p className="text-[10px] text-[var(--text-muted)]">
+                              {dir === "rtl" ? "يتيح للمستخدمين الاشتراك على أساس سنوي مع خصم اختياري" : "Allows users to subscribe on an annual basis with optional discount"}
+                            </p>
+                          </div>
+                        </label>
+                        <span className={`text-[10px] font-bold px-2 py-0.5 rounded uppercase ${editingPlan.isAnnualEnabled !== false ? 'bg-emerald-500/20 text-emerald-600 dark:text-emerald-400' : 'bg-[var(--surface-card)] text-[var(--text-muted)]'}`}>
+                          {editingPlan.isAnnualEnabled !== false ? (dir === "rtl" ? "مفعل" : "Active") : (dir === "rtl" ? "معطل" : "Disabled")}
+                        </span>
+                      </div>
+
+                      {editingPlan.isAnnualEnabled !== false && (
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2 border-t border-emerald-500/20">
+                          <div className="space-y-1.5">
+                            <label className="text-[11px] font-bold text-[var(--text-secondary)] px-1">
+                              {dir === "rtl" ? "سعر الاشتراك السنوي ($)" : "Annual Subscription Price ($)"}
+                            </label>
+                            <div className="relative">
+                              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-[var(--text-muted)] font-bold">
+                                $
+                              </span>
+                              <input
+                                type="number"
+                                step="0.01"
+                                min="0"
+                                value={editingPlan.annualPrice}
+                                onChange={(e) => {
+                                  const a = Number(e.target.value);
+                                  const m = Number(editingPlan.monthlyPrice);
+                                  let d = 0;
+                                  if (m > 0) {
+                                    d = Math.round((1 - a / (m * 12)) * 100);
+                                  }
+                                  setEditingPlan({
+                                    ...editingPlan,
+                                    annualPrice: a,
+                                    discount: d,
+                                  });
+                                }}
+                                className="w-full h-10 pl-8 pr-3 rounded-md border bg-[var(--surface-card)] border-[var(--border-default)] text-[var(--text-primary)] font-bold text-sm focus:outline-none focus:border-emerald-500/50"
+                                dir="ltr"
+                              />
+                            </div>
+                          </div>
+
+                          <div className="space-y-1.5">
+                            <label className="text-[11px] font-bold text-[var(--text-secondary)] px-1">
+                              {dir === "rtl" ? "نسبة الخصم السنوي (%)" : "Annual Discount (%)"}
+                            </label>
+                            <div className="relative">
+                              <input
+                                type="number"
+                                min="0"
+                                max="100"
+                                value={editingPlan.discount || 0}
+                                onChange={(e) => {
+                                  const d = Number(e.target.value);
+                                  const m = Number(editingPlan.monthlyPrice);
+                                  const a = m * 12 * (1 - d / 100);
+                                  setEditingPlan({
+                                    ...editingPlan,
+                                    discount: d,
+                                    annualPrice: Number(a.toFixed(2)),
+                                  });
+                                }}
+                                className="w-full h-10 px-3 pr-8 rounded-md border bg-[var(--surface-card)] border-[var(--border-default)] text-[var(--text-primary)] font-bold text-sm focus:outline-none focus:border-emerald-500/50"
+                                dir="ltr"
+                              />
+                              <span className="absolute right-3 top-1/2 -translate-y-1/2 text-[var(--text-muted)] font-bold">
+                                %
+                              </span>
+                            </div>
+                          </div>
+                        </div>
+                      )}
                     </div>
                   </div>
 

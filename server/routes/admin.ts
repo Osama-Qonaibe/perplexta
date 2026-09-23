@@ -536,12 +536,51 @@ router.get("/plans", authenticateAdmin, async (req, res) => {
 
 router.post("/plans", authenticateAdmin, async (req, res) => {
   try {
-    const { name_en, name_ar, desc_en, desc_ar, badge, discount, is_active, is_visible, monthly_price, annual_price, color, features, limits, plan_type = 'user', hide_tools = false } = req.body;
+    const { 
+      name_en, 
+      name_ar, 
+      desc_en, 
+      desc_ar, 
+      badge, 
+      discount = 0, 
+      is_active = true, 
+      is_visible = true, 
+      monthly_price = 0, 
+      annual_price = 0, 
+      is_monthly_enabled = true,
+      is_annual_enabled = true,
+      is_daily_enabled = false,
+      daily_price = 0,
+      daily_days = 7,
+      color, 
+      features, 
+      limits, 
+      plan_type = 'user', 
+      hide_tools = false 
+    } = req.body;
+    
     if (!name_en) return res.status(400).json({ error: 'name_en is required' });
+    
+    // Ensure at least one billing cycle is enabled
+    const monthlyOn = is_monthly_enabled !== false;
+    const annualOn = is_annual_enabled !== false;
+    const dailyOn = Boolean(is_daily_enabled);
+    if (!monthlyOn && !annualOn && !dailyOn) {
+      return res.status(400).json({ error: 'At least one billing cycle must be enabled (Days, Monthly, or Annual)' });
+    }
+
     await pool.query(`
-      INSERT INTO plans (name_en, name_ar, desc_en, desc_ar, badge, discount, is_active, is_visible, monthly_price, annual_price, color, features, limits, plan_type, hide_tools)
-      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15)
-    `, [name_en, name_ar, desc_en, desc_ar, badge, discount, is_active, is_visible, monthly_price, annual_price, color, JSON.stringify(features), JSON.stringify(limits), plan_type, hide_tools]);
+      INSERT INTO plans (
+        name_en, name_ar, desc_en, desc_ar, badge, discount, is_active, is_visible, 
+        monthly_price, annual_price, is_monthly_enabled, is_annual_enabled, is_daily_enabled, daily_price, daily_days,
+        color, features, limits, plan_type, hide_tools
+      )
+      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20)
+    `, [
+      name_en, name_ar, desc_en, desc_ar, badge, Number(discount || 0), is_active, is_visible, 
+      Number(monthly_price || 0), Number(annual_price || 0), monthlyOn, annualOn, dailyOn, Number(daily_price || 0), parseInt(daily_days || 7, 10),
+      color, JSON.stringify(features), JSON.stringify(limits), plan_type, hide_tools
+    ]);
     invalidatePlansCache();
     await auditLog((req as any).user?.id, 'Create Plan', 'system', { name_en });
     res.json({ success: true });
@@ -554,14 +593,48 @@ router.post("/plans", authenticateAdmin, async (req, res) => {
 router.put("/plans/:id", authenticateAdmin, async (req, res) => {
   try {
     const { id } = req.params;
-    const { name_en, name_ar, desc_en, desc_ar, badge, discount, is_active, is_visible, monthly_price, annual_price, color, features, limits, plan_type = 'user', hide_tools = false } = req.body;
+    const { 
+      name_en, 
+      name_ar, 
+      desc_en, 
+      desc_ar, 
+      badge, 
+      discount = 0, 
+      is_active = true, 
+      is_visible = true, 
+      monthly_price = 0, 
+      annual_price = 0, 
+      is_monthly_enabled = true,
+      is_annual_enabled = true,
+      is_daily_enabled = false,
+      daily_price = 0,
+      daily_days = 7,
+      color, 
+      features, 
+      limits, 
+      plan_type = 'user', 
+      hide_tools = false 
+    } = req.body;
+
+    const monthlyOn = is_monthly_enabled !== false;
+    const annualOn = is_annual_enabled !== false;
+    const dailyOn = Boolean(is_daily_enabled);
+    if (!monthlyOn && !annualOn && !dailyOn) {
+      return res.status(400).json({ error: 'At least one billing cycle must be enabled (Days, Monthly, or Annual)' });
+    }
+
     await pool.query(`
       UPDATE plans SET 
         name_en = $1, name_ar = $2, desc_en = $3, desc_ar = $4, badge = $5, 
         discount = $6, is_active = $7, is_visible = $8, monthly_price = $9, annual_price = $10, 
-        color = $11, features = $12, limits = $13, plan_type = $14, hide_tools = $15, updated_at = CURRENT_TIMESTAMP
-      WHERE id = $16
-    `, [name_en, name_ar, desc_en, desc_ar, badge, discount, is_active, is_visible, monthly_price, annual_price, color, JSON.stringify(features), JSON.stringify(limits), plan_type, hide_tools, id]);
+        is_monthly_enabled = $11, is_annual_enabled = $12, is_daily_enabled = $13, daily_price = $14, daily_days = $15,
+        color = $16, features = $17, limits = $18, plan_type = $19, hide_tools = $20, updated_at = CURRENT_TIMESTAMP
+      WHERE id = $21
+    `, [
+      name_en, name_ar, desc_en, desc_ar, badge, Number(discount || 0), is_active, is_visible, 
+      Number(monthly_price || 0), Number(annual_price || 0), monthlyOn, annualOn, dailyOn, Number(daily_price || 0), parseInt(daily_days || 7, 10),
+      color, JSON.stringify(features), JSON.stringify(limits), plan_type, hide_tools, id
+    ]);
     invalidatePlansCache();
     await auditLog((req as any).user?.id, 'Update Plan', 'system', { id, name_en });
     res.json({ success: true });

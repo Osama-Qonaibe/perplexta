@@ -31,7 +31,8 @@ import {
   GraduationCap, 
   Server, 
   Key, 
-  Music 
+  Music,
+  Clock
 } from 'lucide-react';
 
 import { ContentContainer } from '../components/ContentContainer';
@@ -89,8 +90,10 @@ export const SubscriptionPage: React.FC = () => {
   const [isVerifying, setIsVerifying] = useState(false);
   const [expandedPlans, setExpandedPlans] = useState<Record<string, boolean>>({});
   const [billingCycle, setBillingCycle] = useState<'monthly' | 'annual'>('monthly');
+  const [selectedPlanCycles, setSelectedPlanCycles] = useState<Record<string, 'daily' | 'monthly' | 'annual'>>({});
   const [loading, setLoading] = useState<string | null>(null);
   const [confirmingPlan, setConfirmingPlan] = useState<any>(null);
+  const [confirmingCycle, setConfirmingCycle] = useState<'daily' | 'monthly' | 'annual'>('monthly');
   const [selectedPlanForModal, setSelectedPlanForModal] = useState<any>(null);
   const [resultModal, setResultModal] = useState<'success' | 'insufficient' | null>(null);
   const [copied, setCopied] = useState(false);
@@ -184,6 +187,22 @@ export const SubscriptionPage: React.FC = () => {
     return !plan.planType || plan.planType === 'user';
   });
 
+  const getPlanAvailableCycles = (plan: any): Array<'daily' | 'monthly' | 'annual'> => {
+    const cycles: Array<'daily' | 'monthly' | 'annual'> = [];
+    if (plan.isDailyEnabled) cycles.push('daily');
+    if (plan.isMonthlyEnabled !== false) cycles.push('monthly');
+    if (plan.isAnnualEnabled !== false) cycles.push('annual');
+    return cycles.length > 0 ? cycles : ['monthly'];
+  };
+
+  const getEffectiveCycleForPlan = (plan: any): 'daily' | 'monthly' | 'annual' => {
+    const planSpecific = selectedPlanCycles[plan.id];
+    const avail = getPlanAvailableCycles(plan);
+    if (planSpecific && avail.includes(planSpecific)) return planSpecific;
+    if (avail.includes(billingCycle)) return billingCycle;
+    return avail[0];
+  };
+
   if (!plansLoaded) return (
     <div className="flex flex-col items-center justify-center min-h-[60vh] gap-4">
       <div className="w-9 h-9 border-2 border-[var(--border-main)] border-t-[var(--fg-accent)] rounded-shape-full animate-spin" />
@@ -193,13 +212,23 @@ export const SubscriptionPage: React.FC = () => {
     </div>
   );
 
-  const getDisplayPrice = (plan: any, cycle: 'monthly' | 'annual') => {
+  const getDisplayPrice = (plan: any, cycle: 'daily' | 'monthly' | 'annual') => {
+    if (cycle === 'daily') return Number(plan.dailyPrice || 0);
     const m = Number(plan.monthlyPrice || 0);
     const a = Number(plan.annualPrice || 0);
     const d = Number(plan.discount || 0);
     if (cycle === 'monthly') return m;
     if (a > 0) return a;
     return m * 12 * (1 - d / 100);
+  };
+
+  const getCycleLabel = (cycle: 'daily' | 'monthly' | 'annual', plan: any) => {
+    if (cycle === 'daily') {
+      const days = plan.dailyDays || 7;
+      return dir === 'rtl' ? `${days} أيام` : `${days} Days`;
+    }
+    if (cycle === 'annual') return t('annual');
+    return t('monthly');
   };
 
   const getSavingPercentage = (plan: any) => {
@@ -250,10 +279,11 @@ export const SubscriptionPage: React.FC = () => {
     if (!plan) return;
     if (isActivePlan(planId)) return;
     
-    const price = getDisplayPrice(plan, billingCycle);
+    const effectiveCycle = getEffectiveCycleForPlan(plan);
+    const price = getDisplayPrice(plan, effectiveCycle);
     if (price === 0) {
       setLoading(`${planId}-stripe`);
-      const res = await payWithBalance(planId, billingCycle);
+      const res = await payWithBalance(planId, effectiveCycle);
       if (res.success) {
         await refreshUser();
         setResultModal('success');
@@ -266,7 +296,7 @@ export const SubscriptionPage: React.FC = () => {
 
     setSelectedPlanForModal(plan);
     setLoading(`${planId}-stripe`);
-    const res = await stripeCheckout(planId, billingCycle);
+    const res = await stripeCheckout(planId, effectiveCycle);
     if (res.error) toast.error(res.error);
     setLoading(null);
   };
@@ -275,31 +305,31 @@ export const SubscriptionPage: React.FC = () => {
     if (!user) { setIsAuthModalOpen(true); return; }
     const plan = plans.find(p => p.id === planId);
     if (!plan) return;
+    const effectiveCycle = getEffectiveCycleForPlan(plan);
     setSelectedPlanForModal(plan);
-    const price = getDisplayPrice(plan, billingCycle);
+    const price = getDisplayPrice(plan, effectiveCycle);
     if (balanceUSD < price) { setResultModal('insufficient'); return; }
     setConfirmingPlan(plan);
+    setConfirmingCycle(effectiveCycle);
   };
 
   const executePayment = async () => {
     if (!confirmingPlan) return;
     setLoading(`${confirmingPlan.id}-balance`);
-    const res = await payWithBalance(confirmingPlan.id, billingCycle);
+    const res = await payWithBalance(confirmingPlan.id, confirmingCycle);
     if (res.success) {
       setConfirmingPlan(null);
       await refreshUser();
       setResultModal('success');
       try {
-        const price = billingCycle === 'annual' 
-          ? (confirmingPlan.annualPrice || confirmingPlan.monthlyPrice * 12) 
-          : (confirmingPlan.monthlyPrice || 0);
+        const price = getDisplayPrice(confirmingPlan, confirmingCycle);
         trackPremiumSubscriptionEvent(
           user?.id?.toString() || 'unknown',
           confirmingPlan.id.toString(),
           confirmingPlan.nameEn || confirmingPlan.name || 'Premium Plan',
           Number(price),
           'USD',
-          billingCycle
+          confirmingCycle
         );
       } catch (e) {
         console.error('[Analytics Error]:', e);
@@ -443,6 +473,10 @@ export const SubscriptionPage: React.FC = () => {
           {displayedPlans.map((plan, planIdx) => {
             const planColor = plan.color || 'var(--fg-accent)';
             const isPlanActive = isActivePlan(plan.id);
+            const availableCycles = getPlanAvailableCycles(plan);
+            const effectiveCycle = getEffectiveCycleForPlan(plan);
+            const planPrice = getDisplayPrice(plan, effectiveCycle);
+
             return (
               <div 
                 key={`sub-plan-${plan.id || planIdx}-${planIdx}`} 
@@ -472,7 +506,7 @@ export const SubscriptionPage: React.FC = () => {
                   </div>
                 )}
 
-                <div className="mb-4 pt-1">
+                <div className="mb-3 pt-1">
                   <h3 className="text-xl md:text-2xl font-bold mb-1 flex items-center gap-2 text-[var(--text-primary)]">
                     <span 
                       className="w-2.5 h-2.5 rounded-shape-full shrink-0 shadow-xs" 
@@ -483,14 +517,41 @@ export const SubscriptionPage: React.FC = () => {
                   <p className="text-xs text-[var(--text-secondary)] leading-relaxed">{dir === 'rtl' ? plan.descAr : plan.descEn}</p>
                 </div>
 
+                {/* Plan-Specific Billing Cycle Options */}
+                {availableCycles.length > 1 ? (
+                  <div className="p-1 rounded-shape-sm flex items-center bg-[var(--surface-subtle)] border border-[var(--border-main)] mb-3">
+                    {availableCycles.map((c) => (
+                      <button
+                        key={`plan-c-${plan.id}-${c}`}
+                        type="button"
+                        onClick={() => setSelectedPlanCycles((prev) => ({ ...prev, [plan.id]: c }))}
+                        className={`flex-1 py-1.5 px-2 rounded-shape-xs text-[11px] font-black uppercase tracking-wider transition-all cursor-pointer ${
+                          effectiveCycle === c
+                            ? 'bg-[var(--surface-card)] text-[var(--text-primary)] border border-[var(--border-main)] shadow-xs'
+                            : 'text-[var(--text-muted)] hover:text-[var(--text-primary)]'
+                        }`}
+                      >
+                        {getCycleLabel(c, plan)}
+                      </button>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="mb-3">
+                    <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-shape-xs text-[11px] font-bold bg-[var(--surface-subtle)] border border-[var(--border-main)] text-[var(--text-secondary)]">
+                      <Clock size={12} style={{ color: planColor }} />
+                      <span>{dir === 'rtl' ? `الفترة: ${getCycleLabel(effectiveCycle, plan)}` : `Duration: ${getCycleLabel(effectiveCycle, plan)}`}</span>
+                    </span>
+                  </div>
+                )}
+
                 <div className="mb-5 text-[var(--text-primary)]">
                   <div className="flex items-baseline gap-1.5">
                     <span className="text-3xl md:text-4xl font-extrabold text-[var(--text-primary)] tracking-tight">
-                      ${getDisplayPrice(plan, billingCycle).toFixed(2)}
+                      ${planPrice.toFixed(2)}
                     </span>
-                    <span className="text-xs text-[var(--text-muted)] font-medium">/ {billingCycle === 'annual' ? t('annual') : t('monthly')}</span>
+                    <span className="text-xs text-[var(--text-muted)] font-medium">/ {getCycleLabel(effectiveCycle, plan)}</span>
                   </div>
-                  {billingCycle === 'monthly' && getSavingPercentage(plan) > 0 ? (
+                  {effectiveCycle === 'monthly' && plan.isAnnualEnabled !== false && getSavingPercentage(plan) > 0 ? (
                     <div className="mt-1 text-xs font-semibold" style={{ color: planColor }}>
                       {dir === 'rtl' ? `وفر ${getSavingPercentage(plan)}% مع الدفع السنوي` : `Save ${getSavingPercentage(plan)}% with annual billing`}
                     </div>
@@ -643,17 +704,19 @@ export const SubscriptionPage: React.FC = () => {
                       <span className="font-bold text-[var(--text-primary)]">${Number(balanceUSD || 0).toFixed(2)}</span>
                     </div>
                     <div className="flex justify-between items-center text-xs md:text-sm">
-                      <span className="text-[var(--text-muted)]">{t('planPrice')}</span>
-                      <span className="font-bold text-[var(--fg-accent)]">-${getDisplayPrice(confirmingPlan, billingCycle).toFixed(2)}</span>
+                      <span className="text-[var(--text-muted)]">
+                        {t('planPrice')} ({getCycleLabel(confirmingCycle, confirmingPlan)})
+                      </span>
+                      <span className="font-bold text-[var(--fg-accent)]">-${getDisplayPrice(confirmingPlan, confirmingCycle).toFixed(2)}</span>
                     </div>
                     <div className="pt-2.5 border-t border-[var(--border-main)] flex justify-between items-center text-xs md:text-sm">
                       <span className="font-medium text-[var(--text-primary)]">{t('remainingBalance')}</span>
-                      <span className={`font-bold ${balanceUSD - getDisplayPrice(confirmingPlan, billingCycle) < 0 ? 'text-rose-500' : 'text-[var(--text-primary)]'}`}>
-                        ${(Number(balanceUSD || 0) - getDisplayPrice(confirmingPlan, billingCycle)).toFixed(2)}
+                      <span className={`font-bold ${balanceUSD - getDisplayPrice(confirmingPlan, confirmingCycle) < 0 ? 'text-rose-500' : 'text-[var(--text-primary)]'}`}>
+                        ${(Number(balanceUSD || 0) - getDisplayPrice(confirmingPlan, confirmingCycle)).toFixed(2)}
                       </span>
                     </div>
                   </div>
-                  {balanceUSD - getDisplayPrice(confirmingPlan, billingCycle) < 0 && (
+                  {balanceUSD - getDisplayPrice(confirmingPlan, confirmingCycle) < 0 && (
                     <div className="flex items-start gap-2.5 p-3.5 rounded-shape-sm bg-rose-500/10 border border-rose-500/20 text-rose-600 dark:text-rose-400">
                       <AlertCircle size={18} className="shrink-0 mt-0.5" />
                       <p className="text-xs font-semibold leading-relaxed">{t('insufficientBalance')}</p>
@@ -670,7 +733,7 @@ export const SubscriptionPage: React.FC = () => {
                   </button>
                   <button 
                     onClick={executePayment}
-                    disabled={loading !== null || balanceUSD - getDisplayPrice(confirmingPlan, billingCycle) < 0}
+                    disabled={loading !== null || balanceUSD - getDisplayPrice(confirmingPlan, confirmingCycle) < 0}
                     className="flex-1 py-2.5 min-h-[44px] rounded-shape-sm bg-[var(--fg-accent)] hover:opacity-90 text-[var(--comp-button-primary-fg,#ffffff)] font-bold text-xs md:text-sm transition-all duration-150 shadow-sm flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer touch-target-44 active:scale-95"
                   >
                     {loading ? <Loader2 size={16} className="animate-spin" /> : <CheckCircle2 size={16} />}

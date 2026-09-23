@@ -45,6 +45,9 @@ router.get("/settings", async (req, res) => {
     if (!isAuth) {
       delete settings.stripe_publishable_key;
       delete settings.paypal_client_id;
+      res.setHeader('Cache-Control', 'public, max-age=120, stale-while-revalidate=300');
+    } else {
+      res.setHeader('Cache-Control', 'private, max-age=60, stale-while-revalidate=120');
     }
     res.json({
       ...settings,
@@ -57,6 +60,7 @@ router.get("/settings", async (req, res) => {
 });
 
 const handleGetFontConfig = async (req: express.Request, res: express.Response) => {
+  res.setHeader('Cache-Control', 'public, max-age=600, stale-while-revalidate=1200');
   try {
     const settings = await getSystemSettings();
     const reqLang = req.query.lang as string;

@@ -516,22 +516,39 @@ router.get("/poll", async (req, res) => {
   }
 });
 
-router.post("/logout", authenticateToken, async (req: any, res) => {
+router.post("/logout", async (req: any, res) => {
   try {
-    const token = req.token;
+    const authHeader = req.headers['authorization'];
+    let token = (authHeader && authHeader.split(' ')[1]) || req.body?.token;
     if (token) {
-      const decoded: any = jwt.verify(token, jwtSecret);
-      const expiresAt = decoded?.exp ? new Date(decoded.exp * 1000) : new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
-      
-      await getSecurityPool().query(
-        'INSERT INTO token_blacklist (token, expires_at) VALUES ($1, $2) ON CONFLICT (token) DO NOTHING',
-        [hashToken(token), expiresAt]
-      );
-      addToBlacklistCache(token);
+      token = token.trim();
+      if (token.startsWith('"') && token.endsWith('"')) token = token.slice(1, -1);
+    }
+    
+    let userId: any = null;
+    if (token && token !== 'null' && token !== 'undefined' && token !== '') {
+      try {
+        const decoded: any = jwt.verify(token, jwtSecret);
+        userId = decoded?.id;
+        const expiresAt = decoded?.exp ? new Date(decoded.exp * 1000) : new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
+        
+        await getSecurityPool().query(
+          'INSERT INTO token_blacklist (token, expires_at) VALUES ($1, $2) ON CONFLICT (token) DO NOTHING',
+          [hashToken(token), expiresAt]
+        );
+        addToBlacklistCache(token);
+      } catch {
+        try {
+          await getSecurityPool().query(
+            'INSERT INTO token_blacklist (token, expires_at) VALUES ($1, $2) ON CONFLICT (token) DO NOTHING',
+            [hashToken(token), new Date(Date.now() + 24 * 60 * 60 * 1000)]
+          );
+        } catch {}
+      }
     }
 
     const { refreshToken } = req.body;
-    if (refreshToken) {
+    if (refreshToken && typeof refreshToken === 'string' && refreshToken !== 'null' && refreshToken !== 'undefined' && refreshToken !== '') {
       try {
         await pool.query(
           "UPDATE user_sessions SET status = 'revoked', last_active_at = CURRENT_TIMESTAMP WHERE session_token = $1",
@@ -539,6 +556,7 @@ router.post("/logout", authenticateToken, async (req: any, res) => {
         );
         try {
           const rfDecoded: any = jwt.verify(refreshToken, jwtSecret);
+          if (!userId) userId = rfDecoded?.id;
           const rfExpiry = rfDecoded?.exp ? new Date(rfDecoded.exp * 1000) : new Date(Date.now() + 30 * 24 * 60 * 60 * 1000);
           await getSecurityPool().query(
             'INSERT INTO token_blacklist (token, expires_at) VALUES ($1, $2) ON CONFLICT (token) DO NOTHING',
@@ -555,11 +573,31 @@ router.post("/logout", authenticateToken, async (req: any, res) => {
       }
     }
     
-    await logSystemActivity(req.user.id, 'logout', 'User logged out', {}, req);
-    res.json({ success: true, message: 'Logged out successfully' });
+    if (userId) {
+      try {
+        await pool.query(
+          "UPDATE user_sessions SET status = 'revoked', last_active_at = CURRENT_TIMESTAMP WHERE user_id = $1 AND status = 'active'",
+          [userId]
+        );
+      } catch (sessionErr) {
+        console.warn('[Session] Failed to revoke active user sessions on logout:', sessionErr);
+      }
+      try {
+        await logSystemActivity(userId, 'logout', 'User logged out and terminated sessions', {}, req);
+      } catch {}
+    }
+
+    try {
+      res.clearCookie('token', { path: '/' });
+      res.clearCookie('refreshToken', { path: '/' });
+      res.clearCookie('jwt', { path: '/' });
+      res.clearCookie('app_token', { path: '/' });
+    } catch {}
+
+    res.json({ success: true, message: 'Logged out and sessions terminated successfully' });
   } catch (error) {
     console.error('[Auth] Logout failed:', error instanceof Error ? error.message : error);
-    res.status(500).json({ error: 'Logout failed' });
+    res.json({ success: true, message: 'Logged out successfully' });
   }
 });
 

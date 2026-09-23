@@ -2749,6 +2749,16 @@ export async function runVersionedMigrations(
     await runVersioned('v125_ad_targeting_categories_seed', 'Seed master business and technology categories into platform_categories table for targeted advertising', async (tx) => {
       await syncMasterCategoriesToDatabase(tx);
     });
+
+    await runVersioned('v126_plans_custom_billing_cycles', 'Add custom billing cycles (days, monthly control, annual control) to plans table', async (tx) => {
+      await tx.query(`
+        ALTER TABLE plans ADD COLUMN IF NOT EXISTS is_monthly_enabled BOOLEAN DEFAULT true;
+        ALTER TABLE plans ADD COLUMN IF NOT EXISTS is_annual_enabled BOOLEAN DEFAULT true;
+        ALTER TABLE plans ADD COLUMN IF NOT EXISTS is_daily_enabled BOOLEAN DEFAULT false;
+        ALTER TABLE plans ADD COLUMN IF NOT EXISTS daily_price NUMERIC(10, 2) DEFAULT 0;
+        ALTER TABLE plans ADD COLUMN IF NOT EXISTS daily_days INTEGER DEFAULT 7;
+      `);
+    });
     
   console.log("[Migrations] All versioned migrations completed successfully.");
 }

@@ -34,6 +34,7 @@ import { initCronJobs } from './jobs/cron.js';
 import { validateRequiredSecrets } from './utils/validateSecrets.js';
 import { initUploadsMonitor } from './services/uploadsMonitorService.js';
 import { connectCache } from './utils/cache.js';
+import { warmupSeoAndSystemCache } from './db/queries.js';
 
 const PORT = 3000;
 const MAX_DB_ATTEMPTS = 3;
@@ -72,7 +73,8 @@ async function initDatabase(): Promise<boolean> {
         initializeSystemAssetSuite(),
         ensureAdsSeedData(),
         ensureBulletinSeedData(),
-        ensureApiPerfLogsTable()
+        ensureApiPerfLogsTable(),
+        warmupSeoAndSystemCache()
       ]);
       return true;
     } catch (err) {

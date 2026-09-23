@@ -83,6 +83,7 @@ async function verifyImageUrl(url?: string | null): Promise<string> {
  * Fetch the master list of business, technology, and industry categories for targeted advertising
  */
 router.get('/categories', async (req, res) => {
+  res.setHeader('Cache-Control', 'public, max-age=300, stale-while-revalidate=600');
   try {
     const { q, search, group, groupId, featured, limit, offset } = req.query;
     const queryTerm = (q || search || '') as string;

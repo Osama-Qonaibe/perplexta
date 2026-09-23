@@ -506,6 +506,11 @@ export const DEFAULT_FALLBACK_PLANS = [
     desc_en: 'Basic access to essential tools and community models',
     monthly_price: 0,
     annual_price: 0,
+    is_monthly_enabled: true,
+    is_annual_enabled: false,
+    is_daily_enabled: false,
+    daily_price: 0,
+    daily_days: 7,
     features: ['Access to Standard Models', 'Community Support', 'Basic Search'],
     is_active: true,
     is_visible: true,
@@ -523,6 +528,11 @@ export const DEFAULT_FALLBACK_PLANS = [
     desc_en: 'High speed, elite neural models, and priority support',
     monthly_price: 19,
     annual_price: 190,
+    is_monthly_enabled: true,
+    is_annual_enabled: true,
+    is_daily_enabled: false,
+    daily_price: 0,
+    daily_days: 7,
     features: ['All Neural Models', 'Priority Processing', 'GPU Acceleration', 'Dedicated Support'],
     is_active: true,
     is_visible: true,
@@ -540,6 +550,11 @@ export const DEFAULT_FALLBACK_PLANS = [
     desc_en: 'Custom enterprise quotas, dedicated infrastructure and SLA',
     monthly_price: 49,
     annual_price: 490,
+    is_monthly_enabled: true,
+    is_annual_enabled: true,
+    is_daily_enabled: false,
+    daily_price: 0,
+    daily_days: 7,
     features: ['Custom Orchestrator', 'Unlimited Ingest & GPU API', 'Dedicated Account Manager'],
     is_active: true,
     is_visible: true,
@@ -565,6 +580,11 @@ export async function getCachedActivePlans(): Promise<any[]> {
     const res = await pool.query('SELECT * FROM plans WHERE is_active = true ORDER BY monthly_price ASC');
     const plans = res.rows.length > 0 ? res.rows.map((p: any) => ({
       ...p,
+      is_monthly_enabled: p.is_monthly_enabled !== false,
+      is_annual_enabled: p.is_annual_enabled !== false,
+      is_daily_enabled: !!p.is_daily_enabled,
+      daily_price: p.daily_price !== undefined ? parseFloat(p.daily_price) : 0,
+      daily_days: p.daily_days ? parseInt(p.daily_days, 10) : 7,
       description_en: p.description_en || p.desc_en,
       description_ar: p.description_ar || p.desc_ar,
       desc_en: p.desc_en || p.description_en,
@@ -647,7 +667,7 @@ export function invalidateApiKeysVaultCache() {
   apiKeysVaultCache.delete('global');
 }
 
-const seoNodeCache = new NodeCache({ stdTTL: 120, checkperiod: 15 });
+const seoNodeCache = new NodeCache({ stdTTL: 3600, checkperiod: 60 });
 
 // Custom per-route hit/miss metrics tracker
 interface CacheStats {
@@ -682,6 +702,101 @@ function trackSeoCache(route: string, type: string, isHit: boolean) {
     `Route Efficiency: \x1b[32m${hitRatio}%\x1b[0m (Hits: ${stats.hits}, Misses: ${stats.misses}) | ` +
     `Overall Cache Efficiency: \x1b[36m${globalHitRatio}%\x1b[0m (Total Hits: ${globalStats.hits}, Total Misses: ${globalStats.misses})`
   );
+}
+
+/** Preload and warm up all SEO routes, metadata, and preview cache into memory on server startup */
+export async function warmupSeoAndSystemCache(): Promise<void> {
+  if (!pool) return;
+  try {
+    const startTime = Date.now();
+    let routesCount = 0;
+    let metaCount = 0;
+    let dynamicCount = 0;
+    let ogCount = 0;
+
+    // 1. Warm-up route_seo_settings (both individual routes and all_active list)
+    try {
+      const activeRes = await pool.query('SELECT * FROM route_seo_settings WHERE is_active = true ORDER BY id ASC');
+      seoNodeCache.set('all_active', activeRes.rows);
+      for (const row of activeRes.rows) {
+        if (row.route) {
+          const norm = row.route === '/' ? '/' : row.route.replace(/\/$/, '');
+          seoNodeCache.set(`route:${norm}`, row);
+          routesCount++;
+        }
+      }
+      const allRoutesRes = await pool.query('SELECT * FROM route_seo_settings');
+      for (const row of allRoutesRes.rows) {
+        if (row.route) {
+          const norm = row.route === '/' ? '/' : row.route.replace(/\/$/, '');
+          if (!seoNodeCache.has(`route:${norm}`)) {
+            seoNodeCache.set(`route:${norm}`, row);
+          }
+        }
+      }
+    } catch (e: any) {
+      console.warn('[SEO Warmup] route_seo_settings preload notice:', e.message);
+    }
+
+    // 2. Warm-up route_seo_metadata
+    try {
+      const routeMetaRes = await pool.query('SELECT * FROM route_seo_metadata');
+      for (const row of routeMetaRes.rows) {
+        if (row.route_path) {
+          const norm = row.route_path === '/' ? '/' : row.route_path.replace(/\/$/, '');
+          seoNodeCache.set(`meta:${norm}`, row);
+          metaCount++;
+        }
+      }
+    } catch (e: any) {
+      console.warn('[SEO Warmup] route_seo_metadata preload notice:', e.message);
+    }
+
+    // 3. Warm-up dynamic SEO metadata (seo_metadata table)
+    try {
+      const dynamicSeoRes = await pool.query('SELECT * FROM seo_metadata WHERE is_active = true');
+      for (const row of dynamicSeoRes.rows) {
+        if (row.route_path) {
+          const norm = row.route_path === '/' ? '/' : row.route_path.replace(/\/$/, '');
+          seoNodeCache.set(`dynamic_seo:${norm}`, row);
+          dynamicCount++;
+        }
+      }
+    } catch (e: any) {
+      console.warn('[SEO Warmup] dynamic seo_metadata preload notice:', e.message);
+    }
+
+    // 4. Warm-up og_preview_cache
+    try {
+      const ogRes = await pool.query('SELECT title, description, image_url, meta_data, route_path FROM og_preview_cache');
+      for (const row of ogRes.rows) {
+        if (row.route_path) {
+          const norm = row.route_path === '/' ? '/' : row.route_path.replace(/\/$/, '');
+          seoNodeCache.set(`og_preview:${norm}`, {
+            title: row.title,
+            description: row.description,
+            image_url: row.image_url,
+            meta_data: row.meta_data
+          });
+          ogCount++;
+        }
+      }
+    } catch (e: any) {
+      console.warn('[SEO Warmup] og_preview_cache preload notice:', e.message);
+    }
+
+    // 5. Pre-warm active subscription plans and system settings
+    await getCachedActivePlans().catch(() => {});
+    await getCachedSystemSettings().catch(() => {});
+
+    const duration = Date.now() - startTime;
+    console.log(
+      `\x1b[35m[SEO Cache Warm-up]\x1b[0m 🚀 Pre-warmed SEO & metadata memory cache in \x1b[32m${duration}ms\x1b[0m ` +
+      `(${routesCount} routes, ${metaCount} route meta, ${dynamicCount} dynamic entities, ${ogCount} OG previews ready in memory)`
+    );
+  } catch (err: any) {
+    console.warn('[SEO Cache Warm-up] Non-fatal warm-up error:', err.message);
+  }
 }
 
 /** Get cached SEO settings for a specific route */
