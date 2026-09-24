@@ -50,10 +50,6 @@ const pwaConfig: any = {
         urlPattern: /\/api\/.*/i,
         handler: 'NetworkOnly',
       },
-      {
-        urlPattern: /\/uploads\/.*/i,
-        handler: 'NetworkOnly',
-      },
     ],
   },
 };
