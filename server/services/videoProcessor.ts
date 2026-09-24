@@ -212,11 +212,9 @@ export async function processUploadedVideo(
   // Check if we can perform instant stream copy (Fast Path)
   // Input has H.264 video, AAC audio (or none), no rotation conflict, no duration trim needed,
   // and is in an MP4 / MOV / M4V container.
-  const isH264 = vCodec === 'h264' || vCodec === 'avc1';
-  const isAacOrSilent = !aCodec || aCodec === 'aac' || aCodec === 'mp4a-40-2';
-  const isMp4CompatibleContainer = containerFormat.includes('mp4') || containerFormat.includes('mov') || containerFormat.includes('m4v');
+  const isMp4CompatibleContainer = containerFormat.includes('mp4') || containerFormat.includes('mov') || containerFormat.includes('m4v') || containerFormat.includes('webm') || inputFilePath.toLowerCase().endsWith('.mp4') || inputFilePath.toLowerCase().endsWith('.mov') || inputFilePath.toLowerCase().endsWith('.webm');
   const needsDurationTrim = !!(maxDuration && videoDuration > maxDuration);
-  const canFastCopy = isH264 && isAacOrSilent && isMp4CompatibleContainer && !needsDurationTrim && !isRotated;
+  const canFastCopy = isMp4CompatibleContainer && !needsDurationTrim;
 
   // 2. Parallel Thumbnail Generation Promise
   thumbStartTime = Date.now();
@@ -259,6 +257,35 @@ export async function processUploadedVideo(
     fileSize: number;
     error?: string;
   }>((resolveVideo) => {
+    let safetyTimer: NodeJS.Timeout | null = null;
+
+    const doFallbackDiskCopy = () => {
+      if (safetyTimer) clearTimeout(safetyTimer);
+      processEndTime = Date.now();
+      const originalExt = path.extname(inputFilePath).toLowerCase() || '.mp4';
+      const fallbackName = `${uniqueId}_fallback${originalExt}`;
+      const fallbackPath = path.join(outputDir, fallbackName);
+      try {
+        fs.copyFileSync(inputFilePath, fallbackPath);
+        let fallbackSize = 0;
+        try {
+          fallbackSize = fs.statSync(fallbackPath).size;
+        } catch {}
+        resolveVideo({
+          success: true,
+          outputUrl: `/uploads/${fallbackName}`,
+          fileSize: fallbackSize
+        });
+      } catch (copyErr: any) {
+        resolveVideo({
+          success: false,
+          outputUrl: '',
+          fileSize: 0,
+          error: copyErr.message
+        });
+      }
+    };
+
     if (canFastCopy) {
       chosenProcessingPath = 'fast_stream_copy';
       console.log(`[VideoProcessor] FAST PATH: Instant copy with faststart for ${inputFilePath}`);
@@ -281,12 +308,23 @@ export async function processUploadedVideo(
           });
         })
         .on('error', (copyErr) => {
-          console.warn('[VideoProcessor] Fast copy failed, falling back to transcode:', copyErr.message);
-          runFullTranscode();
+          console.warn('[VideoProcessor] Fast copy failed, falling back to disk copy:', copyErr.message);
+          doFallbackDiskCopy();
         });
     } else {
-      chosenProcessingPath = 'ultrafast_transcode';
-      runFullTranscode();
+      let isLargeFile = false;
+      try {
+        const stat = fs.statSync(inputFilePath);
+        isLargeFile = stat.size > 4 * 1024 * 1024;
+      } catch (_) {}
+
+      if (isLargeFile) {
+        console.log(`[VideoProcessor] File is larger than 4MB and cannot fast copy. Bypassing synchronous transcode to avoid gateway timeouts.`);
+        doFallbackDiskCopy();
+      } else {
+        chosenProcessingPath = 'ultrafast_transcode';
+        runFullTranscode();
+      }
     }
 
     function runFullTranscode() {
@@ -321,7 +359,7 @@ export async function processUploadedVideo(
 
       let isFinished = false;
       // 35-second safety timer to ensure video processing NEVER hangs the request
-      const safetyTimer = setTimeout(() => {
+      safetyTimer = setTimeout(() => {
         if (!isFinished) {
           isFinished = true;
           chosenProcessingPath = 'fallback_copy';
@@ -333,40 +371,13 @@ export async function processUploadedVideo(
         }
       }, 35000);
 
-      const doFallbackDiskCopy = () => {
-        clearTimeout(safetyTimer);
-        processEndTime = Date.now();
-        const originalExt = path.extname(inputFilePath).toLowerCase() || '.mp4';
-        const fallbackName = `${uniqueId}_fallback${originalExt}`;
-        const fallbackPath = path.join(outputDir, fallbackName);
-        try {
-          fs.copyFileSync(inputFilePath, fallbackPath);
-          let fallbackSize = 0;
-          try {
-            fallbackSize = fs.statSync(fallbackPath).size;
-          } catch {}
-          resolveVideo({
-            success: true,
-            outputUrl: `/uploads/${fallbackName}`,
-            fileSize: fallbackSize
-          });
-        } catch (copyErr: any) {
-          resolveVideo({
-            success: false,
-            outputUrl: '',
-            fileSize: 0,
-            error: copyErr.message
-          });
-        }
-      };
-
       cmd
         .toFormat('mp4')
         .save(outputVideoPath)
         .on('end', () => {
           if (isFinished) return;
           isFinished = true;
-          clearTimeout(safetyTimer);
+          if (safetyTimer) clearTimeout(safetyTimer);
           processEndTime = Date.now();
           let sz = 0;
           try {
@@ -381,7 +392,7 @@ export async function processUploadedVideo(
         .on('error', (err) => {
           if (isFinished) return;
           isFinished = true;
-          clearTimeout(safetyTimer);
+          if (safetyTimer) clearTimeout(safetyTimer);
           chosenProcessingPath = 'fallback_copy';
           console.warn('[VideoProcessor] Transcoding error, falling back to disk copy:', err.message);
           doFallbackDiskCopy();

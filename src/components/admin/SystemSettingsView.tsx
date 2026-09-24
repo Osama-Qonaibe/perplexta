@@ -1697,10 +1697,10 @@ export const SystemSettingsView: React.FC<SystemSettingsViewProps> = ({
               { id: 'apple-touch-icon', filename: 'apple-touch-icon.png', width: 180, height: 180, category: 'apple', description: 'iOS Safari home screen (180x180)' },
               { id: 'pwa-192', filename: 'pwa-192x192.png', width: 192, height: 192, purpose: 'any', category: 'pwa', description: 'Android PWA launcher (192x192)' },
               { id: 'pwa-512', filename: 'pwa-512x512.png', width: 512, height: 512, purpose: 'any', category: 'pwa', description: 'PWA splash screen (512x512)' },
-              { id: 'pwa-maskable-192', filename: 'pwa-maskable-192x192.png', width: 192, height: 192, purpose: 'maskable', category: 'pwa', description: 'Android adaptive safe-zone (192x192)' },
               { id: 'pwa-maskable-512', filename: 'pwa-maskable-512x512.png', width: 512, height: 512, purpose: 'maskable', category: 'pwa', description: 'Android adaptive safe-zone (512x512)' },
-              { id: 'apple-touch-167', filename: 'apple-touch-icon-167x167.png', width: 167, height: 167, category: 'apple', description: 'iPad Pro touch icon (167x167)' },
-              { id: 'mstile-150', filename: 'mstile-150x150.png', width: 150, height: 150, category: 'tile', description: 'Windows Modern UI tile (150x150)' }
+              { id: 'assistant-icon-32', filename: 'assistant-icon-32x32.png', width: 32, height: 32, category: 'favicon', description: 'Sovereign AI Assistant compact icon (32x32)' },
+              { id: 'assistant-icon-64', filename: 'assistant-icon-64x64.png', width: 64, height: 64, category: 'favicon', description: 'Sovereign AI Assistant medium icon (64x64)' },
+              { id: 'assistant-icon-128', filename: 'assistant-icon-128x128.png', width: 128, height: 128, category: 'favicon', description: 'Sovereign AI Assistant high-res icon (128x128)' }
             ]).map((asset: any) => {
               const categoryBadgeColor = 
                 asset.category === 'apple' ? 'bg-indigo-500/10 text-indigo-500 border-indigo-500/20' :
