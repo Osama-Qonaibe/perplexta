@@ -162,7 +162,7 @@ export const AssistantMessageBubble: React.FC<AssistantMessageBubbleProps> = ({
 
       {/* Seamless Integrated Assistant Response Container */}
       <div 
-        className={`relative ${['image', 'video'].includes(msg.tool || '') ? 'p-0 bg-transparent border-none shadow-none w-full max-w-full sm:max-w-lg' : 'w-full px-0 py-1 sm:py-2 bg-transparent border-none shadow-none'} text-[var(--text-primary)] transition-all duration-fast text-start prose dark:prose-invert max-w-none text-[13.5px] md:text-base leading-relaxed tracking-tight`}
+        className={`relative ${['image', 'video'].includes(msg.tool || '') ? 'p-0 bg-transparent border-none shadow-none w-full max-w-full sm:max-w-lg' : 'w-full px-0 py-1 sm:py-2 bg-transparent border-none shadow-none space-y-6'} text-[var(--text-primary)] transition-all duration-fast text-start max-w-none text-[13.5px] sm:text-[14px] leading-relaxed tracking-tight`}
       >
         {/* Model Badge Header */}
         <div className={`flex items-center justify-between gap-2.5 select-none ${['image', 'video'].includes(msg.tool || '') ? 'mb-2 px-1' : 'mb-3 pb-1.5'}`}>

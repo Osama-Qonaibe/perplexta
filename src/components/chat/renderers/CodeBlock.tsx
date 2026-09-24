@@ -94,6 +94,11 @@ export const CodeBlock: React.FC<CodeBlockProps> = ({
     const l = lang.toLowerCase().trim();
     if (l === 'audio') return 'Perplexta Audio Slate';
     if (parsedProject?.title) return parsedProject.title;
+    if (['prompt', 'image_prompt', 'image-prompt', 'image_gen'].includes(l)) return isAr ? 'برومبت توليد الصورة (Image Prompt)' : 'AI Image Prompt';
+    if (['funnel', 'funnel_chart', 'funnel-chart'].includes(l)) return isAr ? 'مخطط مسار التحويل (Conversion Funnel)' : 'Conversion Funnel Map';
+    if (['diagram', 'flow', 'flowchart', 'ascii', 'tree'].includes(l)) return isAr ? 'مخطط هيكلي وتوضيحي (Diagram & Flow)' : 'Structural Flow Diagram';
+    if (['apa', 'citation', 'references', 'bibtex', 'harvard', 'ieee', 'ris'].includes(l)) return isAr ? 'التوثيق الأكاديمي المعتمد (APA / BibTeX)' : 'Academic Citations & References';
+    if (['json', 'json5'].includes(l)) return isAr ? 'بيانات مهيكلة (Structured JSON)' : 'data.json';
     if (['html', 'htm'].includes(l)) return 'index.html';
     if (['css', 'scss', 'sass', 'less'].includes(l)) return `styles.${l}`;
     if (['typescript', 'ts', 'jsx', 'tsx', 'js', 'javascript', 'react'].includes(l)) return `App.${['ts', 'typescript', 'tsx'].includes(l) ? 'tsx' : 'jsx'}`;
@@ -599,10 +604,10 @@ export const CodeBlock: React.FC<CodeBlockProps> = ({
     <div
       dir="ltr"
       style={{ direction: 'ltr', unicodeBidi: 'isolate', textAlign: 'left' }}
-      className="relative group mx-auto my-3 w-full max-w-full min-w-0 rounded-shape-md shadow-2xs overflow-hidden border border-[var(--border-default)] bg-[var(--surface-card)] transition-colors perplexta-codeblock"
+      className="relative group mx-auto my-5 sm:my-6 w-full max-w-full min-w-0 rounded-[var(--radius-md)] shadow-xs overflow-hidden border border-[var(--border-default)] bg-[var(--surface-card)] transition-colors perplexta-codeblock"
     >
       {/* Code Container Header */}
-      <div className="sticky top-0 z-20 h-10 w-full flex items-center justify-between px-3.5 border-b border-[var(--border-default)] bg-[var(--surface-subtle)] text-[var(--text-secondary)] perplexta-codeblock-header select-none">
+      <div className="sticky top-0 z-20 h-10 w-full flex items-center justify-between px-3.5 sm:px-4 border-b border-[var(--border-default)] bg-[var(--surface-subtle)] text-[var(--text-secondary)] perplexta-codeblock-header select-none">
         <div className="flex items-center gap-2 min-w-0">
           <div className="flex items-center gap-1.5 h-7 px-2.5 rounded-shape-sm bg-[var(--surface-card)] border border-[var(--border-default)] text-[var(--text-primary)] text-xs font-mono font-semibold shrink-0 shadow-2xs">
             <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 shrink-0" />
@@ -759,12 +764,12 @@ export const CodeBlock: React.FC<CodeBlockProps> = ({
           <pre 
             dir="ltr"
             style={{ direction: 'ltr', unicodeBidi: 'isolate', textAlign: 'left' }}
-            className="p-4 overflow-x-auto custom-scrollbar bg-transparent transition-theme text-left dir-ltr w-full max-w-full min-w-0 m-0 select-text"
+            className="p-4 sm:p-5 overflow-x-auto custom-scrollbar bg-[var(--surface-card)] dark:bg-[#12161b] transition-theme text-left dir-ltr w-full max-w-full min-w-0 m-0 select-text"
           >
             <code 
               dir="ltr"
               style={{ direction: 'ltr', unicodeBidi: 'isolate', textAlign: 'left' }}
-              className={`language-${lang} inline-block min-w-full w-max font-mono text-sm leading-relaxed text-left dir-ltr pr-6 whitespace-pre`}
+              className={`language-${lang} inline-block min-w-full w-max font-mono text-[13px] sm:text-sm leading-relaxed text-left dir-ltr pr-6 whitespace-pre`}
               dangerouslySetInnerHTML={{ __html: highlightedCode }}
             />
           </pre>

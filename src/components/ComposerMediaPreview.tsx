@@ -204,12 +204,12 @@ export const ComposerMediaPreview: React.FC<ComposerMediaPreviewProps> = ({
           </div>
         </div>
 
-        {/* Dynamic Aspect Ratio Video Player Stage - Adapts to 9:16 vertical, 4:5, 1:1, or 16:9 widescreen */}
+        {/* Dynamic Aspect Ratio Video Player Stage - Adapts to 9:16 vertical, 4:5, 1:1, or 16:9 widescreen (Optimized Compact Footprint) */}
         <div className={`relative w-full overflow-hidden bg-black flex items-center justify-center transition-all duration-300 ${
-          videoAspect === '9:16' ? 'aspect-[9/16] max-h-[480px] sm:max-h-[520px] mx-auto' :
-          videoAspect === '4:5' ? 'aspect-[4/5] max-h-[440px] sm:max-h-[480px] mx-auto' :
-          videoAspect === '1:1' ? 'aspect-square max-h-[380px] sm:max-h-[420px] mx-auto' :
-          'aspect-video max-h-[340px] sm:max-h-[380px] mx-auto'
+          videoAspect === '9:16' ? 'aspect-[9/16] max-h-[250px] sm:max-h-[280px] mx-auto' :
+          videoAspect === '4:5' ? 'aspect-[4/5] max-h-[230px] sm:max-h-[260px] mx-auto' :
+          videoAspect === '1:1' ? 'aspect-square max-h-[210px] sm:max-h-[240px] mx-auto' :
+          'aspect-video max-h-[190px] sm:max-h-[220px] mx-auto'
         }`}>
           {/* Ambient Video Blur Backdrop */}
           <video
@@ -240,16 +240,16 @@ export const ComposerMediaPreview: React.FC<ComposerMediaPreviewProps> = ({
           />
         </div>
 
-        {/* Recommended Stopping Frames (لقطات موصى بها للتوقف) Section */}
-        <div className="bg-[var(--surface-card)] border-t border-[var(--border-default)] p-2.5 sm:p-3 space-y-2">
-          <div className="flex items-center justify-between gap-2">
-            <div className="flex items-center gap-1.5 text-xs font-bold text-[var(--text-primary)]">
-              <Camera size={14} className="text-accent" />
-              <span>{isRtl ? 'لقطات موصى بها للتوقف (صورة الغلاف)' : 'Recommended Stopping Frames (Cover)'}</span>
+        {/* Recommended Stopping Frames (لقطات موصى بها للتوقف) Section - Compact & Space-Efficient */}
+        <div className="bg-[var(--surface-card)] border-t border-[var(--border-default)] p-2 sm:p-2.5 space-y-1.5">
+          <div className="flex items-center justify-between gap-1.5">
+            <div className="flex items-center gap-1.5 text-[11px] font-bold text-[var(--text-primary)]">
+              <Camera size={13} className="text-accent shrink-0" />
+              <span className="truncate">{isRtl ? 'لقطات موصى بها للغلاف' : 'Recommended Cover Frames'}</span>
               {isExtractingFrames && (
-                <span className="flex items-center gap-1 text-[10px] text-accent font-normal">
-                  <RefreshCw size={10} className="animate-spin" />
-                  <span>{isRtl ? 'جارٍ الاستخراج...' : 'Extracting...'}</span>
+                <span className="flex items-center gap-1 text-[9px] text-accent font-normal shrink-0">
+                  <RefreshCw size={9} className="animate-spin" />
+                  <span>{isRtl ? 'جارٍ...' : 'Extracting...'}</span>
                 </span>
               )}
             </div>
@@ -258,26 +258,26 @@ export const ComposerMediaPreview: React.FC<ComposerMediaPreviewProps> = ({
             <button
               type="button"
               onClick={handleCaptureCurrentPlaybackFrame}
-              className="px-2.5 py-1 text-[11px] font-bold rounded-shape-sm bg-[var(--surface-subtle)] hover:bg-[var(--surface-inset)] text-[var(--text-primary)] border border-[var(--border-default)] hover:border-[var(--border-accent)] flex items-center gap-1.5 transition-all shadow-2xs cursor-pointer active:scale-95 shrink-0"
+              className="px-2 py-0.5 text-[10px] font-bold rounded-shape-xs bg-[var(--surface-subtle)] hover:bg-[var(--surface-inset)] text-[var(--text-primary)] border border-[var(--border-default)] hover:border-[var(--border-accent)] flex items-center gap-1 transition-all shadow-2xs cursor-pointer active:scale-95 shrink-0"
               title={isRtl ? 'التقاط الموضع الحالي المتوقف عنده الفيديو' : 'Capture current video frame'}
             >
-              <Camera size={12} className="text-accent" />
-              <span>{isRtl ? 'التقاط الموضع الحالي' : 'Capture Frame'}</span>
+              <Camera size={11} className="text-accent" />
+              <span>{isRtl ? 'التقاط الحالي' : 'Capture'}</span>
             </button>
           </div>
 
           {/* Recommended Frames Strip with Aspect-Aware Thumbnails */}
-          <div className="flex items-center gap-2 overflow-x-auto pb-1 pt-0.5 scrollbar-thin">
+          <div className="flex items-center gap-1.5 overflow-x-auto pb-0.5 pt-0.5 scrollbar-thin">
             {isExtractingFrames && recommendedFrames.length === 0 ? (
               // Loading skeleton placeholders
               Array.from({ length: 6 }).map((_, i) => (
                 <div
                   key={i}
-                  className={`rounded-shape-sm bg-[var(--surface-subtle)] animate-pulse shrink-0 border border-[var(--border-subtle)] ${
-                    videoAspect === '9:16' ? 'w-11 sm:w-13 h-16 sm:h-20 aspect-[9/16]' :
-                    videoAspect === '1:1' ? 'w-14 sm:w-16 h-14 sm:h-16 aspect-square' :
-                    videoAspect === '4:5' ? 'w-12 sm:w-14 h-16 sm:h-18 aspect-[4/5]' :
-                    'w-20 sm:w-24 h-12 sm:h-14 aspect-video'
+                  className={`rounded-shape-xs bg-[var(--surface-subtle)] animate-pulse shrink-0 border border-[var(--border-subtle)] ${
+                    videoAspect === '9:16' ? 'w-8 sm:w-9 h-12 sm:h-14 aspect-[9/16]' :
+                    videoAspect === '1:1' ? 'w-10 sm:w-11 h-10 sm:h-11 aspect-square' :
+                    videoAspect === '4:5' ? 'w-9 sm:w-10 h-11 sm:h-13 aspect-[4/5]' :
+                    'w-14 sm:w-16 h-8 sm:h-9 aspect-video'
                   }`}
                 />
               ))
@@ -289,14 +289,14 @@ export const ComposerMediaPreview: React.FC<ComposerMediaPreviewProps> = ({
                     key={index}
                     type="button"
                     onClick={() => handlePickFrame(frame.dataUrl)}
-                    className={`relative rounded-shape-sm overflow-hidden shrink-0 border transition-all cursor-pointer group/frame active:scale-95 ${
-                      videoAspect === '9:16' ? 'w-11 sm:w-13 h-16 sm:h-20 aspect-[9/16]' :
-                      videoAspect === '1:1' ? 'w-14 sm:w-16 h-14 sm:h-16 aspect-square' :
-                      videoAspect === '4:5' ? 'w-12 sm:w-14 h-16 sm:h-18 aspect-[4/5]' :
-                      'w-20 sm:w-24 h-12 sm:h-14 aspect-video'
+                    className={`relative rounded-shape-xs overflow-hidden shrink-0 border transition-all cursor-pointer group/frame active:scale-95 ${
+                      videoAspect === '9:16' ? 'w-8 sm:w-9 h-12 sm:h-14 aspect-[9/16]' :
+                      videoAspect === '1:1' ? 'w-10 sm:w-11 h-10 sm:h-11 aspect-square' :
+                      videoAspect === '4:5' ? 'w-9 sm:w-10 h-11 sm:h-13 aspect-[4/5]' :
+                      'w-14 sm:w-16 h-8 sm:h-9 aspect-video'
                     } ${
                       isSelected
-                        ? 'ring-2 ring-accent border-accent shadow-xs'
+                        ? 'ring-1.5 ring-accent border-accent shadow-xs'
                         : 'border-[var(--border-default)] hover:border-[var(--border-accent)] opacity-85 hover:opacity-100'
                     }`}
                     title={isRtl ? `تحديد لقطة ${frame.timeLabel} كغلاف` : `Select frame at ${frame.timeLabel}`}
@@ -307,21 +307,21 @@ export const ComposerMediaPreview: React.FC<ComposerMediaPreviewProps> = ({
                       className="w-full h-full object-cover"
                     />
                     {/* Timestamp Badge */}
-                    <span className="absolute bottom-1 end-1 px-1 py-0.2 rounded-shape-xs bg-black/75 text-white text-[9px] font-mono font-bold pointer-events-none">
+                    <span className="absolute bottom-0.5 end-0.5 px-0.5 py-0.2 rounded-[2px] bg-black/80 text-white text-[8px] font-mono font-bold pointer-events-none leading-none">
                       {frame.timeLabel}
                     </span>
                     {/* Selected Checkmark Badge */}
                     {isSelected && (
-                      <div className="absolute top-1 start-1 w-4 h-4 rounded-full bg-accent text-white flex items-center justify-center shadow-xs">
-                        <Check size={10} strokeWidth={3} />
+                      <div className="absolute top-0.5 start-0.5 w-3.5 h-3.5 rounded-full bg-accent text-white flex items-center justify-center shadow-xs">
+                        <Check size={8} strokeWidth={3} />
                       </div>
                     )}
                   </button>
                 );
               })
             ) : (
-              <div className="text-[11px] text-[var(--text-muted)] py-1">
-                {isRtl ? 'شغّل المقطع وتوقف عند أي لقطة ثم اضغط على "التقاط الموضع الحالي"' : 'Play video, pause at desired point and click "Capture Frame"'}
+              <div className="text-[10px] text-[var(--text-muted)] py-0.5">
+                {isRtl ? 'شغّل المقطع وتوقف عند أي لقطة ثم اضغط "التقاط الحالي"' : 'Play video, pause and click "Capture"'}
               </div>
             )}
           </div>
@@ -400,13 +400,23 @@ export const ComposerMediaPreview: React.FC<ComposerMediaPreviewProps> = ({
       return (
         <div
           onClick={onOpenMediaManager}
-          className="w-full overflow-hidden cursor-pointer rounded-b-[var(--radius-lg)] bg-[#0a0a0a]"
+          className="w-full max-h-[220px] sm:max-h-[260px] overflow-hidden cursor-pointer rounded-shape-sm bg-[#0a0a0a] flex items-center justify-center relative"
         >
-          <StrictMediaContainer
-            type="feed"
-            src={isVideo ? mediaSrc : displayUrl}
-            isVideo={isVideo}
-          />
+          {isVideo ? (
+            <video
+              src={mediaSrc}
+              className="max-h-[220px] sm:max-h-[260px] w-full object-contain mx-auto"
+              muted
+              playsInline
+              preload="metadata"
+            />
+          ) : (
+            <img
+              src={displayUrl}
+              alt="Preview"
+              className="max-h-[220px] sm:max-h-[260px] w-full object-contain mx-auto"
+            />
+          )}
         </div>
       );
     }
@@ -414,7 +424,7 @@ export const ComposerMediaPreview: React.FC<ComposerMediaPreviewProps> = ({
     // 2 Items: 2 equal columns
     if (totalCount === 2) {
       return (
-        <div className="grid grid-cols-2 gap-1 w-full h-[170px] xs:h-[200px] sm:h-[300px] md:h-[320px]">
+        <div className="grid grid-cols-2 gap-1 w-full h-[130px] sm:h-[160px]">
           {renderMediaThumbnail(mediaItems[0], 0)}
           {renderMediaThumbnail(mediaItems[1], 1)}
         </div>
@@ -424,7 +434,7 @@ export const ComposerMediaPreview: React.FC<ComposerMediaPreviewProps> = ({
     // 3 Items: 1 large on top/side, 2 smaller
     if (totalCount === 3) {
       return (
-        <div className="grid grid-cols-2 grid-rows-2 gap-1 w-full h-[180px] xs:h-[220px] sm:h-[320px] md:h-[340px]">
+        <div className="grid grid-cols-2 grid-rows-2 gap-1 w-full h-[140px] sm:h-[180px]">
           <div className="row-span-2 col-span-1">
             {renderMediaThumbnail(mediaItems[0], 0)}
           </div>
@@ -441,7 +451,7 @@ export const ComposerMediaPreview: React.FC<ComposerMediaPreviewProps> = ({
     // 4 Items: 2x2 grid
     if (totalCount === 4) {
       return (
-        <div className="grid grid-cols-2 grid-rows-2 gap-1 w-full h-[180px] xs:h-[220px] sm:h-[320px] md:h-[340px]">
+        <div className="grid grid-cols-2 grid-rows-2 gap-1 w-full h-[140px] sm:h-[180px]">
           {renderMediaThumbnail(mediaItems[0], 0)}
           {renderMediaThumbnail(mediaItems[1], 1)}
           {renderMediaThumbnail(mediaItems[2], 2)}
@@ -452,7 +462,7 @@ export const ComposerMediaPreview: React.FC<ComposerMediaPreviewProps> = ({
 
     // 5 or more Items: Facebook 4-quadrant layout with +N on the 4th item
     return (
-      <div className="grid grid-cols-2 grid-rows-2 gap-1 w-full h-[180px] xs:h-[220px] sm:h-[320px] md:h-[340px]">
+      <div className="grid grid-cols-2 grid-rows-2 gap-1 w-full h-[140px] sm:h-[180px]">
         {renderMediaThumbnail(mediaItems[0], 0)}
         {renderMediaThumbnail(mediaItems[1], 1)}
         {renderMediaThumbnail(mediaItems[2], 2)}
@@ -462,22 +472,22 @@ export const ComposerMediaPreview: React.FC<ComposerMediaPreviewProps> = ({
   };
 
   return (
-    <div className="relative w-full rounded-[var(--radius-lg)] overflow-hidden border border-[var(--border-default)] bg-[var(--surface-card)] shadow-sm mt-2 sm:mt-3 group/box transition-theme">
+    <div className="relative w-full rounded-shape-md overflow-hidden border border-[var(--border-default)] bg-[var(--surface-card)] shadow-xs mt-1.5 sm:mt-2 group/box transition-theme">
       {/* Top Floating Action Bar */}
-      <div className="absolute top-2 sm:top-3 inset-x-2 sm:inset-x-3 z-20 flex items-center justify-between pointer-events-auto">
+      <div className="absolute top-1.5 inset-x-1.5 z-20 flex items-center justify-between pointer-events-auto">
         {/* Left Side: "تعديل الكل" (Edit All) Button + Count */}
-        <div className="flex items-center gap-1.5 sm:gap-2">
+        <div className="flex items-center gap-1 sm:gap-1.5">
           <button
             type="button"
             onClick={onOpenMediaManager}
-            className="platform-action-btn inline-flex items-center gap-1 px-2.5 sm:px-3.5 py-1 sm:py-1.5 min-h-[30px] sm:min-h-[36px] rounded-[var(--radius-md)] bg-[var(--surface-card)]/90 hover:bg-[var(--surface-subtle)] text-[var(--text-primary)] text-[11px] sm:text-xs font-bold shadow-md backdrop-blur-md border border-[var(--border-default)] transition-all cursor-pointer active:scale-95 focus:outline-none"
+            className="inline-flex items-center gap-1 px-2 py-0.5 min-h-[26px] sm:min-h-[28px] rounded-shape-xs bg-black/75 hover:bg-black/90 text-white text-[10px] sm:text-[11px] font-bold shadow-sm backdrop-blur-md border border-white/20 transition-all cursor-pointer active:scale-95 focus:outline-none"
             title={isRtl ? 'تعديل الصور والفيديوهات وإضافة شرح توضيحي' : 'Edit photos & videos'}
           >
-            <Edit3 size={12} className="sm:size-[14px] text-[var(--fg-accent)]" />
+            <Edit3 size={11} className="text-accent" />
             <span>{isRtl ? 'تعديل الكل' : 'Edit All'}</span>
           </button>
 
-          <span className="px-2 sm:px-2.5 py-0.5 sm:py-1 min-h-[30px] sm:min-h-[36px] inline-flex items-center rounded-[var(--radius-md)] bg-[var(--surface-inset)]/90 text-[var(--text-primary)] text-[10px] sm:text-[11px] font-extrabold backdrop-blur-md border border-[var(--border-subtle)] shadow-xs">
+          <span className="px-1.5 py-0.5 min-h-[26px] sm:min-h-[28px] inline-flex items-center rounded-shape-xs bg-black/75 text-white text-[9px] sm:text-[10px] font-mono font-bold backdrop-blur-md border border-white/20 shadow-xs">
             {totalCount} {isRtl ? (totalCount === 1 ? 'عنصر' : 'عناصر') : (totalCount === 1 ? 'item' : 'items')}
           </span>
         </div>
@@ -487,19 +497,19 @@ export const ComposerMediaPreview: React.FC<ComposerMediaPreviewProps> = ({
           <button
             type="button"
             onClick={onAddMoreClick}
-            className="platform-icon-btn p-1 sm:p-1.5 min-h-[30px] min-w-[30px] sm:min-h-[36px] sm:min-w-[36px] flex items-center justify-center rounded-[var(--radius-md)] bg-[var(--surface-card)]/90 hover:bg-[var(--surface-subtle)] text-[var(--text-primary)] text-xs shadow-md backdrop-blur-md border border-[var(--border-default)] transition-all cursor-pointer active:scale-95"
+            className="p-1 min-h-[26px] min-w-[26px] sm:min-h-[28px] sm:min-w-[28px] flex items-center justify-center rounded-shape-xs bg-black/75 hover:bg-black/90 text-white text-xs shadow-sm backdrop-blur-md border border-white/20 transition-all cursor-pointer active:scale-95"
             title={isRtl ? 'إضافة المزيد من الوسائط' : 'Add more media'}
           >
-            <Plus size={14} className="sm:size-[16px]" />
+            <Plus size={13} />
           </button>
 
           <button
             type="button"
             onClick={onClearAll}
-            className="p-1 sm:p-1.5 min-h-[30px] min-w-[30px] sm:min-h-[36px] sm:min-w-[36px] flex items-center justify-center rounded-[var(--radius-md)] bg-[var(--surface-inset)]/90 hover:bg-[var(--fg-danger)] text-[var(--text-primary)] hover:text-white shadow-md backdrop-blur-md border border-[var(--border-default)] transition-all cursor-pointer active:scale-95"
+            className="p-1 min-h-[26px] min-w-[26px] sm:min-h-[28px] sm:min-w-[28px] flex items-center justify-center rounded-shape-xs bg-black/75 hover:bg-red-600/90 text-white shadow-sm backdrop-blur-md border border-white/20 transition-all cursor-pointer active:scale-95"
             title={isRtl ? 'حذف جميع الوسائط المرفوعة' : 'Clear all media'}
           >
-            <X size={14} className="sm:size-[16px]" />
+            <X size={13} />
           </button>
         </div>
       </div>

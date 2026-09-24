@@ -55,10 +55,13 @@ router.post("/upload", authenticateToken, checkDiskSpace, (upload.single('file')
       const limitBytes = allowedMb * 1024 * 1024;
       if (currentUsage + size > limitBytes) {
         return res.status(402).json({ 
-          error: 'Storage quota exceeded', 
-          message_ar: 'تجاوزت سعة التخزين المسموح بها ويرجى الاشتراك بخطة للاستمرار',
-          message_en: 'Storage limit exceeded. Please activate a subscription plan to upload.',
-          limit_mb: allowedMb 
+          error: 'You have reached the cloud storage limit', 
+          error_ar: 'لقد استنفدت سعة التخزين السحابي المتاحة',
+          message: 'You have reached the cloud storage limit',
+          message_ar: 'لقد استنفدت سعة التخزين السحابي المتاحة',
+          message_en: 'You have reached the cloud storage limit',
+          limit_mb: allowedMb,
+          type: 'STORAGE_QUOTA_EXCEEDED'
         });
       }
     }
@@ -209,11 +212,12 @@ router.post("/upload", authenticateToken, checkDiskSpace, (upload.single('file')
         else if (mimetype.startsWith('audio/')) mContext = 'audio';
         else if (mimetype.startsWith('application/pdf')) mContext = 'document';
         
-        const existing = await targetMediaPool.query(
-          'SELECT id FROM media_assets WHERE stored_path = $1 OR (sha256_hash = $2 AND sha256_hash != \'\') LIMIT 1',
-          [storedPath, sha256Hash]
-        );
-        if (existing.rows.length > 0) {
+        // Handle deduplication by sha256_hash or stored_path
+        const existingAsset = sha256Hash
+          ? await targetMediaPool.query('SELECT id, stored_path FROM media_assets WHERE sha256_hash = $1 LIMIT 1', [sha256Hash])
+          : { rows: [] };
+
+        if (existingAsset.rows.length > 0) {
           await targetMediaPool.query(`
             UPDATE media_assets SET
               stored_path = $1,
@@ -223,17 +227,18 @@ router.post("/upload", authenticateToken, checkDiskSpace, (upload.single('file')
               width = COALESCE($5, width),
               height = COALESCE($6, height),
               size_bytes = $7,
-              file_data = COALESCE($8, file_data),
-              user_id = COALESCE($9, user_id),
-              metadata = $10,
+              user_id = COALESCE($8, user_id),
+              metadata = $9,
+              file_data = COALESCE($10, file_data),
               is_public = $11,
               updated_at = CURRENT_TIMESTAMP
             WHERE id = $12
           `, [
-            storedPath, originalname, mContext, fileType, 
+            storedPath, originalname, mContext, fileType,
             videoMetadata.width || imageMetadata.width || 0,
             videoMetadata.height || imageMetadata.height || 0,
-            processedFileSize, fileBuf, userId, JSON.stringify(file.metadata), isPublicMedia, existing.rows[0].id
+            processedFileSize, userId, JSON.stringify(file.metadata), fileBuf,
+            isPublicMedia, existingAsset.rows[0].id
           ]);
         } else {
           const filesRouteAssetId = crypto.randomUUID();
@@ -243,8 +248,15 @@ router.post("/upload", authenticateToken, checkDiskSpace, (upload.single('file')
               user_id, metadata, file_data
             ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)
             ON CONFLICT (stored_path) DO UPDATE SET
+              original_filename = EXCLUDED.original_filename,
               context = EXCLUDED.context,
+              format = EXCLUDED.format,
+              width = COALESCE(EXCLUDED.width, media_assets.width),
+              height = COALESCE(EXCLUDED.height, media_assets.height),
+              size_bytes = EXCLUDED.size_bytes,
+              sha256_hash = COALESCE(EXCLUDED.sha256_hash, media_assets.sha256_hash),
               user_id = COALESCE(EXCLUDED.user_id, media_assets.user_id),
+              metadata = EXCLUDED.metadata,
               file_data = COALESCE(EXCLUDED.file_data, media_assets.file_data),
               is_public = EXCLUDED.is_public,
               updated_at = CURRENT_TIMESTAMP
@@ -253,7 +265,7 @@ router.post("/upload", authenticateToken, checkDiskSpace, (upload.single('file')
             storedPath, originalname, mContext, fileType, 
             videoMetadata.width || imageMetadata.width || 0,
             videoMetadata.height || imageMetadata.height || 0,
-            processedFileSize, sha256Hash, isPublicMedia,
+            processedFileSize, sha256Hash || null, isPublicMedia,
             userId, JSON.stringify(file.metadata), fileBuf
           ]);
         }

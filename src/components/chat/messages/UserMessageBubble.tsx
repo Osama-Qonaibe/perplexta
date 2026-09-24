@@ -57,12 +57,10 @@ export const UserMessageBubble: React.FC<UserMessageBubbleProps> = ({
   const isArtifactOpen = Boolean(artifactContext?.isArtifactOpen);
 
   return (
-    <div className={`flex flex-col gap-1.5 w-full my-1 ${dir === 'rtl' ? 'items-start' : 'items-end'}`}>
+    <div className={`flex flex-col gap-1.5 w-full my-1 items-end`}>
       {msg.file && (
         <div
-          className={`mb-1 p-2 rounded-shape-md border flex items-center gap-3 w-fit ${
-            dir === 'rtl' ? 'self-start' : 'self-end'
-          } bg-[var(--surface-subtle)] border-[var(--border-default)]`}
+          className="mb-1 p-2 rounded-shape-md border flex items-center gap-3 w-fit self-end bg-[var(--surface-subtle)] border-[var(--border-default)]"
         >
           {msg.file.type.startsWith('image/') ? (
             <img
@@ -125,7 +123,7 @@ export const UserMessageBubble: React.FC<UserMessageBubbleProps> = ({
       ) : (
         <div className={`group relative flex items-center gap-2 sm:gap-2.5 ${
           isArtifactOpen ? 'max-w-full' : 'max-w-[92%] sm:max-w-[85%] md:max-w-[78%]'
-        } ${dir === 'rtl' ? 'flex-row' : 'flex-row-reverse'}`}>
+        } flex-row-reverse`}>
           {/* Action Toolbar (Conforming strictly to Perplexta M3 Button Tokens & 44px Touch Targets) */}
           <div className="flex items-center gap-1 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity duration-fast shrink-0 select-none">
             {/* Pin Message Button */}
@@ -176,7 +174,7 @@ export const UserMessageBubble: React.FC<UserMessageBubbleProps> = ({
 
           {/* Clean Compact User Message Bubble */}
           <div 
-            className="px-3.5 py-2 sm:px-4 sm:py-2.5 rounded-[var(--radius-md)] rounded-te-[2px] border border-[var(--border-default)] bg-[var(--surface-subtle)] text-[var(--text-primary)] shadow-2xs transition-all duration-fast min-w-0 text-start"
+            className="px-3.5 py-2 sm:px-4 sm:py-2.5 rounded-[var(--radius-md)] rounded-se-[2px] border border-[var(--border-default)] bg-[var(--surface-subtle)] text-[var(--text-primary)] shadow-2xs transition-all duration-fast min-w-0 text-start"
           >
             <p
               className="text-[13.5px] sm:text-[14.5px] font-medium leading-relaxed tracking-normal font-sans break-words whitespace-pre-wrap"

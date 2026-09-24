@@ -13,7 +13,8 @@ import {
   Image as ImageIcon, Filter, ChevronLeft, ChevronRight, Layers, Loader2, BarChart2, ArrowUp, ArrowDown, RefreshCw, Rocket,
   Radio, Clapperboard, Bell, Menu, SlidersHorizontal, Trash2, Ban, Volume2, VolumeX,
   Smile, Users, Compass, ChevronDown, Check, Navigation, Lock, Scissors, Edit2, Upload,
-  AtSign, Hash, Settings, Cpu, ArrowUpDown, Languages, MessageSquareText, Copy, Briefcase, Link, ExternalLink, CheckCircle, Target, Crosshair
+  AtSign, Hash, Settings, Cpu, ArrowUpDown, Languages, MessageSquareText, Copy, Briefcase, Link, ExternalLink, CheckCircle, Target, Crosshair,
+  Music, HelpCircle
 } from 'lucide-react';
 import { resolveImageUrl } from '../utils/imageResolver';
 import { NotificationIconRenderer } from '../utils/imageProcessor';
@@ -34,9 +35,11 @@ import { VideoPreviewer } from '../components/VideoPreviewer';
 import { ReelsFeed } from '../components/ReelsFeed';
 import { StoryUploadModal } from '../components/StoryUploadModal';
 import { StoryViewerModal } from '../components/StoryViewerModal';
-import { CreationSuccessPop, CreationSuccessItem } from '../components/bulletin/CreationSuccessPop';
+import { ViralMediaStudioModal, MediaProjectState } from '../components/bulletin/studio';
+
 import { MediaManagerModal } from '../components/MediaManagerModal';
 import { ComposerMediaPreview } from '../components/ComposerMediaPreview';
+import { AudioLibraryPickerModal, AudioTrackItem } from '../components/bulletin/AudioLibraryPickerModal';
 import { MediaLightboxModal, LightboxMediaItem } from '../components/MediaLightboxModal';
 import { triggerHaptic } from '../utils/haptics';
 import { BulletinAvatar } from '../components/BulletinAvatar';
@@ -60,18 +63,18 @@ import {
 
 const VIRALBOOK_CATEGORIES = [
   { id: 'all', labelAr: 'كافة الفئات والقطاعات', labelEn: 'All Categories' },
-  { id: 'تجارة إلكترونية وتجزئة / E-Commerce', labelAr: 'التجارة الإلكترونية والتسوق', labelEn: 'E-Commerce & Retail' },
-  { id: 'تكنولوجيا وبرمجيات / Tech & Software', labelAr: 'التكنولوجيا والبرمجيات والذكاء الاصطناعي', labelEn: 'Tech & AI' },
-  { id: 'بناء وديكور ومقاولات / Construction & Home', labelAr: 'البناء والديكور والمقاولات والمنزل', labelEn: 'Construction & Home' },
-  { id: 'عقارات واستثمار / Real Estate', labelAr: 'العقارات والاستثمار العقاري', labelEn: 'Real Estate' },
-  { id: 'سيارات ومحركات وقطع غيار / Automotive', labelAr: 'السيارات والمحركات وقطع الغيار', labelEn: 'Automotive & Vehicles' },
-  { id: 'صحة وطب ورعاية / Health & Medical', labelAr: 'الصحة والطب والرعاية والتجميل', labelEn: 'Health & Medical' },
-  { id: 'مطاعم وأغذية وضيافة / Food & Dining', labelAr: 'المطاعم والأغذية والمقاهي والحلويات', labelEn: 'Food & Dining' },
-  { id: 'تعليم وتدريب واستشارات / Education', labelAr: 'التعليم والتدريب واللغات والجامعات', labelEn: 'Education & Training' },
-  { id: 'خدمات وأعمال ومهن حرة / Services', labelAr: 'الخدمات المهنية والأعمال والتسويق', labelEn: 'Business & Professional Services' },
-  { id: 'سياحة وسفر وفنادق / Tourism & Travel', labelAr: 'السياحة والسفر والفنادق والترفيه', labelEn: 'Tourism & Travel' },
-  { id: 'صناعة وزراعة وإنتاج / Industry & Agriculture', labelAr: 'الصناعة والزراعة والمعدات الثقيلة', labelEn: 'Industry & Agriculture' },
-  { id: 'وظائف وتوظيف / Jobs', labelAr: 'فرص العمل والتوظيف', labelEn: 'Jobs & Careers' }
+  { id: 'e-commerce', labelAr: 'التجارة الإلكترونية والتسوق', labelEn: 'E-Commerce & Retail' },
+  { id: 'technology', labelAr: 'التكنولوجيا والبرمجيات والذكاء الاصطناعي', labelEn: 'Tech & AI' },
+  { id: 'construction', labelAr: 'البناء والديكور والمقاولات والمنزل', labelEn: 'Construction & Home' },
+  { id: 'real-estate', labelAr: 'العقارات والاستثمار العقاري', labelEn: 'Real Estate' },
+  { id: 'automotive', labelAr: 'السيارات والمحركات وقطع الغيار', labelEn: 'Automotive & Vehicles' },
+  { id: 'health', labelAr: 'الصحة والطب والرعاية والتجميل', labelEn: 'Health & Medical' },
+  { id: 'food-dining', labelAr: 'المطاعم والأغذية والمقاهي والحلويات', labelEn: 'Food & Dining' },
+  { id: 'education', labelAr: 'التعليم والتدريب واللغات والجامعات', labelEn: 'Education & Training' },
+  { id: 'services', labelAr: 'الخدمات المهنية والأعمال والتسويق', labelEn: 'Business & Professional Services' },
+  { id: 'tourism', labelAr: 'السياحة والسفر وفنادق والترفيه', labelEn: 'Tourism & Travel' },
+  { id: 'industry', labelAr: 'الصناعة والزراعة والمعدات الثقيلة', labelEn: 'Industry & Agriculture' },
+  { id: 'jobs', labelAr: 'فرص العمل والتوظيف', labelEn: 'Jobs & Careers' }
 ];
 
 const VIRALBOOK_SORT_OPTIONS = [
@@ -352,6 +355,11 @@ export const BulletinBoardPage: React.FC = () => {
       clearTimeout(timer2);
       document.removeEventListener('scroll', handleScroll, { capture: true });
     };
+  }, [activeTab]);
+
+  // Ensure all background video/audio streams stop immediately when switching tabs
+  useEffect(() => {
+    stopAllMedia();
   }, [activeTab]);
   const [activeReelModalId, setActiveReelModalId] = useState<number | null>(null);
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState<boolean>(false);
@@ -912,6 +920,7 @@ export const BulletinBoardPage: React.FC = () => {
   const [isComposerDragging, setIsComposerDragging] = useState<boolean>(false);
   const [showMediaDropzone, setShowMediaDropzone] = useState<boolean>(false);
   const [isStoryModalOpen, setIsStoryModalOpen] = useState<boolean>(false);
+  const [isStudioModalOpen, setIsStudioModalOpen] = useState<boolean>(false);
   const [storyUploadMode, setStoryUploadMode] = useState<'media' | 'text'>('media');
   const [isEditMode, setIsEditMode] = useState<boolean>(false);
   const [editingAdId, setEditingAdId] = useState<number | null>(null);
@@ -938,8 +947,15 @@ export const BulletinBoardPage: React.FC = () => {
     audience: 'public' as 'public' | 'friends' | 'only_me',
     ad_format: 'post' as 'post' | 'reel' | 'story',
     quick_questions: ['', '', ''] as string[],
-    aspect_ratio: 'grid' as string
+    aspect_ratio: 'grid' as string,
+    audio_url: '',
+    audio_title: '',
+    audio_artist: '',
+    audio_track_id: ''
   });
+
+  const [isAudioPickerOpen, setIsAudioPickerOpen] = useState(false);
+  const [selectedAudioTrack, setSelectedAudioTrack] = useState<AudioTrackItem | null>(null);
 
   const [suggestionType, setSuggestionType] = useState<'none' | 'hashtag' | 'mention'>('none');
   const [suggestionQuery, setSuggestionQuery] = useState('');
@@ -1023,8 +1039,8 @@ export const BulletinBoardPage: React.FC = () => {
   };
 
   const [isMediaManagerOpen, setIsMediaManagerOpen] = useState(false);
-  const [creationSuccessItem, setCreationSuccessItem] = useState<CreationSuccessItem | null>(null);
 
+  const directReelInputRef = useRef<HTMLInputElement>(null);
   const [isTrimmerModalOpen, setIsTrimmerModalOpen] = useState(false);
   const [trimmerVideoUrl, setTrimmerVideoUrl] = useState('');
   const [videoMetadataInfo, setVideoMetadataInfo] = useState<{
@@ -1073,34 +1089,21 @@ export const BulletinBoardPage: React.FC = () => {
   const [customLocationSearch, setCustomLocationSearch] = useState<string>('');
 
   const openReelUploadModal = () => {
-    cleanupComposerMediaUrls();
-    setAdFormData({
-      title: '',
-      description: '',
-      image_url: '',
-      video_url: '',
-      media_gallery: [],
-      whatsapp_number: (user as any)?.phone || '',
-      phone_number: '',
-      target_url: '',
-      hashtags: '',
-      page_id: '' as string | number,
-      location_city: 'القدس الشريف',
-      location_radius: '10',
-      feeling: '',
-      is_ai_generated: false,
-      tagged_users: [] as string[],
-      has_whatsapp_button: false,
-      audience: 'public' as 'public' | 'friends' | 'only_me',
-      ad_format: 'reel',
-      quick_questions: ['', '', ''] as string[],
-      aspect_ratio: 'grid'
-    });
-    setVideoMetadataInfo({ processingStage: 'done' });
-    setIsEditMode(false);
-    setEditingAdId(null);
-    setComposerView('main');
-    setIsAdModalOpen(true);
+    if (!token) {
+      toast.error(isRtl ? 'يرجى تسجيل الدخول أولاً' : 'Please log in first');
+      setIsAuthModalOpen(true);
+      return;
+    }
+    if (directReelInputRef.current) {
+      directReelInputRef.current.value = '';
+      directReelInputRef.current.click();
+    } else {
+      const input = document.getElementById('direct-reel-video-input') as HTMLInputElement;
+      if (input) {
+        input.value = '';
+        input.click();
+      }
+    }
   };
 
   const openPostUploadModal = () => {
@@ -1125,8 +1128,13 @@ export const BulletinBoardPage: React.FC = () => {
       audience: 'public' as 'public' | 'friends' | 'only_me',
       ad_format: 'post',
       quick_questions: ['', '', ''] as string[],
-      aspect_ratio: 'grid'
+      aspect_ratio: 'grid',
+      audio_url: '',
+      audio_title: '',
+      audio_artist: '',
+      audio_track_id: ''
     });
+    setSelectedAudioTrack(null);
     setVideoMetadataInfo({ processingStage: 'done' });
     setIsEditMode(false);
     setEditingAdId(null);
@@ -1289,6 +1297,7 @@ export const BulletinBoardPage: React.FC = () => {
     inquireAd !== null ||
     isMediaManagerOpen ||
     isTrimmerModalOpen ||
+    isAudioPickerOpen ||
     editingAdId !== null;
 
   useEffect(() => {
@@ -2607,7 +2616,11 @@ export const BulletinBoardPage: React.FC = () => {
       audience: (ad.audience as any) || 'public',
       ad_format: (ad.ad_format as any) || 'post',
       quick_questions: Array.isArray(ad.quick_questions) ? ad.quick_questions : ['', '', ''],
-      aspect_ratio: (ad as any).aspect_ratio || 'grid'
+      aspect_ratio: (ad as any).aspect_ratio || 'grid',
+      audio_url: (ad as any).audio_url || '',
+      audio_title: (ad as any).audio_title || '',
+      audio_artist: (ad as any).audio_artist || '',
+      audio_track_id: (ad as any).audio_track_id || ''
     });
     setEditingAdId(ad.id);
     setIsEditMode(true);
@@ -2701,18 +2714,22 @@ export const BulletinBoardPage: React.FC = () => {
         const createdAd = data.ad || payload;
 
         if (isEditMode) {
-          toast.success(isRtl ? 'تم تحديث المنشور بنجاح! ✨' : 'Post updated successfully! ✨');
+          toast.success(isRtl ? 'تم التحديث' : 'Updated');
         } else {
-          setCreationSuccessItem({
-            type: isReel ? 'reel' : 'post',
-            title: createdAd.title || payload.title,
-            description: createdAd.description || payload.description,
-            mediaUrl: createdAd.image_url || payload.image_url || (payload.media_gallery?.[0]?.url),
-            videoUrl: createdAd.video_url || payload.video_url,
-            authorName: user?.name,
-            authorAvatar: user?.avatar,
-            id: createdAd.id,
-          });
+          toast.success(isRtl ? 'تم النشر' : 'Published');
+          if (createdAd && createdAd.id) {
+            setAds(prev => [createdAd, ...prev.filter(a => a.id !== createdAd.id)]);
+            setMyAds(prev => [createdAd, ...prev.filter(a => a.id !== createdAd.id)]);
+            if (isReel) {
+              setActiveTab('reels');
+              setActiveReelModalId(Number(createdAd.id));
+            } else {
+              setActiveTab('board');
+              setTimeout(() => {
+                handleNavigateToPost(Number(createdAd.id));
+              }, 120);
+            }
+          }
         }
         cleanupComposerMediaUrls();
         setIsAdModalOpen(false);
@@ -2738,7 +2755,11 @@ export const BulletinBoardPage: React.FC = () => {
           audience: 'public',
           ad_format: 'post',
           quick_questions: ['', '', ''],
-          aspect_ratio: 'grid'
+          aspect_ratio: 'grid',
+          audio_url: '',
+          audio_title: '',
+          audio_artist: '',
+          audio_track_id: ''
         });
         fetchMyAds();
         fetchAds();
@@ -3182,13 +3203,15 @@ export const BulletinBoardPage: React.FC = () => {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    if (!token) {
+    const authToken = token || secureStorage.getSync('app_token') || '';
+    if (!authToken) {
       toast.error(isRtl ? 'يرجى تسجيل الدخول أولاً' : 'Please log in first');
+      setIsAuthModalOpen(true);
       return;
     }
 
     if (!isVideoFile(file)) {
-      toast.error(isRtl ? 'يرجى اختيار مقطع فيديو فقط لرفع الريلز القياسي (9:16)' : 'Please select a video file for standard Reels (9:16)');
+      toast.error(isRtl ? 'يرجى اختيار مقطع فيديو لرفع الريلز (9:16)' : 'Please select a video file for Reels (9:16)');
       return;
     }
 
@@ -3197,8 +3220,125 @@ export const BulletinBoardPage: React.FC = () => {
       return;
     }
 
-    setAdFormData(prev => ({ ...prev, ad_format: 'reel' }));
-    handleVideoFileUpload(e);
+    // 1. Revoke previous blob URL to prevent memory leaks
+    if (videoMetadataInfo.localVideoUrl && videoMetadataInfo.localVideoUrl.startsWith('blob:')) {
+      try {
+        URL.revokeObjectURL(videoMetadataInfo.localVideoUrl);
+      } catch (_) {}
+    }
+
+    // 2. High-Performance Instant Local Preview
+    const localUrl = URL.createObjectURL(file);
+
+    // 3. Initialize adFormData with 9:16 Reel settings
+    setAdFormData({
+      title: '',
+      description: '',
+      image_url: '',
+      video_url: localUrl,
+      media_gallery: [{
+        id: `vid-temp-${Date.now()}`,
+        url: localUrl,
+        type: 'video',
+        caption: ''
+      }],
+      whatsapp_number: (user as any)?.phone || '',
+      phone_number: '',
+      target_url: '',
+      hashtags: '',
+      page_id: '' as string | number,
+      location_city: 'القدس الشريف',
+      location_radius: '10',
+      feeling: '',
+      is_ai_generated: false,
+      tagged_users: [] as string[],
+      has_whatsapp_button: false,
+      audience: 'public' as 'public' | 'friends' | 'only_me',
+      ad_format: 'reel',
+      quick_questions: ['', '', ''] as string[],
+      aspect_ratio: '9:16',
+      audio_url: '',
+      audio_title: '',
+      audio_artist: '',
+      audio_track_id: ''
+    });
+
+    setVideoMetadataInfo({
+      fileName: file.name,
+      fileSize: file.size,
+      localVideoUrl: localUrl,
+      uploadProgress: 0,
+      processingStage: 'uploading'
+    });
+
+    // 4. Background server upload
+    const formDataUpload = new FormData();
+    formDataUpload.append('file', file);
+
+    const xhr = new XMLHttpRequest();
+    xhr.open('POST', '/api/files/upload', true);
+    xhr.setRequestHeader('Authorization', `Bearer ${authToken}`);
+
+    xhr.upload.onprogress = (event) => {
+      if (event.lengthComputable) {
+        const percentComplete = (event.loaded / event.total) * 100;
+        setVideoMetadataInfo(prev => ({
+          ...prev,
+          uploadProgress: percentComplete,
+          processingStage: percentComplete >= 100 ? 'transcoding' : 'uploading'
+        }));
+      }
+    };
+
+    xhr.onload = async () => {
+      if (xhr.status >= 200 && xhr.status < 300) {
+        try {
+          const data = JSON.parse(xhr.responseText);
+          const rawUrl = data.fileUrl || data.file?.url || data.file?.file_url || data.url || data.path;
+          const finalUrl = getMediaUrl(rawUrl);
+          if (finalUrl) {
+            setAdFormData(prev => ({
+              ...prev,
+              video_url: finalUrl,
+              media_gallery: [{
+                id: `vid-${Date.now()}`,
+                url: finalUrl,
+                type: 'video',
+                caption: ''
+              }]
+            }));
+            setVideoMetadataInfo(prev => ({
+              ...prev,
+              processingStage: 'done',
+              uploadProgress: 100
+            }));
+          }
+        } catch (_) {}
+      }
+    };
+
+    xhr.send(formDataUpload);
+
+    // 5. Extract metadata & thumbnail
+    extractVideoMetadata(file).then(meta => {
+      if (meta) {
+        setAdFormData(prev => ({
+          ...prev,
+          image_url: prev.image_url || meta.thumbnail,
+          aspect_ratio: '9:16'
+        }));
+        setVideoMetadataInfo(prev => ({
+          ...prev,
+          duration: meta.duration || prev.duration,
+          resolution: meta.width && meta.height ? `${meta.width}x${meta.height}` : prev.resolution
+        }));
+      }
+    }).catch(err => console.warn('Instant video metadata extraction notice:', err));
+
+    // 6. Direct transition to VideoTrimmerModal editor
+    setTrimmerVideoUrl(localUrl);
+    setIsTrimmerModalOpen(true);
+    e.target.value = '';
   };
 
   const handleCreatePage = async (e: React.FormEvent) => {
@@ -5496,6 +5636,7 @@ export const BulletinBoardPage: React.FC = () => {
                       setIsStreamSetupOpen,
                       openPostUploadModal,
                       openReelUploadModal,
+                      openStudioModal: () => setIsStudioModalOpen(true),
                     }}
                     ads={ads}
                     loading={loading}
@@ -5763,11 +5904,11 @@ export const BulletinBoardPage: React.FC = () => {
         size="md"
         layer="modal"
         closeOnBackdrop={false}
-        contentClassName="!p-0 !space-y-0 max-w-[500px] w-full h-fit max-h-[88vh] flex flex-col justify-start overflow-hidden rounded-2xl shadow-2xl bg-[var(--surface-card)] border border-[var(--border-default)]"
+        contentClassName="!p-0 !space-y-0 max-w-[480px] w-full h-fit max-h-[86vh] sm:max-h-[82vh] flex flex-col justify-start overflow-hidden rounded-[var(--radius-lg)] shadow-2xl bg-[var(--surface-card)] border border-[var(--border-default)]"
       >
-              {/* Modal Header */}
-              <div className="bg-[var(--surface-card)] border-b border-[var(--border-default)] px-3.5 py-2.5 text-[var(--text-primary)] relative shrink-0">
-                {composerView === 'location' ? (
+              {/* Modal Header - Streamlined & Compact */}
+              <div className="bg-[var(--surface-card)] border-b border-[var(--border-default)] px-3 py-2 text-[var(--text-primary)] relative shrink-0">
+                {composerView !== 'main' ? (
                   <div className="flex items-center justify-between w-full">
                     <button
                       type="button"
@@ -5776,55 +5917,59 @@ export const BulletinBoardPage: React.FC = () => {
                         setCustomLocationSearch('');
                         setLocationSuggestions([]);
                       }}
-                      className="w-7 h-7 rounded-lg bg-[var(--surface-subtle)] hover:bg-[var(--surface-inset)] text-[var(--text-primary)] transition-all border border-[var(--border-default)] flex items-center justify-center cursor-pointer shrink-0 shadow-xs"
+                      className="w-6 h-6 rounded-shape-xs bg-[var(--surface-subtle)] hover:bg-[var(--surface-inset)] text-[var(--text-primary)] transition-all border border-[var(--border-default)] flex items-center justify-center cursor-pointer shrink-0 shadow-2xs"
                       title={isRtl ? 'رجوع' : 'Back'}
                     >
-                      <ArrowLeft size={15} className={isRtl ? 'rotate-180' : ''} />
+                      <ArrowLeft size={13} className={isRtl ? 'rotate-180' : ''} />
                     </button>
-                    <h3 className="text-xs sm:text-sm font-bold text-[var(--text-primary)] text-center flex-1">
-                      {isRtl ? 'البحث عن موقع' : 'Search Location'}
+                    <h3 className="text-xs sm:text-sm font-bold text-[var(--text-primary)] text-center flex-1 px-1 truncate">
+                      {composerView === 'location'
+                        ? (isRtl ? 'البحث عن موقع' : 'Search Location')
+                        : composerView === 'feelings'
+                        ? (isRtl ? 'الشعور أو النشاط' : 'Feeling / Activity')
+                        : composerView === 'tagging'
+                        ? (isRtl ? 'الإشارة إلى أشخاص' : 'Tag People')
+                        : (isRtl ? 'الرموز التعبيرية' : 'Emojis')}
                     </h3>
-                    {adFormData.location_city ? (
+                    {composerView === 'location' && adFormData.location_city ? (
                       <button
                         type="button"
                         onClick={() => {
                           setAdFormData(prev => ({ ...prev, location_city: '' }));
                           toast.success(isRtl ? 'تمت إزالة الموقع' : 'Location cleared');
                         }}
-                        className="text-[11px] font-bold text-rose-500 hover:text-rose-600 px-2 py-0.5 rounded-md hover:bg-rose-500/10 transition-colors cursor-pointer shrink-0"
+                        className="text-[10px] font-bold text-rose-500 hover:text-rose-600 px-1.5 py-0.5 rounded-shape-xs hover:bg-rose-500/10 transition-colors cursor-pointer shrink-0"
+                      >
+                        {isRtl ? 'إزالة' : 'Clear'}
+                      </button>
+                    ) : composerView === 'feelings' && adFormData.feeling ? (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setAdFormData(prev => ({ ...prev, feeling: '' }));
+                          toast.success(isRtl ? 'تمت إزالة الشعور' : 'Feeling cleared');
+                        }}
+                        className="text-[10px] font-bold text-rose-500 hover:text-rose-600 px-1.5 py-0.5 rounded-shape-xs hover:bg-rose-500/10 transition-colors cursor-pointer shrink-0"
                       >
                         {isRtl ? 'إزالة' : 'Clear'}
                       </button>
                     ) : (
-                      <div className="w-7 shrink-0" />
+                      <div className="w-6 shrink-0" />
                     )}
                   </div>
                 ) : (
                   <div className="flex items-center justify-between w-full gap-2">
                     {/* Left / Start: Avatar & User Name */}
-                    <div className="flex items-center gap-2 min-w-0 shrink-0">
-                      {composerView !== 'main' ? (
-                        <button
-                          type="button"
-                          onClick={() => setComposerView('main')}
-                          className="w-8 h-8 rounded-shape-sm bg-[var(--surface-subtle)] hover:bg-[var(--surface-inset)] text-[var(--text-primary)] transition-all border border-[var(--border-default)] flex items-center justify-center cursor-pointer shrink-0 shadow-xs"
-                          title={isRtl ? 'رجوع' : 'Back'}
-                        >
-                          <ArrowLeft size={15} className={isRtl ? 'rotate-180' : ''} />
-                        </button>
-                      ) : (
-                        <div className="flex items-center gap-2">
-                          <BulletinAvatar
-                            src={adFormData.page_id ? myPagesList.find(p => p.id === Number(adFormData.page_id))?.avatar_url : user?.avatar}
-                            alt={adFormData.page_id ? myPagesList.find(p => p.id === Number(adFormData.page_id))?.name : user?.name}
-                            size="sm"
-                            isPage={Boolean(adFormData.page_id)}
-                          />
-                          <span className="text-xs sm:text-sm font-extrabold text-[var(--text-primary)] truncate max-w-[100px] sm:max-w-[130px]">
-                            {adFormData.page_id ? myPagesList.find(p => p.id === Number(adFormData.page_id))?.name : user?.name}
-                          </span>
-                        </div>
-                      )}
+                    <div className="flex items-center gap-1.5 min-w-0 shrink-0">
+                      <BulletinAvatar
+                        src={adFormData.page_id ? myPagesList.find(p => p.id === Number(adFormData.page_id))?.avatar_url : user?.avatar}
+                        alt={adFormData.page_id ? myPagesList.find(p => p.id === Number(adFormData.page_id))?.name : user?.name}
+                        size="sm"
+                        isPage={Boolean(adFormData.page_id)}
+                      />
+                      <span className="text-xs sm:text-sm font-extrabold text-[var(--text-primary)] truncate max-w-[100px] sm:max-w-[130px]">
+                        {adFormData.page_id ? myPagesList.find(p => p.id === Number(adFormData.page_id))?.name : user?.name}
+                      </span>
                     </div>
 
                     {/* Center: Title */}
@@ -5836,27 +5981,23 @@ export const BulletinBoardPage: React.FC = () => {
                     <button
                       type="button"
                       onClick={() => {
-                        if (composerView === 'main') {
-                          cleanupComposerMediaUrls();
-                          setIsAdModalOpen(false);
-                        } else {
-                          setComposerView('main');
-                        }
+                        cleanupComposerMediaUrls();
+                        setIsAdModalOpen(false);
                       }}
-                      className="w-8 h-8 rounded-shape-sm bg-[var(--surface-subtle)] hover:bg-[var(--surface-inset)] text-[var(--text-muted)] hover:text-[var(--text-primary)] transition-all border border-[var(--border-default)] flex items-center justify-center cursor-pointer shrink-0"
+                      className="w-6 h-6 rounded-shape-xs bg-[var(--surface-subtle)] hover:bg-[var(--surface-inset)] text-[var(--text-muted)] hover:text-[var(--text-primary)] transition-all border border-[var(--border-default)] flex items-center justify-center cursor-pointer shrink-0"
                       title={isRtl ? 'إغلاق' : 'Close'}
                     >
-                      <X size={15} />
+                      <X size={13} />
                     </button>
                   </div>
                 )}
               </div>
 
-              <div className="flex-1 overflow-y-auto p-3.5 sm:p-4 scrollbar-thin flex flex-col justify-start">
+              <div className="flex-1 overflow-y-auto p-2.5 sm:p-3 scrollbar-thin flex flex-col justify-start">
                 {composerView === 'main' && (
-                  <form onSubmit={handleCreateCampaign} className="flex flex-col gap-3 justify-start flex-1">
+                  <form onSubmit={handleCreateCampaign} className="flex flex-col gap-2 justify-start flex-1">
                     {/* Single-Line Compact Toolbar for Selectors & Tags */}
-                    <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar pb-2 border-b border-[var(--border-default)]/50 whitespace-nowrap text-[10px] sm:text-[11px] font-bold shrink-0">
+                    <div className="flex items-center gap-1 overflow-x-auto no-scrollbar pb-1.5 border-b border-[var(--border-default)]/40 whitespace-nowrap text-[10px] sm:text-[11px] font-bold shrink-0">
                       {/* 1. Page Selector (if user manages pages) */}
                       {myPagesList.length > 0 && (
                         <div className="relative shrink-0">
@@ -5973,8 +6114,8 @@ export const BulletinBoardPage: React.FC = () => {
                       )}
                     </div>
 
-                    {/* Textarea Input - Spacious, Uncluttered & Roomy */}
-                    <div className="flex flex-col gap-1 flex-1 min-h-[140px] sm:min-h-[180px] pt-1">
+                    {/* Textarea Input - Dynamic Compact Sizing */}
+                    <div className={`flex flex-col gap-1 flex-1 ${Boolean(adFormData.media_gallery?.length || adFormData.image_url || adFormData.video_url || videoMetadataInfo.localVideoUrl) ? 'min-h-[44px] sm:min-h-[52px]' : 'min-h-[80px] sm:min-h-[100px]'} pt-0.5`}>
                       <textarea
                         value={adFormData.description}
                         onChange={(e) => handleComposerTextChange(e.target.value)}
@@ -5983,13 +6124,13 @@ export const BulletinBoardPage: React.FC = () => {
                             ? `بمَ تفكر، ${user?.name ? user.name.split(' ')[0] : ''}؟`
                             : `What's on your mind, ${user?.name ? user.name.split(' ')[0] : ''}?`
                         }
-                        className="w-full text-base sm:text-lg bg-transparent border-0 outline-none focus:outline-none focus:ring-0 resize-none flex-1 min-h-[120px] text-[var(--text-primary)] p-0 placeholder-[var(--text-muted)] font-normal leading-relaxed"
-                        rows={5}
+                        className="w-full text-sm sm:text-base bg-transparent border-0 outline-none focus:outline-none focus:ring-0 resize-none flex-1 min-h-[40px] text-[var(--text-primary)] p-0 placeholder-[var(--text-muted)] font-normal leading-relaxed"
+                        rows={Boolean(adFormData.media_gallery?.length || adFormData.image_url || adFormData.video_url || videoMetadataInfo.localVideoUrl) ? 2 : 3}
                         autoFocus
                       />
 
                       {/* Character Counter */}
-                      <div className="flex justify-end text-[10px] text-[var(--text-muted)] font-mono">
+                      <div className="flex justify-end text-[9px] text-[var(--text-muted)] font-mono">
                         <span dir="ltr" className={`font-mono ${adFormData.description.length >= 900 ? 'text-[var(--fg-danger)] font-bold' : ''}`}>
                           {adFormData.description.length} / 1000
                         </span>
@@ -6191,10 +6332,10 @@ export const BulletinBoardPage: React.FC = () => {
 
                     {/* WhatsApp CTA Action Card (if enabled) */}
                     {adFormData.has_whatsapp_button && (
-                      <div className="p-2 sm:p-2.5 bg-[#25D366]/5 rounded-xl border border-[#25D366]/20 flex items-center justify-between gap-2">
-                        <div className="flex items-center gap-2 flex-1 min-w-0">
-                          <div className="w-7 h-7 rounded-lg bg-[#25D366]/15 flex items-center justify-center text-[#25D366] shrink-0">
-                            <MessageCircle size={15} />
+                      <div className="p-1.5 sm:p-2 bg-[#25D366]/5 rounded-shape-xs border border-[#25D366]/20 flex items-center justify-between gap-1.5">
+                        <div className="flex items-center gap-1.5 flex-1 min-w-0">
+                          <div className="w-6 h-6 rounded-shape-xs bg-[#25D366]/15 flex items-center justify-center text-[#25D366] shrink-0">
+                            <MessageCircle size={13} />
                           </div>
                           <div className="flex-1 min-w-0">
                             <input
@@ -6202,7 +6343,7 @@ export const BulletinBoardPage: React.FC = () => {
                               value={adFormData.whatsapp_number}
                               onChange={(e) => setAdFormData({ ...adFormData, whatsapp_number: e.target.value })}
                               placeholder={isRtl ? 'رقم الواتساب (مثال: 970599000000+)' : 'WhatsApp (e.g. +970599000000)'}
-                              className="w-full text-xs bg-transparent border-0 outline-none focus:outline-none focus:ring-0 p-0 text-[var(--text-primary)] font-bold placeholder-[var(--text-muted)]"
+                              className="w-full text-[11px] bg-transparent border-0 outline-none focus:outline-none focus:ring-0 p-0 text-[var(--text-primary)] font-bold placeholder-[var(--text-muted)]"
                             />
                           </div>
                         </div>
@@ -6210,20 +6351,66 @@ export const BulletinBoardPage: React.FC = () => {
                         <button
                           type="button"
                           onClick={() => setAdFormData(prev => ({ ...prev, has_whatsapp_button: false }))}
-                          className="w-6 h-6 rounded-md hover:bg-rose-500/10 hover:text-rose-500 flex items-center justify-center text-[var(--text-muted)] transition-colors cursor-pointer shrink-0"
+                          className="w-5 h-5 rounded hover:bg-rose-500/10 hover:text-rose-500 flex items-center justify-center text-[var(--text-muted)] transition-colors cursor-pointer shrink-0"
                           title={isRtl ? 'إزالة زر الواتساب' : 'Remove WhatsApp CTA'}
                         >
-                          <X size={12} />
+                          <X size={11} />
                         </button>
                       </div>
                     )}
 
-                    {/* "Add to Your Post" Toolbar (Facebook Standard) */}
-                    <div className="px-3 py-2 rounded-shape-sm border border-[var(--border-default)] bg-[var(--surface-subtle)]/40 flex items-center justify-between shadow-2xs">
-                      <span className="text-xs font-bold text-[var(--text-primary)] shrink-0">
+                    {/* Attached Audio Preview Card (if selected) */}
+                    {adFormData.audio_url && (
+                      <div className="p-1.5 sm:p-2 bg-purple-500/10 rounded-shape-xs border border-purple-500/25 flex items-center justify-between gap-2">
+                        <div className="flex items-center gap-2 min-w-0 flex-1">
+                          <div className="w-7 h-7 rounded-shape-xs bg-purple-500/20 text-purple-400 flex items-center justify-center shrink-0">
+                            <Music size={14} className="animate-pulse" />
+                          </div>
+                          <div className="min-w-0 flex-1">
+                            <p className="text-[11px] font-bold text-[var(--text-primary)] truncate">
+                              {adFormData.audio_title || (isRtl ? 'مقطع صوتي / موسيقى' : 'Audio Track')}
+                            </p>
+                            <p className="text-[9px] text-[var(--text-muted)] truncate">
+                              {adFormData.audio_artist ? `${adFormData.audio_artist} • ` : ''}{isRtl ? 'مكتبة بيربليكستا' : 'Perplexta Audio'}
+                            </p>
+                          </div>
+                        </div>
+
+                        <div className="flex items-center gap-1 shrink-0">
+                          <button
+                            type="button"
+                            onClick={() => setIsAudioPickerOpen(true)}
+                            className="px-1.5 py-0.5 text-[10px] font-bold rounded bg-purple-500/20 hover:bg-purple-500/30 text-purple-300 transition-colors cursor-pointer"
+                          >
+                            {isRtl ? 'تغيير' : 'Change'}
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setAdFormData(prev => ({
+                                ...prev,
+                                audio_url: '',
+                                audio_title: '',
+                                audio_artist: '',
+                                audio_track_id: ''
+                              }));
+                              setSelectedAudioTrack(null);
+                            }}
+                            className="w-5 h-5 rounded hover:bg-rose-500/10 hover:text-rose-500 flex items-center justify-center text-[var(--text-muted)] transition-colors cursor-pointer"
+                            title={isRtl ? 'إزالة الموسيقى' : 'Remove Audio'}
+                          >
+                            <X size={11} />
+                          </button>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* "Add to Your Post" Toolbar (Facebook Standard - Compact & Crisp) */}
+                    <div className="px-2.5 py-1.5 rounded-shape-xs border border-[var(--border-default)] bg-[var(--surface-subtle)]/40 flex items-center justify-between shadow-2xs">
+                      <span className="text-[11px] font-bold text-[var(--text-primary)] shrink-0">
                         {isRtl ? 'إضافة إلى منشورك' : 'Add to your post'}
                       </span>
-                      <div className="flex items-center gap-1.5">
+                      <div className="flex items-center gap-1">
                         {/* Media Upload Icon */}
                         <button
                           type="button"
@@ -6231,24 +6418,36 @@ export const BulletinBoardPage: React.FC = () => {
                             const input = document.getElementById('composer-mixed-media-input') as HTMLInputElement;
                             if (input) input.click();
                           }}
-                          className={`w-8 h-8 rounded-shape-sm flex items-center justify-center cursor-pointer transition-colors ${
+                          className={`w-7 h-7 rounded-shape-xs flex items-center justify-center cursor-pointer transition-colors ${
                             Boolean(adFormData.media_gallery?.length || adFormData.image_url || adFormData.video_url)
                               ? 'bg-[#22c55e]/20 text-[#22c55e]'
                               : 'hover:bg-[var(--surface-card)] text-[#22c55e]'
                           }`}
                           title={isRtl ? 'صور أو فيديو' : 'Photos or Video'}
                         >
-                          <ImageIcon size={18} />
+                          <ImageIcon size={15} />
+                        </button>
+
+                        {/* Music / Audio Library */}
+                        <button
+                          type="button"
+                          onClick={() => setIsAudioPickerOpen(true)}
+                          className={`w-7 h-7 rounded-shape-xs flex items-center justify-center transition-colors cursor-pointer ${
+                            adFormData.audio_url ? 'bg-purple-500/25 text-purple-400 ring-1 ring-purple-500/40' : 'hover:bg-[var(--surface-card)] text-purple-400'
+                          }`}
+                          title={isRtl ? 'موسيقى ومؤثرات صوتية' : 'Music & Audio'}
+                        >
+                          <Music size={15} />
                         </button>
 
                         {/* Tag People */}
                         <button
                           type="button"
                           onClick={() => setComposerView('tagging')}
-                          className="w-8 h-8 rounded-shape-sm hover:bg-[var(--surface-card)] text-[#3b82f6] flex items-center justify-center transition-colors cursor-pointer"
+                          className="w-7 h-7 rounded-shape-xs hover:bg-[var(--surface-card)] text-[#3b82f6] flex items-center justify-center transition-colors cursor-pointer"
                           title={isRtl ? 'إشارة إلى أشخاص' : 'Tag people'}
                         >
-                          <Users size={18} />
+                          <Users size={15} />
                         </button>
 
                         {/* WhatsApp CTA Toggle */}
@@ -6264,60 +6463,60 @@ export const BulletinBoardPage: React.FC = () => {
                               toast.success(isRtl ? 'تم إرفاق زر الواتساب' : 'WhatsApp CTA attached');
                             }
                           }}
-                          className={`w-8 h-8 rounded-shape-sm flex items-center justify-center transition-colors cursor-pointer ${
+                          className={`w-7 h-7 rounded-shape-xs flex items-center justify-center transition-colors cursor-pointer ${
                             adFormData.has_whatsapp_button ? 'bg-[#25D366]/20 text-[#25D366]' : 'hover:bg-[var(--surface-card)] text-[#25D366]'
                           }`}
                           title={isRtl ? 'زر مراسلة واتساب' : 'WhatsApp Button'}
                         >
-                          <MessageCircle size={18} />
+                          <MessageCircle size={15} />
                         </button>
 
                         {/* Location */}
                         <button
                           type="button"
                           onClick={() => setComposerView('location')}
-                          className={`w-8 h-8 rounded-shape-sm flex items-center justify-center transition-colors cursor-pointer ${
+                          className={`w-7 h-7 rounded-shape-xs flex items-center justify-center transition-colors cursor-pointer ${
                             adFormData.location_city ? 'bg-rose-500/20 text-rose-500' : 'hover:bg-[var(--surface-card)] text-rose-500'
                           }`}
                           title={isRtl ? 'الموقع' : 'Location'}
                         >
-                          <MapPin size={18} />
+                          <MapPin size={15} />
                         </button>
 
                         {/* Feelings / Activity */}
                         <button
                           type="button"
                           onClick={() => setComposerView('feelings')}
-                          className={`w-8 h-8 rounded-shape-sm flex items-center justify-center transition-colors cursor-pointer ${
+                          className={`w-7 h-7 rounded-shape-xs flex items-center justify-center transition-colors cursor-pointer ${
                             adFormData.feeling ? 'bg-amber-500/20 text-amber-500' : 'hover:bg-[var(--surface-card)] text-amber-500'
                           }`}
                           title={isRtl ? 'الشعور / النشاط' : 'Feeling / Activity'}
                         >
-                          <Smile size={18} />
+                          <Smile size={15} />
                         </button>
 
                         {/* More Options */}
                         <button
                           type="button"
                           onClick={() => setIsAddToPostModalOpen(true)}
-                          className="w-8 h-8 rounded-shape-sm hover:bg-[var(--surface-card)] text-[var(--text-secondary)] flex items-center justify-center transition-colors cursor-pointer"
+                          className="w-7 h-7 rounded-shape-xs hover:bg-[var(--surface-card)] text-[var(--text-secondary)] flex items-center justify-center transition-colors cursor-pointer"
                           title={isRtl ? 'المزيد' : 'More'}
                         >
-                          <SlidersHorizontal size={17} />
+                          <SlidersHorizontal size={14} />
                         </button>
                       </div>
                     </div>
 
                     {/* Submit Button */}
-                    <div className="pt-1">
+                    <div className="pt-0.5">
                       <button
                         type="submit"
                         disabled={isSubmittingAd || (!adFormData.description && !adFormData.image_url && !adFormData.video_url)}
-                        className="w-full py-2.5 sm:py-2.8 rounded-shape-sm bg-accent hover:opacity-90 disabled:opacity-40 disabled:cursor-not-allowed text-slate-950 font-black text-xs sm:text-sm shadow-xs transition-all active:scale-[0.99] cursor-pointer flex items-center justify-center gap-2"
+                        className="w-full py-2 sm:py-2.5 rounded-shape-xs bg-accent hover:opacity-90 disabled:opacity-40 disabled:cursor-not-allowed text-slate-950 font-black text-xs sm:text-sm shadow-xs transition-all active:scale-[0.99] cursor-pointer flex items-center justify-center gap-1.5"
                       >
                         {isSubmittingAd ? (
                           <>
-                            <Loader2 size={16} className="animate-spin" />
+                            <Loader2 size={15} className="animate-spin" />
                             <span>{isRtl ? 'جاري النشر...' : 'Publishing...'}</span>
                           </>
                         ) : isEditMode ? (
@@ -6331,38 +6530,51 @@ export const BulletinBoardPage: React.FC = () => {
                 )}
 
                 {composerView === 'feelings' && (
-                  <div className="grid grid-cols-2 gap-2">
-                    {FEELINGS.map((f, fIdx) => (
+                  <div className="space-y-2">
+                    <div className="grid grid-cols-2 sm:grid-cols-3 gap-1.5 max-h-[340px] overflow-y-auto custom-scrollbar p-0.5">
+                      {FEELINGS.map((f, fIdx) => (
+                        <button
+                          key={`bulletin-feel-${f.id}-${fIdx}`}
+                          type="button"
+                          onClick={() => {
+                            setAdFormData({ ...adFormData, feeling: f.id });
+                            setComposerView('main');
+                          }}
+                          className={`p-2 rounded-shape-xs border flex items-center gap-2 transition-all cursor-pointer ${
+                            adFormData.feeling === f.id
+                              ? 'border-accent bg-accent/10 text-accent font-bold ring-1 ring-accent/30'
+                              : 'border-[var(--border-default)] bg-[var(--surface-subtle)]/60 hover:bg-[var(--surface-subtle)] text-[var(--text-secondary)] hover:text-[var(--text-primary)]'
+                          }`}
+                        >
+                          <span className="text-lg shrink-0">{f.icon}</span>
+                          <span className="text-xs truncate">{isRtl ? f.labelAr : f.labelEn}</span>
+                        </button>
+                      ))}
+                    </div>
+                    {adFormData.feeling && (
                       <button
-                        key={`bulletin-feel-${f.id}-${fIdx}`}
+                        type="button"
                         onClick={() => {
-                          setAdFormData({...adFormData, feeling: f.id});
+                          setAdFormData({ ...adFormData, feeling: '' });
                           setComposerView('main');
                         }}
-                        className={`p-3 rounded-[var(--radius-md)] border flex items-center gap-3 transition-theme ${adFormData.feeling === f.id ? 'border-accent bg-accent/5 text-accent' : 'border-[var(--border-default)] hover:bg-[var(--surface-subtle)] text-[var(--text-secondary)]'}`}
+                        className="w-full py-2 text-xs font-bold text-rose-500 hover:bg-rose-500/10 rounded-shape-xs transition-colors border border-rose-500/20 cursor-pointer"
                       >
-                        <span className="text-xl">{f.icon}</span>
-                        <span className="text-xs font-bold">{isRtl ? f.labelAr : f.labelEn}</span>
+                        {isRtl ? 'إزالة الشعور' : 'Remove Feeling'}
                       </button>
-                    ))}
-                    <button
-                      onClick={() => { setAdFormData({...adFormData, feeling: ''}); setComposerView('main'); }}
-                      className="col-span-2 p-2 text-xs font-bold text-red-500 hover:bg-red-500/10 rounded-[var(--radius-md)] transition-theme"
-                    >
-                      {isRtl ? 'إزالة الشعور' : 'Remove Feeling'}
-                    </button>
+                    )}
                   </div>
                 )}
 
                 {composerView === 'location' && (
                   <motion.div
-                    initial={{ opacity: 0, y: -6 }}
+                    initial={{ opacity: 0, y: -4 }}
                     animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -6 }}
-                    transition={{ duration: 0.15 }}
-                    className="py-1 px-1 sm:px-2 space-y-3 text-start"
+                    exit={{ opacity: 0, y: -4 }}
+                    transition={{ duration: 0.12 }}
+                    className="space-y-2 text-start"
                   >
-                    {/* Search Input Bar with Spinner & Progress Indicator */}
+                    {/* Search Input Bar */}
                     <div className="relative">
                       <div className="relative flex items-center">
                         <input
@@ -6370,13 +6582,13 @@ export const BulletinBoardPage: React.FC = () => {
                           autoFocus
                           value={customLocationSearch}
                           onChange={(e) => setCustomLocationSearch(e.target.value)}
-                          placeholder={isRtl ? 'أين أنت؟' : 'Where are you?'}
-                          className="w-full ps-10 pe-10 py-2.5 sm:py-3 text-xs sm:text-sm rounded-xl bg-[var(--surface-subtle)] hover:bg-[var(--surface-inset)] focus:bg-[var(--surface-card)] border border-[var(--border-default)] focus:border-accent text-[var(--text-primary)] font-medium outline-none transition-all shadow-inner"
+                          placeholder={isRtl ? 'أين أنت؟ ابحث عن مدينة أو مكان...' : 'Where are you? Search city or place...'}
+                          className="w-full ps-8 pe-8 py-1.5 text-xs rounded-shape-xs bg-[var(--surface-subtle)] hover:bg-[var(--surface-inset)] focus:bg-[var(--surface-card)] border border-[var(--border-default)] focus:border-accent text-[var(--text-primary)] font-medium outline-none transition-all shadow-2xs"
                         />
                         {isSearchingLocation ? (
-                          <Loader2 size={17} className="absolute start-3.5 text-accent animate-spin pointer-events-none" />
+                          <Loader2 size={14} className="absolute start-2.5 text-accent animate-spin pointer-events-none" />
                         ) : (
-                          <Search size={17} className="absolute start-3.5 text-[var(--text-muted)] pointer-events-none" />
+                          <Search size={14} className="absolute start-2.5 text-[var(--text-muted)] pointer-events-none" />
                         )}
                         {customLocationSearch && (
                           <button
@@ -6384,47 +6596,32 @@ export const BulletinBoardPage: React.FC = () => {
                             onClick={() => {
                               setCustomLocationSearch('');
                             }}
-                            className="absolute end-3 p-1 text-[var(--text-muted)] hover:text-[var(--text-primary)] transition-colors rounded-lg hover:bg-[var(--surface-card)] cursor-pointer"
+                            className="absolute end-2 p-0.5 text-[var(--text-muted)] hover:text-[var(--text-primary)] transition-colors rounded-shape-xs hover:bg-[var(--surface-card)] cursor-pointer"
                             title={isRtl ? 'مسح' : 'Clear'}
                           >
-                            <X size={15} />
+                            <X size={13} />
                           </button>
-                        )}
-                      </div>
-
-                      {/* Dynamic Loading Progress Bar */}
-                      <div className="absolute inset-x-3.5 -bottom-0.5 h-0.5 overflow-hidden rounded-full pointer-events-none">
-                        {isSearchingLocation && (
-                          <motion.div
-                            initial={{ x: '-100%', opacity: 0 }}
-                            animate={{ x: '100%', opacity: 1 }}
-                            transition={{ repeat: Infinity, duration: 0.9, ease: 'easeInOut' }}
-                            className="w-1/2 h-full bg-gradient-to-r from-transparent via-accent to-transparent rounded-full shadow-[0_0_8px_var(--color-accent)]"
-                          />
                         )}
                       </div>
                     </div>
 
                     {/* Content Section: Empty Search vs Search Results */}
                     {!customLocationSearch.trim() ? (
-                      <div className="space-y-3">
+                      <div className="space-y-2">
                         {/* Tagged Location (If Selected) */}
                         {adFormData.location_city && (
-                          <div className="space-y-1.5">
-                            <h4 className="text-[11px] font-bold text-[var(--text-muted)] px-1">
-                              {isRtl ? 'تمت الإشارة إليه' : 'Tagged'}
+                          <div className="space-y-1">
+                            <h4 className="text-[10px] font-bold text-[var(--text-muted)] px-1">
+                              {isRtl ? 'الموقع المحدد حالياً' : 'Current Tagged Location'}
                             </h4>
-                            <div className="flex items-center justify-between p-2 sm:p-2.5 rounded-shape-md bg-[var(--surface-subtle)] border border-[var(--border-default)]">
-                              <div className="flex items-center gap-3 min-w-0">
-                                <div className="w-9 h-9 rounded-lg bg-rose-500/15 text-rose-500 flex items-center justify-center shrink-0">
-                                  <MapPin size={18} />
+                            <div className="flex items-center justify-between p-1.5 rounded-shape-xs bg-[var(--surface-subtle)] border border-[var(--border-default)]">
+                              <div className="flex items-center gap-2 min-w-0">
+                                <div className="w-7 h-7 rounded-shape-xs bg-rose-500/15 text-rose-500 flex items-center justify-center shrink-0">
+                                  <MapPin size={14} />
                                 </div>
                                 <div className="min-w-0">
-                                  <p className="text-xs sm:text-sm font-bold text-[var(--text-primary)] truncate">
+                                  <p className="text-xs font-bold text-[var(--text-primary)] truncate">
                                     {adFormData.location_city}
-                                  </p>
-                                  <p className="text-[11px] text-[var(--text-muted)] truncate">
-                                    {isRtl ? 'الموقع الجغرافي المحدد للمنشور' : 'Tagged location for this post'}
                                   </p>
                                 </div>
                               </div>
@@ -6434,10 +6631,10 @@ export const BulletinBoardPage: React.FC = () => {
                                   setAdFormData(prev => ({ ...prev, location_city: '' }));
                                   toast.success(isRtl ? 'تمت إزالة الموقع' : 'Location removed');
                                 }}
-                                className="w-8 h-8 rounded-lg hover:bg-[var(--surface-card)] text-[var(--text-muted)] hover:text-rose-500 flex items-center justify-center transition-colors cursor-pointer shrink-0"
+                                className="w-6 h-6 rounded-shape-xs hover:bg-[var(--surface-card)] text-[var(--text-muted)] hover:text-rose-500 flex items-center justify-center transition-colors cursor-pointer shrink-0"
                                 title={isRtl ? 'إزالة' : 'Remove'}
                               >
-                                <X size={16} />
+                                <X size={13} />
                               </button>
                             </div>
                           </div>
@@ -6452,10 +6649,10 @@ export const BulletinBoardPage: React.FC = () => {
                               return;
                             }
                             setIsSearchingLocation(true);
-                            toast.loading(isRtl ? 'جاري تحديد موقعك الجغرافي...' : 'Detecting GPS location...');
+                            const toastId = toast.loading(isRtl ? 'جاري تحديد موقعك الجغرافي...' : 'Detecting GPS location...');
                             navigator.geolocation.getCurrentPosition(
                               async (position) => {
-                                toast.dismiss();
+                                toast.dismiss(toastId);
                                 setIsSearchingLocation(false);
                                 const { latitude, longitude } = position.coords;
                                 try {
@@ -6475,23 +6672,23 @@ export const BulletinBoardPage: React.FC = () => {
                                 toast.success(isRtl ? `تم إضافة الموقع: ${fallbackLoc}` : `Coords added: ${fallbackLoc}`);
                               },
                               () => {
-                                toast.dismiss();
+                                toast.dismiss(toastId);
                                 setIsSearchingLocation(false);
                                 toast.error(isRtl ? 'تعذر الوصول لموقع الجهاز' : 'Could not detect location');
                               },
                               { timeout: 8000 }
                             );
                           }}
-                          className="w-full flex items-center gap-3 p-2.5 rounded-shape-md hover:bg-[var(--surface-subtle)] transition-colors cursor-pointer text-start group border border-transparent hover:border-[var(--border-default)]"
+                          className="w-full flex items-center gap-2 p-2 rounded-shape-xs bg-[var(--surface-subtle)]/70 hover:bg-[var(--surface-subtle)] transition-colors cursor-pointer text-start border border-[var(--border-default)]/60 hover:border-accent/40 group shadow-2xs"
                         >
-                          <div className="w-9 h-9 rounded-lg bg-accent/15 text-accent flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform">
-                            <Compass size={18} />
+                          <div className="w-7 h-7 rounded-shape-xs bg-accent/15 text-accent flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform">
+                            <Compass size={14} />
                           </div>
                           <div className="min-w-0 flex-1">
-                            <p className="text-xs sm:text-sm font-bold text-accent truncate">
+                            <p className="text-xs font-bold text-accent truncate">
                               {isRtl ? 'استخدام موقعي الجغرافي الحالي' : 'Use Current Location (GPS)'}
                             </p>
-                            <p className="text-[11px] text-[var(--text-muted)] truncate">
+                            <p className="text-[10px] text-[var(--text-muted)] truncate">
                               {isRtl ? 'تحديد الموقع المباشر والدقيق لجهازك' : 'Accurate real-time device location'}
                             </p>
                           </div>
@@ -6499,14 +6696,14 @@ export const BulletinBoardPage: React.FC = () => {
 
                         {/* Suggestions Section */}
                         <div className="space-y-1">
-                          <h4 className="text-[11px] font-bold text-[var(--text-muted)] mb-1.5 px-1 flex items-center justify-between">
-                            <span>{isRtl ? 'الاقتراحات' : 'Suggestions'}</span>
-                            <span className="text-[10px] px-1.5 py-0.2 rounded-full bg-[var(--surface-subtle)] text-[var(--text-muted)] font-medium">
+                          <h4 className="text-[10px] font-bold text-[var(--text-muted)] px-1 flex items-center justify-between">
+                            <span>{isRtl ? 'أماكن مقترحة' : 'Suggested Locations'}</span>
+                            <span className="text-[9px] px-1 py-0.2 rounded-shape-xs bg-[var(--surface-subtle)] text-[var(--text-muted)] font-medium">
                               {locationSuggestions.length}
                             </span>
                           </h4>
 
-                          <div className="space-y-1 max-h-[320px] overflow-y-auto custom-scrollbar pe-1">
+                          <div className="space-y-0.5 max-h-[220px] overflow-y-auto custom-scrollbar pe-1">
                             {locationSuggestions.map((item: any, idx: number) => {
                               const title = item.title || item.city || item.display_name?.split(',')[0] || item.display_name;
                               const subtitle = item.subtitle || (item.state ? `${item.state}، ${item.country}` : item.country) || '';
@@ -6520,18 +6717,20 @@ export const BulletinBoardPage: React.FC = () => {
                                     setComposerView('main');
                                     toast.success(isRtl ? `تم اختيار: ${title}` : `Location set: ${title}`);
                                   }}
-                                  className="w-full group flex items-center gap-3 p-2 sm:p-2.5 rounded-shape-md hover:bg-[var(--surface-subtle)] transition-colors border border-transparent hover:border-[var(--border-default)] cursor-pointer text-start"
+                                  className="w-full group flex items-center gap-2 p-1.5 rounded-shape-xs hover:bg-[var(--surface-subtle)] transition-colors border border-transparent hover:border-[var(--border-default)] cursor-pointer text-start"
                                 >
-                                  <div className="w-9 h-9 rounded-lg bg-[var(--surface-card)] border border-[var(--border-default)] text-[var(--text-secondary)] flex items-center justify-center group-hover:text-accent group-hover:scale-105 transition-transform shrink-0">
-                                    <MapPin size={17} />
+                                  <div className="w-6 h-6 rounded-shape-xs bg-[var(--surface-card)] border border-[var(--border-default)] text-[var(--text-secondary)] flex items-center justify-center group-hover:text-accent shrink-0">
+                                    <MapPin size={12} />
                                   </div>
                                   <div className="min-w-0 flex-1">
-                                    <p className="text-xs sm:text-sm font-bold text-[var(--text-primary)] group-hover:text-accent transition-colors truncate">
+                                    <p className="text-xs font-bold text-[var(--text-primary)] group-hover:text-accent transition-colors truncate">
                                       {title}
                                     </p>
-                                    <p className="text-[11px] text-[var(--text-muted)] truncate mt-0.5">
-                                      {subtitle}
-                                    </p>
+                                    {subtitle && (
+                                      <p className="text-[9px] text-[var(--text-muted)] truncate">
+                                        {subtitle}
+                                      </p>
+                                    )}
                                   </div>
                                 </button>
                               );
@@ -6541,24 +6740,24 @@ export const BulletinBoardPage: React.FC = () => {
                       </div>
                     ) : (
                       /* Live Search Results */
-                      <div className="space-y-1.5">
-                        <h4 className="text-[11px] font-bold text-[var(--text-muted)] px-1 flex items-center justify-between">
-                          <span>{isRtl ? 'النتائج' : 'Results'}</span>
+                      <div className="space-y-1">
+                        <h4 className="text-[10px] font-bold text-[var(--text-muted)] px-1 flex items-center justify-between">
+                          <span>{isRtl ? 'نتائج البحث' : 'Search Results'}</span>
                           {isSearchingLocation && (
-                            <span className="text-[10px] text-accent font-bold flex items-center gap-1 animate-pulse">
-                              <Loader2 size={11} className="animate-spin" />
+                            <span className="text-[9px] text-accent font-bold flex items-center gap-1 animate-pulse">
+                              <Loader2 size={10} className="animate-spin" />
                               <span>{isRtl ? 'جاري البحث...' : 'Searching...'}</span>
                             </span>
                           )}
                         </h4>
 
                         {isSearchingLocation && locationSuggestions.length === 0 ? (
-                          <div className="flex flex-col items-center justify-center py-8 text-[var(--text-muted)] gap-2">
-                            <Loader2 size={24} className="animate-spin text-accent" />
-                            <p className="text-xs font-medium">{isRtl ? 'جاري البحث في الأماكن والمعالم...' : 'Searching locations & landmarks...'}</p>
+                          <div className="flex flex-col items-center justify-center py-6 text-[var(--text-muted)] gap-1">
+                            <Loader2 size={16} className="animate-spin text-accent" />
+                            <p className="text-[11px] font-medium">{isRtl ? 'جاري البحث في الأماكن والمعالم...' : 'Searching locations & landmarks...'}</p>
                           </div>
                         ) : locationSuggestions.length > 0 ? (
-                          <div className="space-y-1 max-h-[380px] overflow-y-auto custom-scrollbar pe-1">
+                          <div className="space-y-0.5 max-h-[260px] overflow-y-auto custom-scrollbar pe-1">
                             {locationSuggestions.map((item: any, idx: number) => {
                               const title = item.title || item.city || item.display_name?.split(',')[0] || item.display_name;
                               const subtitle = item.subtitle || (item.state ? `${item.state}، ${item.country}` : item.country) || '';
@@ -6574,18 +6773,20 @@ export const BulletinBoardPage: React.FC = () => {
                                     setComposerView('main');
                                     toast.success(isRtl ? `تم اختيار: ${title}` : `Location set: ${title}`);
                                   }}
-                                  className="w-full group flex items-center gap-3 p-2 sm:p-2.5 rounded-shape-md hover:bg-[var(--surface-subtle)] transition-colors border border-transparent hover:border-[var(--border-default)] cursor-pointer text-start"
+                                  className="w-full group flex items-center gap-2 p-1.5 rounded-shape-xs hover:bg-[var(--surface-subtle)] transition-colors border border-transparent hover:border-[var(--border-default)] cursor-pointer text-start"
                                 >
-                                  <div className="w-9 h-9 rounded-lg bg-[var(--surface-card)] border border-[var(--border-default)] text-[var(--text-secondary)] flex items-center justify-center group-hover:text-accent group-hover:scale-105 transition-transform shrink-0">
-                                    <MapPin size={17} />
+                                  <div className="w-6 h-6 rounded-shape-xs bg-[var(--surface-card)] border border-[var(--border-default)] text-[var(--text-secondary)] flex items-center justify-center group-hover:text-accent shrink-0">
+                                    <MapPin size={12} />
                                   </div>
                                   <div className="min-w-0 flex-1">
-                                    <p className="text-xs sm:text-sm font-bold text-[var(--text-primary)] group-hover:text-accent transition-colors truncate">
+                                    <p className="text-xs font-bold text-[var(--text-primary)] group-hover:text-accent transition-colors truncate">
                                       {title}
                                     </p>
-                                    <p className="text-[11px] text-[var(--text-muted)] truncate mt-0.5">
-                                      {subtitle}
-                                    </p>
+                                    {subtitle && (
+                                      <p className="text-[9px] text-[var(--text-muted)] truncate">
+                                        {subtitle}
+                                      </p>
+                                    )}
                                   </div>
                                 </button>
                               );
@@ -6593,7 +6794,7 @@ export const BulletinBoardPage: React.FC = () => {
                           </div>
                         ) : (
                           /* Fallback custom place entry */
-                          <div className="py-2 space-y-2">
+                          <div className="py-1">
                             <button
                               type="button"
                               onClick={() => {
@@ -6604,16 +6805,16 @@ export const BulletinBoardPage: React.FC = () => {
                                 setComposerView('main');
                                 toast.success(isRtl ? `تم تثبيت الموقع: ${customPlace}` : `Location set: ${customPlace}`);
                               }}
-                              className="w-full flex items-center gap-3 p-3 rounded-shape-md hover:bg-accent/10 transition-colors cursor-pointer text-start border border-dashed border-accent/40"
+                              className="w-full flex items-center gap-2 p-2 rounded-shape-xs hover:bg-accent/10 transition-colors cursor-pointer text-start border border-dashed border-accent/40"
                             >
-                              <div className="w-9 h-9 rounded-shape-sm bg-accent/15 text-accent flex items-center justify-center shrink-0">
-                                <MapPin size={17} />
+                              <div className="w-6 h-6 rounded-shape-xs bg-accent/15 text-accent flex items-center justify-center shrink-0">
+                                <MapPin size={13} />
                               </div>
                               <div className="min-w-0 flex-1">
-                                <p className="text-xs sm:text-sm font-bold text-accent truncate">
+                                <p className="text-xs font-bold text-accent truncate">
                                   {isRtl ? `تثبيت الموقع: "${customLocationSearch.trim()}"` : `Use location: "${customLocationSearch.trim()}"`}
                                 </p>
-                                <p className="text-[11px] text-[var(--text-muted)]">
+                                <p className="text-[9px] text-[var(--text-muted)]">
                                   {isRtl ? 'حفظ هذا الاسم كموقع للمنشور' : 'Set as post location'}
                                 </p>
                               </div>
@@ -6626,8 +6827,8 @@ export const BulletinBoardPage: React.FC = () => {
                 )}
 
                  {composerView === 'tagging' && (
-                  <div className="space-y-3">
-                    <div className="p-3 rounded-shape-md bg-accent/5 border border-accent/10 text-[10px] font-bold text-accent">
+                  <div className="space-y-2">
+                    <div className="p-2 rounded-shape-xs bg-accent/5 border border-accent/10 text-[10px] font-bold text-accent">
                       {isRtl ? 'ميزة الإشارة تتيح لك تنبيه المستخدمين الآخرين حول منشورك.' : 'Tagging allows you to notify other users about your post.'}
                     </div>
                     <input
@@ -6635,15 +6836,16 @@ export const BulletinBoardPage: React.FC = () => {
                       value={userSearch}
                       onChange={(e) => setUserSearch(e.target.value)}
                       placeholder={isRtl ? 'اكتب أسماء المستخدمين (مفصولة بفاصلة)...' : 'Enter usernames (comma separated)...'}
-                      className="w-full px-4 py-3 rounded-shape-sm bg-[var(--surface-subtle)] border border-[var(--border-default)] text-xs text-[var(--text-primary)] focus:outline-none focus:border-accent"
+                      className="w-full px-2.5 py-1.5 rounded-shape-xs bg-[var(--surface-subtle)] border border-[var(--border-default)] text-xs text-[var(--text-primary)] focus:outline-none focus:border-accent"
                     />
                     <button
+                      type="button"
                       onClick={() => {
                         const tags = userSearch.split(',').map(s => s.trim()).filter(Boolean);
-                        setAdFormData({...adFormData, tagged_users: tags});
+                        setAdFormData({ ...adFormData, tagged_users: tags });
                         setComposerView('main');
                       }}
-                      className="w-full py-2.5 rounded-shape-sm bg-accent text-slate-950 font-black text-xs active:scale-95 transition-all"
+                      className="w-full py-2 rounded-shape-xs bg-accent text-slate-950 font-black text-xs active:scale-98 transition-all cursor-pointer"
                     >
                       {isRtl ? 'حفظ التغييرات' : 'Save Changes'}
                     </button>
@@ -6651,8 +6853,8 @@ export const BulletinBoardPage: React.FC = () => {
                 )}
 
                 {composerView === 'emojis' && (
-                  <div className="space-y-3">
-                    <div className="grid grid-cols-8 gap-2 max-h-[350px] overflow-y-auto p-1 scrollbar-thin">
+                  <div className="space-y-2">
+                    <div className="grid grid-cols-8 sm:grid-cols-10 gap-1 max-h-[280px] overflow-y-auto custom-scrollbar p-1">
                       {['😀','😃','😄','😁','😆','😅','😂','🤣','😊','😇','🙂','🙃','😉','😌','😍','🥰','😘','😗','😙','😚','😋','😛','😝','😜','🤪','🤨','🧐','🤓','😎','🤩','🥳','😏','😒','😞','😔','😟','😕','🙁','☹️','😣','😖','😫','😩','🥺','😢','😭','😤','😠','😡','🤬','🤯','😳','🥵','🥶','😱','😨','😰','😥','😓','🤗','🤔','🤭','🤫','🤥','😶','😐','😑','😬','🙄','😯','😦','😧','😮','😲','🥱','😴','🤤','😪','🤠','🥳','🤖','👋','🤚','🖐','✋','🖖','👌','🤌','🤏','✌️','🤞','🫰','🤟','🤘','🤙','👈','👉','👆','🖕','👇','☝️','👍','👎','✊','👊','🤛','🤜','👏','🙌','👐','🤲','🤝','🙏','✍️','💅','🤳','💪','🧠','👀','👁️','👅','👄','💋','❤️','🧡','💛','💚','💙','💜','🖤','🤍','🤎','💔','💕','💞','💓','💗','💖','💘','💝','✨','⭐','🌟','💫','🔥','💥','💯','💢','💬','💭','💤','🚀','💡','🎉','🏆','🥇','💎'].map((emoji, idx) => (
                         <button
                           key={`bulletin-emoji-${idx}`}
@@ -6661,7 +6863,7 @@ export const BulletinBoardPage: React.FC = () => {
                             setAdFormData(prev => ({ ...prev, description: prev.description + emoji }));
                             setComposerView('main');
                           }}
-                          className="h-10 text-xl flex items-center justify-center rounded-[var(--radius-md)] hover:bg-[var(--surface-subtle)] transition-theme"
+                          className="h-8 text-base flex items-center justify-center rounded-shape-xs hover:bg-[var(--surface-subtle)] transition-colors cursor-pointer"
                         >
                           {emoji}
                         </button>
@@ -6676,39 +6878,33 @@ export const BulletinBoardPage: React.FC = () => {
       <AppModal
         open={isAudienceModalOpen}
         onClose={() => setIsAudienceModalOpen(false)}
-        size="md"
+        size="sm"
         layer="nested"
+        contentClassName="!p-0 !space-y-0 max-w-[315px] sm:max-w-[335px] w-[90vw] overflow-hidden rounded-shape-md bg-[var(--surface-card)] border border-[var(--border-default)] shadow-2xl"
       >
-        <div className="p-4 sm:p-5 space-y-4 bg-[var(--surface-card)] text-[var(--text-primary)] rounded-2xl">
+        <div className="bg-[var(--surface-card)] text-[var(--text-primary)]">
           {/* Header */}
-          <div className="flex items-center justify-between pb-3 border-b border-[var(--border-default)]">
-            <div className="flex items-center gap-2.5">
-              <div className="w-9 h-9 rounded-xl bg-accent/15 text-accent flex items-center justify-center shadow-xs">
-                <Globe size={18} />
+          <div className="flex items-center justify-between px-3 py-2 border-b border-[var(--border-default)]">
+            <div className="flex items-center gap-1.5">
+              <div className="w-6 h-6 rounded-shape-xs bg-accent/15 text-accent flex items-center justify-center shadow-2xs">
+                <Globe size={13} />
               </div>
-              <h3 className="text-base font-extrabold text-[var(--text-primary)] tracking-tight">
-                {isRtl ? 'تحديد جمهور المنشور' : 'Select Post Audience'}
+              <h3 className="text-xs sm:text-sm font-extrabold text-[var(--text-primary)] tracking-tight">
+                {isRtl ? 'تحديد جمهور المنشور' : 'Select Audience'}
               </h3>
             </div>
             <button
               type="button"
               onClick={() => setIsAudienceModalOpen(false)}
-              className="w-8 h-8 rounded-lg bg-[var(--surface-subtle)] hover:bg-[var(--surface-inset)] border border-[var(--border-default)] text-[var(--text-muted)] hover:text-[var(--text-primary)] flex items-center justify-center transition-all cursor-pointer shadow-xs"
+              className="w-6 h-6 rounded-shape-xs bg-[var(--surface-subtle)] hover:bg-[var(--surface-inset)] border border-[var(--border-default)] text-[var(--text-muted)] hover:text-[var(--text-primary)] flex items-center justify-center transition-all cursor-pointer shadow-2xs"
               title={isRtl ? 'إغلاق' : 'Close'}
             >
-              <X size={16} />
+              <X size={13} />
             </button>
           </div>
 
-          {/* Description */}
-          <p className="text-xs sm:text-sm text-[var(--text-muted)] font-medium leading-relaxed px-0.5">
-            {isRtl
-              ? 'من يمكنه رؤية منشورك؟ يحدد هذا الخيار الفئات المسموح لها برؤية المنشور في التغذية الرئيسية والبحث.'
-              : 'Who can see your post? This option determines who is allowed to view the post in the main feed and search.'}
-          </p>
-
           {/* Options List */}
-          <div className="space-y-2.5">
+          <div className="p-2 space-y-1.5">
             {/* 1. Public Option */}
             <button
               type="button"
@@ -6716,47 +6912,47 @@ export const BulletinBoardPage: React.FC = () => {
                 setAdFormData(prev => ({ ...prev, audience: 'public' }));
                 setIsAudienceModalOpen(false);
               }}
-              className={`w-full p-3.5 sm:p-4 rounded-xl border-2 text-start transition-all cursor-pointer flex items-center justify-between gap-3 group shadow-xs ${
+              className={`w-full p-2 rounded-shape-xs border text-start transition-all cursor-pointer flex items-center justify-between gap-2 group shadow-2xs select-none ${
                 adFormData.audience === 'public'
                   ? 'border-accent bg-accent/10 ring-1 ring-accent/30'
                   : 'border-[var(--border-default)] bg-[var(--surface-subtle)]/50 hover:bg-[var(--surface-subtle)] hover:border-[var(--border-accent)]'
               }`}
             >
-              {/* Checkbox Box */}
+              {/* Radio Indicator */}
               <div
-                className={`w-6 h-6 rounded-lg flex items-center justify-center shrink-0 transition-all ${
+                className={`w-5 h-5 rounded-shape-xs flex items-center justify-center shrink-0 transition-all ${
                   adFormData.audience === 'public'
-                    ? 'bg-accent text-slate-950 font-black shadow-xs'
-                    : 'border border-[var(--border-default)] group-hover:border-accent/60 bg-[var(--surface-card)]'
+                    ? 'bg-accent text-slate-950 font-black shadow-2xs'
+                    : 'border border-[var(--border-default)] bg-[var(--surface-card)]'
                 }`}
               >
-                {adFormData.audience === 'public' && <Check size={14} strokeWidth={3} />}
+                {adFormData.audience === 'public' && <Check size={12} strokeWidth={3} />}
               </div>
 
               {/* Text Info */}
               <div className="min-w-0 flex-1">
-                <div className="flex items-center gap-2 mb-0.5">
-                  <h4 className="text-xs sm:text-sm font-extrabold text-[var(--text-primary)] group-hover:text-accent transition-colors">
+                <div className="flex items-center gap-1 mb-0.5">
+                  <h4 className="text-xs font-extrabold text-[var(--text-primary)] group-hover:text-accent transition-colors">
                     {isRtl ? 'العامة' : 'Public'}
                   </h4>
-                  <span className="text-[10px] bg-accent/20 text-accent px-2 py-0.5 rounded-full font-bold uppercase tracking-wider">
+                  <span className="text-[8px] bg-accent/20 text-accent px-1 py-0.2 rounded-shape-xs font-bold">
                     {isRtl ? 'موصى به' : 'Recommended'}
                   </span>
                 </div>
-                <p className="text-[11px] text-[var(--text-muted)] font-medium leading-tight">
+                <p className="text-[10px] text-[var(--text-muted)] font-medium leading-tight truncate">
                   {isRtl ? 'أي شخص داخل المنصة أو خارجها' : 'Anyone on or off the platform'}
                 </p>
               </div>
 
               {/* Icon Container */}
               <div
-                className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 transition-transform group-hover:scale-105 ${
+                className={`w-7 h-7 rounded-shape-xs flex items-center justify-center shrink-0 transition-transform group-hover:scale-105 ${
                   adFormData.audience === 'public'
                     ? 'bg-accent/20 text-accent'
                     : 'bg-[var(--surface-card)] border border-[var(--border-default)] text-[var(--text-secondary)]'
                 }`}
               >
-                <Globe size={20} />
+                <Globe size={14} />
               </div>
             </button>
 
@@ -6767,42 +6963,42 @@ export const BulletinBoardPage: React.FC = () => {
                 setAdFormData(prev => ({ ...prev, audience: 'friends' }));
                 setIsAudienceModalOpen(false);
               }}
-              className={`w-full p-3.5 sm:p-4 rounded-xl border-2 text-start transition-all cursor-pointer flex items-center justify-between gap-3 group shadow-xs ${
+              className={`w-full p-2 rounded-shape-xs border text-start transition-all cursor-pointer flex items-center justify-between gap-2 group shadow-2xs select-none ${
                 adFormData.audience === 'friends'
                   ? 'border-blue-500 bg-blue-500/10 ring-1 ring-blue-500/30'
                   : 'border-[var(--border-default)] bg-[var(--surface-subtle)]/50 hover:bg-[var(--surface-subtle)] hover:border-[var(--border-accent)]'
               }`}
             >
-              {/* Checkbox Box */}
+              {/* Radio Indicator */}
               <div
-                className={`w-6 h-6 rounded-lg flex items-center justify-center shrink-0 transition-all ${
+                className={`w-5 h-5 rounded-shape-xs flex items-center justify-center shrink-0 transition-all ${
                   adFormData.audience === 'friends'
-                    ? 'bg-blue-500 text-white font-black shadow-xs'
-                    : 'border border-[var(--border-default)] group-hover:border-blue-500/60 bg-[var(--surface-card)]'
+                    ? 'bg-blue-500 text-white font-black shadow-2xs'
+                    : 'border border-[var(--border-default)] bg-[var(--surface-card)]'
                 }`}
               >
-                {adFormData.audience === 'friends' && <Check size={14} strokeWidth={3} />}
+                {adFormData.audience === 'friends' && <Check size={12} strokeWidth={3} />}
               </div>
 
               {/* Text Info */}
               <div className="min-w-0 flex-1">
-                <h4 className="text-xs sm:text-sm font-extrabold text-[var(--text-primary)] group-hover:text-blue-500 transition-colors mb-0.5">
+                <h4 className="text-xs font-extrabold text-[var(--text-primary)] group-hover:text-blue-500 transition-colors mb-0.5">
                   {isRtl ? 'الأصدقاء' : 'Friends'}
                 </h4>
-                <p className="text-[11px] text-[var(--text-muted)] font-medium leading-tight">
-                  {isRtl ? 'المستخدمون والمسجلون فقط على المنصة' : 'Registered members & friends only'}
+                <p className="text-[10px] text-[var(--text-muted)] font-medium leading-tight truncate">
+                  {isRtl ? 'المستخدمون والمسجلون فقط' : 'Registered members & friends only'}
                 </p>
               </div>
 
               {/* Icon Container */}
               <div
-                className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 transition-transform group-hover:scale-105 ${
+                className={`w-7 h-7 rounded-shape-xs flex items-center justify-center shrink-0 transition-transform group-hover:scale-105 ${
                   adFormData.audience === 'friends'
                     ? 'bg-blue-500/20 text-blue-500'
                     : 'bg-[var(--surface-card)] border border-[var(--border-default)] text-[var(--text-secondary)]'
                 }`}
               >
-                <Users size={20} />
+                <Users size={14} />
               </div>
             </button>
 
@@ -6813,105 +7009,86 @@ export const BulletinBoardPage: React.FC = () => {
                 setAdFormData(prev => ({ ...prev, audience: 'only_me' }));
                 setIsAudienceModalOpen(false);
               }}
-              className={`w-full p-3.5 sm:p-4 rounded-xl border-2 text-start transition-all cursor-pointer flex items-center justify-between gap-3 group shadow-xs ${
+              className={`w-full p-2 rounded-shape-xs border text-start transition-all cursor-pointer flex items-center justify-between gap-2 group shadow-2xs select-none ${
                 adFormData.audience === 'only_me'
                   ? 'border-amber-500 bg-amber-500/10 ring-1 ring-amber-500/30'
                   : 'border-[var(--border-default)] bg-[var(--surface-subtle)]/50 hover:bg-[var(--surface-subtle)] hover:border-[var(--border-accent)]'
               }`}
             >
-              {/* Checkbox Box */}
+              {/* Radio Indicator */}
               <div
-                className={`w-6 h-6 rounded-lg flex items-center justify-center shrink-0 transition-all ${
+                className={`w-5 h-5 rounded-shape-xs flex items-center justify-center shrink-0 transition-all ${
                   adFormData.audience === 'only_me'
-                    ? 'bg-amber-500 text-slate-950 font-black shadow-xs'
-                    : 'border border-[var(--border-default)] group-hover:border-amber-500/60 bg-[var(--surface-card)]'
+                    ? 'bg-amber-500 text-slate-950 font-black shadow-2xs'
+                    : 'border border-[var(--border-default)] bg-[var(--surface-card)]'
                 }`}
               >
-                {adFormData.audience === 'only_me' && <Check size={14} strokeWidth={3} />}
+                {adFormData.audience === 'only_me' && <Check size={12} strokeWidth={3} />}
               </div>
 
               {/* Text Info */}
               <div className="min-w-0 flex-1">
-                <h4 className="text-xs sm:text-sm font-extrabold text-[var(--text-primary)] group-hover:text-amber-500 transition-colors mb-0.5">
+                <h4 className="text-xs font-extrabold text-[var(--text-primary)] group-hover:text-amber-500 transition-colors mb-0.5">
                   {isRtl ? 'أنا فقط' : 'Only Me'}
                 </h4>
-                <p className="text-[11px] text-[var(--text-muted)] font-medium leading-tight">
-                  {isRtl ? 'منشور خاص بك لا يظهر لأي مستخدم آخر' : 'Private post visible only to you'}
+                <p className="text-[10px] text-[var(--text-muted)] font-medium leading-tight truncate">
+                  {isRtl ? 'منشور خاص بك فقط' : 'Private post visible only to you'}
                 </p>
               </div>
 
               {/* Icon Container */}
               <div
-                className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 transition-transform group-hover:scale-105 ${
+                className={`w-7 h-7 rounded-shape-xs flex items-center justify-center shrink-0 transition-transform group-hover:scale-105 ${
                   adFormData.audience === 'only_me'
                     ? 'bg-amber-500/20 text-amber-500'
                     : 'bg-[var(--surface-card)] border border-[var(--border-default)] text-[var(--text-secondary)]'
                 }`}
               >
-                <Lock size={20} />
+                <Lock size={14} />
               </div>
             </button>
-          </div>
-
-          {/* Footer */}
-          <div className="pt-3 border-t border-[var(--border-default)] flex items-center justify-between gap-3">
-            <button
-              type="button"
-              onClick={() => setIsAudienceModalOpen(false)}
-              className="px-5 py-2.5 rounded-xl bg-accent hover:bg-accent/90 text-slate-950 text-xs font-extrabold transition-all cursor-pointer shadow-xs active:scale-[0.98]"
-            >
-              {isRtl ? 'تم التحديد' : 'Done'}
-            </button>
-            <span className="text-[11px] text-[var(--text-muted)] font-medium">
-              {isRtl ? 'سيتم تطبيق هذا الخيار على هذا المنشور' : 'Selection will apply to this post'}
-            </span>
           </div>
         </div>
       </AppModal>
 
       {}
-      {/* Add to Post Expanded Menu Modal */}
+      {/* Add to Post Expanded Menu Modal (Sleek Compact Grid) */}
       <AppModal
         open={isAddToPostModalOpen}
         onClose={() => setIsAddToPostModalOpen(false)}
-        size="md"
+        size="sm"
         layer="nested"
+        contentClassName="!p-0 !space-y-0 max-w-[315px] sm:max-w-[335px] w-[90vw] overflow-hidden rounded-shape-md bg-[var(--surface-card)] border border-[var(--border-default)] shadow-2xl"
       >
-        <div className="p-4 sm:p-5 space-y-4 bg-[var(--surface-card)] text-[var(--text-primary)] rounded-2xl">
+        <div className="bg-[var(--surface-card)] text-[var(--text-primary)]">
           {/* Header */}
-          <div className="flex items-center justify-between pb-3 border-b border-[var(--border-default)]">
+          <div className="flex items-center justify-between px-3 py-2 border-b border-[var(--border-default)]">
+            <h3 className="text-xs sm:text-sm font-extrabold text-[var(--text-primary)] tracking-tight">
+              {isRtl ? 'إضافة إلى منشورك' : 'Add to your post'}
+            </h3>
             <button
               type="button"
               onClick={() => setIsAddToPostModalOpen(false)}
-              className="w-8 h-8 rounded-lg bg-[var(--surface-subtle)] hover:bg-[var(--surface-inset)] border border-[var(--border-default)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] flex items-center justify-center transition-all cursor-pointer shadow-xs"
-              title={isRtl ? 'رجوع' : 'Back'}
+              className="w-6 h-6 rounded-shape-xs bg-[var(--surface-subtle)] hover:bg-[var(--surface-inset)] border border-[var(--border-default)] text-[var(--text-muted)] hover:text-[var(--text-primary)] flex items-center justify-center transition-all cursor-pointer"
+              title={isRtl ? 'إغلاق' : 'Close'}
             >
-              <ArrowLeft size={16} className={isRtl ? 'rotate-180' : ''} />
+              <X size={13} />
             </button>
-            <h3 className="text-sm sm:text-base font-extrabold text-[var(--text-primary)] tracking-tight">
-              {isRtl ? 'إضافة إلى منشورك' : 'Add to your post'}
-            </h3>
-            <div className="w-8 h-8" />
           </div>
 
-          {/* Grid of Uniform Cards */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+          {/* Grid of Compact, Zero-Deadspace Items (5 Rows x 2 Columns) */}
+          <div className="p-2 sm:p-2.5 grid grid-cols-2 gap-1.5">
             {/* 1. Photo / Video */}
             <label
               onClick={() => setIsAddToPostModalOpen(false)}
-              className="w-full flex items-center gap-3 p-3 rounded-xl bg-[var(--surface-subtle)] hover:bg-[var(--surface-inset)] border border-[var(--border-default)] hover:border-accent/40 text-start transition-all cursor-pointer group shadow-xs"
+              className="flex items-center gap-2 px-2 py-1.5 h-9 rounded-shape-xs bg-[var(--surface-subtle)]/70 hover:bg-[var(--surface-inset)] border border-[var(--border-default)]/60 hover:border-accent/40 transition-all cursor-pointer group shadow-2xs select-none"
             >
-              <div className="w-10 h-10 rounded-lg shrink-0 flex items-center justify-center bg-emerald-500/15 text-emerald-500 group-hover:scale-105 transition-transform">
-                <ImageIcon size={20} />
+              <div className="w-6 h-6 rounded-shape-xs shrink-0 flex items-center justify-center bg-emerald-500/15 text-emerald-500 group-hover:scale-105 transition-transform">
+                <ImageIcon size={13} />
               </div>
-              <div className="min-w-0 flex-1">
-                <span className="block text-xs font-bold text-[var(--text-primary)] group-hover:text-accent transition-colors truncate">
-                  {isRtl ? 'صورة / فيديو' : 'Photo / Video'}
-                </span>
-                <span className="block text-[10px] text-[var(--text-muted)] font-medium truncate mt-0.5">
-                  {isRtl ? 'إرفاق وسائط مسبقة' : 'Attach media files'}
-                </span>
-              </div>
+              <span className="text-[11px] font-bold text-[var(--text-primary)] group-hover:text-accent transition-colors truncate">
+                {isRtl ? 'صورة / فيديو' : 'Photo / Video'}
+              </span>
               <input
                 type="file"
                 multiple
@@ -6921,48 +7098,38 @@ export const BulletinBoardPage: React.FC = () => {
               />
             </label>
 
-            {/* 2. Feelings / Activity */}
-            <button
-              type="button"
-              onClick={() => {
-                setComposerView('feelings');
-                setIsAddToPostModalOpen(false);
-              }}
-              className="w-full flex items-center gap-3 p-3 rounded-xl bg-[var(--surface-subtle)] hover:bg-[var(--surface-inset)] border border-[var(--border-default)] hover:border-accent/40 text-start transition-all cursor-pointer group shadow-xs"
-            >
-              <div className="w-10 h-10 rounded-lg shrink-0 flex items-center justify-center bg-amber-500/15 text-amber-500 group-hover:scale-105 transition-transform">
-                <Smile size={20} />
-              </div>
-              <div className="min-w-0 flex-1">
-                <span className="block text-xs font-bold text-[var(--text-primary)] group-hover:text-accent transition-colors truncate">
-                  {isRtl ? 'شعور / نشاط' : 'Feeling / Activity'}
-                </span>
-                <span className="block text-[10px] text-[var(--text-muted)] font-medium truncate mt-0.5">
-                  {isRtl ? 'مشاركة الحالة الحالية' : 'Share current status'}
-                </span>
-              </div>
-            </button>
-
-            {/* 3. Tag People */}
+            {/* 2. Tag People */}
             <button
               type="button"
               onClick={() => {
                 setComposerView('tagging');
                 setIsAddToPostModalOpen(false);
               }}
-              className="w-full flex items-center gap-3 p-3 rounded-xl bg-[var(--surface-subtle)] hover:bg-[var(--surface-inset)] border border-[var(--border-default)] hover:border-accent/40 text-start transition-all cursor-pointer group shadow-xs"
+              className="flex items-center gap-2 px-2 py-1.5 h-9 rounded-shape-xs bg-[var(--surface-subtle)]/70 hover:bg-[var(--surface-inset)] border border-[var(--border-default)]/60 hover:border-accent/40 transition-all cursor-pointer group shadow-2xs text-start select-none"
             >
-              <div className="w-10 h-10 rounded-lg shrink-0 flex items-center justify-center bg-blue-500/15 text-blue-500 group-hover:scale-105 transition-transform">
-                <Users size={20} />
+              <div className="w-6 h-6 rounded-shape-xs shrink-0 flex items-center justify-center bg-blue-500/15 text-blue-500 group-hover:scale-105 transition-transform">
+                <Users size={13} />
               </div>
-              <div className="min-w-0 flex-1">
-                <span className="block text-xs font-bold text-[var(--text-primary)] group-hover:text-accent transition-colors truncate">
-                  {isRtl ? 'إشارة إلى الأشخاص' : 'Tag People'}
-                </span>
-                <span className="block text-[10px] text-[var(--text-muted)] font-medium truncate mt-0.5">
-                  {isRtl ? 'تحديد الأصدقاء والشركاء' : 'Tag friends & partners'}
-                </span>
+              <span className="text-[11px] font-bold text-[var(--text-primary)] group-hover:text-accent transition-colors truncate">
+                {isRtl ? 'إشارة لأشخاص' : 'Tag People'}
+              </span>
+            </button>
+
+            {/* 3. Feelings / Activity */}
+            <button
+              type="button"
+              onClick={() => {
+                setComposerView('feelings');
+                setIsAddToPostModalOpen(false);
+              }}
+              className="flex items-center gap-2 px-2 py-1.5 h-9 rounded-shape-xs bg-[var(--surface-subtle)]/70 hover:bg-[var(--surface-inset)] border border-[var(--border-default)]/60 hover:border-accent/40 transition-all cursor-pointer group shadow-2xs text-start select-none"
+            >
+              <div className="w-6 h-6 rounded-shape-xs shrink-0 flex items-center justify-center bg-amber-500/15 text-amber-500 group-hover:scale-105 transition-transform">
+                <Smile size={13} />
               </div>
+              <span className="text-[11px] font-bold text-[var(--text-primary)] group-hover:text-accent transition-colors truncate">
+                {isRtl ? 'شعور / نشاط' : 'Feeling / Activity'}
+              </span>
             </button>
 
             {/* 4. Check in / Location */}
@@ -6972,22 +7139,17 @@ export const BulletinBoardPage: React.FC = () => {
                 setComposerView('location');
                 setIsAddToPostModalOpen(false);
               }}
-              className="w-full flex items-center gap-3 p-3 rounded-xl bg-[var(--surface-subtle)] hover:bg-[var(--surface-inset)] border border-[var(--border-default)] hover:border-accent/40 text-start transition-all cursor-pointer group shadow-xs"
+              className="flex items-center gap-2 px-2 py-1.5 h-9 rounded-shape-xs bg-[var(--surface-subtle)]/70 hover:bg-[var(--surface-inset)] border border-[var(--border-default)]/60 hover:border-accent/40 transition-all cursor-pointer group shadow-2xs text-start select-none"
             >
-              <div className="w-10 h-10 rounded-lg shrink-0 flex items-center justify-center bg-rose-500/15 text-rose-500 group-hover:scale-105 transition-transform">
-                <MapPin size={20} />
+              <div className="w-6 h-6 rounded-shape-xs shrink-0 flex items-center justify-center bg-rose-500/15 text-rose-500 group-hover:scale-105 transition-transform">
+                <MapPin size={13} />
               </div>
-              <div className="min-w-0 flex-1">
-                <span className="block text-xs font-bold text-[var(--text-primary)] group-hover:text-accent transition-colors truncate">
-                  {isRtl ? 'دخول / موقع' : 'Check In'}
-                </span>
-                <span className="block text-[10px] text-[var(--text-muted)] font-medium truncate mt-0.5">
-                  {isRtl ? 'مكانك الحالي' : 'Your location'}
-                </span>
-              </div>
+              <span className="text-[11px] font-bold text-[var(--text-primary)] group-hover:text-accent transition-colors truncate">
+                {isRtl ? 'تسجيل زيارة' : 'Check In'}
+              </span>
             </button>
 
-            {/* 5. Receive Calls */}
+            {/* 5. WhatsApp / Calls */}
             <button
               type="button"
               onClick={() => {
@@ -6995,19 +7157,14 @@ export const BulletinBoardPage: React.FC = () => {
                 setIsAddToPostModalOpen(false);
                 toast.success(isRtl ? 'تم تفعيل زر تلقي المكالمات/واتساب' : 'Call/WhatsApp button activated');
               }}
-              className="w-full flex items-center gap-3 p-3 rounded-xl bg-[var(--surface-subtle)] hover:bg-[var(--surface-inset)] border border-[var(--border-default)] hover:border-accent/40 text-start transition-all cursor-pointer group shadow-xs"
+              className="flex items-center gap-2 px-2 py-1.5 h-9 rounded-shape-xs bg-[var(--surface-subtle)]/70 hover:bg-[var(--surface-inset)] border border-[var(--border-default)]/60 hover:border-accent/40 transition-all cursor-pointer group shadow-2xs text-start select-none"
             >
-              <div className="w-10 h-10 rounded-lg shrink-0 flex items-center justify-center bg-emerald-600/15 text-emerald-500 group-hover:scale-105 transition-transform">
-                <Phone size={20} />
+              <div className="w-6 h-6 rounded-shape-xs shrink-0 flex items-center justify-center bg-emerald-600/15 text-emerald-500 group-hover:scale-105 transition-transform">
+                <Phone size={13} />
               </div>
-              <div className="min-w-0 flex-1">
-                <span className="block text-xs font-bold text-[var(--text-primary)] group-hover:text-accent transition-colors truncate">
-                  {isRtl ? 'تلقي مكالمات' : 'Receive Calls'}
-                </span>
-                <span className="block text-[10px] text-[var(--text-muted)] font-medium truncate mt-0.5">
-                  {isRtl ? 'رقم الاتصال السريع' : 'Direct contact / WhatsApp'}
-                </span>
-              </div>
+              <span className="text-[11px] font-bold text-[var(--text-primary)] group-hover:text-accent transition-colors truncate">
+                {isRtl ? 'تلقي مكالمات' : 'Get Calls'}
+              </span>
             </button>
 
             {/* 6. GIF Image */}
@@ -7029,19 +7186,14 @@ export const BulletinBoardPage: React.FC = () => {
                 }
                 setIsAddToPostModalOpen(false);
               }}
-              className="w-full flex items-center gap-3 p-3 rounded-xl bg-[var(--surface-subtle)] hover:bg-[var(--surface-inset)] border border-[var(--border-default)] hover:border-accent/40 text-start transition-all cursor-pointer group shadow-xs"
+              className="flex items-center gap-2 px-2 py-1.5 h-9 rounded-shape-xs bg-[var(--surface-subtle)]/70 hover:bg-[var(--surface-inset)] border border-[var(--border-default)]/60 hover:border-accent/40 transition-all cursor-pointer group shadow-2xs text-start select-none"
             >
-              <div className="w-10 h-10 rounded-lg shrink-0 flex items-center justify-center bg-purple-500/15 text-purple-500 font-extrabold text-xs group-hover:scale-105 transition-transform">
+              <div className="w-6 h-6 rounded-shape-xs shrink-0 flex items-center justify-center bg-purple-500/15 text-purple-500 font-black text-[9px] group-hover:scale-105 transition-transform">
                 GIF
               </div>
-              <div className="min-w-0 flex-1">
-                <span className="block text-xs font-bold text-[var(--text-primary)] group-hover:text-accent transition-colors truncate">
-                  {isRtl ? 'صورة GIF' : 'GIF Image'}
-                </span>
-                <span className="block text-[10px] text-[var(--text-muted)] font-medium truncate mt-0.5">
-                  {isRtl ? 'صور متحركة ملونة' : 'Animated sticker'}
-                </span>
-              </div>
+              <span className="text-[11px] font-bold text-[var(--text-primary)] group-hover:text-accent transition-colors truncate">
+                {isRtl ? 'صورة GIF' : 'GIF'}
+              </span>
             </button>
 
             {/* 7. Live Video */}
@@ -7052,55 +7204,99 @@ export const BulletinBoardPage: React.FC = () => {
                 setIsAddToPostModalOpen(false);
                 toast.success(isRtl ? 'تمت إضافة علامة البث المباشر' : 'Live video badge added');
               }}
-              className="w-full flex items-center gap-3 p-3 rounded-xl bg-[var(--surface-subtle)] hover:bg-[var(--surface-inset)] border border-[var(--border-default)] hover:border-accent/40 text-start transition-all cursor-pointer group shadow-xs"
+              className="flex items-center gap-2 px-2 py-1.5 h-9 rounded-shape-xs bg-[var(--surface-subtle)]/70 hover:bg-[var(--surface-inset)] border border-[var(--border-default)]/60 hover:border-accent/40 transition-all cursor-pointer group shadow-2xs text-start select-none"
             >
-              <div className="w-10 h-10 rounded-lg shrink-0 flex items-center justify-center bg-red-600/15 text-red-500 group-hover:scale-105 transition-transform">
-                <Radio size={20} className="animate-pulse" />
+              <div className="w-6 h-6 rounded-shape-xs shrink-0 flex items-center justify-center bg-red-600/15 text-red-500 group-hover:scale-105 transition-transform">
+                <Radio size={13} className="animate-pulse" />
               </div>
-              <div className="min-w-0 flex-1">
-                <span className="block text-xs font-bold text-[var(--text-primary)] group-hover:text-accent transition-colors truncate">
-                  {isRtl ? 'فيديو بث مباشر' : 'Live Video'}
-                </span>
-                <span className="block text-[10px] text-[var(--text-muted)] font-medium truncate mt-0.5">
-                  {isRtl ? 'شارة بث مباشر الآن' : 'Broadcast live badge'}
-                </span>
-              </div>
+              <span className="text-[11px] font-bold text-[var(--text-primary)] group-hover:text-accent transition-colors truncate">
+                {isRtl ? 'بث مباشر' : 'Live Video'}
+              </span>
             </button>
 
             {/* 8. Life Event */}
             <button
               type="button"
               onClick={() => {
-                setAdFormData(prev => ({ ...prev, description: (prev.description ? prev.description + '\n' : '') + '🎉 [حدث شخصي هام / Life Event]' }));
+                setAdFormData(prev => ({ ...prev, description: (prev.description ? prev.description + '\n' : '') + '🎉 [مناسبة خاصة / Life Event]' }));
                 setIsAddToPostModalOpen(false);
-                toast.success(isRtl ? 'تمت إضافة علامة الحدث الشخصي' : 'Life event badge added');
+                toast.success(isRtl ? 'تمت إضافة علامة المناسبة الشخصية' : 'Life event badge added');
               }}
-              className="w-full flex items-center gap-3 p-3 rounded-xl bg-[var(--surface-subtle)] hover:bg-[var(--surface-inset)] border border-[var(--border-default)] hover:border-accent/40 text-start transition-all cursor-pointer group shadow-xs"
+              className="flex items-center gap-2 px-2 py-1.5 h-9 rounded-shape-xs bg-[var(--surface-subtle)]/70 hover:bg-[var(--surface-inset)] border border-[var(--border-default)]/60 hover:border-accent/40 transition-all cursor-pointer group shadow-2xs text-start select-none"
             >
-              <div className="w-10 h-10 rounded-lg shrink-0 flex items-center justify-center bg-accent/15 text-accent group-hover:scale-105 transition-transform">
-                <Bookmark size={20} />
+              <div className="w-6 h-6 rounded-shape-xs shrink-0 flex items-center justify-center bg-accent/15 text-accent group-hover:scale-105 transition-transform">
+                <Bookmark size={13} />
               </div>
-              <div className="min-w-0 flex-1">
-                <span className="block text-xs font-bold text-[var(--text-primary)] group-hover:text-accent transition-colors truncate">
-                  {isRtl ? 'حدث شخصي' : 'Life Event'}
-                </span>
-                <span className="block text-[10px] text-[var(--text-muted)] font-medium truncate mt-0.5">
-                  {isRtl ? 'مناسبة خاصة وهامة' : 'Personal milestone'}
-                </span>
+              <span className="text-[11px] font-bold text-[var(--text-primary)] group-hover:text-accent transition-colors truncate">
+                {isRtl ? 'مناسبة شخصية' : 'Life Event'}
+              </span>
+            </button>
+
+            {/* 9. Music */}
+            <button
+              type="button"
+              onClick={() => {
+                setIsAddToPostModalOpen(false);
+                setIsAudioPickerOpen(true);
+              }}
+              className="flex items-center gap-2 px-2 py-1.5 h-9 rounded-shape-xs bg-[var(--surface-subtle)]/70 hover:bg-[var(--surface-inset)] border border-[var(--border-default)]/60 hover:border-accent/40 transition-all cursor-pointer group shadow-2xs text-start select-none"
+            >
+              <div className="w-6 h-6 rounded-shape-xs shrink-0 flex items-center justify-center bg-purple-500/15 text-purple-400 group-hover:scale-105 transition-transform">
+                <Music size={13} />
               </div>
+              <span className="text-[11px] font-bold text-[var(--text-primary)] group-hover:text-accent transition-colors truncate">
+                {isRtl ? 'موسيقى' : 'Music'}
+              </span>
+            </button>
+
+            {/* 10. Q&A / Poll */}
+            <button
+              type="button"
+              onClick={() => {
+                setAdFormData(prev => ({
+                  ...prev,
+                  quick_questions: prev.quick_questions && prev.quick_questions.some(q => q.trim())
+                    ? prev.quick_questions
+                    : [isRtl ? 'هل المنتج متوفر؟' : 'Is this available?', isRtl ? 'ما هي طريقة الاستلام؟' : 'How to pick up?', '']
+                }));
+                setIsAddToPostModalOpen(false);
+                toast.success(isRtl ? 'تم تفعيل خيارات الأسئلة السريعة' : 'Quick questions enabled');
+              }}
+              className="flex items-center gap-2 px-2 py-1.5 h-9 rounded-shape-xs bg-[var(--surface-subtle)]/70 hover:bg-[var(--surface-inset)] border border-[var(--border-default)]/60 hover:border-accent/40 transition-all cursor-pointer group shadow-2xs text-start select-none"
+            >
+              <div className="w-6 h-6 rounded-shape-xs shrink-0 flex items-center justify-center bg-indigo-500/15 text-indigo-400 group-hover:scale-105 transition-transform">
+                <HelpCircle size={13} />
+              </div>
+              <span className="text-[11px] font-bold text-[var(--text-primary)] group-hover:text-accent transition-colors truncate">
+                {isRtl ? 'استطلاع / أسئلة' : 'Q&A / Poll'}
+              </span>
             </button>
           </div>
-
-          {/* Close Button */}
-          <button
-            type="button"
-            onClick={() => setIsAddToPostModalOpen(false)}
-            className="w-full py-2.5 rounded-xl bg-[var(--surface-subtle)] hover:bg-[var(--surface-inset)] border border-[var(--border-default)] text-[var(--text-primary)] font-extrabold text-xs transition-all cursor-pointer shadow-xs active:scale-[0.99]"
-          >
-            {isRtl ? 'إغلاق' : 'Close'}
-          </button>
         </div>
       </AppModal>
+
+      {/* Perplexta Media Audio Library Picker Modal */}
+      <AudioLibraryPickerModal
+        open={isAudioPickerOpen}
+        onClose={() => setIsAudioPickerOpen(false)}
+        onBack={() => {
+          setIsAudioPickerOpen(false);
+          setIsAddToPostModalOpen(true);
+        }}
+        selectedTrackId={adFormData.audio_track_id}
+        onSelectTrack={(track) => {
+          setSelectedAudioTrack(track);
+          setAdFormData(prev => ({
+            ...prev,
+            audio_url: track.file_url || track.audio_url || '',
+            audio_title: track.title,
+            audio_artist: track.artist || '',
+            audio_track_id: String(track.id)
+          }));
+          toast.success(isRtl ? `تم اختيار: ${track.title}` : `Selected: ${track.title}`);
+        }}
+        isRtl={isRtl}
+      />
 
       {}
       {}
@@ -7633,36 +7829,8 @@ export const BulletinBoardPage: React.FC = () => {
         initialMode={storyUploadMode}
         onStoryCreated={(newStory) => {
           fetchStories();
-          setCreationSuccessItem({
-            type: 'story',
-            title: newStory?.title || (isRtl ? 'قصة جديدة' : 'New Story'),
-            description: newStory?.description,
-            mediaUrl: newStory?.image_url,
-            videoUrl: newStory?.video_url,
-            gradientClass: newStory?.gradientClass,
-            authorName: newStory?.page_id ? newStory?.page_name : (newStory?.author_name || user?.name),
-            authorAvatar: newStory?.page_id ? newStory?.page_avatar : (newStory?.author_avatar || user?.avatar),
-            id: newStory?.id,
-          });
-        }}
-      />
-
-      {/* Immediate Celebratory Pop Animation upon Successful Story/Reel/Post Creation */}
-      <CreationSuccessPop
-        item={creationSuccessItem}
-        onClose={() => setCreationSuccessItem(null)}
-        isRtl={isRtl}
-        onViewItem={(item) => {
-          if (item.type === 'story') {
-            setSelectedStoryIndex(0);
-            setIsStoryViewerOpen(true);
-          } else if (item.type === 'reel') {
-            setActiveTab('reels');
-            if (item.id) setActiveReelModalId(Number(item.id));
-          } else {
-            setActiveTab('board');
-            window.scrollTo({ top: 0, behavior: 'smooth' });
-          }
+          toast.success(isRtl ? 'تم النشر' : 'Published');
+          setSelectedStoryIndex(0);
         }}
       />
 
@@ -7680,19 +7848,87 @@ export const BulletinBoardPage: React.FC = () => {
         onStoryDeleted={handleStoryDeleted}
       />
 
+      {/* Hidden File Input for Direct Instant Reels Upload */}
+      <input
+        ref={directReelInputRef}
+        id="direct-reel-video-input"
+        type="file"
+        accept="video/*,.mp4,.mov,.webm,.mkv,.avi,.3gp,.m4v,.wmv,.flv,.ogv,.ts,.mts,.m2ts"
+        onChange={handleReelFileUpload}
+        className="hidden"
+      />
+
       {/* Video Trimmer Modal */}
       <VideoTrimmerModal
         isOpen={isTrimmerModalOpen}
         onClose={() => setIsTrimmerModalOpen(false)}
         videoUrl={trimmerVideoUrl}
         isRtl={isRtl}
+        token={token}
         onTrimComplete={(trimmed) => {
           setAdFormData(prev => ({
             ...prev,
             video_url: trimmed.videoUrl,
-            ad_format: trimmed.adFormat as any
+            ad_format: (trimmed.adFormat as any) || 'reel',
+            aspect_ratio: trimmed.aspectRatio || '9:16',
+            ...(trimmed.audioTrack ? {
+              audio_url: trimmed.audioTrack.audio_url || trimmed.audioTrack.file_url || '',
+              audio_title: trimmed.audioTrack.title || '',
+              audio_artist: trimmed.audioTrack.artist || '',
+              audio_track_id: trimmed.audioTrack.id || ''
+            } : {})
           }));
-          toast.success(isRtl ? 'تم تطبيق إعدادات وقص الفيديو بنجاح!' : 'Video trimming & format settings applied successfully!');
+          toast.success(isRtl ? 'تم تطبيق إعدادات الريلز بنجاح! جاهز للنشر' : 'Reel trimmed & ready to publish!');
+          setIsAdModalOpen(true);
+        }}
+      />
+
+      {/* ViralMedia Studio Master Interactive Studio Modal */}
+      <ViralMediaStudioModal
+        isOpen={isStudioModalOpen}
+        onClose={() => setIsStudioModalOpen(false)}
+        isRtl={isRtl}
+        token={token}
+        user={user}
+        onPublish={async (project: MediaProjectState, renderedVideoUrl?: string, thumbnail?: string) => {
+          setIsStudioModalOpen(false);
+          const finalVideoUrl = renderedVideoUrl || (project.visual?.sourceType === 'video' ? project.visual.url : '');
+          const finalImageUrl = thumbnail || (project.visual?.sourceType === 'image' ? project.visual.url : '');
+
+          try {
+            const res = await fetch('/api/bulletin/ads', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token || secureStorage.getSync('app_token') || ''}`
+              },
+              body: JSON.stringify({
+                title: isRtl ? 'مقطع ريلز تم إنتاجه باستوديو الوسائط' : 'ViralMedia Studio Creation',
+                description: '',
+                ad_format: 'reel',
+                video_url: finalVideoUrl,
+                image_url: finalImageUrl,
+                audio_url: project.musicTrack?.url || '',
+                audio_title: project.musicTrack?.title || '',
+                audio_artist: project.musicTrack?.author || '',
+                audio_track_id: project.musicTrack?.id || '',
+                aspect_ratio: '9:16',
+                audience: 'public',
+                location_city: 'القدس الشريف'
+              })
+            });
+            const data = await res.json();
+            if (data.success) {
+              toast.success(isRtl ? 'تم نشر الفيديو في ريلز بنجاح! 🚀' : 'Reel published successfully! 🚀');
+              fetchAds(1, false);
+              fetchMyAds();
+              setActiveTab('reels');
+            } else {
+              toast.error(data.error || (isRtl ? 'تعذر نشر الريلز' : 'Failed to publish reel'));
+            }
+          } catch (e) {
+            toast.error(isRtl ? 'حدث خطأ أثناء النشر' : 'Error publishing reel');
+          }
         }}
       />
 
@@ -7738,6 +7974,7 @@ export const BulletinBoardPage: React.FC = () => {
         onBoostAd={handleOpenBoostModal}
         onEditAd={handleEditAd}
         onViewPost={handleNavigateToPost}
+        onOpenPageDetail={handleOpenPageDetail}
         user={user}
         token={token}
       />

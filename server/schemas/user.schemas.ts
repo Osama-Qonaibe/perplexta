@@ -16,7 +16,7 @@ export const signupSchema = z.object({
   password: z.string().min(8).max(128),
   name: z.string().min(2).max(100).optional(),
   language: z.enum(['ar', 'en']).default('ar'),
-  theme: z.enum(['light', 'dark']).default('dark'),
+  theme: z.enum(['light', 'dark']).default('light'),
   ref: z.string().optional()
 });
 

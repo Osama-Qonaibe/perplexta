@@ -354,8 +354,8 @@ Instruction: You MUST explicitly disclose this forensic audit to the user. Descr
       const friendlyNameEn = getToolFriendlyName(toolIdStr, 'en');
 
       throw new Error(JSON.stringify({
-        error: `You have reached your ${periodLabelEn} limit for '${friendlyNameEn}' (${currentVal}/${limitVal} requests). Please upgrade your plan for higher capacity.`,
-        error_ar: `لقد استنفدت الحد ${periodLabelAr} المتاح لأداة "${friendlyNameAr}" (${currentVal}/${limitVal} طلب). يمكنك ترقية باقتك للحصول على سعة استخدام أعلى.`,
+        error: `You have reached the ${periodLabelEn} limit for "${friendlyNameEn}"`,
+        error_ar: `لقد استنفدت الحد ${periodLabelAr} المتاح لأداة "${friendlyNameAr}"`,
         type: "QUOTA_EXCEEDED",
         limit: limitVal,
         currentUsage: currentVal,
@@ -409,9 +409,51 @@ Instruction: You MUST explicitly disclose this forensic audit to the user. Descr
     }
   }
 
-  const userLang = user?.language || 'en';
+  let userLang: 'ar' | 'en' = 'ar';
+  let userContext: any = undefined;
+
+  // Detect language dynamically from the current user prompt
+  const arabicChars = (cleanUserPrompt.match(/[\u0600-\u06FF\u0750-\u077F\u08A0-\u08FF\uFB50-\uFDFF\uFE70-\uFEFF]/g) || []).length;
+  const latinChars = (cleanUserPrompt.match(/[a-zA-Z]/g) || []).length;
+  const promptIsArabic = arabicChars > 0 && arabicChars >= latinChars * 0.25;
+
+  try {
+    const userRes = await pool.query(
+      `SELECT u.id, u.name, u.email, u.language,
+              bp.id AS page_id, bp.name AS page_name, bp.slug AS page_slug
+       FROM users u
+       LEFT JOIN bulletin_pages bp ON bp.user_id = u.id
+       WHERE u.id = $1
+       ORDER BY bp.id ASC
+       LIMIT 1`,
+      [userId]
+    );
+    const uRow = userRes.rows[0];
+    if (uRow) {
+      if (promptIsArabic) {
+        userLang = 'ar';
+      } else if (latinChars > arabicChars * 2) {
+        userLang = 'en';
+      } else {
+        userLang = uRow.language === 'ar' ? 'ar' : 'en';
+      }
+      const cleanName = uRow.name || uRow.email?.split('@')[0] || '';
+      userContext = {
+        userName: cleanName,
+        viralbookProfileUrl: uRow.id ? `https://perplexta.com/viralbook/u/${uRow.id}` : 'https://perplexta.com/viralbook',
+        viralbookPageUrl: uRow.page_slug ? `https://perplexta.com/viralbook/p/${uRow.page_slug}` : (uRow.page_id ? `https://perplexta.com/viralbook/p/${uRow.page_id}` : undefined),
+        viralbookPageName: uRow.page_name || undefined
+      };
+    } else {
+      userLang = promptIsArabic ? 'ar' : 'en';
+    }
+  } catch (userQueryErr) {
+    console.warn('[Orchestrator] User context query fallback:', userQueryErr);
+    userLang = promptIsArabic ? 'ar' : 'en';
+  }
+
   const appName = getAppName(userLang);
-  const protocol = buildSystemPrompt(appName, toolIdStr, userLang);
+  const protocol = buildSystemPrompt(appName, toolIdStr, userLang, userContext);
 
   const chatWantsSearch = (isDedicatedSearchTool || (isChatOnly && isExplicitSearchRequested(cleanUserPrompt, toolIdStr))) && !isSocialGreeting(cleanUserPrompt);
 

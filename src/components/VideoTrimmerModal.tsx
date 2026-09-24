@@ -1,9 +1,8 @@
-import React, { useState, useRef, useEffect } from 'react';
-import { createPortal } from 'react-dom';
-import { X, Scissors, Play, Pause, Check, Clock, RotateCcw, Volume2, VolumeX, Sparkles, Upload } from 'lucide-react';
-import { getAspectRatioClass } from '../utils/mediaUtils';
-import { Button, toast } from '@/design-system';
+import React, { useState, useRef, useEffect, useCallback } from 'react';
+import { X, Play, Pause, Check, Volume2, VolumeX, RotateCcw, Music } from 'lucide-react';
+import { AppModal, toast } from '@/design-system';
 import { triggerHaptic } from '../utils/haptics';
+import { AudioLibraryPickerModal, AudioTrackItem } from './bulletin/AudioLibraryPickerModal';
 
 export interface VideoTrimmerModalProps {
   isOpen: boolean;
@@ -11,6 +10,9 @@ export interface VideoTrimmerModalProps {
   videoUrl: string;
   videoDuration?: number;
   isRtl?: boolean;
+  token?: string | null;
+  onOpenAudioPicker?: () => void;
+  onSelectAudioTrack?: (track: AudioTrackItem) => void;
   onTrimComplete: (trimmedData: {
     videoUrl: string;
     startTime: number;
@@ -19,18 +21,25 @@ export interface VideoTrimmerModalProps {
     adFormat: string;
     aspectRatio: string;
     videoFilter: string;
+    audioTrack?: AudioTrackItem | null;
   }) => void;
 }
 
 const VIDEO_FILTERS = [
-  { id: 'normal', nameAr: 'عادي (أصلي)', nameEn: 'Normal', filter: 'none' },
+  { id: 'normal', nameAr: 'أصلي', nameEn: 'Normal', filter: 'none' },
   { id: 'cinematic', nameAr: 'سينمائي', nameEn: 'Cinematic', filter: 'contrast(115%) saturate(125%) brightness(95%) sepia(15%)' },
-  { id: 'grayscale', nameAr: 'أبيض وأسود', nameEn: 'Grayscale', filter: 'grayscale(100%) contrast(110%)' },
-  { id: 'high-contrast', nameAr: 'تباين عالي', nameEn: 'High Contrast', filter: 'contrast(140%) brightness(105%)' },
   { id: 'warm', nameAr: 'دافئ', nameEn: 'Warm', filter: 'sepia(35%) saturate(140%) brightness(102%)' },
   { id: 'cool', nameAr: 'بارد', nameEn: 'Cool', filter: 'hue-rotate(190deg) saturate(130%) contrast(110%)' },
+  { id: 'grayscale', nameAr: 'رمادي', nameEn: 'B&W', filter: 'grayscale(100%) contrast(110%)' },
+  { id: 'high-contrast', nameAr: 'تباين', nameEn: 'Contrast', filter: 'contrast(140%) brightness(105%)' },
   { id: 'vintage', nameAr: 'عتيق', nameEn: 'Vintage', filter: 'sepia(60%) contrast(100%) brightness(92%) hue-rotate(-10deg)' },
 ];
+
+const FORMAT_OPTIONS = [
+  { id: '9:16', format: 'reel', ratio: '9:16' },
+  { id: '1:1', format: 'post', ratio: '1:1' },
+  { id: '16:9', format: 'video', ratio: '16:9' },
+] as const;
 
 export const VideoTrimmerModal: React.FC<VideoTrimmerModalProps> = ({
   isOpen,
@@ -38,23 +47,41 @@ export const VideoTrimmerModal: React.FC<VideoTrimmerModalProps> = ({
   videoUrl: initialVideoUrl,
   videoDuration = 0,
   isRtl = true,
+  token = null,
+  onOpenAudioPicker,
+  onSelectAudioTrack,
   onTrimComplete,
 }) => {
   const videoRef = useRef<HTMLVideoElement>(null);
+  const ambientVideoRef = useRef<HTMLVideoElement>(null);
+  const timelineRef = useRef<HTMLDivElement>(null);
+
   const [currentVideoUrl, setCurrentVideoUrl] = useState<string>(initialVideoUrl);
   const [isPlaying, setIsPlaying] = useState(false);
   const [isMuted, setIsMuted] = useState(false);
   const [currentTime, setCurrentTime] = useState(0);
-  const [duration, setDuration] = useState(videoDuration);
-  const [isDraggingVideo, setIsDraggingVideo] = useState(false);
+  const [duration, setDuration] = useState(videoDuration || 15);
 
   const [startTime, setStartTime] = useState(0);
-  const [endTime, setEndTime] = useState(videoDuration || 10);
+  const [endTime, setEndTime] = useState(videoDuration || 15);
 
-  const [adFormat, setAdFormat] = useState<'post' | 'reel' | 'story' | 'video' | 'sidebar'>('post');
-  const [aspectRatio, setAspectRatio] = useState<'9:16' | '16:9' | '1:1' | '4:5'>('1:1');
+  const [selectedFormat, setSelectedFormat] = useState<'9:16' | '1:1' | '16:9'>('9:16');
   const [selectedFilter, setSelectedFilter] = useState<string>('normal');
   const [isProcessing, setIsProcessing] = useState(false);
+  const [thumbnails, setThumbnails] = useState<string[]>([]);
+
+  // Music Picker Modal State
+  const [isAudioPickerOpen, setIsAudioPickerOpen] = useState(false);
+  const [selectedAudioTrack, setSelectedAudioTrack] = useState<AudioTrackItem | null>(null);
+
+  // Dragging states for visual range trimmer handles ('start' | 'end' | 'window' | 'scrub')
+  const [dragMode, setDragMode] = useState<'start' | 'end' | 'window' | 'scrub' | null>(null);
+  const dragStartDataRef = useRef<{ clientX: number; initialStart: number; initialEnd: number; windowLength: number }>({
+    clientX: 0,
+    initialStart: 0,
+    initialEnd: 15,
+    windowLength: 15,
+  });
 
   useEffect(() => {
     setCurrentVideoUrl(initialVideoUrl);
@@ -67,416 +94,647 @@ export const VideoTrimmerModal: React.FC<VideoTrimmerModalProps> = ({
     }
   }, [videoDuration]);
 
+  // Extract visual filmstrip frames from video
+  useEffect(() => {
+    if (!isOpen || !currentVideoUrl) return;
+
+    let isMounted = true;
+    const generateFilmstrip = async () => {
+      try {
+        const offscreenVideo = document.createElement('video');
+        offscreenVideo.src = currentVideoUrl;
+        offscreenVideo.crossOrigin = 'anonymous';
+        offscreenVideo.muted = true;
+        offscreenVideo.playsInline = true;
+
+        await new Promise<void>((resolve) => {
+          offscreenVideo.onloadedmetadata = () => resolve();
+          offscreenVideo.onerror = () => resolve();
+          setTimeout(resolve, 2000);
+        });
+
+        const totalDur = offscreenVideo.duration || duration || 10;
+        const frameCount = 8;
+        const step = totalDur / frameCount;
+        const frames: string[] = [];
+
+        const canvas = document.createElement('canvas');
+        canvas.width = 64;
+        canvas.height = 96;
+        const ctx = canvas.getContext('2d');
+
+        for (let i = 0; i < frameCount; i++) {
+          if (!isMounted) break;
+          const targetTime = Math.min(totalDur - 0.1, i * step);
+          offscreenVideo.currentTime = targetTime;
+
+          await new Promise<void>((res) => {
+            const onSeeked = () => {
+              offscreenVideo.removeEventListener('seeked', onSeeked);
+              if (ctx) {
+                ctx.drawImage(offscreenVideo, 0, 0, canvas.width, canvas.height);
+                frames.push(canvas.toDataURL('image/jpeg', 0.6));
+              }
+              res();
+            };
+            offscreenVideo.addEventListener('seeked', onSeeked);
+            setTimeout(() => {
+              offscreenVideo.removeEventListener('seeked', onSeeked);
+              res();
+            }, 250);
+          });
+        }
+
+        if (isMounted && frames.length > 0) {
+          setThumbnails(frames);
+        }
+      } catch (_) {}
+    };
+
+    generateFilmstrip();
+    return () => {
+      isMounted = false;
+    };
+  }, [isOpen, currentVideoUrl, duration]);
+
+  // Sync video time updates and loop strictly within trim range
   useEffect(() => {
     const video = videoRef.current;
     if (!video) return;
 
-    const handleTimeUpdate = () => {
-      setCurrentTime(video.currentTime);
-      if (video.currentTime >= endTime) {
-        video.currentTime = startTime;
-        if (!isPlaying) {
-          video.pause();
+    const handleLoadedMetadata = () => {
+      if (video.duration && !isNaN(video.duration) && video.duration > 0) {
+        setDuration(video.duration);
+        if (endTime === 0 || endTime > video.duration) {
+          setEndTime(video.duration);
         }
       }
     };
 
-    const handleLoadedMetadata = () => {
-      const d = video.duration || videoDuration || 15;
-      setDuration(d);
-      if (!endTime || endTime > d) {
-        setEndTime(d);
+    const handleTimeUpdate = () => {
+      const cur = video.currentTime;
+      setCurrentTime(cur);
+
+      if (ambientVideoRef.current && Math.abs(ambientVideoRef.current.currentTime - cur) > 0.2) {
+        ambientVideoRef.current.currentTime = cur;
+      }
+
+      if (cur >= endTime || cur < startTime) {
+        video.currentTime = startTime;
+        if (ambientVideoRef.current) ambientVideoRef.current.currentTime = startTime;
       }
     };
 
-    video.addEventListener('timeupdate', handleTimeUpdate);
+    const handleEnded = () => {
+      video.currentTime = startTime;
+      if (ambientVideoRef.current) ambientVideoRef.current.currentTime = startTime;
+      video.play().catch(() => {});
+    };
+
+    const handlePlay = () => {
+      setIsPlaying(true);
+      if (ambientVideoRef.current) {
+        ambientVideoRef.current.play().catch(() => {});
+      }
+    };
+
+    const handlePause = () => {
+      setIsPlaying(false);
+      if (ambientVideoRef.current) {
+        ambientVideoRef.current.pause();
+      }
+    };
+
     video.addEventListener('loadedmetadata', handleLoadedMetadata);
+    video.addEventListener('timeupdate', handleTimeUpdate);
+    video.addEventListener('ended', handleEnded);
+    video.addEventListener('play', handlePlay);
+    video.addEventListener('pause', handlePause);
 
     return () => {
-      video.removeEventListener('timeupdate', handleTimeUpdate);
       video.removeEventListener('loadedmetadata', handleLoadedMetadata);
+      video.removeEventListener('timeupdate', handleTimeUpdate);
+      video.removeEventListener('ended', handleEnded);
+      video.removeEventListener('play', handlePlay);
+      video.removeEventListener('pause', handlePause);
     };
-  }, [startTime, endTime, isPlaying, videoDuration]);
+  }, [startTime, endTime]);
 
-  if (!isOpen) return null;
-
-  const handleVideoFileDrop = (files: File[]) => {
-    if (!files || files.length === 0) return;
-    const file = files[0];
-    const isVid = file.type.startsWith('video/') || ['mp4', 'mov', 'avi', 'webm', 'mkv'].some(ext => file.name.toLowerCase().endsWith('.' + ext));
-
-    if (!isVid) {
-      toast.error(isRtl ? 'يرجى إفلات مقطع فيديو صالح' : 'Please drop a valid video file');
-      return;
-    }
-
-    if (file.size > 100 * 1024 * 1024) {
-      toast.error(isRtl ? 'حجم الفيديو كبير جداً (الأقصى 100 ميجابايت)' : 'Video file too large (Max 100MB)');
-      return;
-    }
-
-    triggerHaptic('medium');
-    const newUrl = URL.createObjectURL(file);
-    setCurrentVideoUrl(newUrl);
-    setStartTime(0);
-    toast.success(isRtl ? 'تم استبدال مقطع الفيديو بنجاح!' : 'Video replaced successfully!');
-  };
-
-  const togglePlay = () => {
+  const togglePlay = useCallback(() => {
     const video = videoRef.current;
     if (!video) return;
 
-    if (isPlaying) {
-      video.pause();
-      setIsPlaying(false);
-    } else {
+    if (video.paused) {
       if (video.currentTime < startTime || video.currentTime >= endTime) {
         video.currentTime = startTime;
+        if (ambientVideoRef.current) ambientVideoRef.current.currentTime = startTime;
       }
-      video.play().then(() => setIsPlaying(true)).catch(() => {});
+      video.play().catch(() => {});
+      setIsPlaying(true);
+    } else {
+      video.pause();
+      setIsPlaying(false);
     }
-  };
+    triggerHaptic('light');
+  }, [startTime, endTime]);
 
   const formatTime = (seconds: number) => {
-    if (isNaN(seconds)) return '00:00';
+    if (isNaN(seconds) || seconds < 0) return '00:00';
     const mins = Math.floor(seconds / 60);
     const secs = Math.floor(seconds % 60);
-    return `${mins < 10 ? '0' : ''}${mins}:${secs < 10 ? '0' : ''}${secs}`;
+    return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+  };
+
+  // Timeline dragging logic
+  const handleTimelinePointerDown = (
+    mode: 'start' | 'end' | 'window' | 'scrub',
+    e: React.PointerEvent<HTMLDivElement>
+  ) => {
+    e.preventDefault();
+    e.stopPropagation();
+
+    if (!timelineRef.current || duration <= 0) return;
+    const rect = timelineRef.current.getBoundingClientRect();
+    const clickX = e.clientX - rect.left;
+    const clickRatio = Math.max(0, Math.min(1, clickX / rect.width));
+    const targetTime = clickRatio * duration;
+
+    setDragMode(mode);
+    dragStartDataRef.current = {
+      clientX: e.clientX,
+      initialStart: startTime,
+      initialEnd: endTime,
+      windowLength: endTime - startTime,
+    };
+
+    if (mode === 'scrub') {
+      const clampedTime = Math.max(startTime, Math.min(endTime, targetTime));
+      setCurrentTime(clampedTime);
+      if (videoRef.current) {
+        videoRef.current.currentTime = clampedTime;
+      }
+      if (ambientVideoRef.current) {
+        ambientVideoRef.current.currentTime = clampedTime;
+      }
+    }
+
+    triggerHaptic('medium');
+
+    const handlePointerMove = (moveEvent: PointerEvent) => {
+      if (!timelineRef.current || duration <= 0) return;
+      const moveRect = timelineRef.current.getBoundingClientRect();
+      const deltaX = moveEvent.clientX - dragStartDataRef.current.clientX;
+      const deltaSeconds = (deltaX / moveRect.width) * duration;
+
+      if (mode === 'start') {
+        const newStart = Math.max(0, Math.min(dragStartDataRef.current.initialEnd - 0.5, dragStartDataRef.current.initialStart + deltaSeconds));
+        setStartTime(newStart);
+        setCurrentTime(newStart);
+        if (videoRef.current) videoRef.current.currentTime = newStart;
+        if (ambientVideoRef.current) ambientVideoRef.current.currentTime = newStart;
+      } else if (mode === 'end') {
+        const newEnd = Math.min(duration, Math.max(dragStartDataRef.current.initialStart + 0.5, dragStartDataRef.current.initialEnd + deltaSeconds));
+        setEndTime(newEnd);
+        setCurrentTime(newEnd);
+        if (videoRef.current) videoRef.current.currentTime = newEnd;
+        if (ambientVideoRef.current) ambientVideoRef.current.currentTime = newEnd;
+      } else if (mode === 'window') {
+        const winLen = dragStartDataRef.current.windowLength;
+        let newStart = dragStartDataRef.current.initialStart + deltaSeconds;
+        let newEnd = newStart + winLen;
+
+        if (newStart < 0) {
+          newStart = 0;
+          newEnd = winLen;
+        }
+        if (newEnd > duration) {
+          newEnd = duration;
+          newStart = duration - winLen;
+        }
+
+        setStartTime(newStart);
+        setEndTime(newEnd);
+        setCurrentTime(newStart);
+        if (videoRef.current) videoRef.current.currentTime = newStart;
+        if (ambientVideoRef.current) ambientVideoRef.current.currentTime = newStart;
+      } else if (mode === 'scrub') {
+        const currentX = moveEvent.clientX - moveRect.left;
+        const currentRatio = Math.max(0, Math.min(1, currentX / moveRect.width));
+        const newCurrent = Math.max(startTime, Math.min(endTime, currentRatio * duration));
+        setCurrentTime(newCurrent);
+        if (videoRef.current) videoRef.current.currentTime = newCurrent;
+        if (ambientVideoRef.current) ambientVideoRef.current.currentTime = newCurrent;
+      }
+    };
+
+    const handlePointerUp = () => {
+      setDragMode(null);
+      window.removeEventListener('pointermove', handlePointerMove);
+      window.removeEventListener('pointerup', handlePointerUp);
+      window.removeEventListener('pointercancel', handlePointerUp);
+    };
+
+    window.addEventListener('pointermove', handlePointerMove);
+    window.addEventListener('pointerup', handlePointerUp);
+    window.addEventListener('pointercancel', handlePointerUp);
   };
 
   const handleApplyTrim = async () => {
     setIsProcessing(true);
-    const toastId = toast.loading(isRtl ? 'جاري معالجة وقص الفيديو عبر FFmpeg...' : 'Processing video trim via FFmpeg...');
+    const toastId = toast.loading(isRtl ? 'جاري تطبيق الإعدادات...' : 'Applying adjustments...');
 
     try {
-      await new Promise(r => setTimeout(r, 1200));
-
+      const matchedOption = FORMAT_OPTIONS.find((opt) => opt.id === selectedFormat) || FORMAT_OPTIONS[0];
       toast.dismiss(toastId);
-      toast.success(isRtl ? 'تم قص وضبط مقطع الفيديو بنجاح' : 'Video trimmed successfully');
-      
+      toast.success(isRtl ? 'تم تحديث الفيديو بنجاح' : 'Video adjusted successfully');
+
       onTrimComplete({
         videoUrl: currentVideoUrl,
         startTime,
         endTime,
-        duration: Math.round(endTime - startTime),
-        adFormat,
-        aspectRatio,
+        duration: Math.max(1, Math.round(endTime - startTime)),
+        adFormat: matchedOption.format,
+        aspectRatio: selectedFormat,
         videoFilter: selectedFilter,
+        audioTrack: selectedAudioTrack,
       });
       onClose();
     } catch (err) {
       toast.dismiss(toastId);
-      toast.error(isRtl ? 'حدث خطأ أثناء معالجة الفيديو' : 'Video trimming failed');
+      toast.error(isRtl ? 'حدث خطأ أثناء حفظ الفيديو' : 'Failed to save video');
     } finally {
       setIsProcessing(false);
     }
   };
 
-  return createPortal(
-    <div 
-      className="fixed inset-0 z-[80] flex items-center justify-center p-2 sm:p-4 bg-[var(--surface-overlay)] backdrop-blur-md"
-      onDragOver={(e) => {
-        e.preventDefault();
-        e.stopPropagation();
-        setIsDraggingVideo(true);
-      }}
-      onDragLeave={(e) => {
-        e.preventDefault();
-        e.stopPropagation();
-        if (e.currentTarget === e.target) setIsDraggingVideo(false);
-      }}
-      onDrop={(e) => {
-        e.preventDefault();
-        e.stopPropagation();
-        setIsDraggingVideo(false);
-        const files = e.dataTransfer.files ? Array.from(e.dataTransfer.files) : [];
-        if (files.length > 0) handleVideoFileDrop(files);
-      }}
-    >
-      <div className="relative bg-[var(--surface-card)] border border-[var(--border-default)] rounded-shape-lg w-full max-w-3xl overflow-hidden shadow-2xl flex flex-col text-[var(--text-primary)] max-h-[94vh] sm:max-h-[88vh]">
-        
-        {/* Drop Overlay */}
-        {isDraggingVideo && (
-          <div className="absolute inset-0 z-[90] bg-[var(--surface-card)]/95 backdrop-blur-md p-6 flex flex-col items-center justify-center text-center gap-3 border-2 border-dashed border-[var(--fg-accent)] rounded-shape-lg select-none">
-            <div className="w-14 h-14 rounded-shape-md bg-[var(--surface-subtle)] text-[var(--fg-accent)] flex items-center justify-center shadow-lg border border-[var(--border-accent)]/40 animate-bounce">
-              <Upload size={28} />
-            </div>
-            <p className="text-sm font-extrabold text-[var(--text-primary)]">
-              {isRtl ? 'أفلت مقطع الفيديو هنا لاستبداله فوراً' : 'Drop video clip here to replace instantly'}
-            </p>
-          </div>
-        )}
+  // Range percentage calculations
+  const startPercent = duration > 0 ? (startTime / duration) * 100 : 0;
+  const endPercent = duration > 0 ? (endTime / duration) * 100 : 100;
+  const currentPercent = duration > 0 ? (currentTime / duration) * 100 : 0;
+  const selectedFilterStyle = VIDEO_FILTERS.find(f => f.id === selectedFilter)?.filter || 'none';
 
-        {/* Modal Header */}
-        <div className="px-3.5 py-2.5 sm:px-6 sm:py-4 border-b border-[var(--border-default)] flex items-center justify-between bg-[var(--surface-subtle)]">
-          <div className="flex items-center gap-2">
-            <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-shape-sm bg-[var(--surface-subtle)] border border-[var(--border-accent)]/30 flex items-center justify-center text-[var(--fg-accent)] shrink-0">
-              <Scissors size={17} className="sm:size-[20px]" />
-            </div>
-            <div className="min-w-0">
-              <h3 className="text-[var(--text-primary)] font-bold text-xs sm:text-base truncate">
-                {isRtl ? 'محرر وقص الفيديو الاحترافي' : 'Professional Video Trimmer & Editor'}
-              </h3>
-              <p className="text-[10px] sm:text-xs text-[var(--text-secondary)] truncate">
-                {isRtl ? 'تحديد نقطتي البداية والنهاية وضبط الأبعاد (يدعم السحب والإفلات)' : 'Standardize aspect ratio & trim (Supports drag and drop)'}
-              </p>
-            </div>
-          </div>
-          <button
-            type="button"
-            onClick={onClose}
-            aria-label="Close trimmer"
-            className="w-7 h-7 sm:w-8 sm:h-8 rounded-shape-sm flex items-center justify-center text-[var(--text-muted)] hover:text-[var(--text-primary)] hover:bg-[var(--surface-subtle)] border border-[var(--border-default)] transition-colors cursor-pointer shrink-0 ms-2"
-          >
-            <X size={16} className="sm:size-[18px]" />
-          </button>
-        </div>
+  return (
+    <>
+      <AppModal
+        open={isOpen}
+        onClose={onClose}
+        layer="nested"
+        size="md"
+        dir={isRtl ? 'rtl' : 'ltr'}
+        contentClassName="!p-0 !border !border-[var(--border-default)] !rounded-[var(--radius-lg)] shadow-2xl !h-[82vh] !max-h-[600px] sm:!max-h-[640px] !w-[94%] sm:!max-w-md overflow-hidden bg-[var(--surface-page)]"
+      >
+        {/* Native Single-Column Mobile-First Studio Layout */}
+        <div className="relative w-full h-full flex flex-col bg-[var(--surface-page)] overflow-hidden select-none">
+          
+          {/* 1. Header Toolbar (Compact) */}
+          <div className="flex items-center justify-between px-3 py-1.5 bg-[var(--surface-card)] border-b border-[var(--border-default)] z-30 shrink-0">
+            <button
+              type="button"
+              onClick={onClose}
+              aria-label="Close"
+              className="w-7 h-7 rounded-[var(--radius-sm)] flex items-center justify-center text-[var(--text-muted)] hover:text-[var(--text-primary)] hover:bg-[var(--surface-subtle)] transition-colors cursor-pointer border border-transparent hover:border-[var(--border-default)]"
+            >
+              <X size={16} />
+            </button>
 
-        {/* Modal Body */}
-        <div className="p-3 sm:p-6 flex flex-col gap-3 sm:gap-6 overflow-y-auto max-h-[82vh] scrollbar-thin">
-          {/* Video Preview Stage */}
-          <div 
-            onDragOver={(e) => { e.preventDefault(); e.stopPropagation(); }}
-            onDrop={(e) => {
-              e.preventDefault();
-              e.stopPropagation();
-              const files = e.dataTransfer.files ? Array.from(e.dataTransfer.files) : [];
-              if (files.length > 0) handleVideoFileDrop(files);
-            }}
-            className={`relative w-full ${
-              aspectRatio === '9:16' || adFormat === 'reel' || adFormat === 'story'
-                ? 'aspect-[9/16] max-h-[320px] sm:max-h-[420px] mx-auto'
-                : aspectRatio === '1:1'
-                ? 'aspect-square max-h-[260px] sm:max-h-[360px] mx-auto'
-                : 'aspect-video max-h-[180px] xs:max-h-[220px] sm:max-h-[340px]'
-            } bg-[var(--surface-inset)] rounded-shape-md overflow-hidden border border-[var(--border-default)] flex items-center justify-center shadow-inner`}
-          >
-            <video
-              ref={videoRef}
-              src={currentVideoUrl}
-              muted={isMuted}
-              playsInline
-              style={{
-                filter: VIDEO_FILTERS.find(f => f.id === selectedFilter)?.filter || 'none'
-              }}
-              className={`w-full h-full object-contain ${getAspectRatioClass(aspectRatio, adFormat)} transition-colors duration-fast`}
-              onClick={togglePlay}
-            />
-
-            {!isPlaying && (
-              <button
-                onClick={togglePlay}
-                aria-label="Play"
-                className="absolute inset-0 m-auto w-10 h-10 sm:w-14 sm:h-14 rounded-shape-md bg-[var(--bg-accent-emphasis)] text-[var(--fg-on-emphasis)] flex items-center justify-center shadow-lg transition-transform hover:scale-105 active:scale-95 cursor-pointer z-10"
-              >
-                <Play size={20} className="sm:size-[26px] translate-x-0.5 fill-current" />
-              </button>
-            )}
-
-            <div className="absolute top-2 left-2 sm:top-3 sm:left-3 px-2 py-0.5 sm:px-2.5 sm:py-1 rounded-shape-xs bg-[var(--surface-overlay)] backdrop-blur-md text-[var(--fg-accent)] text-[10px] sm:text-xs font-mono border border-[var(--border-accent)]/30 flex items-center gap-1 z-20">
-              <Sparkles size={11} className="sm:size-[12px]" />
-              <span className="uppercase font-bold">{adFormat} ({aspectRatio})</span>
-            </div>
-
-            {selectedFilter !== 'normal' && (
-              <div className="absolute top-2 right-2 sm:top-3 sm:right-3 px-2 py-0.5 sm:px-2.5 sm:py-1 rounded-shape-xs bg-[var(--bg-accent-emphasis)] text-[var(--fg-on-emphasis)] text-[9px] sm:text-[11px] font-bold shadow-lg z-20">
-                {isRtl ? VIDEO_FILTERS.find(f => f.id === selectedFilter)?.nameAr : VIDEO_FILTERS.find(f => f.id === selectedFilter)?.nameEn}
-              </div>
-            )}
-          </div>
-
-          {/* Player Controls Bar */}
-          <div className="flex items-center justify-between bg-[var(--surface-subtle)] p-2 sm:p-3 rounded-shape-sm border border-[var(--border-default)]">
-            <div className="flex items-center gap-2 sm:gap-3">
-              <Button
-                variant="primary"
-                size="sm"
-                onClick={togglePlay}
-              >
-                {isPlaying ? <Pause size={13} className="sm:size-[14px]" /> : <Play size={13} className="sm:size-[14px]" />}
-                <span className="text-xs">{isPlaying ? (isRtl ? 'إيقاف' : 'Pause') : (isRtl ? 'تشغيل' : 'Play')}</span>
-              </Button>
+            {/* Time & Reset HUD */}
+            <div className="flex items-center gap-1 px-2.5 py-0.5 rounded-[var(--radius-sm)] bg-[var(--surface-subtle)] border border-[var(--border-default)] font-mono text-[10px] font-bold text-[var(--text-primary)]">
+              <span className="text-[var(--text-primary)]">{formatTime(currentTime)}</span>
+              <span className="text-[var(--text-muted)]">/</span>
+              <span className="text-[var(--text-muted)]">{formatTime(endTime - startTime)}</span>
               <button
                 type="button"
-                onClick={() => setIsMuted(!isMuted)}
-                aria-label="Toggle mute"
-                className="w-7 h-7 sm:w-8 sm:h-8 rounded-shape-sm bg-[var(--surface-card)] border border-[var(--border-default)] flex items-center justify-center text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--surface-subtle)] transition-colors cursor-pointer"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setStartTime(0);
+                  setEndTime(duration);
+                  if (videoRef.current) videoRef.current.currentTime = 0;
+                  triggerHaptic('light');
+                }}
+                title={isRtl ? 'إعادة ضبط' : 'Reset'}
+                className="text-[var(--text-muted)] hover:text-[var(--text-primary)] ms-1 cursor-pointer transition-colors"
               >
-                {isMuted ? <VolumeX size={14} className="sm:size-[16px] text-[var(--fg-danger)]" /> : <Volume2 size={14} className="sm:size-[16px]" />}
-              </button>
-            </div>
-            <div className="text-[10.5px] sm:text-xs font-mono text-[var(--fg-accent)] bg-[var(--surface-subtle)] px-2.5 py-1 rounded-shape-xs border border-[var(--border-accent)]/20">
-              {formatTime(currentTime)} / {formatTime(duration)}
-            </div>
-          </div>
-
-          {/* Trimmer Sliders */}
-          <div className="flex flex-col gap-2.5 sm:gap-3 bg-[var(--surface-subtle)] p-2.5 sm:p-4 rounded-shape-md border border-[var(--border-default)]">
-            <div className="flex items-center justify-between text-[11px] sm:text-xs text-[var(--text-secondary)] font-medium flex-wrap gap-1">
-              <span className="flex items-center gap-1">
-                <Clock size={12} className="sm:size-[14px] text-[var(--fg-accent)]" />
-                {isRtl ? 'نطاق القص:' : 'Trim Range:'} <strong className="text-[var(--text-primary)] font-mono">{formatTime(startTime)}</strong> {isRtl ? 'إلى' : 'to'} <strong className="text-[var(--text-primary)] font-mono">{formatTime(endTime)}</strong> ({Math.max(0, Math.round(endTime - startTime))} {isRtl ? 'ث' : 's'})
-              </span>
-              <button
-                onClick={() => { setStartTime(0); setEndTime(duration); if (videoRef.current) videoRef.current.currentTime = 0; }}
-                className="text-[10px] sm:text-[11px] text-[var(--text-muted)] hover:text-[var(--text-primary)] flex items-center gap-1 cursor-pointer"
-              >
-                <RotateCcw size={11} className="sm:size-[12px]" />
-                <span>{isRtl ? 'إعادة ضبط' : 'Reset'}</span>
+                <RotateCcw size={11} />
               </button>
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 sm:gap-4 pt-1">
-              <div className="flex flex-col gap-1">
-                <label className="text-[10px] sm:text-[11px] text-[var(--text-muted)] font-medium">
-                  {isRtl ? 'وقت البداية (ثانية):' : 'Start Time (s):'} <span className="font-mono text-[var(--text-primary)]">{startTime.toFixed(1)}s</span>
-                </label>
-                <input
-                  type="range"
-                  min={0}
-                  max={Math.max(0, endTime - 1)}
-                  step={0.5}
-                  value={startTime}
-                  onChange={(e) => {
-                    const val = parseFloat(e.target.value);
-                    setStartTime(val);
-                    if (videoRef.current) videoRef.current.currentTime = val;
-                  }}
-                  className="w-full h-1.5 bg-[var(--surface-inset)] rounded-lg appearance-none cursor-pointer accent-[var(--accent)]"
-                />
-              </div>
+            {/* Save Action Button */}
+            <button
+              type="button"
+              disabled={isProcessing}
+              onClick={handleApplyTrim}
+              className="w-7 h-7 rounded-[var(--radius-sm)] bg-[var(--primary)] text-[var(--primary-foreground)] hover:opacity-90 active:scale-95 flex items-center justify-center shadow-xs transition-all cursor-pointer disabled:opacity-50 border border-[var(--border-strong)]"
+              title={isRtl ? 'حفظ واعتماد' : 'Apply'}
+              aria-label={isRtl ? 'حفظ واعتماد' : 'Apply'}
+            >
+              <Check size={15} strokeWidth={2.5} />
+            </button>
+          </div>
 
-              <div className="flex flex-col gap-1">
-                <label className="text-[10px] sm:text-[11px] text-[var(--text-muted)] font-medium">
-                  {isRtl ? 'وقت النهاية (ثانية):' : 'End Time (s):'} <span className="font-mono text-[var(--text-primary)]">{endTime.toFixed(1)}s</span>
-                </label>
-                <input
-                  type="range"
-                  min={Math.min(duration, startTime + 1)}
-                  max={duration || 60}
-                  step={0.5}
-                  value={endTime}
-                  onChange={(e) => {
-                    const val = parseFloat(e.target.value);
-                    setEndTime(val);
-                  }}
-                  className="w-full h-1.5 bg-[var(--surface-inset)] rounded-lg appearance-none cursor-pointer accent-[var(--accent)]"
+          {/* 2. Full-Bleed Video Stage & Canvas Viewport with Strict Edge Clipping */}
+          <div 
+            onClick={togglePlay}
+            className="relative flex-1 min-h-0 w-full bg-black flex items-center justify-center cursor-pointer overflow-hidden select-none"
+          >
+            {/* Subtle Ambient Video Glow */}
+            <video
+              ref={ambientVideoRef}
+              src={currentVideoUrl || undefined}
+              muted
+              playsInline
+              style={{ filter: 'blur(30px)', transform: 'scale(1.1)' }}
+              className="absolute inset-0 w-full h-full object-cover opacity-35 pointer-events-none overflow-hidden"
+            />
+
+            {/* Foreground Rendered Video Container (Clips watermarks, icons & child elements to curved corners) */}
+            <div className="relative z-10 w-full h-full flex items-center justify-center p-1.5 overflow-hidden">
+              <div className={`relative overflow-hidden transition-all duration-200 flex items-center justify-center shadow-lg rounded-[var(--radius-md)] ${
+                selectedFormat === '9:16' 
+                  ? 'h-full aspect-[9/16]' 
+                  : selectedFormat === '1:1' 
+                  ? 'aspect-square max-h-full' 
+                  : 'w-full aspect-video max-h-full'
+              }`}>
+                <video
+                  ref={videoRef}
+                  src={currentVideoUrl || undefined}
+                  muted={isMuted}
+                  playsInline
+                  preload="auto"
+                  style={{ filter: selectedFilterStyle }}
+                  className="w-full h-full object-cover overflow-hidden rounded-[var(--radius-md)]"
                 />
               </div>
             </div>
+
+            {/* Tap-to-play icon indicator */}
+            {!isPlaying && (
+              <div className="absolute inset-0 z-20 flex items-center justify-center bg-black/20 pointer-events-none">
+                <div className="w-10 h-10 rounded-[var(--radius-md)] bg-black/75 text-white border border-white/20 flex items-center justify-center shadow-xl backdrop-blur-xs">
+                  <Play size={18} className="translate-x-0.5 fill-current" />
+                </div>
+              </div>
+            )}
           </div>
 
-          {/* Ad Format & Aspect Ratio Options */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
-            <div className="flex flex-col gap-1.5">
-              <label className="text-[11px] sm:text-xs text-[var(--text-primary)] font-bold">
-                {isRtl ? 'نوع النشر على المنصة:' : 'Platform Publication Format:'}
-              </label>
-              <div className="grid grid-cols-3 gap-1.5 sm:gap-2">
-                {[
-                  { id: 'post', labelAr: 'منشور عادي', labelEn: 'Post' },
-                  { id: 'reel', labelAr: 'ريلز', labelEn: 'Reel' },
-                  { id: 'story', labelAr: 'قصة', labelEn: 'Story' },
-                ].map(fmt => (
+          {/* 3. Docked Single-Column Control Deck */}
+          <div className="flex flex-col gap-2 px-2.5 pt-2 pb-2.5 bg-[var(--surface-card)] border-t border-[var(--border-default)] z-30 shrink-0">
+            
+            {/* Active Selected Audio Track Indicator Badge */}
+            {selectedAudioTrack && (
+              <div className="flex items-center justify-between px-2 py-1 rounded-[var(--radius-xs)] bg-purple-500/10 border border-purple-500/25 text-[10px] text-purple-300 animate-in fade-in duration-200">
+                <div className="flex items-center gap-1.5 min-w-0 flex-1">
+                  <Music size={11} className="shrink-0 animate-pulse text-purple-400" />
+                  <span className="truncate font-bold text-[var(--text-primary)]">
+                    {selectedAudioTrack.title || (isRtl ? 'مقطع موسيقي' : 'Audio Track')}
+                  </span>
+                  {selectedAudioTrack.artist && (
+                    <span className="text-[var(--text-muted)] truncate hidden sm:inline">
+                      • {selectedAudioTrack.artist}
+                    </span>
+                  )}
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setSelectedAudioTrack(null)}
+                  className="w-4.5 h-4.5 rounded hover:bg-purple-500/20 flex items-center justify-center text-purple-400 cursor-pointer shrink-0 ms-1"
+                  title={isRtl ? 'إزالة الموسيقى' : 'Remove Music'}
+                >
+                  <X size={10} />
+                </button>
+              </div>
+            )}
+
+            {/* Timeline Range Trimmer */}
+            <div className="relative w-full">
+              {dragMode && (
+                <div 
+                  className="absolute -top-6 z-40 px-1.5 py-0.5 rounded-[var(--radius-xs)] bg-[var(--surface-card)] text-[var(--text-primary)] font-mono text-[8.5px] font-bold shadow-md border border-[var(--border-default)] transform -translate-x-1/2 flex items-center gap-1 pointer-events-none"
+                  style={{
+                    left: `${
+                      dragMode === 'start' 
+                        ? startPercent 
+                        : dragMode === 'end' 
+                        ? endPercent 
+                        : (startPercent + endPercent) / 2
+                    }%`
+                  }}
+                >
+                  <span>{formatTime(startTime)}</span>
+                  <span className="text-[var(--text-muted)]">➔</span>
+                  <span>{formatTime(endTime)}</span>
+                  <span className="text-[var(--text-muted)] font-normal">({(endTime - startTime).toFixed(1)}s)</span>
+                </div>
+              )}
+
+              <div
+                ref={timelineRef}
+                onPointerDown={(e) => handleTimelinePointerDown('scrub', e)}
+                className="relative h-6.5 w-full rounded-[var(--radius-sm)] bg-[var(--surface-subtle)] border border-[var(--border-default)] overflow-hidden cursor-pointer select-none touch-none"
+              >
+                {/* Thumbnail Strip */}
+                <div className="absolute inset-0 flex items-center justify-between opacity-75 pointer-events-none overflow-hidden">
+                  {thumbnails.length > 0 ? (
+                    thumbnails.map((thumb, idx) => (
+                      <img
+                        key={idx}
+                        src={thumb}
+                        alt=""
+                        className="h-full flex-1 object-cover border-r border-[var(--border-default)]/30 last:border-0"
+                      />
+                    ))
+                  ) : (
+                    <div className="w-full h-full bg-[var(--surface-subtle)]" />
+                  )}
+                </div>
+
+                {/* Dimmed Out-of-Range */}
+                <div
+                  className="absolute inset-y-0 left-0 bg-black/70 pointer-events-none"
+                  style={{ width: `${startPercent}%` }}
+                />
+                <div
+                  className="absolute inset-y-0 right-0 bg-black/70 pointer-events-none"
+                  style={{ width: `${100 - endPercent}%` }}
+                />
+
+                {/* Active Cut Window */}
+                <div
+                  onPointerDown={(e) => handleTimelinePointerDown('window', e)}
+                  className="absolute inset-y-0 border-y-2 border-[var(--accent-foreground)] bg-[var(--accent-foreground)]/15 cursor-grab active:cursor-grabbing touch-none z-20"
+                  style={{
+                    left: `${startPercent}%`,
+                    width: `${Math.max(1, endPercent - startPercent)}%`,
+                  }}
+                />
+
+                {/* Playhead Marker */}
+                <div
+                  className="absolute inset-y-0 w-0.5 bg-white shadow-md z-30 pointer-events-none"
+                  style={{ left: `${Math.min(endPercent, Math.max(startPercent, currentPercent))}%` }}
+                >
+                  <div className="w-1.5 h-1.5 rounded-[var(--radius-xs)] bg-white -translate-x-[2px] -translate-y-0.5 shadow-sm" />
+                </div>
+
+                {/* Left Handle */}
+                <div
+                  onPointerDown={(e) => handleTimelinePointerDown('start', e)}
+                  style={{ left: `${startPercent}%` }}
+                  className="absolute inset-y-0 -translate-x-1/2 w-2.5 bg-[var(--accent-foreground)] rounded-l-[var(--radius-xs)] flex items-center justify-center z-40 cursor-ew-resize active:scale-105 shadow-md border border-[var(--accent-foreground)] touch-none before:absolute before:-inset-2.5 before:content-['']"
+                  title={isRtl ? 'بداية المقطع' : 'Start cut'}
+                >
+                  <div className="w-[1px] h-2.5 bg-white rounded-xs" />
+                </div>
+
+                {/* Right Handle */}
+                <div
+                  onPointerDown={(e) => handleTimelinePointerDown('end', e)}
+                  style={{ left: `${endPercent}%` }}
+                  className="absolute inset-y-0 -translate-x-1/2 w-2.5 bg-[var(--accent-foreground)] rounded-r-[var(--radius-xs)] flex items-center justify-center z-40 cursor-ew-resize active:scale-105 shadow-md border border-[var(--accent-foreground)] touch-none before:absolute before:-inset-2.5 before:content-['']"
+                  title={isRtl ? 'نهاية المقطع' : 'End cut'}
+                >
+                  <div className="w-[1px] h-2.5 bg-white rounded-xs" />
+                </div>
+              </div>
+            </div>
+
+            {/* Aspect Ratio Numbers & Sound Control Buttons */}
+            <div className="flex items-center justify-between gap-1.5">
+              {/* Numbers Only Aspect Ratios */}
+              <div className="flex items-center gap-0.5 bg-[var(--surface-subtle)] p-0.5 rounded-[var(--radius-sm)] border border-[var(--border-default)] flex-1">
+                {FORMAT_OPTIONS.map((opt) => (
                   <button
-                    key={fmt.id}
+                    key={opt.id}
                     type="button"
                     onClick={() => {
-                      setAdFormat(fmt.id as any);
-                      if (fmt.id === 'reel' || fmt.id === 'story') setAspectRatio('9:16');
-                      else setAspectRatio('1:1');
+                      setSelectedFormat(opt.id as any);
+                      triggerHaptic('light');
                     }}
-                    className={`py-1.5 px-2 rounded-shape-sm text-[11px] sm:text-xs font-bold transition-colors duration-fast border cursor-pointer ${
-                      adFormat === fmt.id
-                        ? 'bg-[var(--bg-accent-emphasis)] text-[var(--fg-on-emphasis)] border-[var(--border-accent)] shadow-xs'
-                        : 'bg-[var(--surface-subtle)] text-[var(--text-secondary)] border-[var(--border-default)] hover:bg-[var(--surface-card)]'
+                    className={`flex-1 py-0.5 px-1 rounded-[var(--radius-xs)] text-[10px] sm:text-[11px] font-mono font-bold transition-all cursor-pointer flex items-center justify-center ${
+                      selectedFormat === opt.id
+                        ? 'bg-[var(--surface-card)] text-[var(--text-primary)] shadow-xs border border-[var(--border-default)]'
+                        : 'text-[var(--text-muted)] hover:text-[var(--text-primary)]'
                     }`}
+                    title={opt.ratio}
                   >
-                    {isRtl ? fmt.labelAr : fmt.labelEn}
+                    <span>{opt.ratio}</span>
                   </button>
                 ))}
               </div>
+
+              {/* Music Library Button */}
+              <button
+                type="button"
+                onClick={() => {
+                  triggerHaptic('light');
+                  setIsAudioPickerOpen(true);
+                  if (onOpenAudioPicker) onOpenAudioPicker();
+                }}
+                className={`w-6.5 h-6.5 rounded-[var(--radius-sm)] border text-[var(--text-primary)] flex items-center justify-center shrink-0 cursor-pointer transition-colors ${
+                  selectedAudioTrack
+                    ? 'bg-purple-500/20 border-purple-500/40 text-purple-400 font-bold'
+                    : 'bg-[var(--surface-subtle)] hover:bg-[var(--surface-card)] border-[var(--border-default)]'
+                }`}
+                title={selectedAudioTrack ? (selectedAudioTrack.title || (isRtl ? 'مقطع موسيقي محدد' : 'Music Selected')) : (isRtl ? 'اختيار مقطع موسيقي' : 'Select Music Track')}
+                aria-label={isRtl ? 'اختيار مقطع موسيقي' : 'Select Music Track'}
+              >
+                <Music size={13} className={selectedAudioTrack ? 'animate-pulse text-purple-400' : ''} />
+              </button>
+
+              {/* Mute Toggle */}
+              <button
+                type="button"
+                onClick={() => {
+                  setIsMuted(!isMuted);
+                  triggerHaptic('light');
+                }}
+                className="w-6.5 h-6.5 rounded-[var(--radius-sm)] bg-[var(--surface-subtle)] hover:bg-[var(--surface-card)] border border-[var(--border-default)] text-[var(--text-primary)] flex items-center justify-center shrink-0 cursor-pointer transition-colors"
+                title={isMuted ? (isRtl ? 'إلغاء كتم الصوت' : 'Unmute') : (isRtl ? 'كتم الصوت' : 'Mute')}
+                aria-label={isMuted ? (isRtl ? 'إلغاء كتم الصوت' : 'Unmute') : (isRtl ? 'كتم الصوت' : 'Mute')}
+              >
+                {isMuted ? <VolumeX size={13} className="text-[var(--fg-danger)]" /> : <Volume2 size={13} />}
+              </button>
             </div>
 
-            <div className="flex flex-col gap-1.5">
-              <label className="text-[11px] sm:text-xs text-[var(--text-primary)] font-bold">
-                {isRtl ? 'أبعاد العرض (Aspect Ratio):' : 'Aspect Ratio:'}
-              </label>
-              <div className="grid grid-cols-4 gap-1.5 sm:gap-2">
-                {['1:1', '9:16', '16:9', '4:5'].map(ratio => (
-                  <button
-                    key={ratio}
-                    type="button"
-                    onClick={() => setAspectRatio(ratio as any)}
-                    className={`h-8 sm:h-9 rounded-shape-sm text-[11px] sm:text-xs font-mono font-bold transition-colors duration-fast border cursor-pointer flex items-center justify-center ${
-                      aspectRatio === ratio
-                        ? 'text-[var(--fg-accent)] font-extrabold border-[var(--border-accent)] bg-[var(--surface-subtle)]'
-                        : 'border-[var(--border-default)] bg-[var(--surface-subtle)] text-[var(--text-muted)] hover:text-[var(--fg-accent)] hover:bg-[var(--surface-card)]'
-                    }`}
-                  >
-                    {ratio}
-                  </button>
-                ))}
-              </div>
-            </div>
-          </div>
-
-          {/* Professional Color Grading Filters */}
-          <div className="flex flex-col gap-1.5">
-            <label className="text-[11px] sm:text-xs text-[var(--text-primary)] font-bold flex items-center justify-between">
-              <span>{isRtl ? 'فلاتر تصحيح الألوان (Filters):' : 'Color Filters:'}</span>
-              <span className="text-[10px] sm:text-[11px] text-[var(--fg-accent)] font-mono font-normal">
-                {isRtl ? VIDEO_FILTERS.find(f => f.id === selectedFilter)?.nameAr : VIDEO_FILTERS.find(f => f.id === selectedFilter)?.nameEn}
-              </span>
-            </label>
-            <div className="grid grid-cols-3 xs:grid-cols-4 md:grid-cols-7 gap-1.5 sm:gap-2">
-              {VIDEO_FILTERS.map(flt => (
+            {/* Filter Swatches (Evenly Fitted & Balanced) */}
+            <div className="flex items-center justify-between gap-1 w-full pt-0.5 px-0.5">
+              {VIDEO_FILTERS.map((flt) => (
                 <button
                   key={flt.id}
                   type="button"
-                  onClick={() => setSelectedFilter(flt.id)}
-                  className={`py-1.5 px-1.5 rounded-shape-sm text-[10px] sm:text-xs font-medium transition-colors duration-fast border flex flex-col items-center gap-1 cursor-pointer ${
-                    selectedFilter === flt.id
-                      ? 'bg-[var(--bg-accent-emphasis)] text-[var(--fg-on-emphasis)] border-[var(--border-accent)] shadow-xs ring-1 ring-[var(--focus-outline)]/30'
-                      : 'bg-[var(--surface-subtle)] text-[var(--text-secondary)] border-[var(--border-default)] hover:bg-[var(--surface-card)]'
-                  }`}
+                  onClick={() => {
+                    setSelectedFilter(flt.id);
+                    triggerHaptic('light');
+                  }}
+                  className="group relative flex-1 flex flex-col items-center gap-0.5 min-w-0 transition-all cursor-pointer"
+                  title={isRtl ? flt.nameAr : flt.nameEn}
                 >
                   <div
-                    className="w-full h-6 sm:h-8 rounded-shape-xs bg-[var(--surface-inset)] overflow-hidden relative border border-[var(--border-default)] flex items-center justify-center"
-                    style={{ filter: flt.filter }}
+                    className={`w-full max-w-[36px] h-5 rounded-[var(--radius-xs)] overflow-hidden border transition-all ${
+                      selectedFilter === flt.id
+                        ? 'ring-1.5 ring-[var(--accent-foreground)] scale-105 border-[var(--accent-foreground)] shadow-xs'
+                        : 'border-[var(--border-default)] opacity-80 hover:opacity-100 hover:scale-105'
+                    }`}
                   >
-                    <div className="absolute inset-0 bg-gradient-to-tr from-black/40 to-white/20" />
-                    <span className="text-[8px] sm:text-[9px] font-bold text-white z-10 drop-shadow">PREVIEW</span>
+                    {thumbnails[0] ? (
+                      <img
+                        src={thumbnails[0]}
+                        alt=""
+                        style={{ filter: flt.filter }}
+                        className="w-full h-full object-cover"
+                      />
+                    ) : (
+                      <div
+                        className="w-full h-full"
+                        style={{
+                          filter: flt.filter,
+                          background:
+                            flt.id === 'normal'
+                              ? 'linear-gradient(135deg, #94a3b8, #64748b)'
+                              : flt.id === 'cinematic'
+                              ? 'linear-gradient(135deg, #f59e0b, #b91c1c)'
+                              : flt.id === 'warm'
+                              ? 'linear-gradient(135deg, #fb923c, #ea580c)'
+                              : flt.id === 'cool'
+                              ? 'linear-gradient(135deg, #38bdf8, #2563eb)'
+                              : flt.id === 'grayscale'
+                              ? 'linear-gradient(135deg, #e2e8f0, #1e293b)'
+                              : flt.id === 'high-contrast'
+                              ? 'linear-gradient(135deg, #ffffff, #000000)'
+                              : 'linear-gradient(135deg, #d97706, #78350f)',
+                        }}
+                      />
+                    )}
                   </div>
-                  <span className="truncate max-w-full text-[9.5px] sm:text-xs">{isRtl ? flt.nameAr : flt.nameEn}</span>
+                  <span className={`text-[8px] sm:text-[8.5px] font-bold leading-none transition-colors truncate max-w-full text-center mt-0.5 ${
+                    selectedFilter === flt.id ? 'text-[var(--text-primary)]' : 'text-[var(--text-muted)] group-hover:text-[var(--text-primary)]'
+                  }`}>
+                    {isRtl ? flt.nameAr : flt.nameEn}
+                  </span>
                 </button>
               ))}
             </div>
-          </div>
-        </div>
 
-        {/* Modal Footer */}
-        <div className="px-3.5 py-2.5 sm:px-6 sm:py-4 border-t border-[var(--border-default)] bg-[var(--surface-subtle)] flex items-center justify-end gap-2 sm:gap-3">
-          <Button
-            variant="secondary"
-            size="sm"
-            onClick={onClose}
-          >
-            {isRtl ? 'إلغاء' : 'Cancel'}
-          </Button>
-          <Button
-            variant="primary"
-            size="sm"
-            disabled={isProcessing}
-            isLoading={isProcessing}
-            onClick={handleApplyTrim}
-          >
-            <Check size={14} className="sm:size-[16px]" />
-            <span>{isRtl ? 'تطبيق وضبط الفيديو' : 'Apply & Save Video'}</span>
-          </Button>
+          </div>
+
         </div>
-      </div>
-    </div>,
-    document.body
+      </AppModal>
+
+      {/* Embedded Audio Library Picker Modal */}
+      <AudioLibraryPickerModal
+        open={isAudioPickerOpen}
+        onClose={() => setIsAudioPickerOpen(false)}
+        onSelectTrack={(track) => {
+          setSelectedAudioTrack(track);
+          setIsAudioPickerOpen(false);
+          if (onSelectAudioTrack) onSelectAudioTrack(track);
+          toast.success(isRtl ? 'تم اختيار المقطع الموسيقي بنجاح' : 'Audio track attached!');
+        }}
+        selectedTrackUrl={selectedAudioTrack?.audio_url}
+        selectedTrackId={selectedAudioTrack?.id}
+        token={token}
+        isRtl={isRtl}
+      />
+    </>
   );
 };

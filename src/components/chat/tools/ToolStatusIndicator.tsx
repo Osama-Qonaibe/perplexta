@@ -23,15 +23,15 @@ export const getToolDetails = (toolId: string | undefined, dir: 'ltr' | 'rtl', t
 
   if (normId.startsWith('chat_fast')) {
     return {
-      label: dir === 'rtl' ? 'البحث السريع' : 'Fast Search',
+      label: dir === 'rtl' ? 'المحادثة السريعة' : 'Fast Chat',
       icon: Zap,
-      colorClass: 'text-amber-500',
-      bgClass: 'bg-amber-500/10 border-amber-500/20'
+      colorClass: 'text-[var(--fg-accent)]',
+      bgClass: 'bg-[var(--surface-subtle)] border-[var(--border-default)]'
     };
   }
   if (normId.startsWith('chat_pro')) {
     return {
-      label: dir === 'rtl' ? 'متقدم' : 'Pro',
+      label: dir === 'rtl' ? 'المحادثة المتقدمة' : 'Professional Chat',
       icon: Sparkles,
       colorClass: 'text-[var(--fg-accent)]',
       bgClass: 'bg-[var(--surface-subtle)] border-[var(--border-default)]'
@@ -39,10 +39,10 @@ export const getToolDetails = (toolId: string | undefined, dir: 'ltr' | 'rtl', t
   }
   if (normId.startsWith('chat_reasoning')) {
     return {
-      label: dir === 'rtl' ? 'تفكير' : 'Thinking',
+      label: dir === 'rtl' ? 'نمط التفكير العميق' : 'Deep Reasoning',
       icon: Brain,
-      colorClass: 'text-sky-500',
-      bgClass: 'bg-sky-500/10 border-sky-500/20'
+      colorClass: 'text-[var(--fg-accent)]',
+      bgClass: 'bg-[var(--surface-subtle)] border-[var(--border-default)]'
     };
   }
 
@@ -58,22 +58,22 @@ export const getToolDetails = (toolId: string | undefined, dir: 'ltr' | 'rtl', t
       return {
         label: dir === 'rtl' ? 'فيديو' : 'Video',
         icon: Video,
-        colorClass: 'text-rose-500',
-        bgClass: 'bg-rose-500/10 border-rose-500/20'
+        colorClass: 'text-[var(--fg-accent)]',
+        bgClass: 'bg-[var(--surface-subtle)] border-[var(--border-default)]'
       };
     case 'image':
       return {
         label: dir === 'rtl' ? 'صور' : 'Image',
         icon: ImageIcon,
-        colorClass: 'text-pink-500',
-        bgClass: 'bg-pink-500/10 border-pink-500/20'
+        colorClass: 'text-[var(--fg-accent)]',
+        bgClass: 'bg-[var(--surface-subtle)] border-[var(--border-default)]'
       };
     case 'perplexta_analysis':
       return {
         label: dir === 'rtl' ? 'تحليل' : 'Analysis',
         icon: Search,
-        colorClass: 'text-teal-500',
-        bgClass: 'bg-teal-500/10 border-teal-500/20'
+        colorClass: 'text-[var(--fg-accent)]',
+        bgClass: 'bg-[var(--surface-subtle)] border-[var(--border-default)]'
       };
     case 'sovereign_search':
     case 'research_studies':
@@ -92,8 +92,9 @@ export const getToolDetails = (toolId: string | undefined, dir: 'ltr' | 'rtl', t
       };
     case 'audio_studio':
     case 'canvas':
+    case 'perplexta_music':
       return {
-        label: dir === 'rtl' ? 'استوديو الصوتيات' : 'Audio Studio',
+        label: dir === 'rtl' ? 'استوديو الصوت' : 'Audio Studio',
         icon: Music,
         colorClass: 'text-[var(--fg-accent)]',
         bgClass: 'bg-[var(--surface-subtle)] border-[var(--border-default)]'

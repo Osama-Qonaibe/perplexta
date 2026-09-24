@@ -145,7 +145,7 @@ export const CollapsibleTable: React.FC<CollapsibleTableProps> = ({ children, di
 
   return (
     <div
-      className="my-2.5 w-full rounded-[var(--radius-sm)] sm:rounded-[var(--radius-md)] border border-[var(--border-default)] bg-[var(--surface-card)] shadow-2xs overflow-hidden transition-colors text-start rtl:text-right ltr:text-left"
+      className="my-5 sm:my-6 w-full rounded-[var(--radius-md)] border border-[var(--border-default)] bg-[var(--surface-card)] shadow-xs overflow-hidden transition-colors text-start rtl:text-right ltr:text-left"
       dir={dir}
     >
       {/* Table Top Toolbar Header */}

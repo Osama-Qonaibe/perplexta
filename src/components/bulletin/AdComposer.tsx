@@ -1,5 +1,5 @@
 import React from 'react';
-import { Radio, Video, Clapperboard } from 'lucide-react';
+import { Radio, Video, Clapperboard, Sparkles } from 'lucide-react';
 import { BulletinAvatar } from '../BulletinAvatar';
 import { toast } from '@/design-system';
 
@@ -11,6 +11,7 @@ export interface AdComposerProps {
   setIsStreamSetupOpen: (open: boolean) => void;
   openPostUploadModal: () => void;
   openReelUploadModal: () => void;
+  openStudioModal?: () => void;
 }
 
 export const AdComposer: React.FC<AdComposerProps> = ({
@@ -21,6 +22,7 @@ export const AdComposer: React.FC<AdComposerProps> = ({
   setIsStreamSetupOpen,
   openPostUploadModal,
   openReelUploadModal,
+  openStudioModal
 }) => {
   return (
     <div className="p-2.5 sm:p-4 bg-[var(--surface-card)] rounded-shape-md border border-[var(--border-default)] shadow-xs flex flex-col gap-2 sm:gap-3 w-full">
@@ -83,12 +85,16 @@ export const AdComposer: React.FC<AdComposerProps> = ({
               toast.error(isRtl ? 'يرجى تسجيل الدخول أولاً' : 'Please log in first');
               return;
             }
-            openReelUploadModal();
+            if (openStudioModal) {
+              openStudioModal();
+            } else {
+              openReelUploadModal();
+            }
           }}
           className="flex-1 h-7 sm:h-8 flex items-center justify-center gap-1 sm:gap-1.5 px-1 sm:px-2 rounded-shape-sm hover:bg-purple-500/10 font-bold transition-all duration-fast text-purple-500 whitespace-nowrap cursor-pointer shadow-2xs active:scale-95"
         >
           <Clapperboard size={12} className="sm:size-[14px] text-purple-500 shrink-0" />
-          <span className="truncate">{isRtl ? 'ريلز' : 'Reels'}</span>
+          <span className="truncate">{isRtl ? 'استوديو ريلز' : 'Reels Studio'}</span>
         </button>
       </div>
     </div>

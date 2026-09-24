@@ -442,3 +442,204 @@ export async function processUploadedVideo(
     diagnosticAudit
   };
 }
+
+/**
+ * Helper to safely sanitize input file paths by stripping query parameters, hashes, and upload prefixes
+ */
+export function resolveDiskFilePath(rawPathOrUrl: string): string {
+  if (!rawPathOrUrl) return '';
+  const cleanUrl = rawPathOrUrl.split('?')[0].split('#')[0].trim();
+  const uploadsDir = path.resolve(process.cwd(), 'uploads');
+  const baseName = path.basename(cleanUrl.replace(/^\/?uploads\//, ''));
+  return path.resolve(uploadsDir, baseName);
+}
+
+/**
+ * Standard Media Timeline Processing Schema
+ */
+export interface MediaTimelineOptions {
+  type: 'image_to_video' | 'video_with_audio' | 'video_only';
+  duration?: number;
+  visual: {
+    sourceFilePath: string;
+    cropMode?: '9:16' | '1:1' | '16:9';
+    animation?: 'ken_burns_zoom_in' | 'static';
+  };
+  audio?: {
+    sourceFilePath: string;
+    startTime?: number;
+    volume?: number;
+    originalAudioVolume?: number;
+    audioDuration?: number;
+  };
+  outputDir?: string;
+}
+
+/**
+ * High-performance Timeline Renderer (Node + FFmpeg)
+ * Transforms image+audio or video+audio into native MP4 stream with zero browser overhead.
+ */
+export async function processMediaTimeline(
+  options: MediaTimelineOptions
+): Promise<VideoProcessingResult> {
+  const outputDir = options.outputDir || path.resolve(process.cwd(), 'uploads');
+  if (!fs.existsSync(outputDir)) {
+    fs.mkdirSync(outputDir, { recursive: true });
+  }
+
+  const visualFilePath = resolveDiskFilePath(options.visual.sourceFilePath);
+  if (!fs.existsSync(visualFilePath)) {
+    console.warn('[VideoProcessor] Visual input file not found on disk:', visualFilePath);
+    return {
+      success: false,
+      processedVideoUrl: '',
+      thumbnailUrl: '',
+      error: `Visual source file not found: ${path.basename(visualFilePath)}`
+    };
+  }
+
+  const audioFilePath = options.audio?.sourceFilePath ? resolveDiskFilePath(options.audio.sourceFilePath) : '';
+  const hasValidAudio = audioFilePath && fs.existsSync(audioFilePath);
+
+  const outputFileName = `timeline_${Date.now()}_${Math.random().toString(36).substring(2, 7)}.mp4`;
+  const outputFilePath = path.join(outputDir, outputFileName);
+  const duration = Math.min(60, Math.max(5, options.duration || 15));
+
+  return new Promise((resolve) => {
+    let cmd = ffmpeg();
+
+    if (options.type === 'image_to_video' && hasValidAudio) {
+      const audioStart = options.audio?.startTime || 0;
+      const audioVol = options.audio?.volume ?? 1.0;
+
+      cmd
+        .input(visualFilePath)
+        .loop(duration)
+        .input(audioFilePath)
+        .seekInput(audioStart)
+        .complexFilter([
+          `scale=1080:1920:force_original_aspect_ratio=increase,crop=1080:1920,zoompan=z='min(zoom+0.0012,1.25)':d=${duration * 25}:x='iw/2-(iw/zoom/2)':y='ih/2-(ih/zoom/2)':s=1080x1920:fps=25[v]`,
+          `[1:a]volume=${audioVol}[a]`
+        ])
+        .outputOptions([
+          '-map [v]',
+          '-map [a]',
+          '-c:v libx264',
+          '-pix_fmt yuv420p',
+          '-preset veryfast',
+          '-c:a aac',
+          '-b:a 192k',
+          `-t ${duration}`,
+          '-movflags +faststart'
+        ]);
+    } else if (options.type === 'video_with_audio' && hasValidAudio) {
+      const origVol = options.audio?.originalAudioVolume ?? 0.4;
+      const musicVol = options.audio?.volume ?? 0.8;
+      const audioStart = options.audio?.startTime || 0;
+
+      cmd
+        .input(visualFilePath)
+        .input(audioFilePath);
+
+      if (audioStart > 0) {
+        cmd.inputOptions([`-ss ${audioStart}`]);
+      }
+
+      if (options.audio?.originalAudioVolume !== undefined && options.audio.originalAudioVolume > 0) {
+        cmd
+          .complexFilter([
+            `[0:a]volume=${origVol}[orig]`,
+            `[1:a]volume=${musicVol}[music]`,
+            `[orig][music]amix=inputs=2:duration=first[aout]`
+          ])
+          .outputOptions([
+            '-map 0:v:0',
+            '-map [aout]',
+            '-c:v copy',
+            '-c:a aac',
+            '-b:a 192k',
+            '-shortest',
+            '-movflags +faststart'
+          ]);
+      } else {
+        cmd
+          .outputOptions([
+            '-map 0:v:0',
+            '-map 1:a:0',
+            '-c:v copy',
+            '-c:a aac',
+            '-b:a 192k',
+            '-shortest',
+            '-movflags +faststart'
+          ]);
+      }
+    } else {
+      // Fallback normal video processing
+      cmd
+        .input(visualFilePath)
+        .outputOptions([
+          '-c:v copy',
+          '-c:a aac',
+          '-movflags +faststart'
+        ]);
+    }
+
+    cmd
+      .toFormat('mp4')
+      .save(outputFilePath)
+      .on('end', () => {
+        let sz = 0;
+        try {
+          sz = fs.statSync(outputFilePath).size;
+        } catch {}
+        resolve({
+          success: true,
+          processedVideoUrl: `/uploads/${outputFileName}`,
+          thumbnailUrl: '',
+          duration,
+          fileSize: sz,
+          format: 'mp4'
+        });
+      })
+      .on('error', (err) => {
+        console.error('[VideoProcessor] processMediaTimeline error:', err.message);
+        resolve({
+          success: false,
+          processedVideoUrl: '',
+          thumbnailUrl: '',
+          error: err.message
+        });
+      });
+  });
+}
+
+/**
+ * Merges or replaces video audio with chosen music track.
+ * Perfect for reels without sound or combining ambient audio with background tracks.
+ */
+export async function mergeAudioIntoVideo(
+  videoFilePath: string,
+  audioFilePath: string,
+  options: {
+    audioStartTime?: number;
+    audioDuration?: number;
+    keepOriginalAudio?: boolean;
+    outputDir?: string;
+  } = {}
+): Promise<VideoProcessingResult> {
+  return processMediaTimeline({
+    type: 'video_with_audio',
+    visual: {
+      sourceFilePath: videoFilePath
+    },
+    audio: {
+      sourceFilePath: audioFilePath,
+      startTime: options.audioStartTime || 0,
+      originalAudioVolume: options.keepOriginalAudio ? 0.5 : 0
+    },
+    outputDir: options.outputDir
+  });
+}
+
+
+

@@ -299,13 +299,16 @@ router.post("/audit-logs/batch-delete", authenticateAdmin, async (req, res) => {
     if (!Array.isArray(ids) || ids.length === 0) {
       return res.status(400).json({ error: 'IDs array required' });
     }
+    const parsedIds = ids.map((i: any) => parseInt(String(i), 10)).filter((i: number) => !isNaN(i));
+    if (parsedIds.length === 0) {
+      return res.status(400).json({ error: 'Valid numeric IDs required' });
+    }
     const secPool = getSecurityPool();
     if (!secPool) {
       return res.status(503).json({ error: 'Security database offline' });
     }
-    await secPool.query('DELETE FROM admin_audit_logs WHERE id = ANY($1)', [ids]);
-    await auditLog((req as any).user?.id, 'Batch Delete Compliance Logs', 'security', { count: ids.length });
-    res.json({ success: true, count: ids.length });
+    await secPool.query('DELETE FROM admin_audit_logs WHERE id = ANY($1::int[])', [parsedIds]);
+    res.json({ success: true, count: parsedIds.length });
   } catch (error: any) {
     console.error('[AdminRouter] Batch delete audit logs failed:', error);
     res.status(500).json({ error: error.message || 'Batch delete failed' });
@@ -323,7 +326,6 @@ router.delete("/audit-logs/all", authenticateAdmin, async (req, res) => {
       return res.status(503).json({ error: 'Security database offline' });
     }
     await secPool.query('DELETE FROM admin_audit_logs');
-    await auditLog((req as any).user?.id, 'Clear Compliance Logs', 'security', {});
     res.json({ success: true });
   } catch (error: any) {
     console.error('[AdminRouter] Clear audit logs failed:', error);
@@ -1765,17 +1767,14 @@ router.get("/security-alerts", authenticateAdmin, async (req, res) => {
 
 router.get("/activity-stream", authenticateAdmin, async (req: any, res) => {
   try {
-    const cacheKey = `admin:activity:${req.user?.id || 'default'}`;
-    const cached = await getCache(cacheKey);
-    if (cached) {
-      return res.json(cached);
-    }
+    res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, private');
+    memoryCache.deletePattern('admin:activity');
     const result = await pool.query(
       'SELECT id, user_id, action, type, description, details, metadata, ip_address, created_at FROM system_logs ORDER BY created_at DESC LIMIT 50'
     );
-    await setCache(cacheKey, result.rows, 300);
     res.json(result.rows);
-  } catch {
+  } catch (error: any) {
+    console.error('[AdminRouter] Get activity stream error:', error);
     res.status(500).json({ error: 'Internal Error' });
   }
 });
@@ -2583,19 +2582,25 @@ router.post("/activity/batch-delete", authenticateAdmin, async (req, res) => {
       return res.status(400).json({ error: 'Maximum batch delete size is 500 records' });
     }
     
+    const parsedIds = ids.map((i: any) => parseInt(String(i), 10)).filter((i: number) => !isNaN(i));
+    if (parsedIds.length === 0) {
+      return res.status(400).json({ error: 'Valid numeric IDs required' });
+    }
+
     if (type === 'financial') {
-      await ledgerPool.query('DELETE FROM ledger_transactions WHERE id = ANY($1)', [ids]);
+      await ledgerPool.query('DELETE FROM ledger_transactions WHERE id = ANY($1::int[])', [parsedIds]);
     } else if (type === 'alert') {
-      await getSecurityPool().query('DELETE FROM security_alerts WHERE id = ANY($1)', [ids]);
+      await getSecurityPool().query('DELETE FROM security_alerts WHERE id = ANY($1::int[])', [parsedIds]);
     } else if (type === 'log') {
-      await pool.query('DELETE FROM system_logs WHERE id = ANY($1)', [ids]);
+      await pool.query('DELETE FROM system_logs WHERE id = ANY($1::int[])', [parsedIds]);
     } else {
       return res.status(400).json({ error: 'Invalid type' });
     }
-    await auditLog((req as any).user?.id, 'Batch Delete Activity', 'system', { type, count: ids.length });
-    res.json({ success: true, count: ids.length });
-  } catch {
-    res.status(500).json({ error: 'Batch delete failed' });
+    memoryCache.deletePattern('admin:');
+    res.json({ success: true, count: parsedIds.length });
+  } catch (error: any) {
+    console.error('[AdminRouter] Batch delete activity failed:', error);
+    res.status(500).json({ error: error?.message || 'Batch delete failed' });
   }
 });
 
@@ -2607,9 +2612,9 @@ router.delete("/financial/all", authenticateAdmin, async (req, res) => {
     }
     const countRes = await ledgerPool.query('SELECT COUNT(*) FROM ledger_transactions');
     await ledgerPool.query('DELETE FROM ledger_transactions');
-    await auditLog((req as any).user?.id, 'Purge All Financial Transactions', 'finance', { deletedCount: parseInt(countRes.rows[0].count) });
     res.json({ success: true });
-  } catch {
+  } catch (error: any) {
+    console.error('[AdminRouter] Purge financial failed:', error);
     res.status(500).json({ error: 'Purge failed' });
   }
 });
@@ -2617,15 +2622,20 @@ router.delete("/financial/all", authenticateAdmin, async (req, res) => {
 router.delete("/activity/:id/:type", authenticateAdmin, async (req, res) => {
   try {
     const { id, type } = req.params;
+    const numId = parseInt(id, 10);
+    if (isNaN(numId)) return res.status(400).json({ error: 'Invalid numeric ID' });
+
     if (type === 'alert') {
-      await getSecurityPool().query('DELETE FROM security_alerts WHERE id = $1', [id]);
+      await getSecurityPool().query('DELETE FROM security_alerts WHERE id = $1', [numId]);
     } else if (type === 'log') {
-      await pool.query('DELETE FROM system_logs WHERE id = $1', [id]);
+      await pool.query('DELETE FROM system_logs WHERE id = $1', [numId]);
     } else {
       return res.status(400).json({ error: 'Invalid type' });
     }
+    memoryCache.deletePattern('admin:');
     res.json({ success: true });
-  } catch {
+  } catch (error: any) {
+    console.error('[AdminRouter] Delete activity single failed:', error);
     res.status(500).json({ error: 'Delete failed' });
   }
 });
@@ -2633,29 +2643,26 @@ router.delete("/activity/:id/:type", authenticateAdmin, async (req, res) => {
 router.delete("/activity/all/:type", authenticateAdmin, async (req, res) => {
   try {
     const { type } = req.params;
-    const adminId = (req as any).user?.id;
 
     const normalizedType = type === 'ai_generation' ? 'ai' : 
                            (type === 'system_event' ? 'system' : type);
 
     if (normalizedType === 'ai') {
       await pool.query("DELETE FROM system_logs WHERE type = 'ai_generation'");
-      await auditLog(adminId, 'Clear AI Generation Logs', 'system', { type });
     } else if (normalizedType === 'system') {
       await pool.query("DELETE FROM system_logs WHERE type != 'ai_generation'");
-      await auditLog(adminId, 'Clear System Event Logs', 'system', { type });
     } else if (normalizedType === 'alert') {
       await getSecurityPool().query('DELETE FROM security_alerts');
-      await auditLog(adminId, 'Clear Security Alerts', 'system', { type });
-    } else if (normalizedType === 'log') {
+    } else if (normalizedType === 'log' || normalizedType === 'all') {
       await pool.query('DELETE FROM system_logs');
-      await auditLog(adminId, 'Clear All System Logs', 'system', { type });
     } else {
-      return res.status(400).json({ error: 'Invalid type. Use: ai, system, alert, or log' });
+      return res.status(400).json({ error: 'Invalid type. Use: ai, system, alert, log, or all' });
     }
 
+    memoryCache.deletePattern('admin:');
     res.json({ success: true });
-  } catch {
+  } catch (error: any) {
+    console.error('[AdminRouter] Activity cleanup failed:', error);
     res.status(500).json({ error: 'Cleanup failed' });
   }
 });
@@ -2663,9 +2670,10 @@ router.delete("/activity/all/:type", authenticateAdmin, async (req, res) => {
 router.delete("/security-alerts/all", authenticateAdmin, async (req, res) => {
   try {
     await getSecurityPool().query('DELETE FROM security_alerts');
-    await auditLog((req as any).user?.id, 'Clear All Security Alerts', 'system', {});
+    memoryCache.deletePattern('admin:');
     res.json({ success: true });
-  } catch {
+  } catch (error: any) {
+    console.error('[AdminRouter] Clear all security alerts failed:', error);
     res.status(500).json({ error: 'Cleanup failed' });
   }
 });
@@ -2673,9 +2681,13 @@ router.delete("/security-alerts/all", authenticateAdmin, async (req, res) => {
 router.delete("/security-alerts/:id", authenticateAdmin, async (req, res) => {
   try {
     const { id } = req.params;
-    await getSecurityPool().query('DELETE FROM security_alerts WHERE id = $1', [id]);
+    const numId = parseInt(id, 10);
+    if (isNaN(numId)) return res.status(400).json({ error: 'Invalid numeric ID' });
+    await getSecurityPool().query('DELETE FROM security_alerts WHERE id = $1', [numId]);
+    memoryCache.deletePattern('admin:');
     res.json({ success: true });
-  } catch {
+  } catch (error: any) {
+    console.error('[AdminRouter] Delete single security alert failed:', error);
     res.status(500).json({ error: 'Delete failed' });
   }
 });

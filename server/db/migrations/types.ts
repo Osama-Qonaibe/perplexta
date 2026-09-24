@@ -105,6 +105,8 @@ export const TABLE_POOL_REGISTRY: Record<string, DatabasePoolKey> = {
   gpu_provider_models: 'core',
   gpu_execution_jobs: 'core',
   api_performance_logs: 'core',
+  user_email_logs: 'core',
+  email_logs: 'core',
   migration_history: 'core',
   migration_security_audit: 'core',
 

@@ -177,6 +177,34 @@ export const StoryUploadModal: React.FC<StoryUploadModalProps> = ({
   // Background Audio Preview Element for Images
   const [activeMusicTrack, setActiveMusicTrack] = useState<string>('none');
   const [isMusicPlaying, setIsMusicPlaying] = useState<boolean>(false);
+  const [availableMusicTracks, setAvailableMusicTracks] = useState(MUSIC_TRACKS);
+
+  // Fetch online audio provider tracks on modal open
+  useEffect(() => {
+    if (!isOpen) return;
+
+    fetch('/api/audio/search?type=music&limit=15')
+      .then(res => res.json())
+      .then(data => {
+        if (data.success && Array.isArray(data.tracks) && data.tracks.length > 0) {
+          const providerTracks = data.tracks.map((t: any) => ({
+            id: t.id,
+            labelAr: `${t.title} (${t.provider || 'مزود آلي'})`,
+            labelEn: `${t.title} (${t.provider || 'Audio Provider'})`,
+            url: t.audio_url || t.url || ''
+          })).filter((t: any) => Boolean(t.url));
+
+          setAvailableMusicTracks(prev => {
+            const existingIds = new Set(prev.map(p => p.id));
+            const newTracks = providerTracks.filter((t: any) => !existingIds.has(t.id));
+            return [...prev, ...newTracks];
+          });
+        }
+      })
+      .catch(err => {
+        console.warn('Audio provider fetch skipped, using native tracks:', err);
+      });
+  }, [isOpen]);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
   const customCoverInputRef = useRef<HTMLInputElement>(null);
@@ -259,7 +287,7 @@ export const StoryUploadModal: React.FC<StoryUploadModalProps> = ({
   }, [activeImageIndex, imageStories, isVideo]);
 
   const playAudioTrack = (trackId: string) => {
-    const track = MUSIC_TRACKS.find(t => t.id === trackId);
+    const track = availableMusicTracks.find(t => t.id === trackId);
     if (!track || !track.url) {
       stopAudioPreview();
       return;
@@ -565,9 +593,12 @@ export const StoryUploadModal: React.FC<StoryUploadModalProps> = ({
           throw new Error(data.error || (isRtl ? 'فشل نشر قصة الفيديو' : 'Failed to publish video story'));
         }
 
-        if (onStoryCreated) onStoryCreated(data.story);
-        toast.clear();
-        toast.success(isRtl ? 'تم نشر قصة الفيديو بنجاح! 🎥' : 'Video story published successfully! 🎥');
+        if (onStoryCreated) {
+          toast.clear();
+          onStoryCreated(data.story);
+        } else {
+          toast.success(isRtl ? 'تم نشر قصة الفيديو بنجاح! 🎥' : 'Video story published successfully! 🎥');
+        }
         onClose();
 
       } else if (imageStories.length > 0) {
@@ -633,14 +664,15 @@ export const StoryUploadModal: React.FC<StoryUploadModalProps> = ({
         }
 
         if (onStoryCreated && lastStory) {
+          toast.clear();
           onStoryCreated(lastStory);
+        } else {
+          toast.clear();
+          toast.success(isRtl 
+            ? `تهانينا! تم نشر عدد (${imageStories.length}) قصص مقسمة بنجاح! 🎉` 
+            : `Successfully published (${imageStories.length}) split stories! 🎉`
+          );
         }
-
-        toast.clear();
-        toast.success(isRtl 
-          ? `تهانينا! تم نشر عدد (${imageStories.length}) قصص مقسمة بنجاح! 🎉` 
-          : `Successfully published (${imageStories.length}) split stories! 🎉`
-        );
         onClose();
       }
     } catch (err: any) {
@@ -798,14 +830,16 @@ export const StoryUploadModal: React.FC<StoryUploadModalProps> = ({
         throw new Error(data.error || 'Failed to create story');
       }
 
-      toast.success(isRtl ? 'تم نشر القصة النصية بنجاح لمدة 24 ساعة!' : 'Text story published for 24 hours!');
       if (onStoryCreated) {
+        toast.clear();
         onStoryCreated({
           ...(data.story || data),
           gradientClass: TEXT_STORY_GRADIENTS[textGradientIndex]?.bgClass,
           description: textContent,
           image_url: imageUrl,
         });
+      } else {
+        toast.success(isRtl ? 'تم نشر القصة النصية بنجاح لمدة 24 ساعة!' : 'Text story published for 24 hours!');
       }
       onClose();
     } catch (err: any) {
@@ -1481,93 +1515,123 @@ export const StoryUploadModal: React.FC<StoryUploadModalProps> = ({
                     </div>
                   )}
 
-                  {/* PHOTO DESIGN PANEL (EFFECTS & MUSIC TRACKS & STORY DURATION) */}
+                  {/* PROFESSIONAL FACEBOOK/INSTAGRAM CREATIVE CONTROLS PANEL */}
                   {!isVideo && (
-                    <div className="space-y-3">
-                      
-                      {/* Effect selector panel */}
-                      <div className="bg-[var(--surface-subtle)] p-3 rounded-[var(--radius-sm)] border border-[var(--border-default)] space-y-2">
-                        <span className="text-[11px] font-bold text-[var(--text-primary)] block">
-                          {isRtl ? 'إضافة تأثير فلتر سينمائي للقصة:' : 'Apply creative photo filter effect:'}
+                    <div className="bg-[var(--surface-card)] border border-[var(--border-main)] p-3.5 rounded-shape-sm shadow-2xs space-y-3">
+                      <div className="flex items-center justify-between border-b border-[var(--border-default)] pb-2">
+                        <span className="text-[11px] font-extrabold text-[var(--text-primary)] flex items-center gap-1.5">
+                          <Sparkles size={14} className="text-[var(--fg-accent)]" />
+                          {isRtl ? 'إعدادات لمسات القصة الإبداعية' : 'Creative Story Enhancements'}
                         </span>
-                        
-                        <div className="grid grid-cols-3 gap-1">
-                          {EFFECTS.map((eff) => (
-                            <button
-                              key={eff.id}
-                              type="button"
-                              onClick={() => updateActiveImageSettings('effect', eff.id)}
-                              className={`flex items-center gap-1 px-2 py-1.5 rounded-[var(--radius-xs)] text-[10px] font-semibold transition-colors border text-center justify-center cursor-pointer ${
-                                imageStories[activeImageIndex]?.effect === eff.id
-                                  ? 'bg-[var(--bg-accent-muted)] border-[var(--border-accent)] text-[var(--fg-accent)] font-bold'
-                                  : 'bg-[var(--surface-card)] border-[var(--border-default)] text-[var(--text-secondary)] hover:bg-[var(--surface-subtle)]'
-                              }`}
-                            >
-                              <Sparkles size={9} className={imageStories[activeImageIndex]?.effect === eff.id ? 'text-[var(--fg-accent)]' : 'text-[var(--text-muted)]'} />
-                              <span>{isRtl ? eff.labelAr : eff.labelEn}</span>
-                            </button>
-                          ))}
-                        </div>
+                        {imageStories[activeImageIndex]?.music !== 'none' && (
+                          <span className="text-[9px] font-bold px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-500 border border-emerald-500/20 flex items-center gap-1 animate-pulse">
+                            <Music size={10} />
+                            {isRtl ? 'موسيقى نشطة' : 'Music Active'}
+                          </span>
+                        )}
                       </div>
 
-                      {/* Music selector panel */}
-                      <div className="bg-[var(--surface-subtle)] p-3 rounded-[var(--radius-sm)] border border-[var(--border-default)] space-y-2">
-                        <div className="flex items-center justify-between">
-                          <span className="text-[11px] font-bold text-[var(--text-primary)] flex items-center gap-1">
-                            <Music size={11} className="text-[var(--fg-accent)]" />
-                            {isRtl ? 'إضافة موسيقى خلفية للمشهد:' : 'Attach background audio track:'}
-                          </span>
-                          {imageStories[activeImageIndex]?.music !== 'none' && (
-                            <span className="text-[8px] font-bold px-1 py-0.5 rounded bg-[var(--bg-accent-muted)] text-[var(--fg-accent)] animate-pulse">
-                              {isRtl ? 'تسمع الآن' : 'Playing vibe'}
-                            </span>
-                          )}
-                        </div>
-                        
-                        <div className="grid grid-cols-2 sm:grid-cols-3 gap-1">
-                          {MUSIC_TRACKS.map((track) => (
-                            <button
-                              key={track.id}
-                              type="button"
-                              onClick={() => updateActiveImageSettings('music', track.id)}
-                              className={`flex items-center gap-1 px-2 py-1.5 rounded-[var(--radius-xs)] text-[10px] font-semibold transition-colors border text-start justify-start cursor-pointer ${
-                                imageStories[activeImageIndex]?.music === track.id
-                                  ? 'bg-[var(--bg-accent-muted)] border-[var(--border-accent)] text-[var(--fg-accent)] font-bold'
-                                  : 'bg-[var(--surface-card)] border-[var(--border-default)] text-[var(--text-secondary)] hover:bg-[var(--surface-subtle)]'
-                              }`}
-                            >
-                              <Music size={9} className={imageStories[activeImageIndex]?.music === track.id ? 'text-[var(--fg-accent)]' : 'text-[var(--text-muted)]'} />
-                              <span className="truncate">{isRtl ? track.labelAr : track.labelEn}</span>
-                            </button>
-                          ))}
-                        </div>
-                      </div>
-
-                      {/* Duration slider panel */}
-                      <div className="bg-[var(--surface-subtle)] p-3 rounded-[var(--radius-sm)] border border-[var(--border-default)] space-y-2">
-                        <div className="flex items-center justify-between">
-                          <span className="text-[11px] font-bold text-[var(--text-primary)] flex items-center gap-1">
-                            <Clock size={11} className="text-[var(--fg-accent)]" />
-                            {isRtl ? 'مدة عرض هذه القصة:' : 'Story playback duration:'}
-                          </span>
-                          <span className="text-[10px] font-bold text-[var(--fg-accent)] bg-[var(--bg-accent-muted)] px-2 py-0.5 rounded-[var(--radius-xs)]">
-                            {imageStories[activeImageIndex]?.duration || 15} {isRtl ? 'ثانية' : 'seconds'}
-                          </span>
-                        </div>
-
+                      {/* Dropdowns Grid: Filters, Music, and Duration */}
+                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                        {/* 1. Filter Dropdown Selector */}
                         <div className="space-y-1">
-                          <input
-                            type="range"
-                            min="5"
-                            max="15"
-                            step="1"
-                            value={imageStories[activeImageIndex]?.duration || 15}
-                            onChange={(e) => updateActiveImageSettings('duration', parseInt(e.target.value))}
-                            className="w-full accent-[var(--accent)] h-1 bg-[var(--surface-inset)] rounded-lg cursor-pointer"
-                          />
-                          <div className="flex items-center justify-between text-[8px] text-[var(--text-muted)]">
-                            <span>5s</span>
-                            <span>15s ({isRtl ? 'أقصى مدة' : 'Maximum'})</span>
+                          <label className="text-[10px] font-bold text-[var(--text-secondary)] flex items-center gap-1">
+                            <Palette size={11} className="text-[var(--fg-accent)]" />
+                            {isRtl ? 'الفلتر والتأثير' : 'Filter Effect'}
+                          </label>
+                          <div className="relative">
+                            <select
+                              value={imageStories[activeImageIndex]?.effect || 'none'}
+                              onChange={(e) => updateActiveImageSettings('effect', e.target.value)}
+                              className="w-full h-8 py-1 ps-7 pe-6 text-[10.5px] font-bold rounded-shape-xs bg-[var(--surface-subtle)] border border-[var(--border-main)] text-[var(--text-primary)] focus:border-[var(--border-accent)] focus:outline-none appearance-none cursor-pointer transition-colors truncate"
+                            >
+                              {EFFECTS.map((eff) => (
+                                <option key={eff.id} value={eff.id} className="bg-[var(--surface-card)] text-[var(--text-primary)] truncate">
+                                  {isRtl ? eff.labelAr : eff.labelEn}
+                                </option>
+                              ))}
+                            </select>
+                            <Sparkles size={12} className="absolute start-2 top-1/2 -translate-y-1/2 text-[var(--fg-accent)] pointer-events-none" />
+                            <ChevronLeft size={12} className="absolute end-2 top-1/2 -translate-y-1/2 -rotate-90 text-[var(--text-muted)] pointer-events-none" />
+                          </div>
+                        </div>
+
+                        {/* 2. Music Track Dropdown Selector + Live Preview Button */}
+                        <div className="space-y-1">
+                          <div className="flex items-center justify-between">
+                            <label className="text-[10px] font-bold text-[var(--text-secondary)] flex items-center gap-1">
+                              <Music size={11} className="text-[var(--fg-accent)]" />
+                              {isRtl ? 'الموسيقى والصوت' : 'Background Audio'}
+                            </label>
+                            {imageStories[activeImageIndex]?.music !== 'none' && (
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  const currentTrack = imageStories[activeImageIndex]?.music || 'none';
+                                  if (isMusicPlaying) {
+                                    stopAudioPreview();
+                                  } else {
+                                    playAudioTrack(currentTrack);
+                                  }
+                                }}
+                                className="text-[9.5px] font-black text-emerald-400 hover:text-emerald-300 flex items-center gap-1 bg-emerald-500/10 hover:bg-emerald-500/20 px-1.5 py-0.5 rounded-shape-xs border border-emerald-500/30 transition-all cursor-pointer"
+                                title={isRtl ? 'معاينة تجربة الصوت مباشرة' : 'Preview Audio Live'}
+                              >
+                                {isMusicPlaying ? (
+                                  <>
+                                    <Volume2 size={10} className="animate-pulse text-emerald-400" />
+                                    <span>{isRtl ? 'إيقاف' : 'Pause'}</span>
+                                  </>
+                                ) : (
+                                  <>
+                                    <Volume2 size={10} />
+                                    <span>{isRtl ? 'معاينة' : 'Preview'}</span>
+                                  </>
+                                )}
+                              </button>
+                            )}
+                          </div>
+                          <div className="relative">
+                            <select
+                              value={imageStories[activeImageIndex]?.music || 'none'}
+                              onChange={(e) => updateActiveImageSettings('music', e.target.value)}
+                              className="w-full h-8 py-1 ps-7 pe-6 text-[10.5px] font-bold rounded-shape-xs bg-[var(--surface-subtle)] border border-[var(--border-main)] text-[var(--text-primary)] focus:border-[var(--border-accent)] focus:outline-none appearance-none cursor-pointer transition-colors truncate"
+                            >
+                              {availableMusicTracks.map((track) => (
+                                <option key={track.id} value={track.id} className="bg-[var(--surface-card)] text-[var(--text-primary)] truncate">
+                                  {isRtl ? track.labelAr : track.labelEn}
+                                </option>
+                              ))}
+                            </select>
+                            <Music size={12} className="absolute start-2 top-1/2 -translate-y-1/2 text-[var(--fg-accent)] pointer-events-none" />
+                            <ChevronLeft size={12} className="absolute end-2 top-1/2 -translate-y-1/2 -rotate-90 text-[var(--text-muted)] pointer-events-none" />
+                          </div>
+                        </div>
+
+                        {/* 3. Duration Dropdown Selector */}
+                        <div className="space-y-1">
+                          <label className="text-[10px] font-bold text-[var(--text-secondary)] flex items-center gap-1">
+                            <Clock size={11} className="text-[var(--fg-accent)]" />
+                            {isRtl ? 'مدة العرض' : 'Story Duration'}
+                          </label>
+                          <div className="relative">
+                            <select
+                              value={imageStories[activeImageIndex]?.duration || 15}
+                              onChange={(e) => updateActiveImageSettings('duration', parseInt(e.target.value))}
+                              className="w-full h-8 py-1 ps-7 pe-6 text-[10.5px] font-bold rounded-shape-xs bg-[var(--surface-subtle)] border border-[var(--border-main)] text-[var(--text-primary)] focus:border-[var(--border-accent)] focus:outline-none appearance-none cursor-pointer transition-colors truncate"
+                            >
+                              <option value={5} className="bg-[var(--surface-card)] text-[var(--text-primary)] truncate">
+                                {isRtl ? '5 ثوانٍ (سريع)' : '5s (Fast)'}
+                              </option>
+                              <option value={10} className="bg-[var(--surface-card)] text-[var(--text-primary)] truncate">
+                                {isRtl ? '10 ثوانٍ (متوسط)' : '10s (Medium)'}
+                              </option>
+                              <option value={15} className="bg-[var(--surface-card)] text-[var(--text-primary)] truncate">
+                                {isRtl ? '15 ثانية (افتراضي)' : '15s (Full)'}
+                              </option>
+                            </select>
+                            <Clock size={12} className="absolute start-2 top-1/2 -translate-y-1/2 text-[var(--fg-accent)] pointer-events-none" />
+                            <ChevronLeft size={12} className="absolute end-2 top-1/2 -translate-y-1/2 -rotate-90 text-[var(--text-muted)] pointer-events-none" />
                           </div>
                         </div>
                       </div>
@@ -1578,12 +1642,12 @@ export const StoryUploadModal: React.FC<StoryUploadModalProps> = ({
             )}
           </div>
 
-          {/* Footer Action Bar */}
-          <div className="px-4 py-2.5 border-t border-[var(--border-default)] bg-[var(--surface-subtle)] flex items-center justify-between gap-3">
+          {/* Facebook/Instagram Style Compact Action Footer */}
+          <div className="px-3.5 py-2.5 border-t border-[var(--border-default)] bg-[var(--surface-subtle)] flex items-center justify-between gap-2.5">
             <button
               onClick={onClose}
               disabled={isUploading}
-              className="px-3 py-1.5 rounded-[var(--radius-xs)] bg-[var(--surface-card)] border border-[var(--border-default)] hover:bg-[var(--surface-subtle)] text-[var(--text-secondary)] text-[10.5px] font-bold transition-colors cursor-pointer"
+              className="h-8.5 px-3.5 rounded-shape-xs bg-[var(--surface-card)] border border-[var(--border-main)] hover:bg-[var(--surface-subtle)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] text-xs font-bold transition-all cursor-pointer flex items-center justify-center"
             >
               {isRtl ? 'إلغاء' : 'Cancel'}
             </button>
@@ -1592,22 +1656,22 @@ export const StoryUploadModal: React.FC<StoryUploadModalProps> = ({
               <button
                 onClick={handlePublishTextStory}
                 disabled={!textContent.trim() || isUploading}
-                className="flex-1 max-w-[200px] flex items-center justify-center gap-1 px-3.5 py-1.5 rounded-[var(--radius-xs)] bg-emerald-600 hover:bg-emerald-700 disabled:opacity-50 text-white text-[10.5px] font-bold shadow-sm transition-opacity border border-emerald-500 cursor-pointer"
+                className="flex-1 max-w-[220px] h-8.5 flex items-center justify-center gap-1.5 px-3.5 rounded-shape-xs bg-emerald-600 hover:bg-emerald-500 disabled:opacity-50 text-white text-xs font-extrabold shadow-sm transition-all border border-emerald-500 cursor-pointer active:scale-98"
               >
-                <Send size={12} />
-                <span>{isRtl ? 'نشر القصة النصية (24 ساعة)' : 'Publish Text Story (24h)'}</span>
+                <Send size={13} />
+                <span>{isRtl ? 'نشر القصة النصية الآن' : 'Publish Text Story'}</span>
               </button>
             ) : (
               <button
                 onClick={handlePublish}
                 disabled={(!selectedFile && imageStories.length === 0) || isUploading}
-                className="flex-1 max-w-[190px] flex items-center justify-center gap-1 px-3.5 py-1.5 rounded-[var(--radius-xs)] bg-[var(--bg-accent-emphasis)] hover:opacity-90 disabled:opacity-50 text-[var(--fg-on-emphasis)] text-[10.5px] font-bold shadow-sm transition-opacity border border-[var(--border-accent)] cursor-pointer"
+                className="flex-1 max-w-[220px] h-8.5 flex items-center justify-center gap-1.5 px-3.5 rounded-shape-xs bg-[var(--bg-accent-emphasis)] hover:opacity-90 disabled:opacity-50 text-[var(--fg-on-emphasis)] text-xs font-extrabold shadow-md transition-all border border-[var(--border-accent)] cursor-pointer active:scale-98"
               >
-                <Send size={12} />
+                <Send size={14} />
                 <span>
                   {imageStories.length > 1 
-                    ? (isRtl ? `نشر عدد (${imageStories.length}) قصص الآن` : `Publish (${imageStories.length}) stories`)
-                    : (isRtl ? 'مشاركة القصة الآن' : 'Share Story Now')
+                    ? (isRtl ? `مشاركة (${imageStories.length}) قصص الآن` : `Share (${imageStories.length}) stories`)
+                    : (isRtl ? 'مشاركة في القصة الآن' : 'Share to Story Now')
                   }
                 </span>
               </button>

@@ -8,7 +8,7 @@ import { formatDatabaseError } from '../utils/dbErrors.js';
 import { upload, handleMulterError } from '../middleware/upload.js';
 import { uploadValidator } from '../middleware/uploadValidator.js';
 import { optimizeUploadedImage } from '../services/mediaOptimizationService.js';
-import { processUploadedVideo } from '../services/videoProcessor.js';
+import { processUploadedVideo, mergeAudioIntoVideo, processMediaTimeline, resolveDiskFilePath } from '../services/videoProcessor.js';
 import { escapeHtml } from '../utils/security.js';
 import { searchHierarchicalLocations, ALL_GEO_COUNTRIES, normalizeGeoText } from '../utils/geoData.js';
 import { findCachedLocations } from '../services/locationCache.js';
@@ -18,6 +18,7 @@ import path from 'path';
 import fs from 'fs/promises';
 import { createReadStream } from 'fs';
 import crypto from 'crypto';
+import { harvestAudioFromPost, recordAudioTrackUsage } from '../services/mediaAudioService.js';
 
 const router = express.Router();
 
@@ -95,31 +96,17 @@ async function saveHashtagsToDatabase(tagsStr: string) {
 /**
  * Helper to ensure platform categories table and initial records exist in database
  */
-async function ensurePlatformCategoriesTable() {
-  if (!pool) return;
-  try {
-    await pool.query(`
-      CREATE TABLE IF NOT EXISTS platform_categories (
-        id VARCHAR(100) PRIMARY KEY,
-        name_ar VARCHAR(255) NOT NULL,
-        name_en VARCHAR(255) NOT NULL,
-        group_id VARCHAR(100) NOT NULL,
-        group_ar VARCHAR(255) NOT NULL,
-        group_en VARCHAR(255) NOT NULL,
-        icon VARCHAR(50) DEFAULT 'Layers',
-        audience_reach BIGINT DEFAULT 150000,
-        keywords TEXT[] DEFAULT '{}',
-        is_featured BOOLEAN DEFAULT false,
-        created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
-      );
-      CREATE INDEX IF NOT EXISTS idx_platform_categories_group ON platform_categories (group_id);
-      CREATE INDEX IF NOT EXISTS idx_platform_categories_featured ON platform_categories (is_featured);
-    `);
+// Flag to track whether platform categories table seeding has been verified once
+let categoriesTableEnsured = false;
 
+async function ensurePlatformCategoriesTable() {
+  if (!pool || categoriesTableEnsured) return;
+  categoriesTableEnsured = true;
+  try {
     const countRes = await pool.query('SELECT COUNT(*) as count FROM platform_categories');
     const count = parseInt(countRes.rows[0]?.count || '0', 10);
     if (count < MASTER_PLATFORM_CATEGORIES.length) {
-      console.log('[Bulletin Categories] Syncing/Seeding platform categories into database...');
+      console.log('[Bulletin Categories] Syncing platform categories into database...');
       for (const cat of MASTER_PLATFORM_CATEGORIES) {
         await pool.query(`
           INSERT INTO platform_categories (id, name_ar, name_en, group_id, group_ar, group_en, icon, audience_reach, keywords, is_featured)
@@ -147,10 +134,9 @@ async function ensurePlatformCategoriesTable() {
           cat.isFeatured || false
         ]);
       }
-      console.log(`[Bulletin Categories] Successfully synced ${MASTER_PLATFORM_CATEGORIES.length} platform categories.`);
     }
   } catch (err: any) {
-    console.warn('[Bulletin Categories] Notice ensuring table:', err.message);
+    console.warn('[Bulletin Categories] Notice checking table:', err.message);
   }
 }
 
@@ -306,6 +292,82 @@ router.get('/mentions/suggest', authenticateToken, async (req: any, res) => {
   } catch (error: any) {
     console.error('[Mentions Suggest] Fetch failed:', error);
     return res.status(500).json({ error: error.message });
+  }
+});
+
+/**
+ * POST /api/bulletin/merge-video-audio
+ * Merges or replaces video audio with chosen music track/slice via FFmpeg
+ */
+router.post('/merge-video-audio', authenticateToken, async (req: any, res: any) => {
+  try {
+    const { video_url, audio_url, start_sec, keep_original_audio } = req.body;
+    if (!video_url || !audio_url) {
+      return res.status(400).json({ error: 'Video and Audio URLs are required' });
+    }
+
+    const videoDiskPath = resolveDiskFilePath(video_url);
+    const audioDiskPath = resolveDiskFilePath(audio_url);
+
+    const mergedResult = await mergeAudioIntoVideo(videoDiskPath, audioDiskPath, {
+      audioStartTime: Number(start_sec) || 0,
+      keepOriginalAudio: Boolean(keep_original_audio)
+    });
+
+    if (!mergedResult.success) {
+      return res.status(500).json({ error: mergedResult.error || 'Failed to merge audio into video' });
+    }
+
+    res.json({
+      success: true,
+      merged_video_url: mergedResult.processedVideoUrl
+    });
+  } catch (err: any) {
+    res.status(500).json({ error: err.message || 'Video audio merge failed' });
+  }
+});
+
+/**
+ * POST /api/bulletin/render-timeline
+ * Background Timeline Rendering (Image+Audio or Video+Audio)
+ */
+router.post('/render-timeline', authenticateToken, async (req: any, res: any) => {
+  try {
+    const { type, duration, visual, audio } = req.body;
+    if (!visual?.source_url) {
+      return res.status(400).json({ error: 'Visual source_url is required' });
+    }
+
+    const visualDiskPath = resolveDiskFilePath(visual.source_url);
+    const audioDiskPath = audio?.source_url ? resolveDiskFilePath(audio.source_url) : '';
+
+    const result = await processMediaTimeline({
+      type: type || (visual.source_url.match(/\.(mp4|webm|mov|mkv)$/i) ? 'video_with_audio' : 'image_to_video'),
+      duration: Number(duration) || 15,
+      visual: {
+        sourceFilePath: visualDiskPath,
+        cropMode: visual.crop_mode || '9:16',
+        animation: visual.animation || 'ken_burns_zoom_in'
+      },
+      audio: audioDiskPath ? {
+        sourceFilePath: audioDiskPath,
+        startTime: Number(audio.start_time) || 0,
+        volume: audio.volume !== undefined ? Number(audio.volume) : 0.8,
+        originalAudioVolume: audio.original_volume !== undefined ? Number(audio.original_volume) : 0.4
+      } : undefined
+    });
+
+    if (!result.success) {
+      return res.status(500).json({ error: result.error || 'Timeline rendering failed' });
+    }
+
+    res.json({
+      success: true,
+      processed_video_url: result.processedVideoUrl,
+      duration: result.duration
+    });
+  } catch (err: any) {
+    res.status(500).json({ error: err.message || 'Timeline rendering failed' });
   }
 });
 
@@ -1636,6 +1698,10 @@ router.get('/ads', async (req, res) => {
         tagged_users: row.tagged_users || [],
         audience: row.audience || 'public',
         has_whatsapp_button: Boolean(row.has_whatsapp_button),
+        audio_url: row.audio_url || (row.metadata && row.metadata.audio_url) || null,
+        audio_title: row.audio_title || (row.metadata && row.metadata.audio_title) || null,
+        audio_artist: row.audio_artist || (row.metadata && row.metadata.audio_artist) || null,
+        audio_track_id: row.audio_track_id || (row.metadata && row.metadata.audio_track_id) || null,
         media_gallery: (row.metadata && Array.isArray(row.metadata.media_gallery)) ? row.metadata.media_gallery : null,
         metadata: row.metadata || null
       };
@@ -1928,6 +1994,10 @@ router.post('/ads', authenticateToken, async (req: any, res) => {
     ad_format,
     quick_questions,
     aspect_ratio,
+    audio_url,
+    audio_title,
+    audio_artist,
+    audio_track_id,
     metadata
   } = req.body;
 
@@ -2000,7 +2070,8 @@ router.post('/ads', authenticateToken, async (req: any, res) => {
 
   const metadataToSave = {
     ...(metadata && typeof metadata === 'object' ? metadata : {}),
-    media_gallery: normGallery.length > 0 ? normGallery : undefined
+    media_gallery: normGallery.length > 0 ? normGallery : undefined,
+    ...(audio_url ? { audio_url, audio_title, audio_artist, audio_track_id } : {})
   };
 
   try {
@@ -2069,8 +2140,8 @@ router.post('/ads', authenticateToken, async (req: any, res) => {
         user_id, page_id, location_city, author_name, author_avatar, title, description, image_url,
         whatsapp_number, phone_number, video_url, target_url, hashtags, category, price_paid, duration_days, status,
         feeling, is_ai_generated, tagged_users, has_whatsapp_button, audience, ad_format, quick_questions, expires_at, aspect_ratio, metadata,
-        post_code, author_username
-      ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, 0, 0, 'approved', $15, $16, $17, $18, $19, $20, $21, $22, $23, $24, $25, $26)
+        post_code, author_username, audio_url, audio_title, audio_artist, audio_track_id
+      ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, 0, 0, 'approved', $15, $16, $17, $18, $19, $20, $21, $22, $23, $24, $25, $26, $27, $28, $29, $30)
       RETURNING *
     `, [
       userId,
@@ -2098,12 +2169,65 @@ router.post('/ads', authenticateToken, async (req: any, res) => {
       aspect_ratio || 'grid',
       JSON.stringify(metadataToSave),
       newPostCode,
-      authorUsername
+      authorUsername,
+      audio_url || null,
+      audio_title || null,
+      audio_artist || null,
+      audio_track_id || null
     ]);
 
     const createdAd = insertRes.rows[0];
     if (normGallery.length > 0) {
       createdAd.media_gallery = normGallery;
+    }
+
+    // Auto harvest audio or record track usage in mediaPool audio library
+    try {
+      if (metadataToSave?.audio_url) {
+        if (metadataToSave.audio_track_id) {
+          await recordAudioTrackUsage(String(metadataToSave.audio_track_id));
+        } else {
+          await harvestAudioFromPost({
+            userId,
+            userName: authorName,
+            userAvatar: authorAvatar,
+            adId: createdAd.id,
+            postTitle: finalTitle,
+            audioUrl: metadataToSave.audio_url,
+            category: autoCategory
+          });
+        }
+      }
+    } catch (audioHarvErr) {
+      console.warn('[Bulletin API] Audio harvesting notice:', audioHarvErr);
+    }
+
+    // Asynchronous background audio track embedding for video posts
+    if (normVideoUrl && audio_url) {
+      (async () => {
+        try {
+          const videoDiskPath = resolveDiskFilePath(normVideoUrl);
+          const audioDiskPath = resolveDiskFilePath(audio_url);
+
+          const mergeRes = await mergeAudioIntoVideo(videoDiskPath, audioDiskPath, {
+            keepOriginalAudio: false
+          });
+
+          if (mergeRes.success && mergeRes.processedVideoUrl) {
+            await pool.query('UPDATE bulletin_ads SET video_url = $1 WHERE id = $2', [
+              mergeRes.processedVideoUrl,
+              createdAd.id
+            ]);
+            io.emit('BULLETIN_AD_UPDATED', {
+              ad_id: createdAd.id,
+              video_url: mergeRes.processedVideoUrl
+            });
+            console.log(`[Bulletin] Background audio merged for ad #${createdAd.id} -> ${mergeRes.processedVideoUrl}`);
+          }
+        } catch (mergeErr: any) {
+          console.warn('[Bulletin] Background audio merge error:', mergeErr?.message);
+        }
+      })();
     }
 
     // Save hashtags to database
@@ -2267,9 +2391,9 @@ router.get('/stories', async (req, res) => {
 router.post('/stories', authenticateToken, async (req: any, res) => {
   try {
     const userId = req.user.id;
-    const { title, description, image_url, video_url, page_id } = req.body;
+    const { title, description, image_url, video_url, page_id, audio_url, audio_track_id, metadata } = req.body;
 
-    if (!image_url && !video_url) {
+    if (!image_url && !video_url && !audio_url) {
       return res.status(400).json({ error: 'يرجى تقديم صورة أو فيديو للقصة' });
     }
 
@@ -2297,11 +2421,17 @@ router.post('/stories', authenticateToken, async (req: any, res) => {
     const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000);
     const finalImageUrl = image_url || (video_url ? '/uploads/default_video_poster.jpg' : 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=1080&q=80');
 
+    const storyMetadata = {
+      ...(metadata || {}),
+      ...(audio_url ? { audio_url, audio_track_id } : {})
+    };
+
     const insertRes = await pool.query(`
       INSERT INTO bulletin_ads (
         user_id, page_id, author_name, author_avatar, title, description,
-        image_url, video_url, category, status, ad_format, expires_at, created_at, location_city
-      ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, 'عام / General', 'approved', 'story', $9, NOW(), 'فلسطين')
+        image_url, video_url, category, status, ad_format, expires_at, created_at, location_city, metadata,
+        audio_url, audio_track_id
+      ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, 'عام / General', 'approved', 'story', $9, NOW(), 'فلسطين', $10, $11, $12)
       RETURNING *
     `, [
       userId,
@@ -2312,10 +2442,34 @@ router.post('/stories', authenticateToken, async (req: any, res) => {
       storyDesc,
       finalImageUrl,
       video_url || null,
-      expiresAt
+      expiresAt,
+      JSON.stringify(storyMetadata),
+      audio_url || null,
+      audio_track_id || null
     ]);
 
     const createdStory = insertRes.rows[0];
+
+    // Audio harvesting / usage tracking for stories
+    try {
+      if (audio_url) {
+        if (audio_track_id) {
+          await recordAudioTrackUsage(String(audio_track_id));
+        } else {
+          await harvestAudioFromPost({
+            userId,
+            userName: authorName,
+            userAvatar: authorAvatar,
+            adId: createdStory.id,
+            postTitle: storyTitle,
+            audioUrl: audio_url,
+            category: 'stories'
+          });
+        }
+      }
+    } catch (aErr) {
+      console.warn('[Bulletin Story] Audio tracking notice:', aErr);
+    }
 
     try {
       await createNotification(

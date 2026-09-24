@@ -246,12 +246,32 @@ export function normalizeDatabaseUrl(url: string): string {
 export function getBasePoolConfig(max: number, connectionTimeoutMillis = 15000, urlStr?: string) {
   return {
     ssl: getSslConfig(urlStr),
-    idleTimeoutMillis: 60000,
+    idleTimeoutMillis: 10000,
     connectionTimeoutMillis,
     max,
     keepAlive: true,
-    keepAliveInitialDelayMillis: 10000,
+    keepAliveInitialDelayMillis: 5000,
+    allowExitOnIdle: false,
   };
+}
+
+function handleIdleClientError(poolName: string, err: any) {
+  const msg = (err?.message || err?.code || String(err || '')).toLowerCase();
+  // Remote serverless Postgres instances (e.g. Neon, Supabase, Cloud SQL scale-to-zero)
+  // routinely terminate idle pooled TCP sockets via ECONNRESET, ETIMEDOUT, or "Connection terminated unexpectedly".
+  // pg-pool automatically destroys dead idle clients and spawns fresh ones upon query arrival.
+  if (
+    /connection terminated unexpectedly|econnreset|etimedout|terminating connection|socket closed|broken pipe|econnrefused|closed/i.test(msg) ||
+    err?.code === 'ECONNRESET' ||
+    err?.code === 'ETIMEDOUT'
+  ) {
+    // Suppress from stderr; log only when DEBUG_DB is enabled to keep terminal error-free
+    if (process.env.DEBUG_DB === 'true') {
+      console.log(`[DB] Idle ${poolName} socket closed by remote host (normal lifecycle event):`, err?.message || msg);
+    }
+    return;
+  }
+  console.error(`[DB] Idle ${poolName} client error:`, err?.message || msg);
 }
 
 function patchPoolQuery(p: any) {
@@ -312,7 +332,7 @@ export function createInternalPool(connectionString: string, max = 1, connection
     ...getBasePoolConfig(max, connectionTimeoutMillis, safeConnStr),
   });
   p.on('error', (e: any) => {
-    console.error('[DB] Idle internal client error:', e?.message || e);
+    handleIdleClientError('internal', e);
   });
   return patchPoolQuery(p);
 }
@@ -491,11 +511,11 @@ export async function initializePerplextaPools(
         ...getBasePoolConfig(finalMediaMax, 15000, normMediaUrl),
       }));
 
-      newPool.on('error', (e: any) => console.error('[DB] Idle core client error:', e?.message || e));
-      if (newLedgerPool   !== newPool) newLedgerPool.on('error',   (e: any) => console.error('[DB] Idle ledger client error:', e?.message || e));
-      if (newExternalPool !== newPool) newExternalPool.on('error', (e: any) => console.error('[DB] Idle external client error:', e?.message || e));
-      if (newSecurityPool !== newPool) newSecurityPool.on('error', (e: any) => console.error('[DB] Idle security client error:', e?.message || e));
-      if (newMediaPool    !== newPool) newMediaPool.on('error',    (e: any) => console.error('[DB] Idle media client error:', e?.message || e));
+      newPool.on('error', (e: any) => handleIdleClientError('core', e));
+      if (newLedgerPool   !== newPool) newLedgerPool.on('error',   (e: any) => handleIdleClientError('ledger', e));
+      if (newExternalPool !== newPool) newExternalPool.on('error', (e: any) => handleIdleClientError('external', e));
+      if (newSecurityPool !== newPool) newSecurityPool.on('error', (e: any) => handleIdleClientError('security', e));
+      if (newMediaPool    !== newPool) newMediaPool.on('error',    (e: any) => handleIdleClientError('media', e));
 
       console.log('[DB] Pools created. Verifying connectivity...');
 
@@ -1000,7 +1020,7 @@ export async function forceReconnectPool(poolName: 'core' | 'ledger' | 'external
       connectionString: url,
       ...getBasePoolConfig(currentCoreMax || envSizes.coreMax, 10000, url),
     }));
-    testPool.on('error', (e: any) => console.error('[DB] Idle core client error:', e?.message || e));
+    testPool.on('error', (e: any) => handleIdleClientError('core', e));
     try {
       await testPool.query('SELECT 1');
       rawPool = testPool;
@@ -1028,7 +1048,7 @@ export async function forceReconnectPool(poolName: 'core' | 'ledger' | 'external
       connectionString: url,
       ...getBasePoolConfig(currentLedgerMax || envSizes.ledgerMax, 5000, url),
     }));
-    testPool.on('error', (e: any) => console.error('[DB] Idle ledger client error:', e?.message || e));
+    testPool.on('error', (e: any) => handleIdleClientError('ledger', e));
     try {
       await testPool.query('SELECT 1');
       rawLedgerPool = testPool;
@@ -1056,7 +1076,7 @@ export async function forceReconnectPool(poolName: 'core' | 'ledger' | 'external
       connectionString: url,
       ...getBasePoolConfig(currentExternalMax || envSizes.externalMax, 5000, url),
     }));
-    testPool.on('error', (e: any) => console.error('[DB] Idle external client error:', e?.message || e));
+    testPool.on('error', (e: any) => handleIdleClientError('external', e));
     try {
       await testPool.query('SELECT 1');
       rawExternalPool = testPool;
@@ -1084,7 +1104,7 @@ export async function forceReconnectPool(poolName: 'core' | 'ledger' | 'external
       connectionString: url,
       ...getBasePoolConfig(currentSecurityMax || envSizes.securityMax, 5000, url),
     }));
-    testPool.on('error', (e: any) => console.error('[DB] Idle security client error:', e?.message || e));
+    testPool.on('error', (e: any) => handleIdleClientError('security', e));
     try {
       await testPool.query('SELECT 1');
       rawSecurityPool = testPool;
@@ -1112,7 +1132,7 @@ export async function forceReconnectPool(poolName: 'core' | 'ledger' | 'external
       connectionString: url,
       ...getBasePoolConfig(currentMediaMax || envSizes.mediaMax, 5000, url),
     }));
-    testPool.on('error', (e: any) => console.error('[DB] Idle media client error:', e?.message || e));
+    testPool.on('error', (e: any) => handleIdleClientError('media', e));
     try {
       await testPool.query('SELECT 1');
       rawMediaPool = testPool;

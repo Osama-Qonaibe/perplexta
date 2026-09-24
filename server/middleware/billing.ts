@@ -1,6 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
 import { pool } from '../db/index.js';
-import { checkUserQuota } from '../services/quota.js';
+import { checkUserQuota, getToolFriendlyName } from '../services/quota.js';
 import { checkUserAffordability } from '../services/billing.js';
 
 interface AuthenticatedRequest extends Request {
@@ -37,14 +37,16 @@ export const verifyBillingFunds = async (req: AuthenticatedRequest, res: Respons
       let userLang = req.user?.language;
       if (!userLang) {
         const uRes = await pool.query('SELECT language FROM users WHERE id = $1', [userId]);
-        userLang = uRes.rows[0]?.language || 'en';
+        userLang = uRes.rows[0]?.language || 'ar';
       }
 
-      const periodStrEn = quotaCheck.period === 'daily' ? 'Daily' : 'Monthly';
-      const periodStrAr = quotaCheck.period === 'daily' ? 'يومي' : 'شهري';
+      const periodStrEn = quotaCheck.period === 'monthly' ? 'monthly' : 'daily';
+      const periodStrAr = quotaCheck.period === 'monthly' ? 'الشهري' : 'اليومي';
+      const toolNameAr = getToolFriendlyName(toolId, 'ar');
+      const toolNameEn = getToolFriendlyName(toolId, 'en');
 
-      const msgEn = `Premium Membership Required: You have reached your complimentary ${periodStrEn} limit for this tool. Please upgrade your plan or subscription to continue.`;
-      const msgAr = `تتطلب هذه العملية باقة اشتراك: لقد تجاوزت الحد ال${periodStrAr} المسموح به لهذه الأداة. يرجى ترقية باقتك أو اشتراكك للاستمرار.`;
+      const msgEn = `You have reached the ${periodStrEn} limit for "${toolNameEn}"`;
+      const msgAr = `لقد استنفدت الحد ${periodStrAr} المتاح لأداة "${toolNameAr}"`;
 
       return res.status(402).json({
         error: userLang === 'ar' ? msgAr : msgEn,
@@ -53,6 +55,8 @@ export const verifyBillingFunds = async (req: AuthenticatedRequest, res: Respons
         limit: quotaCheck.limit,
         current: quotaCheck.currentUsage,
         period: quotaCheck.period,
+        tool: toolId,
+        toolName: userLang === 'ar' ? toolNameAr : toolNameEn,
         cta: {
           upgrade: true,
           referral: true
@@ -62,7 +66,7 @@ export const verifyBillingFunds = async (req: AuthenticatedRequest, res: Respons
 
     return next();
   } catch (error: any) {
-    console.error('[Billing Funds Middleware] Fault during billing/ledger verification:', error);
+    console.info('[Billing Funds Middleware] Notice:', error?.message || error);
     return res.status(500).json({
       error: 'Billing verification failed due to a system error. Please try again.',
       error_ar: 'فشل التحقق من الفوترة بسبب خطأ في النظام. يرجى المحاولة مرة أخرى.',

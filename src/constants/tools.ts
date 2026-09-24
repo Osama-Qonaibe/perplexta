@@ -10,6 +10,7 @@ export const ALL_TOOLS = [
   "tts",
   "code",
   "canvas",
+  "audio_studio",
   "perplexta_music",
   "sovereign_search",
   "x402_api",

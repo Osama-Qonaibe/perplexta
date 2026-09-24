@@ -1139,12 +1139,18 @@ export const AdPromotionStudioView: React.FC<AdPromotionStudioViewProps> = ({
                     {/* Media Display */}
                     {(ad.image_url || ad.video_url) && (
                       <div className="relative aspect-4/3 sm:aspect-16/9 bg-black/5 overflow-hidden">
-                        <img
-                          src={getMediaUrl(ad.image_url || '')}
-                          alt={ad.title}
-                          className="w-full h-full object-cover"
-                          referrerPolicy="no-referrer"
-                        />
+                        {ad.image_url ? (
+                          <img
+                            src={getMediaUrl(ad.image_url) || undefined}
+                            alt={ad.title}
+                            className="w-full h-full object-cover"
+                            referrerPolicy="no-referrer"
+                          />
+                        ) : (
+                          <div className="w-full h-full bg-gradient-to-br from-neutral-800 to-neutral-950 flex items-center justify-center text-white/50">
+                            <Film size={24} />
+                          </div>
+                        )}
                         <div className={`absolute top-2 start-2 px-2.5 py-1 rounded-lg backdrop-blur-md text-[10px] font-bold border flex items-center gap-1.5 shadow-md ${
                           previewStatus === 'active'
                             ? 'bg-emerald-950/80 text-emerald-200 border-emerald-500/40'
@@ -1268,12 +1274,18 @@ export const AdPromotionStudioView: React.FC<AdPromotionStudioViewProps> = ({
                       {/* Desktop Media */}
                       {(ad.image_url || ad.video_url) && (
                         <div className="relative aspect-16/9 rounded-xl bg-black/5 overflow-hidden border border-[var(--border-main)]">
-                          <img
-                            src={getMediaUrl(ad.image_url || '')}
-                            alt={ad.title}
-                            className="w-full h-full object-cover"
-                            referrerPolicy="no-referrer"
-                          />
+                          {ad.image_url ? (
+                            <img
+                              src={getMediaUrl(ad.image_url) || undefined}
+                              alt={ad.title}
+                              className="w-full h-full object-cover"
+                              referrerPolicy="no-referrer"
+                            />
+                          ) : (
+                            <div className="w-full h-full bg-gradient-to-br from-neutral-800 to-neutral-950 flex items-center justify-center text-white/50">
+                              <Film size={28} />
+                            </div>
+                          )}
                           <div className={`absolute top-2.5 start-2.5 px-2.5 py-1 rounded-lg backdrop-blur-md text-[11px] font-bold border flex items-center gap-1.5 shadow-md ${
                             previewStatus === 'active'
                               ? 'bg-emerald-950/80 text-emerald-200 border-emerald-500/40'
@@ -1317,9 +1329,9 @@ export const AdPromotionStudioView: React.FC<AdPromotionStudioViewProps> = ({
                   <div className="w-full max-w-[280px] sm:max-w-[300px] aspect-9/16 rounded-3xl border-2 border-[var(--border-main)] bg-black text-white relative overflow-hidden shadow-2xl flex flex-col justify-between">
                     {/* Background Media Full-Bleed */}
                     <div className="absolute inset-0 z-0">
-                      {ad.image_url || ad.video_url ? (
+                      {ad.image_url ? (
                         <img
-                          src={getMediaUrl(ad.image_url || '')}
+                          src={getMediaUrl(ad.image_url) || undefined}
                           alt={ad.title}
                           className="w-full h-full object-cover"
                           referrerPolicy="no-referrer"
@@ -1448,9 +1460,9 @@ export const AdPromotionStudioView: React.FC<AdPromotionStudioViewProps> = ({
                   <div className="w-full max-w-[280px] sm:max-w-[300px] aspect-9/16 rounded-3xl border-2 border-[var(--border-main)] bg-black text-white relative overflow-hidden shadow-2xl flex flex-col justify-between">
                     {/* Background Visual Full-Bleed */}
                     <div className="absolute inset-0 z-0">
-                      {ad.image_url || ad.video_url ? (
+                      {ad.image_url ? (
                         <img
-                          src={getMediaUrl(ad.image_url || '')}
+                          src={getMediaUrl(ad.image_url) || undefined}
                           alt={ad.title}
                           className="w-full h-full object-cover"
                           referrerPolicy="no-referrer"

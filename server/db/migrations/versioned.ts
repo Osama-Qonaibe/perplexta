@@ -2759,6 +2759,81 @@ export async function runVersionedMigrations(
         ALTER TABLE plans ADD COLUMN IF NOT EXISTS daily_days INTEGER DEFAULT 7;
       `);
     });
+
+    await runVersioned('v127_email_logs_and_notification_delivery_tracking', 'Add email tracking columns (is_sent, retry_count, last_error, sent_at) to notifications and create user_email_logs table', async (tx) => {
+      await tx.query(`ALTER TABLE notifications ADD COLUMN IF NOT EXISTS is_sent BOOLEAN DEFAULT false`);
+      await tx.query(`ALTER TABLE notifications ADD COLUMN IF NOT EXISTS sent_at TIMESTAMP`);
+      await tx.query(`ALTER TABLE notifications ADD COLUMN IF NOT EXISTS retry_count INTEGER DEFAULT 0`);
+      await tx.query(`ALTER TABLE notifications ADD COLUMN IF NOT EXISTS last_error TEXT`);
+
+      await tx.query(`
+        CREATE TABLE IF NOT EXISTS user_email_logs (
+          id SERIAL PRIMARY KEY,
+          user_id INTEGER REFERENCES users(id) ON DELETE SET NULL,
+          recipient_email VARCHAR(255) NOT NULL,
+          template_name VARCHAR(255) NOT NULL DEFAULT 'custom',
+          subject VARCHAR(255) NOT NULL,
+          status VARCHAR(50) DEFAULT 'pending',
+          retry_count INTEGER DEFAULT 0,
+          last_error TEXT,
+          sent_at TIMESTAMP,
+          metadata JSONB DEFAULT '{}',
+          created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+          updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        );
+      `);
+
+      await tx.query(`CREATE INDEX IF NOT EXISTS idx_user_email_logs_recipient ON user_email_logs (recipient_email)`);
+      await tx.query(`CREATE INDEX IF NOT EXISTS idx_user_email_logs_status ON user_email_logs (status)`);
+      await tx.query(`CREATE INDEX IF NOT EXISTS idx_user_email_logs_template ON user_email_logs (template_name)`);
+    });
+
+    await runVersioned('v128_email_logs_deliverability_table', 'Create email_logs table for email deliverability tracking with user_id, template_name, status, is_sent, retry_count, last_error, created_at', async (tx) => {
+      await tx.query(`
+        CREATE TABLE IF NOT EXISTS email_logs (
+          id SERIAL PRIMARY KEY,
+          user_id INTEGER REFERENCES users(id) ON DELETE SET NULL,
+          recipient VARCHAR(255),
+          template_name VARCHAR(255) NOT NULL DEFAULT 'custom',
+          status VARCHAR(50) DEFAULT 'pending',
+          is_sent BOOLEAN DEFAULT false,
+          retry_count INTEGER DEFAULT 0,
+          last_error TEXT,
+          metadata JSONB DEFAULT '{}',
+          created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+          updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        );
+      `);
+
+      await tx.query(`CREATE INDEX IF NOT EXISTS idx_email_logs_user_id ON email_logs (user_id)`);
+      await tx.query(`CREATE INDEX IF NOT EXISTS idx_email_logs_template_name ON email_logs (template_name)`);
+      await tx.query(`CREATE INDEX IF NOT EXISTS idx_email_logs_status ON email_logs (status)`);
+      await tx.query(`CREATE INDEX IF NOT EXISTS idx_email_logs_is_sent ON email_logs (is_sent)`);
+    });
+
+    await runVersioned('v129_consolidate_email_logs', 'Consolidate user_email_logs into single unified email_logs table with recipient_email, subject, sent_at and status indexes', async (tx) => {
+      await tx.query(`ALTER TABLE email_logs ADD COLUMN IF NOT EXISTS recipient_email VARCHAR(255)`);
+      await tx.query(`ALTER TABLE email_logs ADD COLUMN IF NOT EXISTS subject VARCHAR(255) DEFAULT ''`);
+      await tx.query(`ALTER TABLE email_logs ADD COLUMN IF NOT EXISTS sent_at TIMESTAMP`);
+
+      // Populate recipient_email from recipient if empty
+      await tx.query(`UPDATE email_logs SET recipient_email = recipient WHERE recipient_email IS NULL AND recipient IS NOT NULL`);
+
+      // Migrate records from user_email_logs if table exists
+      await tx.query(`
+        DO $$
+        BEGIN
+          IF EXISTS (SELECT FROM information_schema.tables WHERE table_name = 'user_email_logs') THEN
+            INSERT INTO email_logs (user_id, recipient_email, template_name, subject, status, is_sent, retry_count, last_error, sent_at, metadata, created_at, updated_at)
+            SELECT user_id, recipient_email, template_name, subject, status, (status = 'sent'), retry_count, last_error, sent_at, metadata, created_at, updated_at
+            FROM user_email_logs
+            ON CONFLICT DO NOTHING;
+          END IF;
+        END $$;
+      `);
+
+      await tx.query(`CREATE INDEX IF NOT EXISTS idx_email_logs_recipient_email ON email_logs (recipient_email)`);
+    });
     
   console.log("[Migrations] All versioned migrations completed successfully.");
 }

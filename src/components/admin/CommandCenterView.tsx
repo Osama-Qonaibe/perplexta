@@ -195,9 +195,11 @@ export const CommandCenterView: React.FC<CommandCenterViewProps> = ({
           });
           if (res.ok) {
             setActivity((prev) =>
-              prev.filter((a) => a.id !== id),
+              prev.filter((a) => String(a.id) !== String(id)),
             );
+            setSelectedActivityIds((prev) => prev.filter((item) => String(item) !== String(id)));
             showToast(t("logDeleted") || (language === "ar" ? "تم حذف السجل بنجاح" : "Log deleted successfully"), "success");
+            fetchData();
           }
         } catch (err) {
           console.error("Failed to delete activity log", err);
@@ -337,11 +339,12 @@ export const CommandCenterView: React.FC<CommandCenterViewProps> = ({
           });
 
           if (res.ok) {
+            const strIds = ids.map(String);
             if (type === "activity") {
-              setActivity((prev) => prev.filter((a) => !ids.includes(a.id)));
+              setActivity((prev) => prev.filter((a) => !strIds.includes(String(a.id))));
               setSelectedActivityIds([]);
             } else {
-              setAlerts((prev) => prev.filter((a) => !ids.includes(a.id)));
+              setAlerts((prev) => prev.filter((a) => !strIds.includes(String(a.id))));
               setSelectedAlertIds([]);
             }
             showToast(

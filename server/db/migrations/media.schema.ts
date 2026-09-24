@@ -52,6 +52,33 @@ export const MEDIA_SCHEMA_TABLES: { name: string; query: string }[] = [
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
       )
     `
+  },
+  {
+    name: 'user_audio_library',
+    query: `
+      CREATE TABLE IF NOT EXISTS user_audio_library (
+        id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+        user_id INTEGER,
+        user_name TEXT,
+        user_avatar TEXT,
+        title TEXT NOT NULL,
+        artist TEXT,
+        duration INTEGER DEFAULT 15,
+        audio_url TEXT NOT NULL,
+        audio_type VARCHAR(50) DEFAULT 'music',
+        category VARCHAR(50) DEFAULT 'trending',
+        source VARCHAR(50) DEFAULT 'manual_upload',
+        source_ad_id INTEGER,
+        usage_count INTEGER DEFAULT 1,
+        likes_count INTEGER DEFAULT 0,
+        is_trending BOOLEAN DEFAULT FALSE,
+        is_public BOOLEAN DEFAULT TRUE,
+        license TEXT DEFAULT 'Creative Commons CC0',
+        metadata JSONB DEFAULT '{}',
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      )
+    `
   }
 ];
 
@@ -104,6 +131,29 @@ export async function applyMediaColumnEnforcements(targetMediaPool: QueryClient)
     redo_state: { type: 'JSONB', default: "'{}'" },
     created_at: { type: 'TIMESTAMP', default: 'CURRENT_TIMESTAMP' }
   });
+
+  await ensureColumnsBulk(targetMediaPool, 'user_audio_library', {
+    id: { type: 'UUID' },
+    user_id: { type: 'INTEGER' },
+    user_name: { type: 'TEXT' },
+    user_avatar: { type: 'TEXT' },
+    title: { type: 'TEXT' },
+    artist: { type: 'TEXT' },
+    duration: { type: 'INTEGER', default: 15 },
+    audio_url: { type: 'TEXT' },
+    audio_type: { type: 'VARCHAR(50)', default: "'music'" },
+    category: { type: 'VARCHAR(50)', default: "'trending'" },
+    source: { type: 'VARCHAR(50)', default: "'manual_upload'" },
+    source_ad_id: { type: 'INTEGER' },
+    usage_count: { type: 'INTEGER', default: 1 },
+    likes_count: { type: 'INTEGER', default: 0 },
+    is_trending: { type: 'BOOLEAN', default: false },
+    is_public: { type: 'BOOLEAN', default: true },
+    license: { type: 'TEXT', default: "'Creative Commons CC0'" },
+    metadata: { type: 'JSONB', default: "'{}'" },
+    created_at: { type: 'TIMESTAMP', default: 'CURRENT_TIMESTAMP' },
+    updated_at: { type: 'TIMESTAMP', default: 'CURRENT_TIMESTAMP' }
+  });
 }
 
 export const MEDIA_INDEXES: string[] = [
@@ -115,7 +165,13 @@ export const MEDIA_INDEXES: string[] = [
   `CREATE UNIQUE INDEX IF NOT EXISTS canvas_sessions_pkey ON canvas_sessions(id)`,
   `CREATE INDEX IF NOT EXISTS idx_canvas_sessions_user_id ON canvas_sessions(user_id)`,
   `CREATE UNIQUE INDEX IF NOT EXISTS canvas_history_pkey ON canvas_history(id)`,
-  `CREATE INDEX IF NOT EXISTS idx_canvas_history_session_id ON canvas_history(session_id)`
+  `CREATE INDEX IF NOT EXISTS idx_canvas_history_session_id ON canvas_history(session_id)`,
+  `CREATE UNIQUE INDEX IF NOT EXISTS user_audio_library_pkey ON user_audio_library(id)`,
+  `CREATE INDEX IF NOT EXISTS idx_user_audio_library_user_id ON user_audio_library(user_id)`,
+  `CREATE INDEX IF NOT EXISTS idx_user_audio_library_category ON user_audio_library(category)`,
+  `CREATE INDEX IF NOT EXISTS idx_user_audio_library_type ON user_audio_library(audio_type)`,
+  `CREATE INDEX IF NOT EXISTS idx_user_audio_library_usage ON user_audio_library(usage_count DESC)`,
+  `CREATE INDEX IF NOT EXISTS idx_user_audio_library_created ON user_audio_library(created_at DESC)`
 ];
 
 export const MEDIA_RELATIONS: ForeignKeyRelation[] = [

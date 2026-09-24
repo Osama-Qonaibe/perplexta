@@ -51,9 +51,11 @@ export const SEMANTIC_COLORS = {
     bgEmphasis: 'var(--bg-danger-emphasis)',
   },
   warning: {
-    fg: 'var(--fg-attention)',
-    bg: 'var(--bg-attention-muted)',
-    bgEmphasis: 'var(--bg-attention-emphasis)',
+    fg: 'var(--fg-warning)',
+    bg: 'var(--bg-warning-muted)',
+    bgEmphasis: 'var(--bg-warning-emphasis)',
+    attentionFg: 'var(--fg-warning)',
+    attentionBg: 'var(--bg-warning-muted)',
   },
   info: {
     fg: 'var(--fg-info)',

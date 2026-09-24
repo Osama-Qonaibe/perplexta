@@ -1,13 +1,14 @@
 import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "motion/react";
-import { Key, Server, Cpu, Brain, MapPin } from "lucide-react";
+import { Key, Server, Cpu, Brain, MapPin, Music } from "lucide-react";
 import { ApiKeysVaultView } from "../ApiKeysVaultView";
 import { GpuInfrastructureView } from "../GpuInfrastructureView";
 import { OrchestratorView } from "../OrchestratorView";
 import { MemoryCenterView } from "../MemoryCenterView";
 import { MapsInfrastructureView } from "../MapsInfrastructureView";
+import { AudioInfrastructureView } from "../AudioInfrastructureView";
 
-export type AiInfraTab = "keys" | "gpu" | "maps" | "orchestrator" | "memories";
+export type AiInfraTab = "keys" | "gpu" | "maps" | "audio" | "orchestrator" | "memories";
 
 interface AiInfrastructureHubViewProps {
   theme: string;
@@ -68,6 +69,12 @@ export const AiInfrastructureHubView: React.FC<AiInfrastructureHubViewProps> = (
       labelAr: "مزودو الخرائط والمواقع",
       labelEn: "Maps & Geocoding Infrastructure",
       icon: <MapPin size={16} />,
+    },
+    {
+      id: "audio",
+      labelAr: "مزودو الصوت والموسيقى والمؤثرات",
+      labelEn: "Audio & Music Infrastructure",
+      icon: <Music size={16} />,
     },
     {
       id: "orchestrator",
@@ -142,6 +149,14 @@ export const AiInfrastructureHubView: React.FC<AiInfrastructureHubViewProps> = (
             )}
             {activeTab === "maps" && (
               <MapsInfrastructureView
+                theme={theme}
+                t={t}
+                dir={dir}
+                showToast={showToast}
+              />
+            )}
+            {activeTab === "audio" && (
+              <AudioInfrastructureView
                 theme={theme}
                 t={t}
                 dir={dir}

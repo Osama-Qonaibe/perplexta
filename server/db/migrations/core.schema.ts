@@ -27,7 +27,7 @@ export const CORE_SCHEMA_TABLES: { name: string; query: string }[] = [
         kyc_submitted_at TIMESTAMP,
         referred_by INTEGER,
         language VARCHAR(5) DEFAULT 'en',
-        theme VARCHAR(10) DEFAULT 'dark',
+        theme VARCHAR(10) DEFAULT 'light',
         memory TEXT,
         support_notes TEXT,
         custom_instructions TEXT,
@@ -240,7 +240,29 @@ export const CORE_SCHEMA_TABLES: { name: string; query: string }[] = [
         message_ar TEXT NOT NULL,
         type VARCHAR(50) DEFAULT 'info',
         is_read BOOLEAN DEFAULT false,
+        is_sent BOOLEAN DEFAULT false,
+        sent_at TIMESTAMP,
+        retry_count INTEGER DEFAULT 0,
+        last_error TEXT,
         action_url TEXT,
+        metadata JSONB DEFAULT '{}',
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      )`
+  },
+  {
+    name: 'email_logs',
+    query: `CREATE TABLE IF NOT EXISTS email_logs (
+        id SERIAL PRIMARY KEY,
+        user_id INTEGER REFERENCES users(id) ON DELETE SET NULL,
+        recipient_email VARCHAR(255) NOT NULL,
+        template_name VARCHAR(255) NOT NULL DEFAULT 'custom',
+        subject VARCHAR(255) NOT NULL DEFAULT '',
+        status VARCHAR(50) DEFAULT 'pending',
+        is_sent BOOLEAN DEFAULT false,
+        retry_count INTEGER DEFAULT 0,
+        last_error TEXT,
+        sent_at TIMESTAMP,
         metadata JSONB DEFAULT '{}',
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
@@ -1196,7 +1218,7 @@ export async function applyCoreColumnEnforcements(targetPool: QueryClient) {
     description_en: { type: 'TEXT' },
     description_ar: { type: 'TEXT' },
     logo_url: { type: 'TEXT' },
-    theme: { type: 'VARCHAR(20)', default: "'dark'" },
+    theme: { type: 'VARCHAR(20)', default: "'light'" },
     default_language: { type: 'VARCHAR(10)', default: "'en'" },
     maintenance_mode: { type: 'BOOLEAN', default: false },
     allow_registrations: { type: 'BOOLEAN', default: true },
@@ -1254,6 +1276,10 @@ export async function applyCoreColumnEnforcements(targetPool: QueryClient) {
     partnership_code: { type: 'VARCHAR(100)' },
     is_partnership: { type: 'BOOLEAN', default: false },
     partnership_brand: { type: 'VARCHAR(255)' },
+    audio_url: { type: 'TEXT' },
+    audio_title: { type: 'VARCHAR(255)' },
+    audio_artist: { type: 'VARCHAR(255)' },
+    audio_track_id: { type: 'VARCHAR(100)' },
     deleted_at: { type: 'TIMESTAMP' },
     archived_at: { type: 'TIMESTAMP' },
     boost_goal: { type: 'VARCHAR(100)', default: "'whatsapp_leads'" },
@@ -1607,6 +1633,24 @@ export async function applyCoreColumnEnforcements(targetPool: QueryClient) {
     user_agent: { type: 'TEXT' },
     created_at: { type: 'TIMESTAMP', default: 'CURRENT_TIMESTAMP' }
   });
+
+  // === Migration: Data synchronization and unification of tool inside tool_id ===
+  try {
+    await targetPool.query(`
+      UPDATE chats 
+      SET tool_id = COALESCE(tool_id, tool, 'chat_fast'),
+          tool = COALESCE(tool, tool_id, 'chat_fast')
+      WHERE tool_id IS NULL OR tool IS NULL OR tool_id != tool;
+    `);
+    await targetPool.query(`
+      UPDATE messages 
+      SET tool_id = COALESCE(tool_id, tool, 'chat_fast'),
+          tool = COALESCE(tool, tool_id, 'chat_fast')
+      WHERE tool_id IS NULL OR tool IS NULL OR tool_id != tool;
+    `);
+  } catch (syncErr: any) {
+    console.warn('[Migrations] Warning synchronizing tool/tool_id columns:', syncErr?.message || syncErr);
+  }
 }
 
 export const CORE_INDEXES: string[] = [

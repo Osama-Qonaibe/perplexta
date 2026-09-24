@@ -182,10 +182,10 @@ router.post("/generate-music", authenticateToken, chatLimiter, verifyBillingFund
     if (!quotaCheck.allowed) {
       const period = quotaCheck.period || 'daily';
       const periodEn = period === 'daily' ? 'Daily' : 'Monthly';
-      const periodAr = period === 'daily' ? 'يومي' : 'شهري';
+      const periodAr = period === 'daily' ? 'اليومي' : 'الشهري';
       return res.status(402).json({
-        error: `Premium Subscription Required: You have reached your complimentary ${periodEn} limit for music generation. Please upgrade your subscription plan to continue.`,
-        error_ar: `تتطلب هذه العملية باقة اشتراك: لقد تجاوزت الحد ال${periodAr} المسموح به لأداة الموسيقى والأغاني. يرجى ترقية باقة اشتراكك للاستمرار.`
+        error: `You have reached the ${periodEn} limit for Music & Songs`,
+        error_ar: `لقد استنفدت الحد ${periodAr} المتاح لأداة الموسيقى والأغاني`
       });
     }
 

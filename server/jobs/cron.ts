@@ -3,6 +3,7 @@ import { runSystemMaintenance, monitorDatabases } from '../db/migrations.js';
 import { pool, getExternalPool } from '../db/index.js';
 import { createNotification } from '../services/notifications.js';
 import { consolidateAllUserMemories } from '../services/memory.js';
+import EmailService from '../services/EmailService.js';
 import fs from 'fs/promises';
 import path from 'path';
 
@@ -303,11 +304,28 @@ export function initCronJobs() {
       `);
 
       for (const sub of expiringRes.rows) {
-        const titleEn = 'Subscription Renewal Reminder';
-        const titleAr = 'تذكير بتجديد الاشتراك';
-        const msgEn = `Your ${sub.name_en} subscription will expire/renew in 3 days.`;
-        const msgAr = `سيتم تجديد/انتهاء اشتراكك في ${sub.name_ar} خلال 3 أيام.`;
-        await createNotification(sub.user_id, 'system', titleEn, titleAr, msgEn, msgAr);
+        // Anti-Spam Check: Ensure we have not sent a renewal alert to this user in the last 24 hours
+        const recentNotif = await pool.query(
+          `SELECT id FROM notifications 
+           WHERE user_id = $1 AND type = 'subscription_expiring' 
+           AND created_at > CURRENT_TIMESTAMP - INTERVAL '24 hours'
+           LIMIT 1`,
+          [sub.user_id]
+        );
+
+        if (recentNotif.rows.length === 0) {
+          const titleEn = 'Subscription Renewal Reminder';
+          const titleAr = 'تذكير بتجديد الاشتراك';
+          const msgEn = `Your ${sub.name_en} subscription will expire/renew in 3 days.`;
+          const msgAr = `سيتم تجديد/انتهاء اشتراكك في ${sub.name_ar} خلال 3 أيام.`;
+          await createNotification(sub.user_id, 'subscription_expiring', titleEn, titleAr, msgEn, msgAr);
+
+          await EmailService.sendTemplatedEmail(sub.user_id, 'subscription_expiring', {
+            userName: sub.name,
+            planName: sub.language === 'ar' ? sub.name_ar : sub.name_en,
+            actionUrl: `${process.env.PUBLIC_APP_URL || 'https://perplexta.com'}/billing`
+          });
+        }
       }
     });
   });
@@ -338,6 +356,17 @@ export function initCronJobs() {
       const { reconcileAllWallets } = await import('../services/wallet.js');
       const report = await reconcileAllWallets();
       console.log(`[Cron] Monthly ledger audit completed: audited ${report.audited} wallets with ${report.discrepancies} discrepancies.`);
+    });
+  });
+
+  // 8. Email Delivery Retry Task - Runs every 15 minutes
+  cron.schedule('*/15 * * * *', async () => {
+    await runGuardedCron('Email Retry Dispatcher', 'emailRetryDispatcher', async () => {
+      const { retryFailedEmails } = await import('../services/email.js');
+      const retryResult = await retryFailedEmails(3);
+      if (retryResult.retried > 0) {
+        console.log(`[Cron Email Retry] Retried ${retryResult.retried} failed emails. Succeeded: ${retryResult.succeeded}.`);
+      }
     });
   });
 

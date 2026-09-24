@@ -546,7 +546,7 @@ export const ChatComposer: React.FC<ChatComposerProps> = ({
                                   setIsAdvancedToolsOpen(false);
                                 }
                               }}
-                              className={`w-8 h-8 sm:w-auto sm:px-2.5 sm:h-8 flex items-center justify-center gap-1 sm:gap-1.5 rounded-shape-sm border border-[var(--border-default)] hover:border-[var(--border-accent)]/60 transition-all duration-200 active:scale-95 text-xs font-mono cursor-pointer shrink-0 bg-transparent ${
+                              className={`w-8 h-8 sm:w-auto sm:px-2.5 sm:h-8 flex items-center justify-center gap-1 sm:gap-1.5 rounded-shape-sm border border-[var(--border-default)] hover:border-[var(--border-accent)]/60 transition-all duration-200 active:scale-95 text-xs font-mono cursor-pointer shrink-0 bg-transparent relative before:absolute before:-inset-1.5 sm:before:hidden before:content-[''] box-border ${
                                 isModelActive 
                                   ? 'text-[var(--text-primary)]' 
                                   : 'text-[var(--text-muted)] hover:text-[var(--text-primary)] shadow-2xs'
@@ -659,7 +659,7 @@ export const ChatComposer: React.FC<ChatComposerProps> = ({
                                   setIsModelMenuOpen(false);
                                 }
                               }}
-                              className={`w-8 h-8 sm:w-auto sm:px-2.5 sm:h-8 flex items-center justify-center gap-1 sm:gap-1.5 rounded-shape-sm border border-[var(--border-default)] hover:border-[var(--border-accent)]/60 transition-all duration-200 active:scale-95 text-xs font-medium cursor-pointer shrink-0 bg-transparent ${
+                              className={`w-8 h-8 sm:w-auto sm:px-2.5 sm:h-8 flex items-center justify-center gap-1 sm:gap-1.5 rounded-shape-sm border border-[var(--border-default)] hover:border-[var(--border-accent)]/60 transition-all duration-200 active:scale-95 text-xs font-medium cursor-pointer shrink-0 bg-transparent relative before:absolute before:-inset-1.5 sm:before:hidden before:content-[''] box-border ${
                                 isToolActive 
                                   ? 'text-[var(--text-primary)]' 
                                   : 'text-[var(--text-muted)] hover:text-[var(--text-primary)] shadow-2xs'
@@ -770,7 +770,7 @@ export const ChatComposer: React.FC<ChatComposerProps> = ({
                       type="button"
                       onClick={toggleRecording}
                       disabled={isInputDisabled}
-                      className={`w-8 h-8 sm:w-auto sm:px-2.5 sm:h-8 flex items-center justify-center gap-1 sm:gap-1.5 rounded-shape-sm border transition-all duration-200 active:scale-95 text-xs font-medium disabled:opacity-30 disabled:cursor-not-allowed shrink-0 cursor-pointer bg-transparent ${
+                      className={`w-8 h-8 sm:w-auto sm:px-2.5 sm:h-8 flex items-center justify-center gap-1 sm:gap-1.5 rounded-shape-sm border transition-all duration-200 active:scale-95 text-xs font-medium disabled:opacity-30 disabled:cursor-not-allowed shrink-0 cursor-pointer bg-transparent relative before:absolute before:-inset-1.5 sm:before:hidden before:content-[''] box-border ${
                         isRecording 
                           ? 'border-[var(--fg-danger)]/60 text-[var(--fg-danger)] animate-pulse' 
                           : 'border-[var(--border-default)] hover:border-[var(--border-accent)]/60 text-[var(--text-muted)] hover:text-[var(--text-primary)] shadow-2xs'
@@ -790,7 +790,7 @@ export const ChatComposer: React.FC<ChatComposerProps> = ({
                   }
                 }}
                 disabled={isInputDisabled}
-                className="w-8 h-8 sm:w-auto sm:px-2.5 sm:h-8 flex items-center justify-center gap-1 sm:gap-1.5 rounded-shape-sm border border-[var(--border-default)] bg-transparent hover:border-[var(--border-accent)]/60 text-[var(--text-muted)] hover:text-[var(--text-primary)] transition-all duration-200 active:scale-95 text-xs font-medium disabled:opacity-30 disabled:cursor-not-allowed shrink-0 cursor-pointer shadow-2xs"
+                className="w-8 h-8 sm:w-auto sm:px-2.5 sm:h-8 flex items-center justify-center gap-1 sm:gap-1.5 rounded-shape-sm border border-[var(--border-default)] bg-transparent hover:border-[var(--border-accent)]/60 text-[var(--text-muted)] hover:text-[var(--text-primary)] transition-all duration-200 active:scale-95 text-xs font-medium disabled:opacity-30 disabled:cursor-not-allowed shrink-0 cursor-pointer shadow-2xs relative before:absolute before:-inset-1.5 sm:before:hidden before:content-[''] box-border"
               >
                 <Paperclip className="w-3.5 h-3.5 text-[var(--text-muted)] shrink-0" />
                 <span className="hidden sm:inline whitespace-nowrap">{dir === 'rtl' ? 'إرفاق' : 'Attach'}</span>
@@ -804,7 +804,7 @@ export const ChatComposer: React.FC<ChatComposerProps> = ({
                 handleSendOrStop();
               }}
               disabled={!query.trim() && !isGenerating}
-              className={`w-8 h-8 rounded-shape-sm flex items-center justify-center shrink-0 active:scale-95 transition-all duration-fast border cursor-pointer ${
+              className={`w-8 h-8 rounded-shape-sm flex items-center justify-center shrink-0 active:scale-95 transition-all duration-fast border cursor-pointer relative before:absolute before:-inset-1.5 before:content-[''] box-border ${
                 isGenerating
                   ? 'bg-[var(--fg-danger)] text-white border-[var(--fg-danger)] hover:opacity-90 font-bold shadow-md animate-pulse'
                   : query.trim()

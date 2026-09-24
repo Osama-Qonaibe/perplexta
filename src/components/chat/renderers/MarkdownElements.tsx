@@ -168,29 +168,30 @@ export const MarkdownLink = ({ href, children }: { href?: string, children: Reac
   const favicon = meta?.favicon || getFavicon(cleanUrl);
 
   return (
-    <span className="relative inline-block group/link align-middle">
+    <span className="relative inline-block group/link align-middle" style={{ unicodeBidi: 'isolate' }}>
       <a
         href={cleanUrl}
         target="_blank"
         rel="noopener noreferrer"
         onMouseEnter={() => setShowTooltip(true)}
         onMouseLeave={() => setShowTooltip(false)}
-        className="inline-flex items-center gap-1.5 px-2 py-0.5 mx-0.5 rounded bg-accent/[0.04] border border-accent/15 hover:border-accent/35 hover:bg-accent/[0.08] transition-theme text-accent font-semibold no-underline text-[12px] align-middle shadow-sm hover:cursor-pointer"
+        className="inline-flex items-center gap-1.5 px-2.5 py-1 mx-1 rounded-md bg-accent/[0.06] border border-accent/20 hover:border-accent/40 hover:bg-accent/[0.12] transition-theme text-accent font-semibold no-underline text-[12.5px] align-middle shadow-xs hover:cursor-pointer"
+        style={{ unicodeBidi: 'isolate' }}
       >
         <span className="shrink-0 flex items-center justify-center" style={{ color: brand ? brand.color : 'inherit' }}>
           {brand ? (
-            brand.icon("w-3 h-3")
+            brand.icon("w-3.5 h-3.5")
           ) : (
             <img
               src={favicon}
               alt=""
-              className="w-3 h-3 object-contain"
+              className="w-3.5 h-3.5 object-contain"
               onError={(e) => { (e.target as HTMLImageElement).src = 'https://www.google.com/s2/favicons?domain=google.com&sz=32'; }}
             />
           )}
         </span>
-        <span className="truncate max-w-[160px]">{displayTitle}</span>
-        <ExternalLink size={9} className="opacity-0 group-hover/link:opacity-100 transition-opacity shrink-0" />
+        <span className="truncate max-w-[220px]" style={{ unicodeBidi: 'isolate' }}>{displayTitle}</span>
+        <ExternalLink size={10} className="opacity-0 group-hover/link:opacity-100 transition-opacity shrink-0" />
       </a>
 
       {showTooltip && (meta?.title || meta?.description) && (
@@ -423,12 +424,13 @@ export const BlockquoteWithActions = ({ children, dir }: { children: React.React
   let cleanedChildren = children;
   const rawText = extractTextFromChildren(children).trim();
   
-  // Strip duplicate prefix like "ملاحظة أمان:" or "ملاحظة أمان" or "Safety Note:" from children if present
-  if (rawText.startsWith('ملاحظة أمان:') || rawText.startsWith('ملاحظة أمان')) {
-    // We can clean React node tree or parse string
+  const isSecurityNote = /^(ملاحظة أمان|تنبيه أمني|safety note|security note|\[security\]|\[safety\])/i.test(rawText);
+  
+  // Strip duplicate prefix like "ملاحظة أمان:" or "Safety Note:" from children if present
+  if (isSecurityNote) {
     const processNode = (node: React.ReactNode): React.ReactNode => {
       if (typeof node === 'string') {
-        return node.replace(/^ملاحظة أمان[:\s]*/, '').replace(/^Safety Note[:\s]*/, '');
+        return node.replace(/^(ملاحظة أمان|تنبيه أمني|safety note|security note|\[security\]|\[safety\])[:\s]*/i, '');
       }
       if (Array.isArray(node)) {
         return node.map(processNode);
@@ -445,13 +447,15 @@ export const BlockquoteWithActions = ({ children, dir }: { children: React.React
   }
 
   return (
-    <div className="relative group/bq my-2 select-text">
-      <blockquote className="relative py-2 px-3.5 border-s-3 border-[var(--fg-accent)] bg-[var(--surface-subtle)]/60 rounded-r-shape-md border-y-0 border-e-0 transition-all hover:bg-[var(--surface-subtle)] shadow-2xs flex flex-col gap-1">
-        <div className="text-xs font-bold text-[var(--text-primary)] flex items-center gap-1.5">
-          <span className="inline-block w-1.5 h-1.5 rounded-full bg-[var(--fg-accent)]"></span>
-          <span>{dir === 'rtl' ? 'ملاحظة أمان' : 'Security Note'}</span>
-        </div>
-        <div className="text-xs font-medium leading-relaxed text-[var(--text-secondary)] ps-3">
+    <div className="relative group/bq my-4 sm:my-5 select-text" style={{ unicodeBidi: 'isolate' }}>
+      <blockquote className="relative py-3 px-4 border-s-4 border-[var(--fg-accent)] bg-[var(--surface-subtle)]/70 rounded-r-shape-md border-y-0 border-e-0 transition-all hover:bg-[var(--surface-subtle)] shadow-xs flex flex-col gap-1.5">
+        {isSecurityNote && (
+          <div className="text-xs font-bold text-[var(--fg-accent)] flex items-center gap-1.5 mb-0.5">
+            <span className="inline-block w-1.5 h-1.5 rounded-full bg-[var(--fg-accent)]"></span>
+            <span>{dir === 'rtl' ? 'ملاحظة أمان' : 'Security Note'}</span>
+          </div>
+        )}
+        <div className="text-[13.5px] sm:text-[14px] font-medium leading-[1.85] text-[var(--text-primary)]">
           {cleanedChildren}
         </div>
       </blockquote>

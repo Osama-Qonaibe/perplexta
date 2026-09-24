@@ -1545,6 +1545,8 @@ import gpuProvidersRoutes from './routes/gpuProviders.js';
 import ownershipRoutes from './routes/ownership.js';
 import sceneArchitectRoutes from './routes/sceneArchitect.js';
 import studioRoutes from './routes/studio.js';
+import audioRoutes from './routes/audio.js';
+import adminAudioRoutes from './routes/adminAudio.js';
 
 app.use('/api/mcp', mcpRoutes);
 app.use('/api/auth', authLimiter, authRoutes);
@@ -1552,6 +1554,8 @@ app.use('/api/chats', checkSubscriptionLimits, chatRoutes);
 app.use('/api/messages', checkSubscriptionLimits, messageRoutes);
 app.use('/api/admin', adminLimiter, adminRoutes);
 app.use('/api/admin/gpu-providers', adminLimiter, gpuProvidersRoutes);
+app.use('/api/admin/audio', adminLimiter, adminAudioRoutes);
+app.use('/api/audio', audioRoutes);
 app.use('/api/files', fileRoutes);
 app.use('/api/payments', paymentRoutes);
 app.use('/api/user', userRoutes);

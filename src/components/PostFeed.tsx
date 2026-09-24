@@ -37,7 +37,10 @@ import {
   ThumbsUp,
   Plus,
   RotateCcw,
-  RefreshCw
+  RefreshCw,
+  Music,
+  Play,
+  Pause
 } from 'lucide-react';
 import { BulletinAd, BulletinAdComment } from '../../server/db/types';
 import { AdDirectChat } from './AdDirectChat';
@@ -274,6 +277,8 @@ export const PostFeed: React.FC<PostFeedProps> = ({
   };
 
   // Facebook-style reactions bar state (Rock-solid stability & inward containment)
+  const [playingAudioAdId, setPlayingAudioAdId] = useState<number | null>(null);
+  const audioPlayerRef = useRef<HTMLAudioElement | null>(null);
   const [reactionBarAdId, setReactionBarAdId] = useState<number | null>(null);
   const [hoveredReactionId, setHoveredReactionId] = useState<string | null>(null);
   const [postReactions, setPostReactions] = useState<Record<number, string>>({});
@@ -713,6 +718,15 @@ export const PostFeed: React.FC<PostFeedProps> = ({
                         <span className="text-[var(--fg-warning)] font-bold shrink-0">{isRtl ? 'مُموَّل' : 'Sponsored'}</span>
                       </>
                     )}
+                    {((ad as any).audio_title || (ad as any).audio_url) && (
+                      <>
+                        <span>•</span>
+                        <span className="inline-flex items-center gap-1 font-bold text-purple-600 dark:text-purple-400 shrink-0 max-w-[150px] truncate" title={(ad as any).audio_title}>
+                          <Music size={10} className="shrink-0" />
+                          <span className="truncate">{(ad as any).audio_title || (isRtl ? 'صوت أصلي' : 'Audio')}</span>
+                        </span>
+                      </>
+                    )}
                   </div>
                 </div>
               </div>
@@ -988,6 +1002,62 @@ export const PostFeed: React.FC<PostFeedProps> = ({
                         </div>
                       );
                     })()}
+
+                    {/* Audio Track Badge / Player (Only for Audio-Only posts without visual media) */}
+                    {(ad as any).audio_url && (!ad.media_gallery || ad.media_gallery.length === 0) && !ad.image_url && !ad.video_url && (
+                      <div className="mt-2 p-2 sm:p-2.5 rounded-xl bg-purple-500/10 border border-purple-500/20 flex items-center justify-between gap-2.5">
+                        <div className="flex items-center gap-2 min-w-0 flex-1">
+                          <button
+                            type="button"
+                            onClick={() => {
+                              const audioUrl = getMediaUrl((ad as any).audio_url);
+                              if (!audioPlayerRef.current) {
+                                audioPlayerRef.current = new Audio();
+                              }
+                              if (playingAudioAdId === ad.id) {
+                                audioPlayerRef.current.pause();
+                                setPlayingAudioAdId(null);
+                              } else {
+                                audioPlayerRef.current.src = audioUrl;
+                                audioPlayerRef.current.play().catch(() => {});
+                                setPlayingAudioAdId(ad.id);
+                                audioPlayerRef.current.onended = () => setPlayingAudioAdId(null);
+                                if ((ad as any).audio_track_id) {
+                                  fetch(`/api/audio/library/${(ad as any).audio_track_id}/use`, {
+                                    method: 'POST',
+                                    headers: token ? { Authorization: `Bearer ${token}` } : {}
+                                  }).catch(() => {});
+                                }
+                              }
+                            }}
+                            className={`w-7 h-7 rounded-lg flex items-center justify-center shrink-0 transition-transform active:scale-95 cursor-pointer shadow-xs ${
+                              playingAudioAdId === ad.id
+                                ? 'bg-purple-600 text-white animate-pulse'
+                                : 'bg-purple-500/20 hover:bg-purple-500/30 text-purple-400'
+                            }`}
+                            title={playingAudioAdId === ad.id ? (isRtl ? 'إيقاف' : 'Pause') : (isRtl ? 'تشغيل المقطع الصوتي' : 'Play Sound')}
+                          >
+                            {playingAudioAdId === ad.id ? <Pause size={13} /> : <Play size={13} className="ms-0.5 fill-current" />}
+                          </button>
+
+                          <div className="min-w-0 flex-1">
+                            <div className="flex items-center gap-1">
+                              <Music size={11} className="text-purple-400 shrink-0" />
+                              <p className="text-xs font-bold text-[var(--text-primary)] truncate">
+                                {(ad as any).audio_title || (isRtl ? 'مقطع صوتي أصلي' : 'Original Sound')}
+                              </p>
+                            </div>
+                            <p className="text-[9px] text-[var(--text-muted)] truncate">
+                              {(ad as any).audio_artist || ad.author_name || (isRtl ? 'مكتبة بيربليكستا' : 'Perplexta Audio')}
+                            </p>
+                          </div>
+                        </div>
+
+                        <span className="text-[9px] font-bold px-1.5 py-0.5 rounded-md bg-purple-500/15 text-purple-400 shrink-0">
+                          {isRtl ? 'صوت أصلي' : 'Original Audio'}
+                        </span>
+                      </div>
+                    )}
                   </>
                 );
               })()}

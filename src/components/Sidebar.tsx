@@ -486,7 +486,7 @@ export const Sidebar: React.FC<{ activeLanguage?: string }> = ({ activeLanguage 
         transition={SIDEBAR_TRANSITION}
         className={`fixed z-[150] select-none bg-[var(--surface-sidebar)] border-[var(--border-default)] ${
           dir === 'rtl' ? 'border-l' : 'border-r'
-        } transition-theme flex flex-col top-0 h-[100dvh] pb-safe start-0 pointer-events-auto visible`}
+        } flex flex-col top-0 h-[100dvh] pb-safe start-0 pointer-events-auto visible`}
         style={{ 
           contain: 'layout', 
           willChange: 'width',
@@ -822,7 +822,7 @@ export const Sidebar: React.FC<{ activeLanguage?: string }> = ({ activeLanguage 
               </div>
             )}
 
-            <div className={`mt-auto ${isMobile ? 'pt-1.5 pb-1.5 px-1.5 space-y-0.5' : 'pt-1.5 pb-2 px-1.5 space-y-0.5'} border-t border-[var(--border-default)] transition-all duration-fast flex-shrink-0 relative`}>
+            <div className={`mt-auto ${isMobile ? 'pt-1.5 pb-1.5 px-1.5 space-y-0.5' : 'pt-1.5 pb-2 px-1.5 space-y-0.5'} border-t border-[var(--border-default)] flex-shrink-0 relative`}>
               {user ? (
                 <div 
                   onClick={(e) => {
@@ -830,7 +830,7 @@ export const Sidebar: React.FC<{ activeLanguage?: string }> = ({ activeLanguage 
                     const rect = e.currentTarget.getBoundingClientRect();
                     setProfileMenuTarget(profileMenuTarget ? null : { rect });
                   }}
-                  className={`flex items-center group cursor-pointer w-full h-[36px] overflow-hidden flex-shrink-0 rounded-shape-sm transition-all duration-fast select-none active:scale-98 ${
+                  className={`flex items-center group cursor-pointer w-full h-[36px] overflow-hidden flex-shrink-0 rounded-shape-sm transition-colors duration-fast select-none active:scale-98 ${
                     profileMenuTarget
                       ? HOVER_STYLES.sidebarItemActive
                       : HOVER_STYLES.sidebarItem
@@ -860,28 +860,25 @@ export const Sidebar: React.FC<{ activeLanguage?: string }> = ({ activeLanguage 
                         </span>
                       </div>
                     </div>
-                    <div className="flex flex-col min-w-0 ps-1.5 justify-center">
-                      <AnimatePresence initial={false}>
-                        {isSidebarOpen && (
-                          <motion.div 
-                            {...sidebarTextMotion}
-                            className="flex flex-col overflow-hidden text-start"
-                          >
-                            <span className="font-semibold text-xs truncate whitespace-nowrap leading-tight text-[var(--text-primary)] transition-colors duration-fast">{user.name}</span>
-                            <span className="text-[9px] text-[var(--text-muted)] truncate whitespace-nowrap uppercase tracking-wider font-medium leading-tight mt-0.5">
-                              {t(`role_${(user.role || 'user').toLowerCase()}`) || (user.subscription?.plan_id 
-                                ? (plans.find((p: any) => p.id.toString() === user.subscription?.plan_id.toString())?.name || t('activePlan'))
-                                : t('noPlan'))}
-                            </span>
-                          </motion.div>
-                        )}
-                      </AnimatePresence>
+                    <div className="flex flex-col min-w-0 ps-1.5 justify-center flex-1">
+                      <div 
+                        className={`flex flex-col overflow-hidden text-start transition-opacity duration-200 ease-out ${
+                          isSidebarOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'
+                        }`}
+                      >
+                        <span className="font-semibold text-xs truncate whitespace-nowrap leading-tight text-[var(--text-primary)] transition-colors duration-fast">{user.name}</span>
+                        <span className="text-[9px] text-[var(--text-muted)] truncate whitespace-nowrap uppercase tracking-wider font-medium leading-tight mt-0.5">
+                          {t(`role_${(user.role || 'user').toLowerCase()}`) || (user.subscription?.plan_id 
+                            ? (plans.find((p: any) => p.id.toString() === user.subscription?.plan_id.toString())?.name || t('activePlan'))
+                            : t('noPlan'))}
+                        </span>
+                      </div>
                     </div>
                   </div>
                 </div>
               ) : (
                 <div 
-                  className={`flex items-center group cursor-pointer w-full h-[36px] overflow-hidden flex-shrink-0 transition-all duration-fast rounded-shape-sm select-none active:scale-98 ${HOVER_STYLES.sidebarItem}`}
+                  className={`flex items-center group cursor-pointer w-full h-[36px] overflow-hidden flex-shrink-0 transition-colors duration-fast rounded-shape-sm select-none active:scale-98 ${HOVER_STYLES.sidebarItem}`}
                   style={{ paddingInlineStart: '8px', paddingInlineEnd: '8px' }}
                   onClick={() => {
                     setIsAuthModalOpen(true);
@@ -890,59 +887,53 @@ export const Sidebar: React.FC<{ activeLanguage?: string }> = ({ activeLanguage 
                     }
                   }}
                 >
-                  <div className="w-7 h-[34px] flex-shrink-0 flex items-center justify-center relative">
-                    <div className="w-7 h-7 rounded-shape-xs flex items-center justify-center flex-shrink-0 relative z-10 transition-colors duration-fast border border-[var(--border-default)]">
-                      <User size={15} className="text-[var(--text-muted)] group-hover:text-[var(--text-primary)] transition-colors duration-fast" />
+                  <div className="flex items-center h-full overflow-hidden w-full relative text-[var(--text-primary)]">
+                    <div className="w-7 h-[34px] flex-shrink-0 flex items-center justify-center relative">
+                      <div className="w-7 h-7 rounded-shape-xs flex items-center justify-center flex-shrink-0 relative z-10 transition-colors duration-fast border border-[var(--border-default)]">
+                        <User size={15} className="text-[var(--text-muted)] group-hover:text-[var(--text-primary)] transition-colors duration-fast" />
+                      </div>
                     </div>
-                  </div>
-                  <div className="flex flex-col min-w-0 ps-1.5 justify-center">
-                    <AnimatePresence initial={false}>
-                      {isSidebarOpen && (
-                        <motion.div 
-                          {...sidebarTextMotion}
-                          className="flex flex-col overflow-hidden text-start"
-                        >
-                          <span className="text-[9px] text-[var(--text-muted)] truncate whitespace-nowrap font-medium uppercase tracking-wider mb-0.5">{t('createAccount')}</span>
-                          <span className="font-semibold text-xs truncate whitespace-nowrap text-[var(--text-primary)] transition-colors duration-fast">{t('login')}</span>
-                        </motion.div>
-                      )}
-                    </AnimatePresence>
+                    <div className="flex flex-col min-w-0 ps-1.5 justify-center flex-1">
+                      <div 
+                        className={`flex flex-col overflow-hidden text-start transition-opacity duration-200 ease-out ${
+                          isSidebarOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'
+                        }`}
+                      >
+                        <span className="text-[9px] text-[var(--text-muted)] truncate whitespace-nowrap font-medium uppercase tracking-wider mb-0.5">{t('createAccount')}</span>
+                        <span className="font-semibold text-xs truncate whitespace-nowrap text-[var(--text-primary)] transition-colors duration-fast">{t('login')}</span>
+                      </div>
+                    </div>
                   </div>
                 </div>
               )}
               
-              <div className="flex flex-col w-full h-auto px-1.5 py-1 overflow-hidden flex-shrink-0 relative">
-                <AnimatePresence initial={false}>
-                  {isSidebarOpen && (
-                    <motion.div 
-                      key="legal-footer"
-                      {...sidebarTextMotion}
-                      className="flex items-center justify-between opacity-60 hover:opacity-100 transition-all duration-fast pointer-events-auto w-full overflow-hidden"
-                    >
-                      <NavLink to="/terms" className="text-[10px] font-semibold text-[var(--text-muted)] hover:text-[var(--accent)] transition-all duration-fast whitespace-nowrap">
-                        {t('termsOfUse')}
-                      </NavLink>
-                      <span className="w-1 h-1 rounded-shape-full bg-[var(--border-default)] flex-shrink-0" />
-                      <NavLink to="/privacy" className="text-[10px] font-semibold text-[var(--text-muted)] hover:text-[var(--accent)] transition-all duration-fast whitespace-nowrap">
-                        {t('privacyPolicy')}
-                      </NavLink>
-                      <span className="w-1 h-1 rounded-shape-full bg-[var(--border-default)] flex-shrink-0" />
-                      <NavLink to="/about" className="text-[10px] font-semibold text-[var(--text-muted)] hover:text-[var(--accent)] transition-all duration-fast whitespace-nowrap">
-                        {language === 'ar' ? 'عن المنصة' : 'About'}
-                      </NavLink>
-                      <span className="hidden md:inline-block w-1 h-1 rounded-shape-full bg-[var(--border-default)] flex-shrink-0" />
-                      <a
-                        href="/docs/legal"
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="hidden md:inline-block text-[10px] font-semibold text-[var(--text-muted)] hover:text-[var(--accent)] transition-all duration-fast whitespace-nowrap"
-                        title={language === 'ar' ? 'الوثائق القانونية' : 'Legal Docs'}
-                      >
-                        {language === 'ar' ? 'الوثائق' : 'Docs'}
-                      </a>
-                    </motion.div>
-                  )}
-                </AnimatePresence>
+              <div className="flex flex-col w-full h-auto px-1 overflow-hidden flex-shrink-0 relative">
+                <div 
+                  className={`flex items-center justify-between w-full overflow-hidden px-0.5 py-1 select-none transition-opacity duration-200 ${
+                    isSidebarOpen ? 'opacity-45 hover:opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'
+                  }`}
+                >
+                  <NavLink 
+                    to="/terms" 
+                    className="text-[8.5px] font-medium text-[var(--text-muted)] hover:text-[var(--accent)] transition-colors duration-fast whitespace-nowrap"
+                  >
+                    {t('termsOfUse')}
+                  </NavLink>
+                  <span className="w-0.5 h-0.5 rounded-shape-full bg-[var(--text-muted)] opacity-50 flex-shrink-0" />
+                  <NavLink 
+                    to="/privacy" 
+                    className="text-[8.5px] font-medium text-[var(--text-muted)] hover:text-[var(--accent)] transition-colors duration-fast whitespace-nowrap"
+                  >
+                    {t('privacyPolicy')}
+                  </NavLink>
+                  <span className="w-0.5 h-0.5 rounded-shape-full bg-[var(--text-muted)] opacity-50 flex-shrink-0" />
+                  <NavLink 
+                    to="/about" 
+                    className="text-[8.5px] font-medium text-[var(--text-muted)] hover:text-[var(--accent)] transition-colors duration-fast whitespace-nowrap"
+                  >
+                    {language === 'ar' ? 'عن المنصة' : 'About'}
+                  </NavLink>
+                </div>
               </div>
 
             </div>

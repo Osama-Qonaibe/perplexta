@@ -634,7 +634,7 @@ export const AdminDashboard: React.FC = () => {
         <ErrorBoundary name="Admin Command Panels">
           {path === "dashboard" ? (
             <CommandCenterView theme={theme} t={t} showToast={showToast} />
-          ) : ["keys", "gpu", "maps", "orchestrator", "memories", "ai-infra"].includes(path) ? (
+          ) : ["keys", "gpu", "maps", "audio", "orchestrator", "memories", "ai-infra"].includes(path) ? (
             <AiInfrastructureHubView
               theme={theme}
               t={t}
@@ -649,6 +649,8 @@ export const AdminDashboard: React.FC = () => {
                   ? "gpu"
                   : path === "maps"
                   ? "maps"
+                  : path === "audio"
+                  ? "audio"
                   : path === "orchestrator"
                   ? "orchestrator"
                   : path === "memories"

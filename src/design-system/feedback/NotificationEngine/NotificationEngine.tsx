@@ -459,6 +459,7 @@ const ToastCard: React.FC<{ item: NotificationItem; onDismiss: (id: string) => v
   }, [item.duration, item.id, onDismiss, paused]);
 
   const conciseText = formatConciseText(item.message, item.title, item.type, isRtl);
+  const isLongMessage = conciseText.length > 20;
 
   const getVariantStyles = () => {
     switch (item.type) {
@@ -508,7 +509,11 @@ const ToastCard: React.FC<{ item: NotificationItem; onDismiss: (id: string) => v
       onMouseEnter={() => setPaused(true)}
       onMouseLeave={() => setPaused(false)}
       dir={isRtl ? 'rtl' : 'ltr'}
-      className="relative overflow-hidden flex items-center justify-between gap-2 px-2.5 min-h-[36px] py-1.5 rounded-shape-sm bg-[var(--surface-card)] border border-[var(--border-main)] backdrop-blur-xl shadow-xl ring-1 ring-black/5 dark:ring-white/10 text-[var(--text-primary)] transition-all min-w-[150px] max-w-[calc(100vw-32px)] sm:max-w-[320px] select-none"
+      className={`relative overflow-hidden flex items-center justify-between gap-2.5 px-3 min-h-[36px] py-1.5 rounded-shape-sm bg-[var(--surface-card)] border border-[var(--border-main)] backdrop-blur-xl shadow-xl ring-1 ring-black/5 dark:ring-white/10 text-[var(--text-primary)] transition-all select-none w-fit ${
+        isLongMessage
+          ? 'min-w-[260px] max-w-[calc(100vw-32px)] sm:max-w-[580px]'
+          : 'min-w-[140px] max-w-[calc(100vw-32px)] sm:max-w-[320px]'
+      }`}
     >
       {/* Icon Circular Badge */}
       <div className={`w-5.5 h-5.5 rounded-shape-xs border flex items-center justify-center shrink-0 ${variant.iconBadge}`}>
@@ -519,7 +524,7 @@ const ToastCard: React.FC<{ item: NotificationItem; onDismiss: (id: string) => v
 
       {/* Typography & Concise Message */}
       <div className="flex-1 min-w-0 shrink-0">
-        <p className="text-[11px] font-bold leading-none text-[var(--text-primary)] whitespace-nowrap truncate">
+        <p className="text-[11.5px] font-bold leading-normal text-[var(--text-primary)] whitespace-nowrap">
           {conciseText}
         </p>
       </div>

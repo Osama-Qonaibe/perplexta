@@ -765,6 +765,10 @@ export interface BulletinAd {
   boost_goal?: string | null;
   boost_daily_budget?: number;
   boost_settings?: any;
+  audio_url?: string | null;
+  audio_title?: string | null;
+  audio_artist?: string | null;
+  audio_track_id?: string | null;
   starts_at?: Date | string | null;
   expires_at?: Date | string | null;
   created_at: Date | string;
