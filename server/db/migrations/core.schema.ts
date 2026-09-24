@@ -1284,7 +1284,26 @@ export async function applyCoreColumnEnforcements(targetPool: QueryClient) {
     archived_at: { type: 'TIMESTAMP' },
     boost_goal: { type: 'VARCHAR(100)', default: "'whatsapp_leads'" },
     boost_daily_budget: { type: 'NUMERIC(10,2)', default: 2.00 },
-    boost_settings: { type: 'JSONB', default: "'{}'" }
+    boost_settings: { type: 'JSONB', default: "'{}'" },
+    location_city: { type: 'VARCHAR(100)', default: "'فلسطين'" },
+    phone_number: { type: 'VARCHAR(50)' },
+    video_url: { type: 'TEXT' },
+    is_boosted: { type: 'BOOLEAN', default: false },
+    boosted_until: { type: 'TIMESTAMP' },
+    boost_tier: { type: 'VARCHAR(50)' },
+    boost_price: { type: 'NUMERIC(10,2)', default: 0 },
+    audience: { type: 'VARCHAR(50)', default: "'public'" },
+    ad_format: { type: 'VARCHAR(50)', default: "'post'" },
+    feeling: { type: 'VARCHAR(100)' },
+    tagged_users: { type: 'JSONB', default: "'[]'" },
+    is_ai_generated: { type: 'BOOLEAN', default: false },
+    has_whatsapp_button: { type: 'BOOLEAN', default: false },
+    whatsapp_number: { type: 'VARCHAR(50)' },
+    likes_count: { type: 'INTEGER', default: 0 },
+    comments_count: { type: 'INTEGER', default: 0 },
+    shares_count: { type: 'INTEGER', default: 0 },
+    clicks_count: { type: 'INTEGER', default: 0 },
+    impressions_count: { type: 'INTEGER', default: 0 }
   });
 
   await ensureColumnsBulk(targetPool, 'bulletin_pages', {

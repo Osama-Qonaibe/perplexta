@@ -336,7 +336,8 @@ export async function processUploadedVideo(
       const doFallbackDiskCopy = () => {
         clearTimeout(safetyTimer);
         processEndTime = Date.now();
-        const fallbackName = `${uniqueId}_fallback.mp4`;
+        const originalExt = path.extname(inputFilePath).toLowerCase() || '.mp4';
+        const fallbackName = `${uniqueId}_fallback${originalExt}`;
         const fallbackPath = path.join(outputDir, fallbackName);
         try {
           fs.copyFileSync(inputFilePath, fallbackPath);
