@@ -462,7 +462,7 @@ export async function getAdminStats() {
     const safeQuery = async (p: any, sql: string, fallback: any = 0) => {
       try {
         const r = await p.query(sql);
-        return r.rows[0];
+        return r?.rows?.[0] || { count: fallback, total: fallback };
       } catch {
         return { count: fallback, total: fallback };
       }

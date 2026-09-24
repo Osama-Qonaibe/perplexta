@@ -2816,8 +2816,11 @@ export async function runVersionedMigrations(
       await tx.query(`ALTER TABLE email_logs ADD COLUMN IF NOT EXISTS subject VARCHAR(255) DEFAULT ''`);
       await tx.query(`ALTER TABLE email_logs ADD COLUMN IF NOT EXISTS sent_at TIMESTAMP`);
 
-      // Populate recipient_email from recipient if empty
-      await tx.query(`UPDATE email_logs SET recipient_email = recipient WHERE recipient_email IS NULL AND recipient IS NOT NULL`);
+      // Populate recipient_email from recipient if empty (safely checking if column exists first)
+      const hasRecipient = await columnExists(tx, 'email_logs', 'recipient');
+      if (hasRecipient) {
+        await tx.query(`UPDATE email_logs SET recipient_email = recipient WHERE recipient_email IS NULL AND recipient IS NOT NULL`);
+      }
 
       // Migrate records from user_email_logs if table exists
       await tx.query(`

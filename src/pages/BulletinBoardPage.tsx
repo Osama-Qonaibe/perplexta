@@ -4482,7 +4482,7 @@ export const BulletinBoardPage: React.FC = () => {
           <div className="flex flex-col lg:flex-row gap-5 xl:gap-6 2xl:gap-7 items-start justify-center w-full">
 
           {}
-          <div className="hidden lg:flex flex-col w-full lg:w-64 xl:w-[290px] 2xl:w-[320px] shrink-0 gap-4 order-1 sticky top-[calc(60px+env(safe-area-inset-top,0px))] max-h-[calc(100vh-5.5rem)] overflow-y-auto custom-scrollbar overscroll-contain">
+          <div className="hidden lg:flex flex-col w-full lg:w-64 xl:w-[290px] 2xl:w-[320px] shrink-0 gap-4 order-1 sticky top-[calc(60px+env(safe-area-inset-top,0px))] max-h-[calc(100vh-5.5rem)] overflow-y-auto scrollbar-none overscroll-contain">
 
             {}
             <div className="ui-card-container flex flex-col gap-3 w-full">
@@ -5743,7 +5743,7 @@ export const BulletinBoardPage: React.FC = () => {
             </div>
 
             {}
-            <div className="hidden xl:flex flex-col w-64 xl:w-[290px] 2xl:w-[320px] shrink-0 gap-4 order-3 sticky top-[calc(60px+env(safe-area-inset-top,0px))] max-h-[calc(100vh-5.5rem)] overflow-y-auto custom-scrollbar overscroll-contain">
+            <div className="hidden xl:flex flex-col w-64 xl:w-[290px] 2xl:w-[320px] shrink-0 gap-4 order-3 sticky top-[calc(60px+env(safe-area-inset-top,0px))] max-h-[calc(100vh-5.5rem)] overflow-y-auto scrollbar-none overscroll-contain">
               {}
               <RecommendationWidget
                 variant="bulletin"

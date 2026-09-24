@@ -126,6 +126,17 @@ export const UniversalMediaPlayer: React.FC<UniversalMediaPlayerProps> = ({
 
   // Proximity-based lazy loading of video resource to free up decoder memory
   const [isNearViewport, setIsNearViewport] = useState(autoPlay);
+  const [hasBeenNearViewport, setHasBeenNearViewport] = useState(autoPlay);
+
+  useEffect(() => {
+    if (isNearViewport) {
+      setHasBeenNearViewport(true);
+    }
+  }, [isNearViewport]);
+
+  useEffect(() => {
+    setHasBeenNearViewport(autoPlay);
+  }, [url, autoPlay]);
 
   useEffect(() => {
     const el = containerRef.current;
@@ -853,7 +864,7 @@ export const UniversalMediaPlayer: React.FC<UniversalMediaPlayerProps> = ({
         </>
       }
       >
-        {directVideoUrl && isNearViewport ? (
+        {directVideoUrl && hasBeenNearViewport ? (
           <>
             <video
               ref={setVideoRef}
@@ -975,6 +986,7 @@ export const UniversalMediaPlayer: React.FC<UniversalMediaPlayerProps> = ({
             onClick={(e) => {
               e.stopPropagation();
               setIsNearViewport(true);
+              setHasBeenNearViewport(true);
             }}
           >
             {posterUrl || autoPosterUrl ? (

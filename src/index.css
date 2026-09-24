@@ -1577,27 +1577,23 @@ body.layout-locked {
 /* ==========================================================================
    LAYER 4: UNIFIED PROFESSIONAL SCROLLBAR (Perplexta Quiet Pattern)
    ========================================================================== */
-.custom-scrollbar,
-.main-scroll-container {
+.custom-scrollbar {
   scrollbar-width: thin !important;
   scrollbar-color: color-mix(in oklab, var(--text-muted) 35%, transparent) transparent !important;
 }
 
-.custom-scrollbar::-webkit-scrollbar,
-.main-scroll-container::-webkit-scrollbar {
+.custom-scrollbar::-webkit-scrollbar {
   display: block !important;
-  width: 5px !important;
-  height: 5px !important;
+  width: 2px !important;
+  height: 2px !important;
   background: transparent !important;
 }
 
-.custom-scrollbar::-webkit-scrollbar-track,
-.main-scroll-container::-webkit-scrollbar-track {
+.custom-scrollbar::-webkit-scrollbar-track {
   background: transparent !important;
 }
 
-.custom-scrollbar::-webkit-scrollbar-thumb,
-.main-scroll-container::-webkit-scrollbar-thumb {
+.custom-scrollbar::-webkit-scrollbar-thumb {
   background: color-mix(in oklab, var(--text-muted) 25%, transparent) !important;
   border-radius: 9999px !important;
   border: 1px solid transparent !important;
@@ -1605,14 +1601,25 @@ body.layout-locked {
   transition: background 0.2s ease !important;
 }
 
-.custom-scrollbar:hover::-webkit-scrollbar-thumb,
-.main-scroll-container:hover::-webkit-scrollbar-thumb {
+.custom-scrollbar:hover::-webkit-scrollbar-thumb {
   background: color-mix(in oklab, var(--text-muted) 50%, transparent) !important;
 }
 
-.custom-scrollbar::-webkit-scrollbar-thumb:hover,
-.main-scroll-container::-webkit-scrollbar-thumb:hover {
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
   background: color-mix(in oklab, var(--text-muted) 80%, transparent) !important;
+}
+
+/* Make main-scroll-container have completely hidden scrollbars to prevent layout shifts */
+.main-scroll-container {
+  scrollbar-width: none !important;
+  -ms-overflow-style: none !important;
+}
+.main-scroll-container::-webkit-scrollbar {
+  display: none !important;
+  width: 0 !important;
+  height: 0 !important;
+  background: transparent !important;
+  -webkit-appearance: none !important;
 }
 
 /* Chrome, Edge, Safari WebKit Global Hidden Scrollbars */
