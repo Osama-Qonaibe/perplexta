@@ -1068,36 +1068,52 @@ app.use('/uploads', async (req: express.Request, res: express.Response, next: ex
             );
             if (dbRes.rows.length > 0 && dbRes.rows[0].file_data) {
               const fileData = dbRes.rows[0].file_data;
-              const fallbackExt = path.extname(filename).toLowerCase();
-              const mimeType = mediaMimeTypes[fallbackExt] || 'application/octet-stream';
-              res.setHeader('Content-Type', mimeType);
-              res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');
-              return res.send(fileData);
+              try {
+                fs.writeFileSync(resolvedPath, fileData);
+                foundFile = true;
+              } catch (writeErr) {
+                console.error('[Uploads] Error writing user_files fallback to disk:', writeErr);
+                const fallbackExt = path.extname(filename).toLowerCase();
+                const mimeType = mediaMimeTypes[fallbackExt] || 'application/octet-stream';
+                res.setHeader('Content-Type', mimeType);
+                res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');
+                return res.send(fileData);
+              }
             }
           }
 
-          const targetMediaPool = mediaPool || pool;
-          if (targetMediaPool) {
-            const mediaRes = await targetMediaPool.query(
-              'SELECT file_data FROM media_assets WHERE (stored_path LIKE $1 OR original_filename = $2) AND file_data IS NOT NULL LIMIT 1',
-              [`%${filename}%`, filename]
-            );
-            if (mediaRes.rows.length > 0 && mediaRes.rows[0].file_data) {
-              const fileData = mediaRes.rows[0].file_data;
-              const fallbackExt = path.extname(filename).toLowerCase();
-              const mimeType = mediaMimeTypes[fallbackExt] || 'application/octet-stream';
-              res.setHeader('Content-Type', mimeType);
-              res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');
-              return res.send(fileData);
+          if (!foundFile) {
+            const targetMediaPool = mediaPool || pool;
+            if (targetMediaPool) {
+              const mediaRes = await targetMediaPool.query(
+                'SELECT file_data FROM media_assets WHERE (stored_path LIKE $1 OR original_filename = $2) AND file_data IS NOT NULL LIMIT 1',
+                [`%${filename}%`, filename]
+              );
+              if (mediaRes.rows.length > 0 && mediaRes.rows[0].file_data) {
+                const fileData = mediaRes.rows[0].file_data;
+                try {
+                  fs.writeFileSync(resolvedPath, fileData);
+                  foundFile = true;
+                } catch (writeErr) {
+                  console.error('[Uploads] Error writing media_assets fallback to disk:', writeErr);
+                  const fallbackExt = path.extname(filename).toLowerCase();
+                  const mimeType = mediaMimeTypes[fallbackExt] || 'application/octet-stream';
+                  res.setHeader('Content-Type', mimeType);
+                  res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');
+                  return res.send(fileData);
+                }
+              }
             }
           }
         } catch (dbErr) {
           console.error('[Uploads] DB Fallback error:', dbErr);
         }
         
-        missingFileCache.set(filename, nowMs + MISSING_FILE_TTL_MS);
-        res.setHeader('Cache-Control', 'public, max-age=60');
-        return res.status(404).json({ error: 'File not found' });
+        if (!foundFile) {
+          missingFileCache.set(filename, nowMs + MISSING_FILE_TTL_MS);
+          res.setHeader('Cache-Control', 'public, max-age=60');
+          return res.status(404).json({ error: 'File not found' });
+        }
       }
     }
 

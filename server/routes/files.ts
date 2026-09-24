@@ -178,7 +178,7 @@ router.post("/upload", authenticateToken, checkDiskSpace, (upload.single('file')
     const thumbnailUrl = videoMetadata.thumbnailUrl || '';
 
     try {
-      const isLargeMedia = processedFileSize > 10 * 1024 * 1024;
+      const isLargeMedia = processedFileSize > 100 * 1024 * 1024;
       let fileBuf: Buffer | null = null;
       let sha256Hash = '';
 
