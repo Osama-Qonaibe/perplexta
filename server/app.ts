@@ -961,6 +961,15 @@ async function checkIsPublicFile(filename: string): Promise<boolean> {
 
 // Safe universal middleware handler for /uploads (avoids any path-to-regexp regex parsing errors across Express 4/5)
 app.use('/uploads', async (req: express.Request, res: express.Response, next: express.NextFunction) => {
+  // Enforce CORS headers for all uploads delivery
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Access-Control-Allow-Methods', 'GET, HEAD, OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', '*');
+
+  if (req.method === 'OPTIONS') {
+    return res.status(204).end();
+  }
+
   // Only handle GET and HEAD requests for file delivery
   if (req.method !== 'GET' && req.method !== 'HEAD') {
     return next();
@@ -1035,6 +1044,12 @@ app.use('/uploads', async (req: express.Request, res: express.Response, next: ex
       }
 
       if (!foundFile) {
+        if (filename === 'default_video_poster.jpg') {
+          res.setHeader('Content-Type', 'image/svg+xml');
+          res.setHeader('Cache-Control', 'public, max-age=86400');
+          return res.send(`<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="720" viewBox="0 0 1280 720" style="background:#111827;"><rect width="100%" height="100%" fill="#111827"/><circle cx="640" cy="360" r="60" fill="#3B82F6" opacity="0.15"/><polygon points="620,330 620,390 675,360" fill="#3B82F6"/></svg>`);
+        }
+
         const nowMs = Date.now();
         if (missingFileCache.has(filename)) {
           const exp = missingFileCache.get(filename)!;

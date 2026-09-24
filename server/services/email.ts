@@ -66,7 +66,7 @@ export async function retryFailedEmails(maxRetries: number = 3): Promise<{ retri
 
   try {
     const failedLogs = await pool.query(
-      `SELECT id, user_id, COALESCE(recipient_email, recipient) as recipient_email, template_name, subject, retry_count, metadata
+      `SELECT id, user_id, recipient_email, template_name, subject, retry_count, metadata
        FROM email_logs
        WHERE (status = 'failed' OR is_sent = false) AND retry_count < $1
        ORDER BY created_at ASC
