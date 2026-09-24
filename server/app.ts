@@ -1164,9 +1164,14 @@ app.use('/uploads', async (req: express.Request, res: express.Response, next: ex
       res.setHeader('Last-Modified', mtime);
       res.setHeader('ETag', etag);
       res.setHeader('Accept-Ranges', 'bytes');
+      res.setHeader('X-Accel-Buffering', 'no');
 
       if (isMedia) {
-        res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');
+        if (isVideoOrAudio) {
+          res.setHeader('Cache-Control', 'public, max-age=31536000, no-transform, immutable');
+        } else {
+          res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');
+        }
       } else {
         res.setHeader('Cache-Control', 'private, no-cache, must-revalidate');
       }

@@ -429,7 +429,7 @@ export async function generateAppIconsFromSource(
           width,
           height,
           channels: 4,
-          background: { r: 24, g: 23, b: 21, alpha: 1 } // #181715 perplexta dark surface
+          background: { r: 0, g: 0, b: 0, alpha: 0 } // Fully transparent background matching brand visual identity
         }
       }).png().toBuffer();
 

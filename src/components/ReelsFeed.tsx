@@ -1989,7 +1989,7 @@ export const ReelsFeed: React.FC<ReelsFeedProps> = ({
       <div
         ref={containerRef}
         onScroll={handleContainerScroll}
-        className="flex-1 w-full overflow-y-scroll overflow-x-hidden snap-y snap-mandatory scroll-smooth overscroll-y-contain scrollbar-none relative z-10 touch-pan-y"
+        className="flex-1 w-full overflow-y-scroll overflow-x-hidden snap-y snap-mandatory md:scroll-smooth overscroll-y-contain scrollbar-none relative z-10 touch-pan-y h-[100dvh] max-h-[100dvh] min-h-[100dvh]"
         style={{ WebkitOverflowScrolling: 'touch' }}
       >
         {isLoading ? (
@@ -2034,8 +2034,8 @@ export const ReelsFeed: React.FC<ReelsFeedProps> = ({
             <div
               key={`reel-item-${reel.id}-${index}`}
               data-reel-index={index}
-              className={`reel-snap-item relative w-full h-full snap-center shrink-0 flex items-center justify-center p-0 md:py-2 md:px-4 overflow-hidden transition-all duration-media ease-out ${
-                isCurrentActive ? 'scale-100 opacity-100' : 'scale-[0.985] opacity-90'
+              className={`reel-snap-item relative w-full h-[100dvh] max-h-[100dvh] min-h-[100dvh] snap-center snap-always shrink-0 flex items-center justify-center p-0 md:py-2 md:px-4 overflow-hidden md:transition-all md:duration-media md:ease-out ${
+                isCurrentActive ? 'scale-100 opacity-100' : 'md:scale-[0.985] md:opacity-90 scale-100 opacity-100'
               }`}
             >
               {/* Centered Desktop Frame with Adjacent Rail and Split-View Drawer */}

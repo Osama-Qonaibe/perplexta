@@ -225,7 +225,6 @@ export const ComposerMediaPreview: React.FC<ComposerMediaPreviewProps> = ({
             controls
             playsInline
             preload="metadata"
-            crossOrigin={!mediaSrc.startsWith('blob:') && !mediaSrc.startsWith('data:') ? 'anonymous' : undefined}
             onLoadedMetadata={(e) => {
               const v = e.currentTarget;
               if (v.videoWidth && v.videoHeight) {
