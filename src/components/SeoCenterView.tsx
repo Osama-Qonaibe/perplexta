@@ -218,6 +218,22 @@ export const SeoCenterView: React.FC<SeoCenterViewProps> = ({
     }
   }, [token, fetchAuditData]);
 
+  useEffect(() => {
+    const handleSyncEvent = () => {
+      handleRunFullSync();
+    };
+    const handleRefreshEvent = () => {
+      fetchAuditData();
+    };
+
+    window.addEventListener("admin-sync-seo", handleSyncEvent);
+    window.addEventListener("admin-refresh-seo", handleRefreshEvent);
+    return () => {
+      window.removeEventListener("admin-sync-seo", handleSyncEvent);
+      window.removeEventListener("admin-refresh-seo", handleRefreshEvent);
+    };
+  }, [fetchAuditData]);
+
   const handleRunFullSync = async () => {
     if (!summary) return;
     setIsSyncingAll(true);
@@ -365,7 +381,7 @@ export const SeoCenterView: React.FC<SeoCenterViewProps> = ({
   const healthTextClass = healthScore >= 85 ? "text-[var(--fg-success)]" : healthScore >= 60 ? "text-amber-500" : "text-rose-500";
 
   return (
-    <div className="space-y-6">
+    <div className="w-full max-w-full space-y-6 px-1 md:px-2">
       {/* Top Banner Header */}
       <div className="p-6 rounded-[var(--radius-lg)] border border-[var(--border-default)] bg-[var(--surface-card)] shadow-lg transition-theme relative overflow-hidden">
         <div className="absolute top-0 right-0 w-96 h-96 bg-[var(--bg-accent-muted)]/40 rounded-[var(--radius-full)] blur-3xl pointer-events-none" />
@@ -400,17 +416,17 @@ export const SeoCenterView: React.FC<SeoCenterViewProps> = ({
             <button
               onClick={handleRunFullSync}
               disabled={isSyncingAll}
-              className="flex items-center gap-2 bg-[var(--accent)] hover:opacity-90 text-white font-bold px-5 py-3 rounded-[var(--radius-sm)] transition-theme shadow-sm disabled:opacity-50 active:scale-95 cursor-pointer"
+              className="flex items-center gap-2 bg-[var(--accent)] hover:opacity-90 text-white font-bold px-4 py-2.5 rounded-[var(--radius-sm)] transition-theme shadow-xs disabled:opacity-50 active:scale-95 cursor-pointer whitespace-nowrap shrink-0 min-h-[44px] touch-target-44"
             >
               {isSyncingAll ? (
                 <>
-                  <RefreshCw size={18} className="animate-spin" />
-                  <span>{isAr ? "جاري التوليد بالذكاء الاصطناعي..." : "AI Sync Running..."}</span>
+                  <RefreshCw size={16} className="animate-spin" />
+                  <span>{isAr ? "جاري المزامنة..." : "Syncing..."}</span>
                 </>
               ) : (
                 <>
-                  <Sparkles size={18} />
-                  <span>{isAr ? "بدء المزامنة الشاملة بالذكاء الاصطناعي" : "Start Global AI Metadata Sync"}</span>
+                  <Sparkles size={16} />
+                  <span>{isAr ? "بدء المزامنة" : "Start Sync"}</span>
                 </>
               )}
             </button>
@@ -746,22 +762,22 @@ export const SeoCenterView: React.FC<SeoCenterViewProps> = ({
                       </td>
 
                       {/* Actions */}
-                      <td className="p-4 text-center">
-                        <div className="flex items-center justify-center gap-2" onClick={(e) => e.stopPropagation()}>
+                      <td className="p-3 text-center min-w-[180px]">
+                        <div className="flex items-center justify-center gap-1.5" onClick={(e) => e.stopPropagation()}>
                           <button
                             onClick={(e) => handleOpenSmartSuggest(item, e)}
-                            className="flex items-center gap-1 bg-[var(--bg-accent-muted)] hover:bg-[var(--accent)] text-[var(--fg-accent)] hover:text-white px-3 py-1.5 rounded-[var(--radius-sm)] font-bold text-[11px] border border-[var(--border-accent)]/30 shadow-sm transition-all group cursor-pointer"
+                            className="flex items-center gap-1 bg-[var(--bg-accent-muted)] hover:bg-[var(--accent)] text-[var(--fg-accent)] hover:text-white px-2.5 py-1.5 rounded-[var(--radius-sm)] font-bold text-[11px] border border-[var(--border-accent)]/30 shadow-xs transition-all group cursor-pointer whitespace-nowrap min-h-[36px] touch-target-44 shrink-0"
                             title={isAr ? "عرض المقتراحات الذكية بالذكاء الاصطناعي والتحديث بنقرة واحدة" : "Smart AI Suggest & 1-Click Update"}
                           >
                             <Wand2 size={13} className="group-hover:rotate-12 transition-transform" />
-                            <span>{isAr ? "اقتراح ذكي ✨" : "Smart Suggest ✨"}</span>
+                            <span>{isAr ? "اقتراح ذكي" : "Suggest"}</span>
                           </button>
 
                           {item.requires_metadata_population ? (
                             <button
                               onClick={(e) => handleSyncSingleItem(item, e)}
                               disabled={isSyncingThis}
-                              className="flex items-center gap-1 bg-amber-500 hover:bg-amber-600 text-white px-2.5 py-1.5 rounded-[var(--radius-sm)] font-bold text-[10px] shadow-sm transition-theme disabled:opacity-50 cursor-pointer"
+                              className="flex items-center gap-1 bg-amber-500 hover:bg-amber-600 text-white px-2.5 py-1.5 rounded-[var(--radius-sm)] font-bold text-[11px] shadow-xs transition-theme disabled:opacity-50 cursor-pointer whitespace-nowrap min-h-[36px] touch-target-44 shrink-0"
                               title={isAr ? "استكمال الميتاداتا تلقائياً" : "Auto Populate"}
                             >
                               {isSyncingThis ? (
@@ -769,13 +785,13 @@ export const SeoCenterView: React.FC<SeoCenterViewProps> = ({
                               ) : (
                                 <Zap size={12} />
                               )}
-                              <span>{isAr ? "توليد سريع" : "Quick AI"}</span>
+                              <span>{isAr ? "توليد" : "AI Sync"}</span>
                             </button>
                           ) : (
                             <button
                               onClick={(e) => handleSyncSingleItem(item, e)}
                               disabled={isSyncingThis}
-                              className="flex items-center gap-1 bg-[var(--surface-page)] hover:bg-[var(--border-default)] text-[var(--text-muted)] hover:text-[var(--text-primary)] px-2.5 py-1.5 rounded-[var(--radius-sm)] font-bold text-[10px] border border-[var(--border-default)] transition-theme disabled:opacity-50 cursor-pointer"
+                              className="flex items-center gap-1 bg-[var(--surface-page)] hover:bg-[var(--border-default)] text-[var(--text-muted)] hover:text-[var(--text-primary)] px-2.5 py-1.5 rounded-[var(--radius-sm)] font-bold text-[11px] border border-[var(--border-default)] transition-theme disabled:opacity-50 cursor-pointer whitespace-nowrap min-h-[36px] touch-target-44 shrink-0"
                               title={isAr ? "إعادة توليد الميتاداتا" : "Regenerate Metadata"}
                             >
                               <RefreshCw size={12} className={isSyncingThis ? "animate-spin" : ""} />
@@ -1128,17 +1144,17 @@ export const SeoCenterView: React.FC<SeoCenterViewProps> = ({
                   type="button"
                   onClick={handleApplySmartSuggest}
                   disabled={loadingSmartSuggest || isApplyingSuggest}
-                  className="flex items-center gap-2 bg-[var(--accent)] hover:opacity-90 text-white font-black px-6 py-2.5 rounded-[var(--radius-sm)] text-xs shadow-sm transition-all disabled:opacity-50 active:scale-95 cursor-pointer"
+                  className="flex items-center gap-2 bg-[var(--accent)] hover:opacity-90 text-white font-bold px-4 py-2.5 rounded-[var(--radius-sm)] text-xs shadow-xs transition-all disabled:opacity-50 active:scale-95 cursor-pointer whitespace-nowrap shrink-0 min-h-[44px] touch-target-44"
                 >
                   {isApplyingSuggest ? (
                     <>
-                      <RefreshCw size={16} className="animate-spin" />
-                      <span>{isAr ? "جاري الاعتماد والتحديث..." : "Applying Update..."}</span>
+                      <RefreshCw size={14} className="animate-spin" />
+                      <span>{isAr ? "جاري التحديث..." : "Applying..."}</span>
                     </>
                   ) : (
                     <>
-                      <Zap size={16} />
-                      <span>{isAr ? "تطبيق وتحديث بنقرة واحدة ⚡" : "One-Click Apply & Save ⚡"}</span>
+                      <Zap size={14} />
+                      <span>{isAr ? "تطبيق التحديث" : "Apply Update"}</span>
                     </>
                   )}
                 </button>

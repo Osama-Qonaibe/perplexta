@@ -248,90 +248,87 @@ export const AudioInfrastructureView: React.FC<AdminViewProps> = ({
   const primaryProvider = providers.find(p => p.is_primary) || providers[0];
 
   return (
-    <div className="space-y-6 pb-12" dir={isRtl ? 'rtl' : 'ltr'}>
-      {/* Header Banner */}
-      <div className="relative overflow-hidden rounded-shape-md bg-gradient-to-r from-emerald-950/40 via-slate-900 to-teal-950/40 border border-[var(--border-main)] p-5 shadow-lg">
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 relative z-10">
-          <div className="flex items-center gap-3">
-            <div className="w-12 h-12 rounded-shape-xs bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 flex items-center justify-center shrink-0 shadow-inner">
-              <Music size={24} />
+    <div className="space-y-6 max-w-7xl mx-auto relative font-sans" dir={isRtl ? 'rtl' : 'ltr'}>
+      {/* Top Diagnostic Status Bar (Orchestrator Style) */}
+      <div className="p-5 rounded-[var(--radius-md)] bg-[var(--surface-card)] border border-[var(--border-default)] shadow-xs space-y-4 transition-theme">
+        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+          <div className="flex items-start sm:items-center gap-3.5">
+            <div className="p-2.5 rounded-[var(--radius-sm)] bg-[var(--surface-subtle)] text-[var(--fg-accent)] shrink-0 border border-[var(--border-default)] relative">
+              <Music size={20} />
+              <span className="absolute -top-1 -right-1 flex h-2.5 w-2.5">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[var(--fg-success)] opacity-75"></span>
+                <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-[var(--fg-success)]"></span>
+              </span>
             </div>
-            <div>
-              <div className="flex items-center gap-2">
-                <h1 className="text-base font-black text-[var(--text-primary)]">
+
+            <div className="space-y-1">
+              <div className="flex flex-wrap items-center gap-2">
+                <span className="text-sm font-bold text-[var(--text-primary)]">
                   {isRtl ? 'خزانة ومزودو الصوت والموسيقى والمؤثرات' : 'Audio & Music Infrastructure Vault'}
-                </h1>
-                <span className="px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 text-[10px] font-extrabold border border-emerald-500/20">
-                  {isRtl ? 'فيرال بوك والقصص' : 'ViralBook Audio Engine'}
+                </span>
+                <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-[var(--radius-xs)] text-[11px] font-bold bg-[var(--status-success-subtle)] text-[var(--fg-success)] border border-[var(--fg-success)]/25">
+                  <span className="w-1.5 h-1.5 rounded-full bg-[var(--fg-success)] animate-pulse"></span>
+                  <span>{isRtl ? 'محرك فيرال بوك نشط' : 'ViralBook Audio Active'}</span>
+                </div>
+                <span className="text-[10px] font-mono px-2 py-0.5 rounded-[var(--radius-xs)] bg-[var(--surface-subtle)] text-[var(--text-muted)] border border-[var(--border-default)]">
+                  {activeCount} / {providers.length} {isRtl ? 'مزود نشط' : 'Active Providers'}
                 </span>
               </div>
-              <p className="text-xs text-[var(--text-muted)] mt-1">
-                {isRtl
-                  ? 'ربط وتوجيه مفاتيح مكتبات الصوت والمؤثرات المفتوحة المصدر (Freesound, Jamendo) للقصص والريلز'
-                  : 'Manage and orchestrate open-source audio, ringtones & music API providers for ViralBook stories & reels.'}
-              </p>
+
+              <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-[var(--text-muted)]">
+                <div className="flex items-center gap-1.5 font-medium">
+                  <Disc size={13} className="text-[var(--fg-accent)] shrink-0" />
+                  <span>
+                    {isRtl ? 'المزود الرئيسي:' : 'Primary Engine:'}{" "}
+                    <strong className="text-[var(--text-primary)] font-semibold">
+                      {primaryProvider?.name_ar || primaryProvider?.name || 'Local Vault'}
+                    </strong>
+                  </span>
+                </div>
+
+                <span className="hidden sm:inline text-[var(--border-default)]">•</span>
+
+                <div className="flex items-center gap-1.5 text-[11px] text-[var(--text-muted)] font-mono">
+                  <span>
+                    {isRtl ? 'التخزين المؤقت نشط' : 'Local Caching Enabled'}
+                  </span>
+                </div>
+              </div>
             </div>
           </div>
 
-          <div className="flex items-center gap-2 shrink-0">
+          <div className="flex items-center gap-2.5 sm:self-auto self-start">
             <button
               onClick={handleSyncTracks}
               disabled={isSyncing}
-              className="h-9 px-3.5 rounded-shape-xs bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-black shadow-sm transition-all flex items-center gap-2 cursor-pointer disabled:opacity-50 border border-emerald-500/50"
-              title={isRtl ? 'مزامنة وتخزين المقاطع النجمية والموسيقى من المزودين لتقليل الاستعلامات الخارجية' : 'Sync & cache audio tracks from providers'}
+              className="flex items-center justify-center gap-2 px-4 py-2.5 rounded-[var(--radius-sm)] text-xs font-bold transition-all bg-[var(--bg-accent-emphasis)] text-[var(--fg-on-emphasis)] hover:opacity-90 active:scale-95 disabled:opacity-50 shrink-0 shadow-xs cursor-pointer group touch-target-44"
+              title={isRtl ? 'مزامنة وتخزين المقاطع الصوتية في الخزنة' : 'Sync & cache audio tracks from providers'}
             >
               <Zap size={14} className={isSyncing ? 'animate-bounce text-yellow-300' : 'text-yellow-300'} />
-              <span>{isSyncing ? (isRtl ? 'جاري المزامنة...' : 'Syncing...') : (isRtl ? 'مزامنة الصوتيات مع الخزنة' : 'Sync Audio Vault')}</span>
+              <span>{isSyncing ? (isRtl ? 'جاري المزامنة...' : 'Syncing...') : (isRtl ? 'مزامنة الصوتيات' : 'Sync Audio Vault')}</span>
             </button>
 
             <button
               onClick={() => fetchProviders(true)}
               disabled={isRefreshing}
-              className="h-9 px-3 rounded-shape-xs bg-[var(--surface-card)] border border-[var(--border-main)] hover:bg-[var(--surface-subtle)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] text-xs font-bold transition-all flex items-center gap-2 cursor-pointer disabled:opacity-50"
+              className="flex items-center justify-center gap-2 px-4 py-2.5 rounded-[var(--radius-sm)] text-xs font-bold transition-all border border-[var(--border-accent)] bg-[var(--surface-subtle)] text-[var(--fg-accent)] hover:bg-[var(--surface-card)] active:scale-95 disabled:opacity-50 shrink-0 shadow-xs cursor-pointer group touch-target-44"
+              title={isRtl ? 'تحديث المزودين' : 'Refresh providers'}
             >
-              <RefreshCw size={13} className={isRefreshing ? 'animate-spin' : ''} />
+              <RefreshCw size={14} className={isRefreshing ? "animate-spin text-[var(--fg-accent)]" : "group-hover:rotate-180 transition-transform duration-500"} />
               <span>{isRtl ? 'تحديث' : 'Refresh'}</span>
             </button>
           </div>
         </div>
 
-        {/* Stats Strip */}
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mt-4 pt-4 border-t border-white/10">
-          <div className="bg-black/20 p-2.5 rounded-shape-xs border border-white/5">
-            <span className="text-[10px] font-bold text-[var(--text-muted)] block">
-              {isRtl ? 'المزود الرئيسي الحسابي' : 'Primary Provider'}
-            </span>
-            <span className="text-xs font-black text-emerald-400 truncate block mt-0.5">
-              {primaryProvider?.name_ar || primaryProvider?.name || 'Local Vault'}
-            </span>
-          </div>
-
-          <div className="bg-black/20 p-2.5 rounded-shape-xs border border-white/5">
-            <span className="text-[10px] font-bold text-[var(--text-muted)] block">
-              {isRtl ? 'المزودون النشطون' : 'Active Providers'}
-            </span>
-            <span className="text-xs font-black text-[var(--text-primary)] block mt-0.5">
-              {activeCount} / {providers.length} {isRtl ? 'مزودين' : 'providers'}
-            </span>
-          </div>
-
-          <div className="bg-black/20 p-2.5 rounded-shape-xs border border-white/5">
-            <span className="text-[10px] font-bold text-[var(--text-muted)] block">
-              {isRtl ? 'متوسط سرعة الاستجابة' : 'Avg Latency'}
-            </span>
-            <span className="text-xs font-black text-emerald-400 block mt-0.5">
-              {primaryProvider?.latency_ms ? `${primaryProvider.latency_ms}ms` : '< 15ms'}
-            </span>
-          </div>
-
-          <div className="bg-black/20 p-2.5 rounded-shape-xs border border-white/5">
-            <span className="text-[10px] font-bold text-[var(--text-muted)] block">
-              {isRtl ? 'حالة التخزين المؤقت' : 'Memory Cache'}
-            </span>
-            <span className="text-xs font-black text-emerald-400 flex items-center gap-1 mt-0.5">
-              <Zap size={11} /> 0.001ms Hot Cache
-            </span>
-          </div>
+        <div className="pt-2 border-t border-[var(--border-default)] text-[11px] text-[var(--text-muted)] flex flex-wrap items-center justify-between gap-2">
+          <span>
+            {isRtl
+              ? 'ربط وتوجيه مفاتيح مكتبات الصوت والمؤثرات المفتوحة المصدر لقصص وريلز مجتمع بيربليكستا.'
+              : 'Open-source audio and tracks provider configuration for ViralBook stories and short-form reels.'}
+          </span>
+          <span className="font-mono text-[10px] text-[var(--text-muted)] bg-[var(--surface-subtle)] px-2 py-0.5 rounded-[var(--radius-xs)] border border-[var(--border-default)]">
+            {isRtl ? 'البنية التحتية • الصوتيات' : 'Infrastructure • Audio'}
+          </span>
         </div>
       </div>
 
@@ -560,7 +557,7 @@ export const AudioInfrastructureView: React.FC<AdminViewProps> = ({
                       onChange={() => handleToggleEnable(provider)}
                       className="sr-only peer"
                     />
-                    <div className="w-8 h-4 bg-[var(--surface-subtle)] peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-3 after:w-3 after:transition-all peer-checked:bg-emerald-500"></div>
+                    <div className="w-8 h-4 bg-[var(--surface-subtle)] peer-focus:outline-none rounded-[var(--radius-full)] peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-[var(--border-default)] after:border after:rounded-[var(--radius-full)] after:h-3 after:w-3 after:transition-all peer-checked:bg-emerald-500"></div>
                   </label>
                 </div>
               </motion.div>

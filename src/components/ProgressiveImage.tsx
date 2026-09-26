@@ -32,10 +32,10 @@ export const ProgressiveImage: React.FC<ProgressiveImageProps> = ({
   const activeSrc = isError ? (placeholderSrc || fallbackImage) : src;
 
   return (
-    <div className={`relative overflow-hidden bg-gray-100 dark:bg-gray-900 ${wrapperClassName}`}>
+    <div className={`relative overflow-hidden bg-gray-100 dark:bg-[var(--surface-card)] ${wrapperClassName}`}>
       {/* Low-res or blur placeholder */}
       {!isLoaded && !isError && (
-        <div className="absolute inset-0 bg-gray-200 dark:bg-gray-800 animate-pulse filter blur-xl scale-110" />
+        <div className="absolute inset-0 bg-gray-200 dark:bg-[var(--surface-subtle)] animate-pulse filter blur-xl scale-110" />
       )}
 
       {placeholderSrc && !isLoaded && !isError && (

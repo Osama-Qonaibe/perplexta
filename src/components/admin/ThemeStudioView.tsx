@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   Palette,
@@ -122,8 +122,18 @@ export const ThemeStudioView: React.FC<ThemeStudioViewProps> = ({
       })
     : null;
 
+  useEffect(() => {
+    const handleSaveEvent = () => {
+      handleSave();
+    };
+    window.addEventListener("admin-save-theme", handleSaveEvent);
+    return () => {
+      window.removeEventListener("admin-save-theme", handleSaveEvent);
+    };
+  }, [handleSave]);
+
   return (
-    <div className="space-y-6 pb-20" dir={isAr ? 'rtl' : 'ltr'}>
+    <div className="w-full max-w-full space-y-6 pb-20 px-1 md:px-2" dir={isAr ? 'rtl' : 'ltr'}>
       {/* 1. Sovereign Command & Database Sync Header */}
       <div className="bg-[var(--surface-card)] border border-[var(--border-default)] p-5 sm:p-6 rounded-[var(--radius-lg)] shadow-xs transition-colors">
         <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-5">
@@ -295,7 +305,7 @@ export const ThemeStudioView: React.FC<ThemeStudioViewProps> = ({
               ) : (
                 <Save size={15} />
               )}
-              <span>{isAr ? 'حفظ واعتماد نهائي في قاعدة البيانات' : 'Save & Commit to DB'}</span>
+              <span>{isAr ? 'حفظ المظهر' : 'Save Theme'}</span>
             </button>
           </div>
         </div>

@@ -449,6 +449,16 @@ router.post("/refresh-token", refreshLimiter, async (req, res) => {
   }
 });
 
+router.get("/google/client-id", async (req, res) => {
+  try {
+    const settings = await getCachedSystemSettings().catch(() => null);
+    const googleClientId = settings?.google_client_id || process.env.GOOGLE_CLIENT_ID || process.env.VITE_GOOGLE_CLIENT_ID || '';
+    res.json({ clientId: googleClientId, configured: !!googleClientId });
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to fetch Google Client ID' });
+  }
+});
+
 router.get("/google/url", async (req, res) => {
   try {
     const { ref, lang, remember, mode, theme, authSessionId } = req.query;
@@ -469,10 +479,10 @@ router.get("/google/url", async (req, res) => {
     );
 
     const settings = await getCachedSystemSettings().catch(() => null);
-    const googleClientId = settings?.google_client_id || process.env.GOOGLE_CLIENT_ID || '';
+    const googleClientId = settings?.google_client_id || process.env.GOOGLE_CLIENT_ID || process.env.VITE_GOOGLE_CLIENT_ID || '';
 
     if (!googleClientId) {
-      return res.status(400).json({ error: 'Google OAuth is not configured in Control Panel.' });
+      return res.status(400).json({ error: 'Google OAuth is not configured in Control Panel or environment variables.' });
     }
 
     const params = new URLSearchParams({
@@ -620,8 +630,9 @@ router.get("/google/callback", async (req, res) => {
     await pool.query('DELETE FROM oauth_states WHERE state = $1', [state]);
 
     const settings = await getCachedSystemSettings().catch(() => null);
-    const googleClientId = settings?.google_client_id || process.env.GOOGLE_CLIENT_ID || '';
-    const googleClientSecret = decrypt(settings?.google_client_secret || process.env.GOOGLE_CLIENT_SECRET || '');
+    const googleClientId = settings?.google_client_id || process.env.GOOGLE_CLIENT_ID || process.env.VITE_GOOGLE_CLIENT_ID || '';
+    const dbSecret = settings?.google_client_secret ? decrypt(settings.google_client_secret) : '';
+    const googleClientSecret = dbSecret || process.env.GOOGLE_CLIENT_SECRET || process.env.VITE_GOOGLE_CLIENT_SECRET || '';
 
     const tokenResponse = await fetch('https://oauth2.googleapis.com/token', {
       method: 'POST',

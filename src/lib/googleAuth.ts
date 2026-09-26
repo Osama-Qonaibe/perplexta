@@ -144,9 +144,23 @@ export const googleSignIn = async (
     // Attempt standard GSI token client if available
     await loadGsiScript().catch(() => {});
 
-    // Check meta tag, window global, or Vite environment variable for Google Client ID
+    // Check meta tag, window global, Vite environment variable, or fetch from backend endpoint
     const metaClientId = document.querySelector('meta[name="google-signin-client_id"]')?.getAttribute('content');
-    const clientId = metaClientId || (window as any).__GOOGLE_CLIENT_ID__ || (import.meta as any).env?.VITE_GOOGLE_CLIENT_ID || '';
+    let clientId = metaClientId || (window as any).__GOOGLE_CLIENT_ID__ || (import.meta as any).env?.VITE_GOOGLE_CLIENT_ID || '';
+
+    if (!clientId) {
+      try {
+        const configRes = await fetch('/api/auth/google/client-id');
+        if (configRes.ok) {
+          const configData = await configRes.json();
+          if (configData.clientId) {
+            clientId = configData.clientId;
+          }
+        }
+      } catch (err) {
+        console.warn('[GoogleAuth] Failed to fetch clientId from server config:', err);
+      }
+    }
 
     if (!clientId) {
       throw new Error('Google Client ID is not configured. Please set GOOGLE_CLIENT_ID in Control Panel or .env');

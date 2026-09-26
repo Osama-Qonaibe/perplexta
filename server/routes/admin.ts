@@ -16,7 +16,7 @@ import { createNotification, logSystemActivity } from '../services/notifications
 import { consolidateAllUserMemories } from '../services/memory.js';
 import { runMemoryContextMigration } from '../services/memoryMigrationService.js';
 import { reconcileAllWallets } from '../services/wallet.js';
-import { getSystemSettings, updateSystemSettings, checkSystemAssetsDiagnostic, repairSystemAssetsDiagnostic, getMissingAssetReport } from '../services/system.js';
+import { getSystemSettings, updateSystemSettings, checkSystemAssetsDiagnostic, repairSystemAssetsDiagnostic, getMissingAssetReport, resolvePersistentSystemAssetUrl } from '../services/system.js';
 import { syncAllContentSeoMetadata, auditContentSeoItems, syncSingleContentSeoItem, getSmartSeoSuggestion, applySmartSeoSuggestion } from '../services/seoSync.js';
 import { upload, handleMulterError } from '../middleware/upload.js';
 import { checkDiskSpace } from '../middleware/checkDiskSpace.js';
@@ -43,7 +43,8 @@ import {
   invalidateOrchestratorConfigCache, 
   invalidatePlansCache, 
   invalidateApiKeysVaultCache,
-  invalidateAllDataLoaders
+  invalidateAllDataLoaders,
+  upsertSeoMetadata
 } from '../db/queries.js';
 import { invalidateFilePermissionCache, invalidateFileVersionCache } from '../services/filePermissionCache.js';
 import { invalidateGpuCache } from '../services/gpuVaultService.js';
@@ -2873,8 +2874,30 @@ router.post("/settings", authenticateAdmin, async (req, res) => {
   }
 });
 
+const ensurePaymentColumns = async () => {
+  try {
+    await pool.query(`
+      ALTER TABLE system_settings 
+      ADD COLUMN IF NOT EXISTS stripe_publishable_key TEXT,
+      ADD COLUMN IF NOT EXISTS stripe_secret_key TEXT,
+      ADD COLUMN IF NOT EXISTS stripe_webhook_secret TEXT,
+      ADD COLUMN IF NOT EXISTS stripe_live_mode BOOLEAN DEFAULT FALSE,
+      ADD COLUMN IF NOT EXISTS stripe_status VARCHAR(50) DEFAULT 'pending',
+      ADD COLUMN IF NOT EXISTS stripe_last_verified_at TIMESTAMP,
+      ADD COLUMN IF NOT EXISTS paypal_client_id TEXT,
+      ADD COLUMN IF NOT EXISTS paypal_client_secret TEXT,
+      ADD COLUMN IF NOT EXISTS paypal_mode VARCHAR(50) DEFAULT 'sandbox',
+      ADD COLUMN IF NOT EXISTS paypal_status VARCHAR(50) DEFAULT 'pending',
+      ADD COLUMN IF NOT EXISTS paypal_last_verified_at TIMESTAMP;
+    `);
+  } catch (err: any) {
+    console.warn('[Admin] Auto-ensuring payment gateway columns warning:', err?.message || err);
+  }
+};
+
 router.post("/settings/stripe", authenticateAdmin, async (req, res) => {
   try {
+    await ensurePaymentColumns();
     const { secretKey, publishableKey, webhookSecret, isLiveMode } = req.body;
     
     let query = 'UPDATE system_settings SET updated_at = CURRENT_TIMESTAMP';
@@ -2913,6 +2936,7 @@ router.post("/settings/stripe", authenticateAdmin, async (req, res) => {
 
 router.post("/settings/stripe/verify", authenticateAdmin, async (req, res) => {
   try {
+    await ensurePaymentColumns();
     const settings = await pool.query('SELECT stripe_secret_key FROM system_settings LIMIT 1');
     if (!settings.rows[0]?.stripe_secret_key) {
       return res.status(400).json({ error: 'Stripe secret key not configured' });
@@ -2934,6 +2958,7 @@ router.post("/settings/stripe/verify", authenticateAdmin, async (req, res) => {
 
 router.post("/settings/paypal", authenticateAdmin, async (req, res) => {
   try {
+    await ensurePaymentColumns();
     const { clientId, clientSecret, mode } = req.body;
 
     if (clientId !== undefined && clientId !== '' && typeof clientId !== 'string') {
@@ -2981,6 +3006,7 @@ router.post("/settings/paypal", authenticateAdmin, async (req, res) => {
 
 router.post("/settings/paypal/verify", authenticateAdmin, async (req, res) => {
   try {
+    await ensurePaymentColumns();
     const settings = await pool.query('SELECT paypal_client_id, paypal_client_secret, paypal_mode FROM system_settings LIMIT 1');
     if (!settings.rows[0]?.paypal_client_id || !settings.rows[0]?.paypal_client_secret) {
       return res.status(400).json({ error: 'PayPal client credentials not configured' });
@@ -3001,6 +3027,164 @@ router.post("/settings/paypal/verify", authenticateAdmin, async (req, res) => {
   } catch (error: any) {
     console.error('[Admin] PayPal verify failed:', error);
     res.status(400).json({ error: 'Verification failed' });
+  }
+});
+
+const ensureAuthProvidersColumns = async () => {
+  try {
+    await pool.query(`
+      ALTER TABLE system_settings 
+      ADD COLUMN IF NOT EXISTS google_client_id VARCHAR(255),
+      ADD COLUMN IF NOT EXISTS google_client_secret TEXT,
+      ADD COLUMN IF NOT EXISTS github_client_id VARCHAR(255),
+      ADD COLUMN IF NOT EXISTS github_client_secret TEXT,
+      ADD COLUMN IF NOT EXISTS apple_client_id VARCHAR(255),
+      ADD COLUMN IF NOT EXISTS apple_team_id VARCHAR(255),
+      ADD COLUMN IF NOT EXISTS apple_key_id VARCHAR(255),
+      ADD COLUMN IF NOT EXISTS apple_private_key TEXT,
+      ADD COLUMN IF NOT EXISTS microsoft_client_id VARCHAR(255),
+      ADD COLUMN IF NOT EXISTS microsoft_client_secret TEXT,
+      ADD COLUMN IF NOT EXISTS oauth_providers_config JSONB DEFAULT '{}'::jsonb;
+    `);
+  } catch (err: any) {
+    console.warn('[Admin] Auto-ensuring auth provider columns warning:', err?.message || err);
+  }
+};
+
+router.get("/settings/auth-providers", authenticateAdmin, async (req, res) => {
+  try {
+    await ensureAuthProvidersColumns();
+    const settings = await pool.query(`SELECT * FROM system_settings LIMIT 1`);
+    const row = settings.rows[0] || {};
+    const host = req.get('host') || 'localhost:3000';
+    const protocol = req.protocol === 'https' || req.get('x-forwarded-proto') === 'https' ? 'https' : 'http';
+    const baseUrl = `${protocol}://${host}`;
+
+    res.json({
+      google: {
+        provider_id: "google",
+        name: "Google OAuth 2.0",
+        name_ar: "مصادقة قوقل (Google Sign-In)",
+        client_id: row.google_client_id || process.env.GOOGLE_CLIENT_ID || "",
+        has_secret: !!(row.google_client_secret || process.env.GOOGLE_CLIENT_SECRET),
+        is_configured: !!(row.google_client_id || process.env.GOOGLE_CLIENT_ID),
+        authorized_origins: [baseUrl, "http://localhost:3000"],
+        redirect_uris: [`${baseUrl}/api/auth/google/callback`, `http://localhost:3000/api/auth/google/callback`],
+        scopes: ["openid", "profile", "email"],
+        status: (row.google_client_id || process.env.GOOGLE_CLIENT_ID) ? "configured" : "pending"
+      },
+      github: {
+        provider_id: "github",
+        name: "GitHub OAuth",
+        name_ar: "مصادقة غيت هاب (GitHub)",
+        client_id: row.github_client_id || process.env.GITHUB_CLIENT_ID || "",
+        has_secret: !!(row.github_client_secret || process.env.GITHUB_CLIENT_SECRET),
+        is_configured: !!(row.github_client_id || process.env.GITHUB_CLIENT_ID),
+        redirect_uris: [`${baseUrl}/api/auth/github/callback`],
+        scopes: ["user:email", "read:user"],
+        status: (row.github_client_id || process.env.GITHUB_CLIENT_ID) ? "configured" : "pending"
+      },
+      apple: {
+        provider_id: "apple",
+        name: "Sign in with Apple",
+        name_ar: "تسجيل الدخول مع آبل (Apple ID)",
+        client_id: row.apple_client_id || process.env.APPLE_CLIENT_ID || "",
+        team_id: row.apple_team_id || "",
+        key_id: row.apple_key_id || "",
+        has_private_key: !!(row.apple_private_key || process.env.APPLE_PRIVATE_KEY),
+        is_configured: !!(row.apple_client_id && row.apple_team_id),
+        redirect_uris: [`${baseUrl}/api/auth/apple/callback`],
+        status: (row.apple_client_id && row.apple_team_id) ? "configured" : "pending"
+      },
+      microsoft: {
+        provider_id: "microsoft",
+        name: "Microsoft Entra / Azure AD",
+        name_ar: "مصادقة مايكروسوفت (Microsoft Entra)",
+        client_id: row.microsoft_client_id || process.env.MICROSOFT_CLIENT_ID || "",
+        has_secret: !!(row.microsoft_client_secret || process.env.MICROSOFT_CLIENT_SECRET),
+        is_configured: !!(row.microsoft_client_id || process.env.MICROSOFT_CLIENT_ID),
+        redirect_uris: [`${baseUrl}/api/auth/microsoft/callback`],
+        status: (row.microsoft_client_id || process.env.MICROSOFT_CLIENT_ID) ? "configured" : "pending"
+      },
+      custom_config: row.oauth_providers_config || {}
+    });
+  } catch (error) {
+    console.error('[Admin] Fetch auth providers error:', error);
+    res.status(500).json({ error: 'Failed to fetch authentication providers' });
+  }
+});
+
+router.post("/settings/auth-providers", authenticateAdmin, async (req, res) => {
+  try {
+    await ensureAuthProvidersColumns();
+    const { provider, clientId, clientSecret, teamId, keyId, privateKey, extraConfig } = req.body;
+    if (!provider) return res.status(400).json({ error: 'Provider name is required' });
+
+    let query = 'UPDATE system_settings SET updated_at = CURRENT_TIMESTAMP';
+    const params: any[] = [];
+    let paramCount = 1;
+
+    if (provider === 'google') {
+      if (clientId !== undefined) {
+        query += `, google_client_id = $${paramCount++}`;
+        params.push(clientId.trim());
+      }
+      if (clientSecret !== undefined && clientSecret !== '********') {
+        query += `, google_client_secret = $${paramCount++}`;
+        params.push(clientSecret ? encrypt(clientSecret.trim()) : '');
+      }
+    } else if (provider === 'github') {
+      if (clientId !== undefined) {
+        query += `, github_client_id = $${paramCount++}`;
+        params.push(clientId.trim());
+      }
+      if (clientSecret !== undefined && clientSecret !== '********') {
+        query += `, github_client_secret = $${paramCount++}`;
+        params.push(clientSecret ? encrypt(clientSecret.trim()) : '');
+      }
+    } else if (provider === 'apple') {
+      if (clientId !== undefined) {
+        query += `, apple_client_id = $${paramCount++}`;
+        params.push(clientId.trim());
+      }
+      if (teamId !== undefined) {
+        query += `, apple_team_id = $${paramCount++}`;
+        params.push(teamId.trim());
+      }
+      if (keyId !== undefined) {
+        query += `, apple_key_id = $${paramCount++}`;
+        params.push(keyId.trim());
+      }
+      if (privateKey !== undefined && privateKey !== '********') {
+        query += `, apple_private_key = $${paramCount++}`;
+        params.push(privateKey ? encrypt(privateKey.trim()) : '');
+      }
+    } else if (provider === 'microsoft') {
+      if (clientId !== undefined) {
+        query += `, microsoft_client_id = $${paramCount++}`;
+        params.push(clientId.trim());
+      }
+      if (clientSecret !== undefined && clientSecret !== '********') {
+        query += `, microsoft_client_secret = $${paramCount++}`;
+        params.push(clientSecret ? encrypt(clientSecret.trim()) : '');
+      }
+    }
+
+    if (extraConfig !== undefined) {
+      query += `, oauth_providers_config = $${paramCount++}`;
+      params.push(typeof extraConfig === 'string' ? extraConfig : JSON.stringify(extraConfig));
+    }
+
+    if (params.length > 0) {
+      await pool.query(query, params);
+      invalidateSystemSettingsCache();
+    }
+    
+    await auditLog((req as any).user?.id, `Update Auth Provider Settings: ${provider}`, 'system', { provider, clientId });
+    res.json({ success: true, message: `${provider} auth settings updated successfully` });
+  } catch (error) {
+    console.error('[Admin] Auth provider settings update failed:', error);
+    res.status(500).json({ error: 'Failed to update auth provider credentials' });
   }
 });
 
@@ -4246,6 +4430,9 @@ router.post("/seo-routes", authenticateAdmin, async (req, res) => {
 
     const trimmed = route.trim();
     const normalizedRoute = trimmed.startsWith('/') ? trimmed : `/${trimmed}`;
+    const resolvedOgImage = og_image_url ? resolvePersistentSystemAssetUrl(og_image_url, 'generic') : null;
+
+    let savedItem: any = null;
 
     if (id) {
       const updateRes = await pool.query(`
@@ -4254,9 +4441,8 @@ router.post("/seo-routes", authenticateAdmin, async (req, res) => {
             keywords_ar = $6, keywords_en = $7, og_image_url = $8, is_active = $9, updated_at = CURRENT_TIMESTAMP
         WHERE id = $10
         RETURNING *
-      `, [normalizedRoute, title_ar || null, title_en || null, description_ar || null, description_en || null, keywords_ar || null, keywords_en || null, og_image_url || null, is_active !== false, id]);
-      invalidateRouteSeoCache();
-      return res.json({ success: true, item: updateRes.rows[0] });
+      `, [normalizedRoute, title_ar || null, title_en || null, description_ar || null, description_en || null, keywords_ar || null, keywords_en || null, resolvedOgImage, is_active !== false, id]);
+      savedItem = updateRes.rows[0];
     } else {
       const insertRes = await pool.query(`
         INSERT INTO route_seo_settings (route, title_ar, title_en, description_ar, description_en, keywords_ar, keywords_en, og_image_url, is_active)
@@ -4268,10 +4454,26 @@ router.post("/seo-routes", authenticateAdmin, async (req, res) => {
             og_image_url = EXCLUDED.og_image_url, is_active = EXCLUDED.is_active,
             updated_at = CURRENT_TIMESTAMP
         RETURNING *
-      `, [normalizedRoute, title_ar || null, title_en || null, description_ar || null, description_en || null, keywords_ar || null, keywords_en || null, og_image_url || null, is_active !== false]);
-      invalidateRouteSeoCache();
-      return res.json({ success: true, item: insertRes.rows[0] });
+      `, [normalizedRoute, title_ar || null, title_en || null, description_ar || null, description_en || null, keywords_ar || null, keywords_en || null, resolvedOgImage, is_active !== false]);
+      savedItem = insertRes.rows[0];
     }
+
+    invalidateRouteSeoCache();
+
+    upsertSeoMetadata({
+      route_path: normalizedRoute,
+      entity_type: 'route',
+      title_en: title_en || null,
+      title_ar: title_ar || null,
+      description_en: description_en || null,
+      description_ar: description_ar || null,
+      keywords_en: keywords_en || null,
+      keywords_ar: keywords_ar || null,
+      og_image_url: resolvedOgImage || undefined,
+      is_active: is_active !== false
+    }).catch(() => {});
+
+    return res.json({ success: true, item: savedItem });
   } catch (err: any) {
     console.error('[RouteSEO] Error saving route SEO setting:', err);
     res.status(500).json({ error: err.message || 'Failed to save route SEO setting' });

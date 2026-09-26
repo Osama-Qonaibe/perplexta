@@ -126,7 +126,7 @@ export const VideoPreviewer: React.FC<VideoPreviewerProps> = ({
     <div className="relative group bg-gradient-to-br from-[#141416]/90 to-[#1e1e24]/90 border border-accent/30 rounded-[var(--radius-lg)] p-4 shadow-xl backdrop-blur-md flex flex-col gap-4 transition-theme hover:border-accent/60">
       <div className="flex flex-col sm:flex-row items-center gap-4 w-full">
         {/* Main Thumbnail or Video Preview */}
-        <div className="relative w-full sm:w-36 h-24 bg-black rounded-[var(--radius-md)] overflow-hidden border border-gray-800 flex items-center justify-center shrink-0 shadow-inner">
+        <div className="relative w-full sm:w-36 h-24 bg-black rounded-[var(--radius-md)] overflow-hidden border border-[var(--border-default)] flex items-center justify-center shrink-0 shadow-inner">
           {isProcessing ? (
             <div className="flex flex-col items-center justify-center text-accent/70 gap-2">
               <Loader2 size={24} className="animate-spin" />
@@ -185,7 +185,7 @@ export const VideoPreviewer: React.FC<VideoPreviewerProps> = ({
 
           {isProcessing ? (
             <div className="w-full flex flex-col gap-2 mt-1">
-              <div className="w-full h-1.5 bg-gray-800 rounded-full overflow-hidden">
+              <div className="w-full h-1.5 bg-[var(--surface-subtle)] rounded-full overflow-hidden">
                 <div 
                   className={`h-full transition-theme ${processingStage === 'uploading' ? 'bg-blue-500' : processingStage === 'transcoding' ? 'bg-amber-500' : 'bg-accent'}`}
                   style={{ width: `${uploadProgress}%` }}
@@ -244,7 +244,7 @@ export const VideoPreviewer: React.FC<VideoPreviewerProps> = ({
                   <button
                     type="button"
                     onClick={onEditFilters}
-                    className="px-2.5 py-1 rounded-[var(--radius-sm)] bg-gray-800 hover:bg-gray-700 text-gray-300 hover:text-white text-[11px] font-bold flex items-center gap-1 transition-colors border border-gray-700 cursor-pointer"
+                    className="px-2.5 py-1 rounded-[var(--radius-sm)] bg-[var(--surface-subtle)] hover:bg-[var(--surface-card)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] text-[11px] font-bold flex items-center gap-1 transition-colors border border-[var(--border-default)] cursor-pointer"
                   >
                     <Sliders size={12} />
                     <span>{isRtl ? 'الفلاتر' : 'Filters'}</span>
@@ -268,7 +268,7 @@ export const VideoPreviewer: React.FC<VideoPreviewerProps> = ({
 
       {/* Generated Thumbnails Grid */}
       {!isProcessing && (
-        <div className="border-t border-gray-800/80 pt-3 flex flex-col gap-2">
+        <div className="border-t border-[var(--border-default)]/80 pt-3 flex flex-col gap-2">
           <div className="flex items-center justify-between text-xs text-gray-400">
             <span className="flex items-center gap-1 font-medium">
               <ImageIcon size={13} className="text-accent" />
@@ -294,7 +294,7 @@ export const VideoPreviewer: React.FC<VideoPreviewerProps> = ({
                   className={`relative rounded-[var(--radius-md)] overflow-hidden border transition-theme aspect-video group/thumb cursor-pointer ${
                     selectedThumb === thumb
                       ? 'border-accent ring-2 ring-accent-500/30 shadow-lg shadow-none'
-                      : 'border-gray-800 hover:border-gray-600 opacity-70 hover:opacity-100'
+                      : 'border-[var(--border-default)] hover:border-[var(--border-accent)] opacity-70 hover:opacity-100'
                   }`}
                 >
                   <img src={thumb} alt={`Thumbnail ${idx + 1}`} className="w-full h-full object-cover" />
@@ -310,7 +310,7 @@ export const VideoPreviewer: React.FC<VideoPreviewerProps> = ({
               Array.from({ length: 4 }).map((_, idx) => (
                 <div
                   key={`thumb-skel-${idx}`}
-                  className="rounded-[var(--radius-md)] bg-gray-900 border border-gray-800 aspect-video animate-pulse flex items-center justify-center text-gray-600 text-[10px]"
+                  className="rounded-[var(--radius-md)] bg-[var(--surface-subtle)] border border-[var(--border-default)] aspect-video animate-pulse flex items-center justify-center text-gray-600 text-[10px]"
                 >
                   ...
                 </div>

@@ -119,7 +119,7 @@ export const DatabaseHealthAuditView: React.FC<DatabaseHealthAuditViewProps> = (
   const getDbIcon = (id: string) => {
     switch (id) {
       case "core":
-        return <Database size={22} className="text-blue-500" />;
+        return <Database size={22} className="text-[var(--fg-accent)]" />;
       case "ledger":
         return <Landmark size={22} className="text-amber-500" />;
       case "external":
@@ -167,7 +167,7 @@ export const DatabaseHealthAuditView: React.FC<DatabaseHealthAuditViewProps> = (
       <div className="p-5 md:p-6 rounded-[var(--radius-lg)] border border-[var(--border-default)] bg-[var(--surface-card)] shadow-sm">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div className="flex items-center gap-3">
-            <div className="p-3 rounded-[var(--radius-md)] bg-[var(--accent-subtle)] text-[var(--accent)] border border-[var(--border-default)] flex-shrink-0">
+            <div className="p-3 rounded-[var(--radius-md)] bg-[var(--bg-accent-emphasis)]/10 text-[var(--fg-accent)] border border-[var(--border-default)] flex-shrink-0">
               <Database size={24} />
             </div>
             <div>
@@ -313,7 +313,7 @@ export const DatabaseHealthAuditView: React.FC<DatabaseHealthAuditViewProps> = (
             <span className="text-xs font-bold text-[var(--text-secondary)]">
               {isRtl ? "القواعد المتصلة" : "Connected Clusters"}
             </span>
-            <div className="p-2 rounded-full bg-blue-500/10 text-blue-500">
+            <div className="p-2 rounded-full bg-[var(--fg-accent)]/10 text-[var(--fg-accent)]">
               <Database size={18} />
             </div>
           </div>
@@ -576,7 +576,7 @@ export const DatabaseHealthAuditView: React.FC<DatabaseHealthAuditViewProps> = (
                 </span>
                 <a
                   href="/admin/databases"
-                  className="text-[var(--accent)] hover:underline flex items-center gap-0.5 font-bold"
+                  className="text-[var(--fg-accent)] hover:underline flex items-center gap-0.5 font-bold"
                 >
                   <span>{isRtl ? "إعدادات الربط" : "Configure"}</span>
                   <ArrowUpRight size={12} />
@@ -589,7 +589,7 @@ export const DatabaseHealthAuditView: React.FC<DatabaseHealthAuditViewProps> = (
 
       {/* Informational Guidance Footer */}
       <div className="p-4 rounded-[var(--radius-lg)] border border-[var(--border-default)] bg-[var(--surface-subtle)] flex items-start gap-3 text-xs text-[var(--text-secondary)] leading-relaxed">
-        <HelpCircle size={18} className="text-[var(--accent)] flex-shrink-0 mt-0.5" />
+        <HelpCircle size={18} className="text-[var(--fg-accent)] flex-shrink-0 mt-0.5" />
         <div>
           <strong className="text-[var(--text-primary)] font-bold block mb-1">
             {isRtl

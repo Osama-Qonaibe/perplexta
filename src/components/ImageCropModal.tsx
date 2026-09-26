@@ -278,7 +278,7 @@ export const ImageCropModal: React.FC<ImageCropModalProps> = ({
                   step="0.05"
                   value={zoom}
                   onChange={(e) => setZoom(parseFloat(e.target.value))}
-                  className="w-full h-1.5 bg-gray-200 dark:bg-gray-700 rounded-[var(--radius-sm)] appearance-none cursor-pointer accent-accent"
+                  className="w-full h-1.5 bg-[var(--surface-subtle)] rounded-[var(--radius-sm)] appearance-none cursor-pointer accent-accent"
                 />
                 <ZoomIn size={15} className="text-[var(--text-muted)] shrink-0" />
               </div>

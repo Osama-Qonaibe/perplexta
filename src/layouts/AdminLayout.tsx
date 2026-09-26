@@ -40,7 +40,7 @@ export const AdminLayout: React.FC = () => {
         <AdminSidebar activeLanguage={language} />
 
         <main className="flex-1 h-full overflow-y-auto overflow-x-hidden scroll-smooth overscroll-none custom-scrollbar bg-inherit">
-          <div className="min-h-full flex flex-col px-6 md:px-8 py-5 pb-16">
+          <div className="min-h-full flex flex-col px-6 md:px-8 pt-0 pb-16">
             <Outlet />
           </div>
         </main>

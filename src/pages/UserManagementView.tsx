@@ -906,8 +906,18 @@ export const UserManagementView: React.FC<UserManagementProps> = ({
   const startIndex = (safeCurrentPage - 1) * pageSize;
   const paginatedUsers = sortedUsers.slice(startIndex, startIndex + pageSize);
 
+  useEffect(() => {
+    const handleAddUserEvent = () => {
+      setIsCreateModalOpen(true);
+    };
+    window.addEventListener("admin-add-user", handleAddUserEvent);
+    return () => {
+      window.removeEventListener("admin-add-user", handleAddUserEvent);
+    };
+  }, []);
+
   return (
-    <div className="space-y-6 pb-12">
+    <div className="w-full max-w-full space-y-6 pb-12 px-1 md:px-2">
       {/* 1. Command Center Header */}
       <div className={`p-6 rounded-[var(--radius-lg)] border flex flex-col md:flex-row md:items-center justify-between gap-4 transition-all ${
         'bg-[var(--surface-card)] border-[var(--border-default)] shadow-sm transition-theme'
@@ -991,7 +1001,7 @@ export const UserManagementView: React.FC<UserManagementProps> = ({
               fetchDbPlans();
             }}
             disabled={loading || isSyncing}
-            className={`h-8 flex items-center justify-center gap-2 px-3 rounded-shape-sm border transition-all text-xs font-bold ${ 'bg-[var(--surface-card)] hover:bg-[var(--surface-subtle)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] border-[var(--border-default)] transition-theme' }`}
+            className="min-h-[44px] touch-target-44 flex items-center justify-center gap-2 px-3 rounded-[var(--radius-sm)] border transition-all text-xs font-bold bg-[var(--surface-card)] hover:bg-[var(--surface-subtle)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] border-[var(--border-default)] transition-theme cursor-pointer"
             title={isRtl ? 'تحديث البيانات فوراً' : 'Force Refresh Data'}
           >
             <RefreshCw size={14} className={loading || isSyncing ? 'animate-spin text-accent' : ''} />
@@ -1000,7 +1010,7 @@ export const UserManagementView: React.FC<UserManagementProps> = ({
 
           <button
             onClick={() => setIsCreateModalOpen(true)}
-            className="h-8 flex items-center justify-center gap-2 px-4 bg-[var(--fg-accent)] hover:bg-[var(--fg-accent)] text-[var(--comp-button-primary-fg,#ffffff)] font-bold text-xs rounded-shape-sm shadow-sm transition-all active:scale-95 cursor-pointer"
+            className="min-h-[44px] touch-target-44 flex items-center justify-center gap-2 px-4 bg-[var(--fg-accent)] hover:opacity-90 text-[var(--fg-on-emphasis,#ffffff)] font-bold text-xs rounded-[var(--radius-sm)] shadow-xs transition-all active:scale-95 cursor-pointer"
           >
             <UserPlus size={16} />
             <span>{isRtl ? 'إضافة مستخدم جديد' : 'Add New Explorer'}</span>

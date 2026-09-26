@@ -398,7 +398,7 @@ export const PlansSubscriptionsView = ({
   };
 
   return (
-    <div className="space-y-6 max-w-7xl mx-auto relative">
+    <div className="w-full max-w-full space-y-6 relative px-1 md:px-2">
 
       {/* Filter Tabs */}
       <div className="flex items-center gap-2 border-b border-[var(--border-default)] pb-4">

@@ -1586,7 +1586,7 @@ export const AdPromotionStudioView: React.FC<AdPromotionStudioViewProps> = ({
                       {estReachMin.toLocaleString()} - {estReachMax.toLocaleString()}
                     </span>
                   </div>
-                  <div className="w-full h-1.5 bg-gray-200 dark:bg-gray-800 rounded-full overflow-hidden">
+                  <div className="w-full h-1.5 bg-[var(--surface-subtle)] rounded-full overflow-hidden">
                     <div
                       className="h-full bg-gradient-to-r from-blue-500 to-emerald-500 rounded-full"
                       style={{ width: `${Math.min(100, Math.max(15, (dailyBudget / 50) * 100))}%` }}
@@ -1605,7 +1605,7 @@ export const AdPromotionStudioView: React.FC<AdPromotionStudioViewProps> = ({
                       {estInteractionsMin} - {estInteractionsMax} {isRtl ? 'رد/يوم' : 'replies/day'}
                     </span>
                   </div>
-                  <div className="w-full h-1.5 bg-gray-200 dark:bg-gray-800 rounded-full overflow-hidden">
+                  <div className="w-full h-1.5 bg-[var(--surface-subtle)] rounded-full overflow-hidden">
                     <div
                       className="h-full bg-gradient-to-r from-emerald-500 to-teal-400 rounded-full"
                       style={{ width: `${Math.min(100, Math.max(20, (dailyBudget / 50) * 100))}%` }}
@@ -1686,7 +1686,7 @@ export const AdPromotionStudioView: React.FC<AdPromotionStudioViewProps> = ({
                 className={`w-full py-3.5 px-4 rounded-xl font-black text-sm flex items-center justify-center gap-2 shadow-md transition-all ${
                   hasSufficientBalance && !isSubmitting
                     ? 'bg-accent hover:opacity-90 text-white cursor-pointer active:scale-[0.99]'
-                    : 'bg-gray-300 dark:bg-gray-800 text-gray-500 cursor-not-allowed opacity-70'
+                    : 'bg-[var(--surface-subtle)] border border-[var(--border-default)] text-gray-500 cursor-not-allowed opacity-70'
                 }`}
               >
                 {isSubmitting ? (

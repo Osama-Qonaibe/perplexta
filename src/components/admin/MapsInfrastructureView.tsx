@@ -241,7 +241,7 @@ export const MapsInfrastructureView: React.FC<MapsInfrastructureViewProps> = ({
       case 'locationiq':
         return <Activity className="w-6 h-6 text-amber-500" />;
       default:
-        return <Server className="w-6 h-6 text-gray-500" />;
+        return <Server className="w-6 h-6 text-[var(--text-muted)]" />;
     }
   };
 
@@ -275,7 +275,7 @@ export const MapsInfrastructureView: React.FC<MapsInfrastructureViewProps> = ({
 
     if (!provider.has_key && editingKeys[provider.provider_key] === undefined) {
       return (
-        <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium bg-gray-500/10 text-gray-500 border border-gray-500/20">
+        <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-[var(--radius-sm)] text-xs font-medium bg-[var(--surface-subtle)] text-[var(--text-muted)] border border-[var(--border-default)]">
           <Key className="w-3.5 h-3.5" />
           {isRtl ? 'غير مهيأ (بدون مفتاح)' : 'Not Configured'}
         </span>
@@ -309,42 +309,83 @@ export const MapsInfrastructureView: React.FC<MapsInfrastructureViewProps> = ({
   };
 
   return (
-    <div className="space-y-8 animate-fade-in pb-16">
-      {/* Header Section */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 p-6 rounded-shape-lg bg-[var(--surface-card)] border border-[var(--border-main)] shadow-sm">
-        <div className="space-y-1.5">
-          <div className="flex items-center gap-3">
-            <div className="p-2.5 rounded-shape-md bg-blue-500/10 text-blue-600 dark:text-blue-400">
-              <MapPin className="w-7 h-7" />
+    <div className="space-y-6 max-w-7xl mx-auto relative font-sans">
+      {/* Top Diagnostic Status Bar (Orchestrator Style) */}
+      <div className="p-5 rounded-[var(--radius-md)] bg-[var(--surface-card)] border border-[var(--border-default)] shadow-xs space-y-4 transition-theme">
+        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+          <div className="flex items-start sm:items-center gap-3.5">
+            <div className="p-2.5 rounded-[var(--radius-sm)] bg-[var(--surface-subtle)] text-[var(--fg-accent)] shrink-0 border border-[var(--border-default)] relative">
+              <MapPin size={20} />
+              <span className="absolute -top-1 -right-1 flex h-2.5 w-2.5">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[var(--fg-success)] opacity-75"></span>
+                <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-[var(--fg-success)]"></span>
+              </span>
             </div>
-            <div>
-              <h1 className="text-2xl font-black text-[var(--text-primary)]">
-                {isRtl ? 'مزودو الخرائط والبيانات الجغرافية' : 'Maps & Geocoding Infrastructure'}
-              </h1>
-              <p className="text-sm text-[var(--text-secondary)]">
-                {isRtl
-                  ? 'إدارة مشفرة لمزودي الخرائط والبحث الجغرافي مباشرة من قاعدة البيانات مع نظام هجين يفعل المفاتيح فور حفظها'
-                  : 'Manage encrypted map and geocoding providers directly from the database with hybrid instant-activation'}
-              </p>
+
+            <div className="space-y-1">
+              <div className="flex flex-wrap items-center gap-2">
+                <span className="text-sm font-bold text-[var(--text-primary)]">
+                  {isRtl ? 'مزودو الخرائط والبيانات الجغرافية' : 'Maps & Geocoding Infrastructure'}
+                </span>
+                <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-[var(--radius-xs)] text-[11px] font-bold bg-[var(--status-success-subtle)] text-[var(--fg-success)] border border-[var(--fg-success)]/25">
+                  <span className="w-1.5 h-1.5 rounded-full bg-[var(--fg-success)] animate-pulse"></span>
+                  <span>{isRtl ? 'المحرك الهجين نشط' : 'Hybrid Engine Active'}</span>
+                </div>
+                <span className="text-[10px] font-mono px-2 py-0.5 rounded-[var(--radius-xs)] bg-[var(--surface-subtle)] text-[var(--text-muted)] border border-[var(--border-default)]">
+                  {providers.filter(p => p.is_enabled).length} / {providers.length || 4} {isRtl ? 'مزود نشط' : 'Providers Active'}
+                </span>
+              </div>
+
+              <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-[var(--text-muted)]">
+                <div className="flex items-center gap-1.5 font-medium">
+                  <Globe size={13} className="text-[var(--fg-accent)] shrink-0" />
+                  <span>
+                    {isRtl ? 'المحرك الأساسي:' : 'Primary Engine:'}{" "}
+                    <strong className="text-[var(--text-primary)] font-semibold">
+                      {providers.find(p => p.is_primary)?.name_ar || providers.find(p => p.is_primary)?.name || 'OpenStreetMap'}
+                    </strong>
+                  </span>
+                </div>
+
+                <span className="hidden sm:inline text-[var(--border-default)]">•</span>
+
+                <div className="flex items-center gap-1.5 text-[11px] text-[var(--text-muted)] font-mono">
+                  <span>
+                    {isRtl ? 'تكلفة الاستعلام: $0.00 (مجاني)' : 'Cost: $0.00 (Free Tier)'}
+                  </span>
+                </div>
+              </div>
             </div>
+          </div>
+
+          <div className="flex items-center gap-2.5 sm:self-auto self-start">
+            <button
+              onClick={() => fetchProviders(true)}
+              disabled={isRefreshing}
+              className="flex items-center justify-center gap-2 px-4 py-2.5 rounded-[var(--radius-sm)] text-xs font-bold transition-all border border-[var(--border-accent)] bg-[var(--surface-subtle)] text-[var(--fg-accent)] hover:bg-[var(--surface-card)] active:scale-95 disabled:opacity-50 shrink-0 shadow-xs cursor-pointer group touch-target-44"
+              title={isRtl ? 'تحديث وفحص حالة المزودين' : 'Refresh map providers'}
+            >
+              <RefreshCw size={14} className={isRefreshing ? "animate-spin text-[var(--fg-accent)]" : "group-hover:rotate-180 transition-transform duration-500"} />
+              <span>{isRtl ? 'تحديث المزودين' : 'Refresh Providers'}</span>
+            </button>
           </div>
         </div>
 
-        <div className="flex items-center gap-3">
-          <button
-            onClick={() => fetchProviders(true)}
-            disabled={isRefreshing}
-            className="flex items-center gap-2 px-4 py-2.5 min-h-[44px] rounded-shape-md bg-[var(--surface-subtle)] text-[var(--text-primary)] border border-[var(--border-main)] font-bold hover:bg-[var(--surface-card)] transition-colors disabled:opacity-50"
-          >
-            <RefreshCw className={`w-4 h-4 ${isRefreshing ? 'animate-spin' : ''}`} />
-            <span>{isRtl ? 'تحديث الحالة' : 'Refresh Status'}</span>
-          </button>
+        <div className="pt-2 border-t border-[var(--border-default)] text-[11px] text-[var(--text-muted)] flex flex-wrap items-center justify-between gap-2">
+          <span>
+            {isRtl
+              ? 'إدارة مشفرة للبحث الجغرافي وتوجيه الخرائط مع تفعيل المفاتيح فور حفظها في قاعدة البيانات.'
+              : 'Encrypted map and geocoding providers management with instant in-memory cache invalidation.'}
+          </span>
+          <span className="font-mono text-[10px] text-[var(--text-muted)] bg-[var(--surface-subtle)] px-2 py-0.5 rounded-[var(--radius-xs)] border border-[var(--border-default)]">
+            {isRtl ? 'البنية التحتية • الخرائط' : 'Infrastructure • Maps'}
+          </span>
         </div>
       </div>
 
       {/* Quick Overview Summary Banner */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <div className="p-5 rounded-shape-lg bg-[var(--surface-card)] border border-[var(--border-main)] flex items-center justify-between">
+        <div className="p-5 rounded-[var(--radius-md)] bg-[var(--surface-card)] border border-[var(--border-default)] flex items-center justify-between shadow-xs">
           <div>
             <div className="text-xs font-semibold text-[var(--text-muted)]">
               {isRtl ? 'المحرك الافتراضي الأساسي' : 'Primary Engine'}
@@ -597,10 +638,10 @@ export const MapsInfrastructureView: React.FC<MapsInfrastructureViewProps> = ({
                         className={`px-3 py-1.5 min-h-[44px] rounded-shape-md text-xs font-bold transition-colors flex items-center gap-1.5 border ${
                           provider.is_enabled
                             ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/30 hover:bg-emerald-500/20'
-                            : 'bg-gray-500/10 text-gray-500 border-gray-500/20 hover:bg-gray-500/20'
+                            : 'bg-[var(--surface-subtle)] text-[var(--text-muted)] border-[var(--border-default)] hover:bg-[var(--surface-subtle)]/80'
                         }`}
                       >
-                        <span className={`w-2 h-2 rounded-full ${provider.is_enabled ? 'bg-emerald-500' : 'bg-gray-400'}`} />
+                        <span className={`w-2 h-2 rounded-[var(--radius-full)] ${provider.is_enabled ? 'bg-emerald-500' : 'bg-[var(--text-muted)]'}`} />
                         {provider.is_enabled ? (isRtl ? 'مُفعل هجيناً' : 'Enabled') : (isRtl ? 'معطل' : 'Disabled')}
                       </button>
 

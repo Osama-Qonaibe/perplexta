@@ -1056,31 +1056,64 @@ export const AdsManagementView: React.FC<{
   const totalClicks = ads.reduce((acc, a) => acc + (a.click_count || 0), 0);
   const avgCtr = totalImpressions > 0 ? ((totalClicks / totalImpressions) * 100).toFixed(1) : '0.0';
 
+  useEffect(() => {
+    const handleAddAdEvent = () => {
+      handleOpenCreateModal();
+    };
+    const handleRefreshAdsEvent = () => {
+      fetchAds();
+      fetchBulletinAds();
+    };
+    window.addEventListener("admin-add-ad", handleAddAdEvent);
+    window.addEventListener("admin-refresh-ads", handleRefreshAdsEvent);
+    return () => {
+      window.removeEventListener("admin-add-ad", handleAddAdEvent);
+      window.removeEventListener("admin-refresh-ads", handleRefreshAdsEvent);
+    };
+  }, []);
+
   return (
-    <div className="space-y-6 ads-management-container transition-theme [will-change:background-color,border-color,color]">
-      {/* Top Header & Stat Cards */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-[var(--surface-subtle)] border border-[var(--border-default)] p-5 rounded-[var(--radius-sm)] shadow-sm">
-        <div>
-          <div className="flex items-center gap-2 text-accent  mb-1">
-            <Megaphone size={20} />
-            <h2 className="text-xl font-black text-[var(--text-primary)]">
-              {isRtl ? 'إدارة الإعلانات والشريط الجانبي' : 'Ads & Sidebar Sponsored Management'}
-            </h2>
+    <div className="w-full max-w-full space-y-6 ads-management-container transition-theme [will-change:background-color,border-color,color] px-1 md:px-2">
+      {/* Top Sovereign Orchestrator Diagnostic Header */}
+      <div className="p-6 rounded-[var(--radius-lg)] border bg-[var(--surface-card)] border-[var(--border-default)] shadow-xs transition-theme flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 rounded-[var(--radius-sm)] bg-[var(--surface-subtle)] border border-[var(--border-default)] flex items-center justify-center text-[var(--fg-accent)] shadow-xs">
+            <Megaphone size={22} />
           </div>
-          <p className="text-xs text-[var(--text-muted)]">
-            {isRtl
-              ? 'التحكم المباشر بالإعلانات الجانبية التي تظهر للمستخدمين.'
-              : 'Directly control sidebar sponsored cards shown to users.'}
-          </p>
+          <div>
+            <h1 className="text-xl font-black tracking-tight flex items-center gap-3 text-[var(--text-primary)]">
+              <span>{isRtl ? 'إدارة الإعلانات والتبويبات التجاريّة' : 'Ads & Commercial Bulletin Control Center'}</span>
+              <span className="text-[10px] font-mono font-bold px-2 py-0.5 rounded-[var(--radius-xs)] bg-[var(--bg-accent-emphasis)]/10 text-[var(--fg-accent)] border border-[var(--border-accent)]/30 flex items-center gap-1.5">
+                <span className="w-1.5 h-1.5 rounded-[var(--radius-full)] bg-[var(--fg-accent)] animate-pulse" />
+                {totalActive} {isRtl ? 'نشط' : 'Active'}
+              </span>
+            </h1>
+            <p className="text-xs text-[var(--text-muted)] mt-0.5">
+              {isRtl
+                ? 'إدارة إعلانات المنصة، التبويبات التجارية، مراجعة الاعتمادات، وتحليلات الأداء لحظياً'
+                : 'Real-time administration for platform ads, bulletin posts, 2FA approvals, and performance analytics'}
+            </p>
+          </div>
         </div>
 
-        <button
-          onClick={handleOpenCreateModal}
-          className="flex items-center justify-center gap-2 px-4 py-2.5 rounded-[var(--radius-sm)] bg-accent hover:bg-accent text-white font-bold text-xs shadow-lg shadow-none transition-theme shrink-0"
-        >
-          <Plus size={16} />
-          <span>{isRtl ? 'إضافة إعلان جديد' : 'Create New Ad'}</span>
-        </button>
+        <div className="flex flex-wrap items-center gap-3">
+          {/* Quick Metrics Bar */}
+          <div className="hidden lg:flex items-center gap-2 px-3 py-1.5 rounded-[var(--radius-md)] bg-[var(--surface-subtle)] border border-[var(--border-default)] text-[11px] font-mono text-[var(--text-secondary)]">
+            <span>{isRtl ? 'المشاهدات:' : 'Impressions:'} <strong className="text-[var(--text-primary)]">{totalImpressions.toLocaleString()}</strong></span>
+            <span className="text-[var(--border-default)]">|</span>
+            <span>{isRtl ? 'النقرات:' : 'Clicks:'} <strong className="text-[var(--text-primary)]">{totalClicks.toLocaleString()}</strong></span>
+            <span className="text-[var(--border-default)]">|</span>
+            <span>CTR: <strong className="text-[var(--fg-accent)]">{avgCtr}%</strong></span>
+          </div>
+
+          <button
+            onClick={handleOpenCreateModal}
+            className="flex items-center justify-center gap-2 px-5 py-2.5 min-h-[44px] touch-target-44 rounded-[var(--radius-sm)] bg-[var(--bg-accent-emphasis)] hover:opacity-90 text-[var(--fg-on-emphasis)] font-bold text-xs shadow-xs transition-all active:scale-95 cursor-pointer shrink-0"
+          >
+            <Plus size={16} />
+            <span>{isRtl ? 'إضافة إعلان جديد' : 'Create New Ad'}</span>
+          </button>
+        </div>
       </div>
 
       {/* Sub-Tab Switcher */}
@@ -1566,7 +1599,7 @@ export const AdsManagementView: React.FC<{
                   </div>
                   <div className="flex items-center gap-4">
                     <div className="flex items-center gap-2">
-                      <div className="w-3 h-3 rounded-[var(--radius-xs)] bg-gray-800 border border-[var(--border-default)]"></div>
+                      <div className="w-3 h-3 rounded-[var(--radius-xs)] bg-[var(--surface-subtle)] border border-[var(--border-default)]"></div>
                       <span className="text-[9px] text-[var(--text-muted)] font-bold">0%</span>
                     </div>
                     <div className="flex items-center gap-2">
@@ -1606,7 +1639,7 @@ export const AdsManagementView: React.FC<{
                             const cell = heatmapData.find(item => item.day_of_week === dIdx && item.hour_of_day === hour);
                             const cr = cell ? Number(cell.conversion_rate) : 0;
                             
-                            let bgColor = 'bg-gray-800/20';
+                            let bgColor = 'bg-[var(--surface-subtle)]';
                             let opacity = 'opacity-20';
                             let glow = '';
 
@@ -1655,7 +1688,7 @@ export const AdsManagementView: React.FC<{
                     </span>
                   </div>
                   <div className="flex items-center gap-2">
-                    <div className="w-2 h-2 rounded-[var(--radius-full)] bg-gray-800"></div>
+                    <div className="w-2 h-2 rounded-[var(--radius-full)] bg-[var(--surface-subtle)] border border-[var(--border-default)]"></div>
                     <span className="text-[10px] text-[var(--text-muted)] font-bold">
                       {isRtl ? 'بيانات منخفضة / صفرية' : 'Low / Zero Data'}
                     </span>
@@ -2085,7 +2118,7 @@ export const AdsManagementView: React.FC<{
                 className="px-4 py-2 rounded-[var(--radius-sm)] bg-[var(--accent)] text-white font-bold text-xs flex items-center gap-2 hover:opacity-90 disabled:opacity-50 transition-opacity cursor-pointer"
               >
                 {isEconomyLoading ? <RefreshCw size={14} className="animate-spin" /> : <Save size={14} />}
-                <span>{isRtl ? 'حفظ التغييرات المالية' : 'Save Economy Settings'}</span>
+                <span>{isRtl ? 'حفظ البيانات' : 'Save Economy'}</span>
               </button>
             </div>
 
@@ -2202,7 +2235,7 @@ export const AdsManagementView: React.FC<{
               <button
                 onClick={() => setEconomySettings(prev => ({ ...prev, require_2fa_for_economy: !prev.require_2fa_for_economy }))}
                 className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none ${
-                  economySettings.require_2fa_for_economy ? 'bg-amber-500' : 'bg-gray-700'
+                  economySettings.require_2fa_for_economy ? 'bg-amber-500' : 'bg-[var(--surface-subtle)] border border-[var(--border-default)]'
                 }`}
               >
                 <span
@@ -2532,7 +2565,7 @@ export const AdsManagementView: React.FC<{
                             ? 'bg-amber-500/10 text-amber-500 border border-amber-500/20 animate-pulse'
                             : ad.status === 'rejected'
                             ? 'bg-red-500/10 text-red-500 border border-red-500/20'
-                            : 'bg-gray-500/10 text-[var(--text-muted)] border border-gray-500/20'
+                            : 'bg-[var(--surface-subtle)] text-[var(--text-muted)] border border-[var(--border-default)]'
                         }`}>
                           {ad.status === 'approved' && (isRtl ? 'مقبول / نشط' : 'Approved')}
                           {ad.status === 'pending' && (isRtl ? 'قيد المراجعة' : 'Pending')}

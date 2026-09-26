@@ -801,8 +801,14 @@ export async function warmupSeoAndSystemCache(): Promise<void> {
 
 /** Get cached SEO settings for a specific route */
 export async function getCachedRouteSeo(route: string): Promise<any> {
-  const normKey = (route || '/').toLowerCase().trim();
-  const cached = seoNodeCache.get<any>(`route:${normKey}`) ?? seoNodeCache.get<any>(`route:${route}`);
+  const cleanTrimmed = (route || '/').toLowerCase().trim();
+  const stripped = cleanTrimmed.replace(/^\/+|\/+$/g, '');
+  const withLeading = stripped ? `/${stripped}` : '/';
+  const withTrailing = stripped ? `${stripped}/` : '/';
+  const withBoth = stripped ? `/${stripped}/` : '/';
+
+  const cacheKey = `route:${withLeading}`;
+  const cached = seoNodeCache.get<any>(cacheKey);
   if (cached !== undefined) {
     trackSeoCache(route, 'Settings', true);
     return cached;
@@ -810,29 +816,43 @@ export async function getCachedRouteSeo(route: string): Promise<any> {
 
   trackSeoCache(route, 'Settings', false);
   if (!pool) {
-    seoNodeCache.set(`route:${normKey}`, null);
+    seoNodeCache.set(cacheKey, null);
     return null;
   }
   try {
     const result = await pool.query(
-      'SELECT * FROM route_seo_settings WHERE LOWER(route) = $1 OR route = $2 LIMIT 1',
-      [normKey, route]
+      `SELECT * FROM route_seo_settings 
+       WHERE TRIM(BOTH '/' FROM LOWER(route)) = $1 
+          OR LOWER(route) = $2 
+          OR LOWER(route) = $3 
+          OR LOWER(route) = $4 
+          OR LOWER(route) = $5 
+       ORDER BY (og_image_url IS NOT NULL) DESC, id ASC 
+       LIMIT 1`,
+      [stripped, withLeading, withTrailing, withBoth, cleanTrimmed]
     );
     const data = result.rows[0] || null;
-    seoNodeCache.set(`route:${normKey}`, data);
-    seoNodeCache.set(`route:${route}`, data);
+    seoNodeCache.set(cacheKey, data);
+    seoNodeCache.set(`route:${cleanTrimmed}`, data);
+    seoNodeCache.set(`route:${stripped}`, data);
     return data;
   } catch (err: any) {
     console.warn('[Queries] getCachedRouteSeo failed:', err.message);
-    seoNodeCache.set(`route:${normKey}`, null);
+    seoNodeCache.set(cacheKey, null);
     return null;
   }
 }
 
 /** Get cached SEO metadata for a specific route */
 export async function getCachedRouteSeoMetadata(routePath: string): Promise<any> {
-  const normKey = (routePath || '/').toLowerCase().trim();
-  const cached = seoNodeCache.get<any>(`meta:${normKey}`) ?? seoNodeCache.get<any>(`meta:${routePath}`);
+  const cleanTrimmed = (routePath || '/').toLowerCase().trim();
+  const stripped = cleanTrimmed.replace(/^\/+|\/+$/g, '');
+  const withLeading = stripped ? `/${stripped}` : '/';
+  const withTrailing = stripped ? `${stripped}/` : '/';
+  const withBoth = stripped ? `/${stripped}/` : '/';
+
+  const cacheKey = `meta:${withLeading}`;
+  const cached = seoNodeCache.get<any>(cacheKey);
   if (cached !== undefined) {
     trackSeoCache(routePath, 'Metadata', true);
     return cached;
@@ -840,21 +860,28 @@ export async function getCachedRouteSeoMetadata(routePath: string): Promise<any>
 
   trackSeoCache(routePath, 'Metadata', false);
   if (!pool) {
-    seoNodeCache.set(`meta:${normKey}`, null);
+    seoNodeCache.set(cacheKey, null);
     return null;
   }
   try {
     const result = await pool.query(
-      'SELECT * FROM route_seo_metadata WHERE LOWER(route_path) = $1 OR route_path = $2 LIMIT 1',
-      [normKey, routePath]
+      `SELECT * FROM route_seo_metadata 
+       WHERE TRIM(BOTH '/' FROM LOWER(route_path)) = $1 
+          OR LOWER(route_path) = $2 
+          OR LOWER(route_path) = $3 
+          OR LOWER(route_path) = $4 
+          OR LOWER(route_path) = $5 
+       LIMIT 1`,
+      [stripped, withLeading, withTrailing, withBoth, cleanTrimmed]
     );
     const data = result.rows[0] || null;
-    seoNodeCache.set(`meta:${normKey}`, data);
-    seoNodeCache.set(`meta:${routePath}`, data);
+    seoNodeCache.set(cacheKey, data);
+    seoNodeCache.set(`meta:${cleanTrimmed}`, data);
+    seoNodeCache.set(`meta:${stripped}`, data);
     return data;
   } catch (err: any) {
     console.warn('[Queries] getCachedRouteSeoMetadata failed:', err.message);
-    seoNodeCache.set(`meta:${normKey}`, null);
+    seoNodeCache.set(cacheKey, null);
     return null;
   }
 }
@@ -925,29 +952,45 @@ export function invalidateRouteSeoCache(routePath?: string) {
 
 /** Get cached SEO metadata for dynamic routes from seo_metadata table */
 export async function getCachedSeoMetadata(routePath: string): Promise<any> {
-  const normalizedPath = routePath === '/' ? '/' : (routePath || '/').replace(/\/$/, '');
-  const cached = seoNodeCache.get<any>(`dynamic_seo:${normalizedPath}`);
+  const cleanTrimmed = (routePath || '/').toLowerCase().trim();
+  const stripped = cleanTrimmed.replace(/^\/+|\/+$/g, '');
+  const withLeading = stripped ? `/${stripped}` : '/';
+  const withTrailing = stripped ? `${stripped}/` : '/';
+  const withBoth = stripped ? `/${stripped}/` : '/';
+
+  const cacheKey = `dynamic_seo:${withLeading}`;
+  const cached = seoNodeCache.get<any>(cacheKey);
   if (cached !== undefined) {
-    trackSeoCache(normalizedPath, 'DynamicSeoMetadata', true);
+    trackSeoCache(withLeading, 'DynamicSeoMetadata', true);
     return cached;
   }
 
-  trackSeoCache(normalizedPath, 'DynamicSeoMetadata', false);
+  trackSeoCache(withLeading, 'DynamicSeoMetadata', false);
   if (!pool) {
-    seoNodeCache.set(`dynamic_seo:${normalizedPath}`, null);
+    seoNodeCache.set(cacheKey, null);
     return null;
   }
   try {
     const result = await pool.query(
-      'SELECT * FROM seo_metadata WHERE route_path = $1 AND is_active = true LIMIT 1',
-      [normalizedPath]
+      `SELECT * FROM seo_metadata 
+       WHERE (TRIM(BOTH '/' FROM LOWER(route_path)) = $1 
+          OR LOWER(route_path) = $2 
+          OR LOWER(route_path) = $3 
+          OR LOWER(route_path) = $4 
+          OR LOWER(route_path) = $5) 
+         AND is_active = true 
+       ORDER BY (og_image_url IS NOT NULL) DESC, id ASC 
+       LIMIT 1`,
+      [stripped, withLeading, withTrailing, withBoth, cleanTrimmed]
     );
     const data = result.rows[0] || null;
-    seoNodeCache.set(`dynamic_seo:${normalizedPath}`, data);
+    seoNodeCache.set(cacheKey, data);
+    seoNodeCache.set(`dynamic_seo:${cleanTrimmed}`, data);
+    seoNodeCache.set(`dynamic_seo:${stripped}`, data);
     return data;
   } catch (err: any) {
     console.warn('[Queries] getCachedSeoMetadata failed:', err.message);
-    seoNodeCache.set(`dynamic_seo:${normalizedPath}`, null);
+    seoNodeCache.set(cacheKey, null);
     return null;
   }
 }

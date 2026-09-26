@@ -91,6 +91,9 @@ export interface SystemSettingsViewProps {
   theme: string;
   t: (key: string, replacements?: any) => string;
   dir: string;
+  initialTab?: 'general' | 'seo' | 'memory';
+  onTabChange?: (tab: 'general' | 'seo' | 'memory') => void;
+  hideSubTabs?: boolean;
 }
 
 export interface ComplianceAuditLogsViewProps {
@@ -98,6 +101,7 @@ export interface ComplianceAuditLogsViewProps {
   t: (key: string, replacements?: any) => string;
   dir: string;
   initialTab?: 'logs' | 'radar' | 'metrics' | 'databases';
+  hideSubTabs?: boolean;
 }
 
 export interface MapsInfrastructureViewProps {

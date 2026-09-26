@@ -4,6 +4,7 @@ import { useAppContext } from "../../context/AppContext";
 import { motion, AnimatePresence } from "motion/react";
 import {
   Cpu,
+  Brain,
   Settings,
   Save,
   RefreshCw,
@@ -46,15 +47,35 @@ import {
 import { resolveImageUrl } from "../../utils/imageResolver";
 import { updateDocumentHeadIcons } from "../../utils/assetManager";
 import { toast, useConfirm } from '@/design-system';
+import { SeoCenterView } from "../SeoCenterView";
+import { MemoryCenterView } from "./MemoryCenterView";
 
 export const SystemSettingsView: React.FC<SystemSettingsViewProps> = ({
   theme,
   t,
   dir,
+  initialTab = "general",
+  onTabChange,
+  hideSubTabs = false,
 }) => {
   const confirm = useConfirm();
   const navigate = useNavigate();
   const { siteSettings, setSiteSettings, token, setIsOperationPending, language } = useAppContext();
+
+  const [activeMainTab, setActiveMainTab] = useState<'general' | 'seo' | 'memory'>(initialTab || 'general');
+
+  useEffect(() => {
+    if (initialTab && initialTab !== activeMainTab) {
+      setActiveMainTab(initialTab);
+    }
+  }, [initialTab]);
+
+  const handleMainTabSwitch = (tab: 'general' | 'seo' | 'memory') => {
+    setActiveMainTab(tab);
+    if (onTabChange) {
+      onTabChange(tab);
+    }
+  };
 
   const [siteName, setSiteName] = useState(siteSettings.siteName);
   const [siteNameAr, setSiteNameAr] = useState(siteSettings.siteNameAr || "");
@@ -79,9 +100,6 @@ export const SystemSettingsView: React.FC<SystemSettingsViewProps> = ({
   const [blockedPaths, setBlockedPaths] = useState(
     siteSettings.blocked_paths || "",
   );
-  const [googleClientId, setGoogleClientId] = useState("");
-  const [googleClientSecret, setGoogleClientSecret] = useState("");
-  const [isSavingGoogleOauth, setIsSavingGoogleOauth] = useState(false);
 
   const handleToggleSection = (key: string) => {
     const currentList = (blockedPaths || "").split(',').map(p => p.trim()).filter(Boolean);
@@ -545,9 +563,13 @@ export const SystemSettingsView: React.FC<SystemSettingsViewProps> = ({
     setIsOperationPending(isSaving);
   }, [isSaving, setIsOperationPending]);
 
-  const showToast = (message: string, type: "success" | "error" = "success") => {
+  const showToast = (message: string, type: "success" | "error" | "warning" | "info" = "success") => {
     if (type === "success") {
       toast.success(message, dir === "rtl" ? "تم بنجاح" : "Success");
+    } else if (type === "warning") {
+      toast.warning(message, dir === "rtl" ? "تنبيه" : "Warning");
+    } else if (type === "info") {
+      toast.info(message, dir === "rtl" ? "معلومة" : "Info");
     } else {
       toast.error(message, dir === "rtl" ? "حدث خطأ" : "Error");
     }
@@ -580,8 +602,6 @@ export const SystemSettingsView: React.FC<SystemSettingsViewProps> = ({
         setKeywordsAr(kwsArVal);
         setGoogleAnalyticsId(data.google_analytics_id || "");
         setGoogleSiteVerification(data.google_site_verification || "");
-        setGoogleClientId(data.google_client_id || "");
-        setGoogleClientSecret(data.google_client_secret ? "********" : "");
         setBlockedPaths(data.blocked_paths || "");
         setLogoBase64(data.logo_url || null);
         setLogoLightBase64(data.logo_light_url || null);
@@ -730,37 +750,6 @@ export const SystemSettingsView: React.FC<SystemSettingsViewProps> = ({
     }
   };
 
-  const handleSaveGoogleOauth = async () => {
-    if (!googleClientId) {
-      toast.error(language === "ar" ? "يرجى إدخال Client ID" : "Please enter Client ID");
-      return;
-    }
-    setIsSavingGoogleOauth(true);
-    try {
-      const res = await fetch("/api/admin/settings/google-oauth", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({
-          googleClientId: googleClientId.trim(),
-          googleClientSecret: googleClientSecret === "********" ? undefined : googleClientSecret.trim(),
-        }),
-      });
-
-      if (res.ok) {
-        toast.success(language === "ar" ? "تم حفظ إعدادات Google OAuth بنجاح" : "Google OAuth settings saved successfully");
-      } else {
-        toast.error(language === "ar" ? "فشل حفظ الإعدادات" : "Failed to save settings");
-      }
-    } catch (error) {
-      toast.error(language === "ar" ? "خطأ في الاتصال بالسيرفر" : "Server connection error");
-    } finally {
-      setIsSavingGoogleOauth(false);
-    }
-  };
-
   const handleSaveGeneralSettings = async () => {
     if (!siteName || !siteDescription) {
       showToast(t("allFieldsRequired") || "All fields are required", "error");
@@ -818,6 +807,16 @@ export const SystemSettingsView: React.FC<SystemSettingsViewProps> = ({
       setIsSaving(false);
     }
   };
+
+  useEffect(() => {
+    const handleSaveEvent = () => {
+      handleSaveGeneralSettings();
+    };
+    window.addEventListener("admin-save-settings", handleSaveEvent);
+    return () => {
+      window.removeEventListener("admin-save-settings", handleSaveEvent);
+    };
+  }, [handleSaveGeneralSettings]);
 
   const handleSaveVisualSettings = async () => {
     setIsSaving(true);
@@ -1087,45 +1086,93 @@ export const SystemSettingsView: React.FC<SystemSettingsViewProps> = ({
   };
 
   return (
-    <div className="space-y-8 max-w-5xl relative">
+    <div className="w-full max-w-full space-y-6 relative px-1 md:px-2">
 
-      {/* Sovereign Theme Studio & Appearance Section */}
-      <div
-        className="p-6 md:p-8 rounded-[var(--radius-lg)] border transition-theme bg-[var(--surface-card)] border-[var(--border-default)]"
-      >
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-6">
-          <div className="flex items-start sm:items-center gap-4">
-            <div className="p-3.5 rounded-[var(--radius-md)] bg-[var(--bg-accent-emphasis)] text-[var(--fg-on-emphasis)] shadow-sm shrink-0">
-              <Palette size={26} />
-            </div>
-            <div>
-              <div className="flex items-center gap-2 mb-1 flex-wrap">
-                <h2 className="text-xl font-bold text-[var(--text-primary)]">
-                  {language === "ar" ? "استوديو المظهر وتخصيص الثيمات" : "Theme Studio & Appearance Control"}
-                </h2>
-                <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-[var(--surface-subtle)] text-[var(--fg-accent)] border border-[var(--border-default)]">
-                  {language === "ar" ? "قسم احترافي" : "PRO MODULE"}
-                </span>
+      {/* Sub-Tabs Navigation Bar */}
+      {!hideSubTabs && (
+        <div className="w-full flex items-center justify-between border-b border-[var(--border-default)] pb-3">
+          <div className="flex items-center gap-1.5 p-1 rounded-[var(--radius-md)] bg-[var(--surface-subtle)] border border-[var(--border-default)] overflow-x-auto max-w-full custom-scrollbar">
+            <button
+              type="button"
+              onClick={() => handleMainTabSwitch('general')}
+              className={`flex items-center gap-2 px-4 py-2.5 min-h-[44px] rounded-[var(--radius-sm)] text-xs font-bold transition-all cursor-pointer touch-target-44 whitespace-nowrap ${
+                activeMainTab === 'general'
+                  ? "bg-[var(--surface-card)] text-[var(--fg-accent)] shadow-xs border border-[var(--border-accent)]/30 font-black"
+                  : "text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--surface-card)]/50 border border-transparent"
+              }`}
+            >
+              <Settings size={16} className={activeMainTab === 'general' ? "text-[var(--fg-accent)]" : "text-[var(--text-muted)]"} />
+              <span>{language === 'ar' ? 'الإعدادات العامة والهوية' : 'General Configuration'}</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => handleMainTabSwitch('seo')}
+              className={`flex items-center gap-2 px-4 py-2.5 min-h-[44px] rounded-[var(--radius-sm)] text-xs font-bold transition-all cursor-pointer touch-target-44 whitespace-nowrap ${
+                activeMainTab === 'seo'
+                  ? "bg-[var(--surface-card)] text-[var(--fg-accent)] shadow-xs border border-[var(--border-accent)]/30 font-black"
+                  : "text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--surface-card)]/50 border border-transparent"
+              }`}
+            >
+              <Globe size={16} className={activeMainTab === 'seo' ? "text-[var(--fg-accent)]" : "text-[var(--text-muted)]"} />
+              <span>{language === 'ar' ? 'مركز محركات البحث (SEO)' : 'SEO & Metadata Center'}</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => handleMainTabSwitch('memory')}
+              className={`flex items-center gap-2 px-4 py-2.5 min-h-[44px] rounded-[var(--radius-sm)] text-xs font-bold transition-all cursor-pointer touch-target-44 whitespace-nowrap ${
+                activeMainTab === 'memory'
+                  ? "bg-[var(--surface-card)] text-[var(--fg-accent)] shadow-xs border border-[var(--border-accent)]/30 font-black"
+                  : "text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--surface-card)]/50 border border-transparent"
+              }`}
+            >
+              <Brain size={16} className={activeMainTab === 'memory' ? "text-[var(--fg-accent)]" : "text-[var(--text-muted)]"} />
+              <span>{language === 'ar' ? 'إدارة الذاكرة والسياق' : 'Memory Engine'}</span>
+            </button>
+          </div>
+        </div>
+      )}
+
+      {activeMainTab === 'general' && (
+        <div className="space-y-8">
+          {/* Sovereign Theme Studio & Appearance Section */}
+          <div
+            className="p-5 md:p-6 rounded-[var(--radius-lg)] border transition-theme bg-[var(--surface-card)] border-[var(--border-default)]"
+          >
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+              <div className="flex items-start sm:items-center gap-3.5">
+                <div className="p-3 rounded-[var(--radius-md)] bg-[var(--bg-accent-emphasis)] text-[var(--fg-on-emphasis)] shadow-sm shrink-0">
+                  <Palette size={22} />
+                </div>
+                <div>
+                  <div className="flex items-center gap-2 mb-0.5 flex-wrap">
+                    <h2 className="text-base md:text-lg font-bold text-[var(--text-primary)]">
+                      {language === "ar" ? "استوديو المظهر وتخصيص الثيمات" : "Theme Studio & Appearance Control"}
+                    </h2>
+                    <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-[var(--surface-subtle)] text-[var(--fg-accent)] border border-[var(--border-default)]">
+                      {language === "ar" ? "مخصص بالكامل" : "PRO"}
+                    </span>
+                  </div>
+                  <p className="text-xs text-[var(--text-secondary)] leading-relaxed max-w-xl">
+                    {language === "ar"
+                      ? "تخصيص لوحة ألوان بيربليكستا، وتوكنز المظهر للوضع الداكن والفاتح مع تطبيق فوري وحفظ بقاعدة البيانات."
+                      : "Sovereign control over design tokens, surface variables, and appearance customization for dark and light modes."}
+                  </p>
+                </div>
               </div>
-              <p className="text-sm text-[var(--text-secondary)] leading-relaxed max-w-2xl">
-                {language === "ar"
-                  ? "تحكم دقيق وشامل في لوحة ألوان بيربليكستا، وتخصيص متغيرات الثيم للوضع الداكن والفاتح مع تطبيق فوري وتخزين صارم في قاعدة البيانات."
-                  : "Sovereign control over Perplexta design tokens, surface variables, and appearance customization for dark and light modes."}
-              </p>
+              <button
+                type="button"
+                id="admin-open-theme-studio-btn"
+                onClick={() => navigate("/admin/theme")}
+                className="flex items-center justify-center gap-2 px-4 py-2.5 rounded-[var(--radius-md)] font-bold text-xs bg-[var(--bg-accent-emphasis)] text-[var(--fg-on-emphasis)] hover:opacity-90 transition-theme shadow-xs cursor-pointer shrink-0 active:scale-95 touch-target-44"
+              >
+                <Palette size={15} />
+                <span>{language === "ar" ? "فتح استوديو الثيمات" : "Open Theme Studio"}</span>
+                <ArrowRight size={14} className={language === "ar" ? "rotate-180" : ""} />
+              </button>
             </div>
           </div>
-          <button
-            type="button"
-            id="admin-open-theme-studio-btn"
-            onClick={() => navigate("/admin/theme")}
-            className="flex items-center justify-center gap-2.5 px-5 py-3 rounded-[var(--radius-md)] font-bold text-sm bg-[var(--bg-accent-emphasis)] text-[var(--fg-on-emphasis)] hover:opacity-90 transition-theme shadow-sm cursor-pointer shrink-0 active:scale-95"
-          >
-            <Palette size={18} />
-            <span>{language === "ar" ? "فتح استوديو المظهر والثيمات" : "Open Theme Studio"}</span>
-            <ArrowRight size={16} className={language === "ar" ? "rotate-180" : ""} />
-          </button>
-        </div>
-      </div>
 
       {/* General Settings */}
       <div
@@ -1204,75 +1251,6 @@ export const SystemSettingsView: React.FC<SystemSettingsViewProps> = ({
         </div>
       </div>
 
-      {/* Google OAuth Configuration */}
-      <div
-        className="p-6 md:p-8 rounded-[var(--radius-lg)] border bg-[var(--surface-card)] border-[var(--border-default)]"
-      >
-        <div className="flex items-center gap-3 mb-6">
-          <div className="p-3 rounded-[var(--radius-sm)] bg-red-500/10 text-red-500">
-            <ShieldCheck size={24} />
-          </div>
-          <div>
-            <h2 className="text-xl font-bold">
-              {language === "ar" ? "إعدادات Google OAuth" : "Google OAuth Configuration"}
-            </h2>
-            <p className="text-xs text-[var(--text-muted)] mt-1">
-              {language === "ar" 
-                ? "قم بضبط بيانات Google OAuth لتمكين تسجيل الدخول بواسطة قوقل."
-                : "Configure Google OAuth credentials to enable Google Sign-In."}
-            </p>
-          </div>
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div>
-            <label className="block text-sm font-medium text-[var(--text-secondary)] mb-1.5">
-              Google Client ID
-            </label>
-            <input
-              type="text"
-              value={googleClientId}
-              dir="ltr"
-              onChange={(e) => setGoogleClientId(e.target.value)}
-              placeholder="e.g. 123456789-abc.apps.googleusercontent.com"
-              className="w-full px-4 py-3 rounded-[var(--radius-sm)] border focus:outline-none focus:ring-2 focus:ring-accent/50 transition-theme bg-[var(--surface-subtle)] border-[var(--border-default)] text-[var(--text-primary)]"
-            />
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-[var(--text-secondary)] mb-1.5">
-              Google Client Secret
-            </label>
-            <input
-              type="password"
-              value={googleClientSecret}
-              dir="ltr"
-              onChange={(e) => setGoogleClientSecret(e.target.value)}
-              placeholder={googleClientSecret === "********" ? "••••••••" : "Enter client secret"}
-              className="w-full px-4 py-3 rounded-[var(--radius-sm)] border focus:outline-none focus:ring-2 focus:ring-accent/50 transition-theme bg-[var(--surface-subtle)] border-[var(--border-default)] text-[var(--text-primary)]"
-            />
-            {googleClientSecret === "********" && (
-              <p className="text-[10px] text-amber-500 mt-1">
-                {language === "ar" ? "المفتاح محفوظ ومشفر. اتركه كما هو إذا لم ترغب بتغييره." : "Secret is saved and encrypted. Leave as is if you don't want to change it."}
-              </p>
-            )}
-          </div>
-        </div>
-        <div className="flex justify-end mt-6">
-          <button
-            onClick={handleSaveGoogleOauth}
-            disabled={isSavingGoogleOauth}
-            className="flex items-center gap-2 bg-[var(--bg-accent-emphasis)] hover:opacity-90 text-[var(--fg-on-emphasis)] px-6 py-2.5 rounded-[var(--radius-sm)] transition-theme font-bold text-sm shadow-xs disabled:opacity-50 min-h-[44px] cursor-pointer"
-          >
-            {isSavingGoogleOauth ? (
-              <RefreshCw className="animate-spin" size={18} />
-            ) : (
-              <Save size={18} />
-            )}
-            {language === "ar" ? "حفظ إعدادات المصادقة" : "Save Auth Settings"}
-          </button>
-        </div>
-      </div>
-
       {/* Visual Identity */}
       <div
         className="p-6 md:p-8 rounded-[var(--radius-lg)] border bg-[var(--surface-card)] border-[var(--border-default)]"
@@ -1282,28 +1260,23 @@ export const SystemSettingsView: React.FC<SystemSettingsViewProps> = ({
             <div className="p-3 rounded-md bg-purple-500/10 text-purple-500">
               <ImageIcon size={24} />
             </div>
-            <h2 className="text-xl font-bold">{t("visualIdentity")}</h2>
+            <div>
+              <h2 className="text-xl font-bold">{t("visualIdentity")}</h2>
+              <p className="text-xs text-[var(--text-muted)] mt-0.5">
+                {language === "ar" ? "الشعارات المعتمدة للثيمات وتوليد حزمة أيقونات التطبيق والـ PWA" : "Theme brand logos and multi-platform PWA icon suite"}
+              </p>
+            </div>
           </div>
           <div className="flex items-center gap-2">
             <button
               type="button"
-              onClick={handleSyncSeoMetadata}
-              disabled={isSyncingMetadata}
-              className="flex items-center gap-2 px-3 py-1.5 text-xs rounded-md bg-[var(--status-success-subtle)] hover:opacity-90 text-[var(--fg-success)] font-medium transition-colors border border-[var(--fg-success)]/20"
-              title={language === "ar" ? "مزامنة العناوين والكلمات المفتاحية والوصف المفقود لإعلانات ومنشورات المجتمع" : "Sync missing SEO titles, descriptions, and keywords for bulletin items"}
-            >
-              <RefreshCw size={14} className={isSyncingMetadata ? "animate-spin" : ""} />
-              <span>{language === "ar" ? "مزامنة SEO للمحتوى" : "Sync Content SEO"}</span>
-            </button>
-            <button
-              type="button"
               onClick={checkSystemAssetsDiagnostic}
               disabled={isCheckingAssets}
-              className="flex items-center gap-2 px-3 py-1.5 text-xs rounded-md bg-[var(--surface-subtle)] hover:bg-[var(--surface-card)] text-[var(--text-secondary)] border border-[var(--border-default)] transition-colors"
+              className="flex items-center gap-2 px-3.5 py-2 text-xs rounded-lg bg-[var(--surface-subtle)] hover:bg-[var(--surface-card)] text-[var(--text-secondary)] border border-[var(--border-default)] transition-theme font-medium cursor-pointer shadow-2xs"
               title={language === "ar" ? "فحص سلامة ملفات الشعار والهوية" : "Scan system logo & asset files"}
             >
               <RefreshCw size={14} className={isCheckingAssets ? "animate-spin" : ""} />
-              <span>{language === "ar" ? "فحص السلامة" : "Scan Assets"}</span>
+              <span>{language === "ar" ? "فحص سلامة الأصول" : "Scan Assets"}</span>
             </button>
           </div>
         </div>
@@ -2139,10 +2112,25 @@ export const SystemSettingsView: React.FC<SystemSettingsViewProps> = ({
             className="flex items-center gap-2 bg-accent hover:bg-accent text-white px-5 py-2 rounded-[var(--radius-md)] transition-theme text-xs font-bold shadow-sm disabled:opacity-50"
           >
             {isSaving ? <RefreshCw className="animate-spin" size={14} /> : <Save size={14} />}
-            <span>{dir === "rtl" ? "حفظ التغييرات الآن" : "Save Visibility Settings"}</span>
+            <span>{dir === "rtl" ? "حفظ الإعدادات" : "Save Settings"}</span>
           </button>
         </div>
       </div>
+      </div>
+      )}
+
+      {activeMainTab === 'seo' && (
+        <div className="space-y-8">
+          {/* Comprehensive Content SEO Audit & AI Metadata Generator */}
+          <div className="p-1 rounded-[var(--radius-lg)]">
+            <SeoCenterView
+              theme={theme}
+              t={t}
+              dir={dir}
+              language={language}
+              showToast={showToast}
+            />
+          </div>
 
       {/* SEO & Meta Tags */}
       <div
@@ -2156,35 +2144,7 @@ export const SystemSettingsView: React.FC<SystemSettingsViewProps> = ({
         </div>
 
         <div className="space-y-5">
-          {/* Site Identity Name Fields (SEO integrated) */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 border-b border-[var(--border-subtle)] pb-5">
-            <div>
-              <label className="block text-xs font-black uppercase tracking-wider text-accent mb-1.5">
-                {dir === "rtl" ? "اسم الموقع والمنصة (بالإنجليزية)" : "Site Name (English)"}
-              </label>
-              <input
-                type="text"
-                value={siteName || ""}
-                onChange={(e) => setSiteName(e.target.value)}
-                className="w-full px-4 py-3 rounded-md border focus:outline-none focus:ring-2 focus:ring-accent-500/50 transition-theme bg-[var(--surface-subtle)] border-[var(--border-default)] text-[var(--text-primary)] placeholder:text-[var(--text-muted)]"
-                placeholder="e.g. Perplexta Platform"
-              />
-            </div>
-            <div>
-              <label className="block text-xs font-black uppercase tracking-wider text-accent mb-1.5">
-                {dir === "rtl" ? "اسم الموقع والمنصة (بالعربية)" : "Site Name (Arabic)"}
-              </label>
-              <input
-                type="text"
-                value={siteNameAr || ""}
-                onChange={(e) => setSiteNameAr(e.target.value)}
-                className="w-full px-4 py-3 rounded-md border focus:outline-none focus:ring-2 focus:ring-accent-500/50 transition-theme bg-[var(--surface-subtle)] border-[var(--border-default)] text-[var(--text-primary)] placeholder:text-[var(--text-muted)]"
-                placeholder="مثال: منصة بيربليكستا"
-              />
-            </div>
-          </div>
-
-          {/* SEO Site Name Fields */}
+          {/* SEO Site Title Fields */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 border-b border-[var(--border-subtle)] pb-5">
             <div>
               <label className="block text-xs font-black uppercase tracking-wider text-accent mb-1.5">
@@ -2198,7 +2158,7 @@ export const SystemSettingsView: React.FC<SystemSettingsViewProps> = ({
                 placeholder="e.g. Perplexta | Premium Financial Analytics"
               />
               <p className="text-[10px] text-[var(--text-muted)] mt-1">
-                {dir === "rtl" ? "العنوان المحدد لمحركات البحث الإنجليزية وعلامات تبويب المتصفح." : "Optimized English title displayed in Google search listings and browser tabs."}
+                {dir === "rtl" ? "العنوان المحدد لمحركات البحث وعلامات تبويب المتصفح." : "Optimized English title displayed in Google search listings and browser tabs."}
               </p>
             </div>
             <div>
@@ -2218,35 +2178,8 @@ export const SystemSettingsView: React.FC<SystemSettingsViewProps> = ({
             </div>
           </div>
 
-          {/* Site Identity Description Fields (SEO integrated) */}
+          {/* SEO Meta Descriptions */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 border-b border-[var(--border-subtle)] pb-5">
-            <div>
-              <label className="block text-xs font-black uppercase tracking-wider text-accent mb-1.5">
-                {dir === "rtl" ? "الوصف التعريفي العام (بالإنجليزية)" : "General Description (English)"}
-              </label>
-              <textarea
-                rows={2}
-                value={siteDescription || ""}
-                onChange={(e) => setSiteDescription(e.target.value)}
-                className="w-full px-4 py-3 rounded-md border focus:outline-none focus:ring-2 focus:ring-accent-500/50 transition-theme bg-[var(--surface-subtle)] border-[var(--border-default)] text-[var(--text-primary)] placeholder:text-[var(--text-muted)]"
-                placeholder="Enter general tagline description..."
-              />
-            </div>
-            <div>
-              <label className="block text-xs font-black uppercase tracking-wider text-accent mb-1.5">
-                {dir === "rtl" ? "الوصف التعريفي العام (بالعربية)" : "General Description (Arabic)"}
-              </label>
-              <textarea
-                rows={2}
-                value={siteDescriptionAr || ""}
-                onChange={(e) => setSiteDescriptionAr(e.target.value)}
-                className="w-full px-4 py-3 rounded-md border focus:outline-none focus:ring-2 focus:ring-accent-500/50 transition-theme bg-[var(--surface-subtle)] border-[var(--border-default)] text-[var(--text-primary)] placeholder:text-[var(--text-muted)]"
-                placeholder="اكتب نبذة تعريفية عامة هنا..."
-              />
-            </div>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
               <label className="block text-sm font-medium text-[var(--text-secondary)] mb-1.5">
                 {t("seoDescriptionEn")}
@@ -2766,14 +2699,19 @@ export const SystemSettingsView: React.FC<SystemSettingsViewProps> = ({
                       </td>
                       <td className="p-3">
                         {item.og_image_url ? (
-                          <img
-                            src={item.og_image_url}
-                            alt={item.route}
-                            className="w-12 h-7 object-cover rounded border border-[var(--border-default)]"
-                            referrerPolicy="no-referrer"
-                          />
+                          <div className="relative group/img inline-block">
+                            <img
+                              src={item.og_image_url}
+                              alt={item.route}
+                              className="w-16 h-9 object-cover rounded-md border border-[var(--border-default)] shadow-xs transition-transform group-hover/img:scale-105 bg-[var(--surface-subtle)]"
+                              referrerPolicy="no-referrer"
+                            />
+                            <div className="absolute inset-0 rounded-md ring-1 ring-inset ring-black/10 pointer-events-none" />
+                          </div>
                         ) : (
-                          <span className="text-[10px] text-[var(--text-muted)] italic">Default</span>
+                          <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] text-[var(--text-muted)] bg-[var(--surface-subtle)] border border-[var(--border-subtle)]">
+                            {dir === "rtl" ? "الافتراضي" : "Default"}
+                          </span>
                         )}
                       </td>
                       <td className="p-3">
@@ -2943,41 +2881,99 @@ export const SystemSettingsView: React.FC<SystemSettingsViewProps> = ({
                   </div>
                 </div>
 
-                {/* OG Image URL / Upload */}
-                <div>
-                  <label className="block text-xs font-semibold mb-1">
-                    {dir === "rtl" ? "صورة مشاركة التواصل الاجتماعي (Open Graph Image)" : "Open Graph Image (OG Image URL)"}
-                  </label>
-                  <div className="flex gap-2 items-center">
-                    <input
-                      type="text"
-                      value={editingRouteItem.og_image_url || ""}
-                      onChange={(e) => setEditingRouteItem({ ...editingRouteItem, og_image_url: e.target.value })}
-                      placeholder="https://... or /uploads/..."
-                      className="flex-1 text-xs p-2.5 rounded-md border font-mono bg-[var(--surface-subtle)] border-[var(--border-default)] text-[var(--text-primary)] focus:outline-none focus:border-[var(--border-accent)]"
-                    />
-                    <label className="cursor-pointer flex items-center gap-1.5 bg-[var(--surface-subtle)] hover:bg-[var(--surface-card)] text-[var(--text-secondary)] px-3 py-2 rounded-md text-xs font-medium border border-[var(--border-default)]">
-                      <Upload size={14} />
-                      <span>{routeUploadingImg ? "..." : (dir === "rtl" ? "رفع" : "Upload")}</span>
-                      <input
-                        type="file"
-                        accept="image/*"
-                        className="hidden"
-                        onChange={handleRouteImageUpload}
-                        disabled={routeUploadingImg}
-                      />
+                {/* OG Image URL / Professional Widescreen Uploader */}
+                <div className="space-y-2 pt-1">
+                  <div className="flex items-center justify-between">
+                    <label className="block text-xs font-bold text-[var(--text-primary)]">
+                      {dir === "rtl" ? "صورة معاينة ومشاركة المسار (Open Graph Image)" : "Social Share Preview Image (OG Image)"}
                     </label>
+                    <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-accent/10 text-accent font-semibold border border-accent/20">
+                      1200×630 HD (1.91:1)
+                    </span>
                   </div>
-                  {editingRouteItem.og_image_url && (
-                    <div className="mt-2">
-                      <img
-                        src={editingRouteItem.og_image_url}
-                        alt="Preview"
-                        className="h-20 rounded border object-cover border-[var(--border-default)]"
-                        referrerPolicy="no-referrer"
+
+                  <div className="relative rounded-xl border border-dashed border-[var(--border-default)] bg-[var(--surface-subtle)] p-4 hover:border-accent/50 transition-colors">
+                    {editingRouteItem.og_image_url ? (
+                      <div className="space-y-3">
+                        <div className="relative aspect-[1.91/1] w-full max-h-48 rounded-lg overflow-hidden border border-[var(--border-default)] bg-[var(--surface-card)] shadow-xs group">
+                          <img
+                            src={editingRouteItem.og_image_url}
+                            alt="Route OG Preview"
+                            className="w-full h-full object-cover transition-transform group-hover:scale-102"
+                            referrerPolicy="no-referrer"
+                          />
+                          <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex items-end p-3 justify-between">
+                            <span className="text-white text-[11px] font-mono truncate max-w-[70%]">
+                              {editingRouteItem.og_image_url}
+                            </span>
+                            <button
+                              type="button"
+                              onClick={() => setEditingRouteItem({ ...editingRouteItem, og_image_url: "" })}
+                              className="px-2.5 py-1 rounded bg-rose-600 hover:bg-rose-700 text-white text-[11px] font-medium shadow-sm transition-colors"
+                            >
+                              {dir === "rtl" ? "إزالة الصورة" : "Remove"}
+                            </button>
+                          </div>
+                        </div>
+
+                        <div className="flex items-center gap-2">
+                          <label className="cursor-pointer flex-1 flex items-center justify-center gap-2 bg-[var(--surface-card)] hover:bg-[var(--surface-subtle)] text-[var(--text-primary)] px-3 py-2 rounded-lg text-xs font-semibold border border-[var(--border-default)] shadow-xs transition-theme">
+                            <Upload size={14} className="text-accent" />
+                            <span>{routeUploadingImg ? (dir === "rtl" ? "جارٍ الرفع..." : "Uploading...") : (dir === "rtl" ? "استبدال بصورة جديدة" : "Replace Image")}</span>
+                            <input
+                              type="file"
+                              accept="image/*"
+                              className="hidden"
+                              onChange={handleRouteImageUpload}
+                              disabled={routeUploadingImg}
+                            />
+                          </label>
+                          <button
+                            type="button"
+                            onClick={() => setEditingRouteItem({ ...editingRouteItem, og_image_url: "" })}
+                            className="px-3 py-2 rounded-lg text-xs font-medium text-rose-500 hover:bg-rose-500/10 border border-rose-500/20 transition-colors"
+                          >
+                            {dir === "rtl" ? "العودة للافتراضي" : "Reset to Default"}
+                          </button>
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="flex flex-col items-center justify-center py-4 text-center space-y-2">
+                        <div className="w-12 h-12 rounded-full bg-accent/10 flex items-center justify-center text-accent">
+                          <ImageIcon size={22} />
+                        </div>
+                        <div>
+                          <p className="text-xs font-bold text-[var(--text-primary)]">
+                            {dir === "rtl" ? "رفع صورة مخصصة عالية الدقة لمشاركة هذا المسار" : "Upload HD Custom Social Share Image"}
+                          </p>
+                          <p className="text-[11px] text-[var(--text-muted)] mt-0.5">
+                            {dir === "rtl" ? "المقاس الموصى به: 1200×630 بكسل بصيغة WebP أو PNG أو JPG" : "Recommended: 1200×630px WebP, PNG or JPG (Max 2MB)"}
+                          </p>
+                        </div>
+                        <label className="cursor-pointer flex items-center gap-2 bg-accent hover:bg-accent/90 text-white px-4 py-2 rounded-lg text-xs font-bold shadow-xs transition-theme mt-1">
+                          <Upload size={14} />
+                          <span>{routeUploadingImg ? (dir === "rtl" ? "جارٍ الرفع..." : "Uploading...") : (dir === "rtl" ? "اختيار صورة من الجهاز" : "Select Image")}</span>
+                          <input
+                            type="file"
+                            accept="image/*"
+                            className="hidden"
+                            onChange={handleRouteImageUpload}
+                            disabled={routeUploadingImg}
+                          />
+                        </label>
+                      </div>
+                    )}
+
+                    <div className="pt-2 border-t border-[var(--border-subtle)] mt-2">
+                      <input
+                        type="text"
+                        value={editingRouteItem.og_image_url || ""}
+                        onChange={(e) => setEditingRouteItem({ ...editingRouteItem, og_image_url: e.target.value })}
+                        placeholder={dir === "rtl" ? "أو أدخل رابط الصورة المباشر (https://... أو /uploads/...)" : "Or enter direct image URL (https://... or /uploads/...)"}
+                        className="w-full text-[11px] p-2 rounded-md border font-mono bg-[var(--surface-card)] border-[var(--border-default)] text-[var(--text-secondary)] focus:outline-none focus:border-accent"
                       />
                     </div>
-                  )}
+                  </div>
                 </div>
 
                 {/* Is Active Toggle */}
@@ -3223,6 +3219,19 @@ export const SystemSettingsView: React.FC<SystemSettingsViewProps> = ({
           </table>
         </div>
       </div>
+      </div>
+      )}
+
+      {activeMainTab === 'memory' && (
+        <div className="w-full">
+          <MemoryCenterView
+            theme={theme}
+            t={t}
+            dir={dir}
+            language={language}
+          />
+        </div>
+      )}
 
       {/* Cache Management Utility Center */}
       <div className="p-6 md:p-8 rounded-lg border bg-[var(--surface-card)] border-[var(--border-default)] font-sans">

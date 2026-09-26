@@ -216,7 +216,7 @@ export const PwaDiagnosticTool: React.FC = () => {
             {logs.length} events logged
           </span>
         </div>
-        <div className="p-3 bg-black/90 text-[var(--fg-success)] font-mono text-[11px] rounded-shape-sm h-44 overflow-y-auto space-y-1 border border-gray-800 shadow-inner">
+        <div className="p-3 bg-black/90 text-[var(--fg-success)] font-mono text-[11px] rounded-shape-sm h-44 overflow-y-auto space-y-1 border border-[var(--border-default)] shadow-inner">
           {logs.map((log, idx) => (
             <div key={idx} className="leading-relaxed whitespace-pre-wrap">
               {log}

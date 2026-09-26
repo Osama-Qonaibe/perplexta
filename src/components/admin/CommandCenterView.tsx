@@ -909,7 +909,7 @@ export const CommandCenterView: React.FC<CommandCenterViewProps> = ({
                       type="date"
                       value={logStartDate}
                       onChange={(e) => setLogStartDate(e.target.value)}
-                      className="w-full px-3 py-2 min-h-[40px] rounded-[var(--radius-sm)] border border-[var(--border-default)] focus:border-[var(--border-accent)] focus:outline-none text-xs font-semibold bg-[var(--surface-subtle)] text-[var(--text-primary)] transition-all"
+                      className="w-full px-3 py-2 min-h-[44px] rounded-[var(--radius-sm)] border border-[var(--border-default)] focus:border-[var(--border-accent)] focus:outline-none text-xs font-semibold bg-[var(--surface-subtle)] text-[var(--text-primary)] transition-all"
                     />
                   </div>
 
@@ -922,7 +922,7 @@ export const CommandCenterView: React.FC<CommandCenterViewProps> = ({
                       type="date"
                       value={logEndDate}
                       onChange={(e) => setLogEndDate(e.target.value)}
-                      className="w-full px-3 py-2 min-h-[40px] rounded-[var(--radius-sm)] border border-[var(--border-default)] focus:border-[var(--border-accent)] focus:outline-none text-xs font-semibold bg-[var(--surface-subtle)] text-[var(--text-primary)] transition-all"
+                      className="w-full px-3 py-2 min-h-[44px] rounded-[var(--radius-sm)] border border-[var(--border-default)] focus:border-[var(--border-accent)] focus:outline-none text-xs font-semibold bg-[var(--surface-subtle)] text-[var(--text-primary)] transition-all"
                     />
                   </div>
                 </div>
@@ -940,7 +940,7 @@ export const CommandCenterView: React.FC<CommandCenterViewProps> = ({
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               placeholder={language === "ar" ? "بحث في سجل العمليات والأنشطة..." : "Search activity stream & logs..."}
-              className={`w-full ${dir === "rtl" ? "pr-10 pl-10" : "pl-10 pr-10"} py-2.5 min-h-[42px] rounded-[var(--radius-sm)] border text-xs font-medium transition-all focus:outline-none bg-[var(--surface-subtle)] border-[var(--border-default)] focus:border-[var(--border-accent)] text-[var(--text-primary)] placeholder:text-[var(--text-muted)]`}
+              className={`w-full ${dir === "rtl" ? "pr-10 pl-10" : "pl-10 pr-10"} py-2.5 min-h-[44px] rounded-[var(--radius-sm)] border text-xs font-medium transition-all focus:outline-none bg-[var(--surface-subtle)] border-[var(--border-default)] focus:border-[var(--border-accent)] text-[var(--text-primary)] placeholder:text-[var(--text-muted)]`}
             />
             {search && (
               <button 
@@ -1084,14 +1084,14 @@ export const CommandCenterView: React.FC<CommandCenterViewProps> = ({
                               : [...prev, log.id],
                           );
                         }}
-                        className="w-4 h-4 rounded-sm border-[var(--border-default)] text-accent focus:ring-accent-500 cursor-pointer accent-accent"
+                        className="w-4 h-4 rounded-sm border-[var(--border-default)] text-[var(--fg-accent)] focus:ring-[var(--fg-accent)] cursor-pointer accent-[var(--fg-accent)]"
                       />
                     </div>
                     <div
                       className={`mt-0.5 p-1.5 rounded-md shrink-0 ${
                         log.type === "ai_generation"
-                          ? "bg-blue-500/20 text-blue-500"
-                          : "bg-accent/20 text-accent"
+                          ? "bg-[var(--fg-accent)]/10 text-[var(--fg-accent)]"
+                          : "bg-[var(--fg-accent)]/10 text-[var(--fg-accent)]"
                       }`}
                     >
                       {log.type === "ai_generation" ? (

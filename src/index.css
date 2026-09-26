@@ -730,6 +730,29 @@ html, body, #root {
   outline-offset: 2px;
 }
 
+/* Beautiful sovereign styling for native select elements to match design system custom dropdowns */
+select {
+  background-color: var(--surface-card);
+  color: var(--text-primary);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-sm);
+  font-size: 0.75rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all var(--duration-base) var(--ease-out);
+  outline: none;
+}
+
+select:hover {
+  border-color: var(--border-accent);
+  background-color: var(--surface-subtle);
+}
+
+select option {
+  background-color: var(--surface-card) !important;
+  color: var(--text-primary) !important;
+}
+
 /* Remove inner focus outlines from inputs & textareas so they don't produce floating orange rings inside containers */
 input:focus,
 input:focus-visible,

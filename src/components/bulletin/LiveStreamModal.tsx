@@ -166,7 +166,7 @@ export const LiveStreamModal: React.FC<LiveStreamModalProps> = ({
                   {!streamRef.current && (
                     <div className="absolute inset-0 flex items-center justify-center bg-black/50 z-20">
                       <div className="text-center space-y-4">
-                        <div className="w-16 h-16 rounded-[var(--radius-md)] bg-gray-900 flex items-center justify-center mx-auto border-2 border-dashed border-gray-700 animate-spin-slow">
+                        <div className="w-16 h-16 rounded-[var(--radius-md)] bg-gray-900 flex items-center justify-center mx-auto border-2 border-dashed border-[var(--border-default)] animate-spin-slow">
                           <Camera size={24} className="text-gray-600" />
                         </div>
                         <p className="text-[10px] font-black text-gray-500 tracking-widest uppercase">
@@ -261,7 +261,7 @@ export const LiveStreamModal: React.FC<LiveStreamModalProps> = ({
                     <button
                       type="submit"
                       disabled={!newLiveComment.trim()}
-                      className="w-10 h-10 rounded-[var(--radius-md)] bg-accent flex items-center justify-center text-white hover:opacity-90 disabled:opacity-20 disabled:bg-gray-800 transition-theme shrink-0 shadow-lg cursor-pointer"
+                      className="w-10 h-10 rounded-[var(--radius-md)] bg-accent flex items-center justify-center text-white hover:opacity-90 disabled:opacity-20 disabled:bg-[var(--surface-subtle)] transition-theme shrink-0 shadow-lg cursor-pointer"
                     >
                       <Send size={16} className={isRtl ? 'rotate-180 -ml-0.5' : 'ml-0.5'} />
                     </button>

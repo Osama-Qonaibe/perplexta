@@ -330,9 +330,12 @@ const PWAWrapper = ({ children }: { children: React.ReactNode }) => {
     const dynamicOgImage = hasActiveDynamicSeo ? dynamicSeo.og_image_url : '';
     const dynamicCanonical = (hasActiveDynamicSeo && dynamicSeo.canonical_url) ? dynamicSeo.canonical_url : '';
 
-    const routeMatch = dbRouteSeo.find(r => 
-      (r.route === currentPath || r.route === normalizedPath) && r.is_active !== false
-    );
+    const cleanCur = currentPath.toLowerCase().replace(/^\/+|\/+$/g, '');
+    const routeMatch = dbRouteSeo.find(r => {
+      if (!r.route || r.is_active === false) return false;
+      const cleanR = r.route.toLowerCase().replace(/^\/+|\/+$/g, '');
+      return cleanR === cleanCur || r.route === currentPath || r.route === normalizedPath;
+    });
 
     const dbTitle = routeMatch ? (language === 'ar' ? (routeMatch.title_ar || routeMatch.title_en) : (routeMatch.title_en || routeMatch.title_ar)) : '';
     const dbDesc = routeMatch ? (language === 'ar' ? (routeMatch.description_ar || routeMatch.description_en) : (routeMatch.description_en || routeMatch.description_ar)) : '';

@@ -3,7 +3,7 @@ import { NavLink, useLocation } from 'react-router-dom';
 import { motion } from 'motion/react';
 import { 
   Activity, Database, Cpu, Landmark, 
-  Users, Settings, Mail, ArrowRight,
+  Users, Megaphone, Settings, Mail, ArrowRight,
   ShieldAlert, Palette
 } from 'lucide-react';
 import { useAppContext } from '../context/AppContext';
@@ -28,75 +28,90 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({
 
   const isSupport = user?.role === 'support';
 
-  const navItems = [
-    // 1. مركز القيادة (Command Center)
+  const allNavItems = [
+    // 1 (7 chars)
     { 
       icon: <Activity size={17} />, 
-      label: language === 'ar' ? 'مركز القيادة' : 'Command Center', 
+      label: language === 'ar' ? 'القيادة' : 'Overview', 
       path: '/admin/dashboard',
       matchPaths: ['/admin/dashboard'],
+      requiresAdmin: false,
     },
-    ...(!isSupport ? [
-      // 2. البنية التحتية والذكاء (AI & Infrastructure)
-      { 
-        icon: <Cpu size={17} />, 
-        label: language === 'ar' ? 'البنية التحتية والذكاء' : 'AI & Infrastructure', 
-        path: '/admin/keys',
-        matchPaths: ['/admin/keys', '/admin/ai-infra', '/admin/gpu', '/admin/orchestrator', '/admin/memories'],
-      },
-      // 3. قواعد البيانات (Databases)
-      { 
-        icon: <Database size={17} />, 
-        label: language === 'ar' ? 'قواعد البيانات' : 'Databases', 
-        path: '/admin/databases',
-        matchPaths: ['/admin/databases'],
-      },
-      // 4. المالية والاشتراكات (Finance & Subscriptions)
-      { 
-        icon: <Landmark size={17} />, 
-        label: language === 'ar' ? 'المالية والاشتراكات' : 'Finance & Subscriptions', 
-        path: '/admin/finance',
-        matchPaths: ['/admin/finance', '/admin/plans', '/admin/referrals'],
-      },
-    ] : []),
-    // 5. المستخدمين والإعلانات (Users & Community)
+    // 2 (9 chars)
+    { 
+      icon: <Megaphone size={17} />, 
+      label: language === 'ar' ? 'الإعلانات' : 'Ads & Promos', 
+      path: '/admin/ads',
+      matchPaths: ['/admin/ads', '/admin/bulletin-moderation'],
+      requiresAdmin: false,
+    },
+    // 3 (10 chars)
     { 
       icon: <Users size={17} />, 
-      label: language === 'ar' ? 'المستخدمين والإعلانات' : 'Users & Community', 
+      label: language === 'ar' ? 'المستخدمين' : 'Users & Roles', 
       path: '/admin/users',
-      matchPaths: ['/admin/users', '/admin/ads'],
+      matchPaths: ['/admin/users'],
+      requiresAdmin: false,
     },
-    ...(!isSupport ? [
-      // 6. مركز المراسلات (Communications)
-      { 
-        icon: <Mail size={17} />, 
-        label: language === 'ar' ? 'مركز المراسلات' : 'Communications', 
-        path: '/admin/emails',
-        matchPaths: ['/admin/emails', '/admin/broadcast'],
-      },
-      // 7. اعدادات المظهر (Appearance Settings)
-      { 
-        icon: <Palette size={17} />, 
-        label: language === 'ar' ? 'اعدادات المظهر' : 'Appearance Settings', 
-        path: '/admin/theme',
-        matchPaths: ['/admin/theme', '/admin/seo', '/admin/design-seo'],
-      },
-      // 8. الامان والتدقيق (Security & Auditing)
-      { 
-        icon: <ShieldAlert size={17} />, 
-        label: language === 'ar' ? 'الامان والتدقيق' : 'Security & Auditing', 
-        path: '/admin/audit',
-        matchPaths: ['/admin/audit', '/admin/radar', '/admin/metrics'],
-      },
-      // 9. اعدادات النظام (System Settings)
-      { 
-        icon: <Settings size={17} />, 
-        label: language === 'ar' ? 'اعدادات النظام' : 'System Settings', 
-        path: '/admin/settings',
-        matchPaths: ['/admin/settings'],
-      },
-    ] : []),
+    // 4 (14 chars)
+    { 
+      icon: <Database size={17} />, 
+      label: language === 'ar' ? 'قواعد البيانات' : 'Databases Vault', 
+      path: '/admin/databases',
+      matchPaths: ['/admin/databases'],
+      requiresAdmin: true,
+    },
+    // 5 (14 chars)
+    { 
+      icon: <Palette size={17} />, 
+      label: language === 'ar' ? 'إعدادات المظهر' : 'Theme & Design', 
+      path: '/admin/theme',
+      matchPaths: ['/admin/theme'],
+      requiresAdmin: true,
+    },
+    // 6 (14 chars)
+    { 
+      icon: <Settings size={17} />, 
+      label: language === 'ar' ? 'إعدادات النظام' : 'System Settings', 
+      path: '/admin/settings',
+      matchPaths: ['/admin/settings', '/admin/seo', '/admin/design-seo', '/admin/memories', '/admin/memory'],
+      requiresAdmin: true,
+    },
+    // 7 (15 chars)
+    { 
+      icon: <Mail size={17} />, 
+      label: language === 'ar' ? 'مركز المراسلات' : 'Communications', 
+      path: '/admin/emails',
+      matchPaths: ['/admin/emails', '/admin/broadcast'],
+      requiresAdmin: true,
+    },
+    // 8 (15 chars)
+    { 
+      icon: <ShieldAlert size={17} />, 
+      label: language === 'ar' ? 'الأمان والتدقيق' : 'Security & Audits', 
+      path: '/admin/audit',
+      matchPaths: ['/admin/audit', '/admin/radar', '/admin/metrics'],
+      requiresAdmin: true,
+    },
+    // 9 (19 chars)
+    { 
+      icon: <Landmark size={17} />, 
+      label: language === 'ar' ? 'المالية والاشتراكات' : 'Finance & Subscriptions', 
+      path: '/admin/finance',
+      matchPaths: ['/admin/finance', '/admin/plans', '/admin/referrals'],
+      requiresAdmin: true,
+    },
+    // 10 (22 chars)
+    { 
+      icon: <Cpu size={17} />, 
+      label: language === 'ar' ? 'البنية التحتية والذكاء' : 'AI Infrastructure Vault', 
+      path: '/admin/keys',
+      matchPaths: ['/admin/keys', '/admin/ai-infra', '/admin/gpu', '/admin/maps', '/admin/audio', '/admin/auth', '/admin/payments', '/admin/gateways', '/admin/orchestrator'],
+      requiresAdmin: true,
+    },
   ];
+
+  const navItems = allNavItems.filter((item) => !isSupport || !item.requiresAdmin);
 
   return (
     <aside 
