@@ -743,7 +743,7 @@ export async function initializePerplextaPools(
     } catch (err: any) {
       console.error('[DB] Critical error during pool creation:', err.message);
       resetPoolsToDegradedMode();
-      if (process.env.NODE_ENV === 'production') throw err;
+      console.warn('[DB] Database is unreachable or quota exceeded. Operating in Resilient Degraded Mode with safe in-memory fallbacks.');
     }
   })();
 

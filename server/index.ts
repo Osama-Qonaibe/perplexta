@@ -1,4 +1,5 @@
-import 'dotenv/config';
+import dotenv from 'dotenv';
+dotenv.config({ override: true });
 import './utils/validateSecrets.js';
 import { createServer } from 'http';
 

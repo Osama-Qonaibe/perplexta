@@ -1,5 +1,5 @@
 import dotenv from 'dotenv';
-dotenv.config();
+dotenv.config({ override: true });
 
 // ===== DESTRUCTIVE OPERATION - FORBIDDEN IN PRODUCTION =====
 if (process.env.NODE_ENV === 'production') {

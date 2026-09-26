@@ -2126,49 +2126,7 @@ async function injectSEOTags(
 
   if (pool) {
     try {
-      // Check dedicated og_preview_cache for pre-generated static Open Graph social media previews
-      const cachedOg = await getCachedOgPreview(normalizedPath);
-      if (cachedOg) {
-        if (cachedOg.title) currentTitle = cachedOg.title;
-        if (cachedOg.description) currentDesc = cachedOg.description;
-        if (cachedOg.image_url) imageUrl = validateImageUrl(cachedOg.image_url);
-        if (cachedOg.meta_data && typeof cachedOg.meta_data === 'object' && Object.keys(cachedOg.meta_data).length > 0) {
-          extraJsonLd = cachedOg.meta_data;
-        }
-        isRouteSeoActive = true;
-      }
-
-      // 1. First priority: Check optimized dynamic route SEO metadata (from seo_metadata table)
-      const dynamicSeo = await getCachedSeoMetadata(normalizedPath);
-      if (dynamicSeo) {
-        isRouteSeoActive = true;
-        const dTitle = preferredLang === 'ar'
-          ? (dynamicSeo.title_ar || dynamicSeo.title_en)
-          : (dynamicSeo.title_en || dynamicSeo.title_ar);
-        const dDesc = preferredLang === 'ar'
-          ? (dynamicSeo.description_ar || dynamicSeo.description_en)
-          : (dynamicSeo.description_en || dynamicSeo.description_ar);
-        const dKw = preferredLang === 'ar'
-          ? (dynamicSeo.keywords_ar || dynamicSeo.keywords_en)
-          : (dynamicSeo.keywords_en || dynamicSeo.keywords_ar);
-
-        if (dTitle) currentTitle = dTitle;
-        if (dDesc) currentDesc = dDesc;
-        if (dKw) currentKeywords = dKw;
-        if (dynamicSeo.og_image_url) imageUrl = validateImageUrl(dynamicSeo.og_image_url);
-        if (dynamicSeo.structured_data && typeof dynamicSeo.structured_data === 'object' && Object.keys(dynamicSeo.structured_data).length > 0) {
-          extraJsonLd = dynamicSeo.structured_data;
-        }
-      }
-
-      const routeMetadata = await getCachedRouteSeoMetadata(normalizedPath);
-      if (routeMetadata) {
-        isRouteSeoActive = true;
-        if (preferredLang === 'ar' ? routeMetadata.title_ar : routeMetadata.title_en) currentTitle = (preferredLang === 'ar' ? routeMetadata.title_ar : routeMetadata.title_en);
-        if (preferredLang === 'ar' ? routeMetadata.description_ar : routeMetadata.description_en) currentDesc = (preferredLang === 'ar' ? routeMetadata.description_ar : routeMetadata.description_en);
-        if (routeMetadata.og_image_url) imageUrl = validateImageUrl(routeMetadata.og_image_url);
-      }
-
+      // 1. SUPREME MASTER PRIORITY: Check Admin-configured Dynamic Route SEO Settings (route_seo_settings table)
       const routeMeta = await getCachedRouteSeo(normalizedPath);
       if (routeMeta) {
         if (routeMeta.is_active !== false) {
@@ -2189,6 +2147,52 @@ async function injectSEOTags(
           if (routeMeta.og_image_url) imageUrl = validateImageUrl(routeMeta.og_image_url);
         } else {
           isRouteSeoForcedDisabled = true;
+        }
+      }
+
+      // If no admin route metadata is active, fall back to secondary cache tables
+      if (!isRouteSeoActive) {
+        // Check dedicated og_preview_cache for pre-generated static Open Graph social media previews
+        const cachedOg = await getCachedOgPreview(normalizedPath);
+        if (cachedOg) {
+          if (cachedOg.title) currentTitle = cachedOg.title;
+          if (cachedOg.description) currentDesc = cachedOg.description;
+          if (cachedOg.image_url) imageUrl = validateImageUrl(cachedOg.image_url);
+          if (cachedOg.meta_data && typeof cachedOg.meta_data === 'object' && Object.keys(cachedOg.meta_data).length > 0) {
+            extraJsonLd = cachedOg.meta_data;
+          }
+          isRouteSeoActive = true;
+        }
+
+        // Check optimized dynamic route SEO metadata (from seo_metadata table)
+        const dynamicSeo = await getCachedSeoMetadata(normalizedPath);
+        if (dynamicSeo) {
+          isRouteSeoActive = true;
+          const dTitle = preferredLang === 'ar'
+            ? (dynamicSeo.title_ar || dynamicSeo.title_en)
+            : (dynamicSeo.title_en || dynamicSeo.title_ar);
+          const dDesc = preferredLang === 'ar'
+            ? (dynamicSeo.description_ar || dynamicSeo.description_en)
+            : (dynamicSeo.description_en || dynamicSeo.description_ar);
+          const dKw = preferredLang === 'ar'
+            ? (dynamicSeo.keywords_ar || dynamicSeo.keywords_en)
+            : (dynamicSeo.keywords_en || dynamicSeo.keywords_ar);
+
+          if (dTitle) currentTitle = dTitle;
+          if (dDesc) currentDesc = dDesc;
+          if (dKw) currentKeywords = dKw;
+          if (dynamicSeo.og_image_url) imageUrl = validateImageUrl(dynamicSeo.og_image_url);
+          if (dynamicSeo.structured_data && typeof dynamicSeo.structured_data === 'object' && Object.keys(dynamicSeo.structured_data).length > 0) {
+            extraJsonLd = dynamicSeo.structured_data;
+          }
+        }
+
+        const routeMetadata = await getCachedRouteSeoMetadata(normalizedPath);
+        if (routeMetadata) {
+          isRouteSeoActive = true;
+          if (preferredLang === 'ar' ? routeMetadata.title_ar : routeMetadata.title_en) currentTitle = (preferredLang === 'ar' ? routeMetadata.title_ar : routeMetadata.title_en);
+          if (preferredLang === 'ar' ? routeMetadata.description_ar : routeMetadata.description_en) currentDesc = (preferredLang === 'ar' ? routeMetadata.description_ar : routeMetadata.description_en);
+          if (routeMetadata.og_image_url) imageUrl = validateImageUrl(routeMetadata.og_image_url);
         }
       }
     } catch (routeErr) {
