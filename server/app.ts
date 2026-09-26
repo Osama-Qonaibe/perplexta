@@ -798,7 +798,7 @@ app.use(express.static('public', {
 // =======================================
 
 import jwt from 'jsonwebtoken';
-import { getSystemSettings } from './services/system.js';
+import { getSystemSettings, resolvePersistentSystemAssetUrl } from './services/system.js';
 import { filePermissionCache, fileVersionCache, missingFileCache, FILE_CACHE_TTL_MS, MISSING_FILE_TTL_MS, invalidateFilePermissionCache, invalidateFileVersionCache } from './services/filePermissionCache.js';
 export { filePermissionCache, fileVersionCache, missingFileCache, invalidateFilePermissionCache, invalidateFileVersionCache };
 
@@ -1005,14 +1005,19 @@ app.use('/uploads', async (req: express.Request, res: express.Response, next: ex
       return next();
     }
     
-    // Check primary uploads directory, then nested, then public/uploads
+    // Check primary uploads directory, then nested brand, then public/uploads
     const resolvedUploads = path.resolve(uploadsPath);
+    const resolvedBrand = path.resolve(uploadsPath, 'brand');
     const resolvedPublic = path.resolve(process.cwd(), 'public');
     const resolvedPublicUploads = path.resolve(resolvedPublic, 'uploads');
 
     const candidatePaths = [
+      path.resolve(resolvedUploads, cleanPathOnly),
       path.resolve(resolvedUploads, filename),
+      path.resolve(resolvedBrand, filename),
+      path.resolve(resolvedPublicUploads, cleanPathOnly),
       path.resolve(resolvedPublicUploads, filename),
+      path.resolve(resolvedPublic, cleanPathOnly),
       path.resolve(resolvedPublic, filename),
     ];
 
@@ -1046,7 +1051,11 @@ app.use('/uploads', async (req: express.Request, res: express.Response, next: ex
         path.resolve(resolvedUploads, `${cleanBaseName}.gif`),
         path.resolve(resolvedUploads, `${cleanBaseName}.svg`),
         path.resolve(resolvedUploads, `${nameWithoutExt}.png`),
-        path.resolve(resolvedUploads, `${nameWithoutExt}.jpg`)
+        path.resolve(resolvedUploads, `${nameWithoutExt}.jpg`),
+        path.resolve(resolvedBrand, `${cleanBaseName}.webp`),
+        path.resolve(resolvedBrand, `${cleanBaseName}.png`),
+        path.resolve(resolvedBrand, `${nameWithoutExt}.webp`),
+        path.resolve(resolvedBrand, `${nameWithoutExt}.png`)
       ]));
 
       for (const cand of candidates) {
@@ -2025,10 +2034,12 @@ async function injectSEOTags(
   let currentKeywords = defaultKeywords;
   let currentSiteName = defaultSiteName;
   
-  const DEFAULT_OG_IMAGE = (settings.seo_image_url && !settings.seo_image_url.startsWith('data:')) 
-    ? settings.seo_image_url 
-    : ((settings.logo_url && !settings.logo_url.startsWith('data:')) ? settings.logo_url : ((settings.favicon_url && !settings.favicon_url.startsWith('data:')) ? settings.favicon_url : '/apple-touch-icon.png'));
-  let imageUrl = settings.seo_image_url || '';
+  const resolvedSeoImage = resolvePersistentSystemAssetUrl(settings.seo_image_url, 'seo_image');
+  const resolvedLogo = resolvePersistentSystemAssetUrl(settings.logo_url, 'logo');
+  const resolvedFavicon = resolvePersistentSystemAssetUrl(settings.favicon_url, 'favicon');
+
+  const DEFAULT_OG_IMAGE = resolvedSeoImage || resolvedLogo || resolvedFavicon || '/apple-touch-icon.png';
+  let imageUrl = resolvedSeoImage || '';
 
   /** Combines a base URL and relative path, strictly avoiding duplicate slash errors */
   const combineUrl = (base: string, relativePath: string): string => {
@@ -2046,9 +2057,9 @@ async function injectSEOTags(
   const validateImageUrl = (url: string): string => {
     if (!url) return '';
 
-    // Filter out data URI base64 images as they are unsupported in Open Graph tags
+    // If data URI base64 image, resolve it to a persistent public file in uploads/brand/
     if (url.startsWith('data:')) {
-      return '';
+      return resolvePersistentSystemAssetUrl(url, 'generic');
     }
 
     if (url.includes('..') || url.includes('\0')) {
@@ -2109,6 +2120,9 @@ async function injectSEOTags(
   let isRouteSeoActive = false;
   let isRouteSeoForcedDisabled = false;
   let extraJsonLd: any = null;
+
+  let postAuthor = '';
+  let postPublishedDate = '';
 
   if (pool) {
     try {
@@ -2247,44 +2261,73 @@ async function injectSEOTags(
     normalizedPath.startsWith('/reels') ||
     normalizedPath.startsWith('/p/') ||
     normalizedPath.startsWith('/post/') ||
-    normalizedPath.startsWith('/share/')
+    normalizedPath.startsWith('/share/') ||
+    req.query.ad ||
+    req.query.reel ||
+    req.query.post_code
   ) {
+    const queryCandidate = (req.query.ad || req.query.reel || req.query.post || req.query.code || req.query.id || req.query.p || '').toString().trim();
     const parts = normalizedPath.split('/').filter(Boolean);
-    let candidateCode = parts.find(p => /^PX-[A-Za-z0-9_-]+/i.test(p));
+    let candidateCode = queryCandidate || parts.find(p => /^PX-[A-Za-z0-9_-]+/i.test(p));
     if (!candidateCode) {
       const filteredParts = parts.filter(p => !['viralbook', 'bulletin', 'p', 'post', 'reels', 'pages', 'page', 'share'].includes(p.toLowerCase()));
       candidateCode = filteredParts.length > 0 ? filteredParts[filteredParts.length - 1] : parts[parts.length - 1];
     }
 
-    if (candidateCode) {
+    if (candidateCode && candidateCode !== 'viralbook' && candidateCode !== 'bulletin' && candidateCode !== 'reels') {
       try {
         const adRes = await pool.query(
-          'SELECT title, description, image_url, video_url, metadata, author_name, author_username, post_code, created_at, updated_at FROM bulletin_ads WHERE post_code = $1 OR id = $2 OR post_code = $3',
+          'SELECT title, description, image_url, video_url, metadata, author_name, author_username, post_code, created_at, updated_at, media_urls FROM bulletin_ads WHERE post_code = $1 OR id = $2 OR post_code = $3',
           [candidateCode, parseInt(candidateCode, 10) || -1, candidateCode.toUpperCase()]
         );
         if (adRes.rows.length > 0) {
           const ad = adRes.rows[0];
-          currentTitle = ad.title ? `${ad.title} | ${ad.author_name || ad.author_username || 'بيربليكستا'}` : `منشور بواسطة ${ad.author_name || ad.author_username || 'مستخدم بيربليكستا'}`;
-          let cleanContent = (ad.description || '').replace(/[#*`_\[\]()]/g, '');
-          currentDesc = cleanContent.slice(0, 160).trim();
-          if (cleanContent.length > 160) currentDesc += '...';
+          const authorDisplay = ad.author_name || (ad.author_username ? `@${ad.author_username}` : 'مستخدم بيربليكستا');
+          postAuthor = authorDisplay;
+          postPublishedDate = ad.created_at ? new Date(ad.created_at).toISOString() : '';
+
+          const postTitle = ad.title ? ad.title.trim() : '';
+          const cleanContent = (ad.description || '').replace(/[#*`_\[\]()]/g, '').trim();
+
+          if (postTitle) {
+            currentTitle = `${postTitle} | ${authorDisplay}`;
+          } else if (cleanContent) {
+            const snippet = cleanContent.length > 70 ? cleanContent.slice(0, 70).trim() + '...' : cleanContent;
+            currentTitle = `${snippet} | ${authorDisplay}`;
+          } else {
+            currentTitle = `منشور بواسطة ${authorDisplay} على بيربليكستا`;
+          }
+
+          currentDesc = cleanContent.slice(0, 220).trim() || `شاهد المنشور والتفاصيل الكاملة بواسطة ${authorDisplay} على منصة ${defaultSiteName}.`;
           
-          let targetMedia = ad.image_url || ad.video_url;
+          let targetMedia = ad.image_url || '';
+
+          if (!targetMedia && ad.media_urls) {
+            try {
+              const parsedUrls = typeof ad.media_urls === 'string' ? JSON.parse(ad.media_urls) : ad.media_urls;
+              if (Array.isArray(parsedUrls) && parsedUrls.length > 0) {
+                const firstImg = parsedUrls.find((u: string) => typeof u === 'string' && !u.match(/\.(mp4|webm|mov|mkv)$/i));
+                targetMedia = firstImg || parsedUrls[0];
+              }
+            } catch (e) {}
+          }
+
           if (!targetMedia && ad.metadata) {
             try {
               const metaObj = typeof ad.metadata === 'string' ? JSON.parse(ad.metadata) : ad.metadata;
               if (metaObj) {
-                if (Array.isArray(metaObj.media_gallery) && metaObj.media_gallery.length > 0) {
-                  targetMedia = metaObj.media_gallery[0];
-                } else if (Array.isArray(metaObj.images) && metaObj.images.length > 0) {
-                  targetMedia = metaObj.images[0];
-                } else if (Array.isArray(metaObj.photos) && metaObj.photos.length > 0) {
-                  targetMedia = metaObj.photos[0];
-                } else if (metaObj.image_url) {
-                  targetMedia = metaObj.image_url;
-                }
+                if (metaObj.poster_url) targetMedia = metaObj.poster_url;
+                else if (metaObj.thumbnail_url) targetMedia = metaObj.thumbnail_url;
+                else if (Array.isArray(metaObj.media_gallery) && metaObj.media_gallery.length > 0) targetMedia = metaObj.media_gallery[0];
+                else if (Array.isArray(metaObj.images) && metaObj.images.length > 0) targetMedia = metaObj.images[0];
+                else if (Array.isArray(metaObj.photos) && metaObj.photos.length > 0) targetMedia = metaObj.photos[0];
+                else if (metaObj.image_url) targetMedia = metaObj.image_url;
               }
             } catch (e) {}
+          }
+
+          if (!targetMedia && ad.video_url) {
+            targetMedia = ad.video_url;
           }
 
           if (targetMedia) {
@@ -2300,7 +2343,7 @@ async function injectSEOTags(
             "dateModified": ad.updated_at ? new Date(ad.updated_at).toISOString() : undefined,
             "author": {
               "@type": "Person",
-              "name": ad.author_name || currentSiteName
+              "name": authorDisplay
             }
           };
 
@@ -2391,6 +2434,9 @@ async function injectSEOTags(
       normalizedPath.startsWith('/share/') ||
       normalizedPath.startsWith('/bulletin') ||
       normalizedPath.startsWith('/viralbook') ||
+      normalizedPath.startsWith('/reels') ||
+      normalizedPath.startsWith('/p/') ||
+      normalizedPath.startsWith('/post/') ||
       normalizedPath.startsWith('/rewards') ||
       normalizedPath.startsWith('/auth') ||
       normalizedPath.startsWith('/login') ||
@@ -2409,6 +2455,8 @@ async function injectSEOTags(
     }
 
     const isPostRoute = normalizedPath.startsWith('/bulletin') || normalizedPath.startsWith('/viralbook') || normalizedPath.startsWith('/reels') || normalizedPath.startsWith('/p/') || normalizedPath.startsWith('/post/');
+    const escAuthor = escapeHtmlAttribute(postAuthor || currentSiteName);
+    const escPublished = escapeHtmlAttribute(postPublishedDate);
 
     metaBlock = `
     <meta name="description" content="${escDesc}" />
@@ -2423,6 +2471,8 @@ async function injectSEOTags(
     <meta property="og:url" content="${escUrl}" />
     <meta property="og:type" content="${isPostRoute ? 'article' : 'website'}" />
     <meta property="og:site_name" content="${escSiteName}" />
+    ${postAuthor ? `<meta name="author" content="${escAuthor}" />\n    <meta property="article:author" content="${escAuthor}" />` : ''}
+    ${postPublishedDate ? `<meta property="article:published_time" content="${escPublished}" />` : ''}
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:title" content="${escTitle}" />
     <meta name="twitter:description" content="${escDesc}" />

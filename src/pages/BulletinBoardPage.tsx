@@ -1337,7 +1337,7 @@ export const BulletinBoardPage: React.FC = () => {
 
     // 1. Check for Commercial Page route: /viralbook/page/:slug or /viralbook/pages/:slug
     const pageMatch = pathname.match(/\/(?:viralbook|bulletin)\/pages?\/([^\/]+)/i);
-    if (pageMatch && pageMatch[1]) {
+    if (pageMatch && pageMatch[1] && !['p', 'post', 'reels', 'inquiries', 'my-ads', 'analytics', 'saved', 'board'].includes(pageMatch[1].toLowerCase())) {
       const pageSlug = decodeURIComponent(pageMatch[1]);
       handleOpenPageDetail(pageSlug);
       return;
@@ -1351,36 +1351,71 @@ export const BulletinBoardPage: React.FC = () => {
       return;
     }
 
-    // 2. Check for Post code/id route
+    // 2. Extract Post Code or ID with supreme precision:
     let targetPostCode: string | null = null;
-    if (routeIdParam && routeIdParam !== 'reels' && routeIdParam !== 'pages' && routeIdParam !== 'page' && routeIdParam !== 'inquiries') {
-      targetPostCode = routeIdParam;
+
+    // A) Search for PX- code anywhere in pathname (e.g. /viralbook/p/qoomre/PX-UHYGZZ/slug or /p/PX-UHYGZZ)
+    const pxMatch = pathname.match(/(PX-[A-Za-z0-9_-]+)/i);
+    if (pxMatch && pxMatch[1]) {
+      targetPostCode = pxMatch[1];
     } else {
-      const postMatch = pathname.match(/\/(?:viralbook|bulletin)\/(?:p|post)\/(?:[^\/]+\/)?([^\/]+)/i) ||
-                        pathname.match(/\/(?:viralbook|bulletin)\/([A-Za-z0-9_-]+)/i);
-      if (postMatch && postMatch[1] && !['reels', 'pages', 'page', 'inquiries', 'my-ads', 'analytics', 'saved'].includes(postMatch[1])) {
-        targetPostCode = decodeURIComponent(postMatch[1]);
+      // B) Check query parameters (?ad=123, ?post=PX-123, ?id=123, ?code=123, ?p=123, ?reel=123)
+      const urlParams = new URLSearchParams(window.location.search);
+      const postParam = urlParams.get('post') || urlParams.get('ad') || urlParams.get('id') || urlParams.get('code') || urlParams.get('p') || urlParams.get('reel');
+      if (postParam) {
+        targetPostCode = postParam.trim();
+      } else {
+        // C) Check path segments for /p/:code, /post/:code, /viralbook/p/.../:code
+        const segments = pathname.split('/').filter(Boolean);
+        const pIndex = segments.findIndex(s => s.toLowerCase() === 'p' || s.toLowerCase() === 'post');
+        if (pIndex !== -1 && segments.length > pIndex + 1) {
+          for (let i = pIndex + 1; i < segments.length; i++) {
+            if (/^PX-/i.test(segments[i]) || !isNaN(Number(segments[i]))) {
+              targetPostCode = decodeURIComponent(segments[i]);
+              break;
+            }
+          }
+          if (!targetPostCode && segments.length > pIndex + 1) {
+            targetPostCode = decodeURIComponent(segments[segments.length - 1]);
+          }
+        } else if (routeIdParam && !['reels', 'pages', 'page', 'inquiries', 'my-ads', 'analytics', 'saved', 'board'].includes(routeIdParam.toLowerCase())) {
+          targetPostCode = routeIdParam;
+        }
       }
     }
 
-    if (!targetPostCode) {
-      const urlParams = new URLSearchParams(window.location.search);
-      const postStr = urlParams.get('post') || urlParams.get('id') || urlParams.get('ad');
-      if (postStr) targetPostCode = postStr;
-    }
-
-    if (targetPostCode) {
+    if (targetPostCode && !['board', 'viralbook', 'bulletin', 'reels', 'pages', 'inquiries'].includes(targetPostCode.toLowerCase())) {
       const codeOrId = targetPostCode;
       const fetchDirectPost = async () => {
         try {
           const res = await fetch(`/api/bulletin/ads/code/${encodeURIComponent(codeOrId)}`, {
             headers: token ? { Authorization: `Bearer ${token}` } : {}
           });
+          if (!res.ok) {
+            console.warn('[Bulletin] Direct post fetch returned status:', res.status);
+            return;
+          }
           const data = await res.json();
-          const ad = data.ad || (data.id ? data : null);
+          const ad: BulletinAd = data.ad || (data.id ? data : null);
           if (ad) {
-            const mediaUrl = getMediaUrl(ad.video_url || ad.image_url);
-            handleOpenLightbox(mediaUrl, ad.media_gallery, 0, ad.title, ad.author_name, ad);
+            // Ensure this ad is at the top of the feed list
+            setAds(prev => {
+              const filtered = prev.filter(p => p.id !== ad.id && (p as any).post_code !== (ad as any).post_code);
+              return [ad, ...filtered];
+            });
+
+            if (ad.ad_format === 'reel') {
+              setActiveTab('reels');
+              setActiveReelModalId(ad.id);
+            } else {
+              setActiveTab('board');
+              const firstGalleryUrl = Array.isArray(ad.media_gallery) && ad.media_gallery.length > 0
+                ? (typeof ad.media_gallery[0] === 'string' ? ad.media_gallery[0] : ad.media_gallery[0]?.url || '')
+                : '';
+              const rawMedia = ad.video_url || ad.image_url || firstGalleryUrl || '';
+              const mediaUrl = rawMedia ? getMediaUrl(rawMedia) : '';
+              handleOpenLightbox(mediaUrl, ad.media_gallery, 0, ad.title, ad.author_name, ad);
+            }
 
             try {
               const cRes = await fetch(`/api/bulletin/ads/${ad.id}/comments`, {

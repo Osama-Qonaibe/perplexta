@@ -1738,7 +1738,7 @@ router.get('/ads/code/:postCode', async (req: any, res: any) => {
       FROM bulletin_ads b
       LEFT JOIN users u ON b.user_id = u.id
       LEFT JOIN bulletin_pages bp ON b.page_id = bp.id
-      WHERE (b.post_code = $1 OR b.id = $2) AND b.deleted_at IS NULL
+      WHERE (b.post_code = $1 OR UPPER(b.post_code) = UPPER($1) OR b.id = $2) AND b.deleted_at IS NULL
       LIMIT 1
     `;
     const result = await pool.query(query, [postCode, numericId]);

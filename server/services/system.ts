@@ -17,20 +17,72 @@ export async function clearSettingsCache() {
   invalidateSystemSettingsCache();
 }
 
+export function resolvePersistentSystemAssetUrl(
+  val: string | null | undefined, 
+  assetName: 'logo' | 'logo_light' | 'favicon' | 'seo_image' | 'generic' = 'generic'
+): string {
+  if (!val || typeof val !== 'string') return '';
+  const trimmed = val.trim();
+  if (!trimmed) return '';
+
+  if (trimmed.startsWith('data:image/')) {
+    try {
+      const match = trimmed.match(/^data:image\/([a-zA-Z0-9+]+);base64,(.+)$/);
+      if (match) {
+        const rawExt = match[1].toLowerCase();
+        const ext = rawExt === 'jpeg' ? 'jpg' : (rawExt === 'svg+xml' ? 'svg' : rawExt);
+        const buffer = Buffer.from(match[2], 'base64');
+        const hash = crypto.createHash('md5').update(buffer).digest('hex').slice(0, 10);
+        const filename = `brand_${assetName}_${hash}.${ext}`;
+        const uploadsDir = path.join(process.cwd(), 'uploads');
+        const brandDir = path.join(uploadsDir, 'brand');
+        if (!fs.existsSync(brandDir)) {
+          fs.mkdirSync(brandDir, { recursive: true });
+        }
+        const targetPath = path.join(brandDir, filename);
+        const rootPath = path.join(uploadsDir, filename);
+        if (!fs.existsSync(targetPath)) {
+          fs.writeFileSync(targetPath, buffer);
+        }
+        if (!fs.existsSync(rootPath)) {
+          fs.writeFileSync(rootPath, buffer);
+        }
+        return `/uploads/brand/${filename}`;
+      }
+    } catch (e: any) {
+      console.error(`[SystemAssets] Error resolving base64 asset for ${assetName}:`, e?.message);
+    }
+  }
+
+  if (trimmed.startsWith('http://') || trimmed.startsWith('https://')) {
+    return trimmed;
+  }
+
+  if (trimmed.startsWith('/uploads/') || trimmed.startsWith('uploads/')) {
+    return trimmed.startsWith('/') ? trimmed : '/' + trimmed;
+  }
+
+  return trimmed.startsWith('/') ? trimmed : `/${trimmed}`;
+}
+
 export async function ensurePersistentSystemAssets(settings: any) {
   if (!settings) return;
   try {
     const uploadsDir = path.join(process.cwd(), 'uploads');
-    if (!fs.existsSync(uploadsDir)) {
-      fs.mkdirSync(uploadsDir, { recursive: true });
+    const brandDir = path.join(uploadsDir, 'brand');
+    if (!fs.existsSync(brandDir)) {
+      fs.mkdirSync(brandDir, { recursive: true });
     }
 
-    const fields = [
+    const fields: Array<{ key: string; name: 'logo' | 'logo_light' | 'favicon' | 'seo_image' }> = [
       { key: 'logo_url', name: 'logo' },
       { key: 'logo_light_url', name: 'logo_light' },
       { key: 'favicon_url', name: 'favicon' },
       { key: 'seo_image_url', name: 'seo_image' }
     ];
+
+    let dbUpdated = false;
+    const updates: Record<string, string> = {};
 
     for (const field of fields) {
       const val = settings[field.key];
@@ -45,18 +97,43 @@ export async function ensurePersistentSystemAssets(settings: any) {
             const buffer = Buffer.from(match[2], 'base64');
             const hash = crypto.createHash('md5').update(buffer).digest('hex').slice(0, 10);
             const filename = `brand_${field.name}_${hash}.${ext}`;
-            const targetPath = path.join(uploadsDir, filename);
+            const targetPath = path.join(brandDir, filename);
+            const rootPath = path.join(uploadsDir, filename);
             await fs.promises.writeFile(targetPath, buffer);
-            console.log(`[SystemAssets] Wrote persistent base64 asset to disk: ${filename}`);
+            await fs.promises.writeFile(rootPath, buffer);
+            const publicUrl = `/uploads/brand/${filename}`;
+            updates[field.key] = publicUrl;
+            dbUpdated = true;
+            console.log(`[SystemAssets] Wrote persistent base64 asset to disk: brand/${filename}`);
           }
         } catch (e: any) {
           console.error(`[SystemAssets] Error writing base64 asset for ${field.key}:`, e.message);
         }
       } else if (val.startsWith('/uploads/') || val.startsWith('uploads/')) {
         const cleanName = path.basename(val.split('?')[0]);
-        const targetPath = path.join(uploadsDir, cleanName);
-        if (!fs.existsSync(targetPath)) {
+        const targetPathBrand = path.join(brandDir, cleanName);
+        const targetPathRoot = path.join(uploadsDir, cleanName);
+        if (!fs.existsSync(targetPathBrand) && !fs.existsSync(targetPathRoot)) {
           console.warn(`[SystemAssets] Asset file missing from disk for ${field.key}: ${cleanName}`);
+        }
+      }
+    }
+
+    if (dbUpdated && pool) {
+      const setClauses: string[] = [];
+      const values: any[] = [];
+      let i = 1;
+      for (const [k, v] of Object.entries(updates)) {
+        setClauses.push(`${k} = $${i}`);
+        values.push(v);
+        i++;
+      }
+      if (setClauses.length > 0) {
+        try {
+          await pool.query(`UPDATE system_settings SET ${setClauses.join(', ')} WHERE id = (SELECT id FROM system_settings LIMIT 1)`, values);
+          await clearSettingsCache();
+        } catch (err: any) {
+          console.warn('[SystemAssets] Non-blocking DB sync for brand asset URLs:', err.message);
         }
       }
     }
@@ -179,27 +256,27 @@ export async function updateSystemSettings(settings: any) {
   // Handle image URLs cleanly: if key is in payload (even if null/empty), update it (allowing deletion); if undefined, preserve existing.
   const logo_url = (settings.logo_url !== undefined)
     ? (settings.logo_url && String(settings.logo_url).trim() !== '' 
-        ? (String(settings.logo_url).startsWith('data:') ? String(settings.logo_url) : normalizeMediaUrl(String(settings.logo_url))) 
+        ? resolvePersistentSystemAssetUrl(String(settings.logo_url), 'logo')
         : null)
-    : (existing ? existing.logo_url : null);
+    : (existing ? resolvePersistentSystemAssetUrl(existing.logo_url, 'logo') : null);
 
   const logo_light_url = (settings.logo_light_url !== undefined)
     ? (settings.logo_light_url && String(settings.logo_light_url).trim() !== '' 
-        ? (String(settings.logo_light_url).startsWith('data:') ? String(settings.logo_light_url) : normalizeMediaUrl(String(settings.logo_light_url))) 
+        ? resolvePersistentSystemAssetUrl(String(settings.logo_light_url), 'logo_light')
         : null)
-    : (existing ? existing.logo_light_url : null);
+    : (existing ? resolvePersistentSystemAssetUrl(existing.logo_light_url, 'logo_light') : null);
 
   const favicon_url = (settings.favicon_url !== undefined)
     ? (settings.favicon_url && String(settings.favicon_url).trim() !== '' 
-        ? (String(settings.favicon_url).startsWith('data:') ? String(settings.favicon_url) : normalizeMediaUrl(String(settings.favicon_url))) 
+        ? resolvePersistentSystemAssetUrl(String(settings.favicon_url), 'favicon')
         : null)
-    : (existing ? existing.favicon_url : null);
+    : (existing ? resolvePersistentSystemAssetUrl(existing.favicon_url, 'favicon') : null);
 
   const seo_image_url = (settings.seo_image_url !== undefined)
     ? (settings.seo_image_url && String(settings.seo_image_url).trim() !== '' 
-        ? (String(settings.seo_image_url).startsWith('data:') ? String(settings.seo_image_url) : normalizeMediaUrl(String(settings.seo_image_url))) 
+        ? resolvePersistentSystemAssetUrl(String(settings.seo_image_url), 'seo_image')
         : null)
-    : (existing ? existing.seo_image_url : null);
+    : (existing ? resolvePersistentSystemAssetUrl(existing.seo_image_url, 'seo_image') : null);
   
   await pool.query(`
     UPDATE system_settings SET 
@@ -381,7 +458,11 @@ export async function repairSystemAssetsDiagnostic() {
         const buffer = Buffer.from(match[2], 'base64');
         const hash = crypto.createHash('md5').update(buffer).digest('hex').slice(0, 10);
         const filename = `brand_${item.label}_${hash}.${ext}`;
-        const targetPath = path.join(uploadsDir, filename);
+        const brandDir = path.join(uploadsDir, 'brand');
+        if (!fs.existsSync(brandDir)) {
+          fs.mkdirSync(brandDir, { recursive: true });
+        }
+        const targetPath = path.join(brandDir, filename);
         await fs.promises.writeFile(targetPath, buffer).catch(() => {});
         repairedCount++;
       }

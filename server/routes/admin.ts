@@ -3959,7 +3959,7 @@ router.post("/settings/upload-asset", authenticateAdmin, checkDiskSpace, (upload
       });
     }
 
-    res.json({ success: true, imageUrl: base64Str, fileUrl: optResult.fileUrl });
+    res.json({ success: true, imageUrl: optResult.fileUrl, base64Url: base64Str, fileUrl: optResult.fileUrl });
   } catch (error: any) {
     console.error('[AssetUpload] Upload failed:', error);
     res.status(500).json({ error: error.message || 'Image upload failed' });

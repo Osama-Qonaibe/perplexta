@@ -37,7 +37,11 @@ export async function auditAndOptimizeUploadsFolder(): Promise<{ scanned: number
       return (lower.endsWith('.jpg') || lower.endsWith('.jpeg') || lower.endsWith('.png')) &&
              !lower.includes('_opt') &&
              !lower.includes('_thumb') &&
-             !lower.endsWith('.webp');
+             !lower.endsWith('.webp') &&
+             !lower.startsWith('brand_') &&
+             !lower.startsWith('pwa-') &&
+             !lower.startsWith('favicon') &&
+             !lower.startsWith('apple-touch');
     });
 
     scanned = imageFiles.length;
