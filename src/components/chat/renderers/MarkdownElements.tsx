@@ -258,10 +258,10 @@ export const MarkdownCitationLink = ({ citation, index }: { citation: any, index
         rel="noopener noreferrer"
         onMouseEnter={() => setShowTooltip(true)}
         onMouseLeave={() => setShowTooltip(false)}
-        className="inline-flex items-center justify-center w-4 h-4 rounded-[var(--radius-xs)] transition-theme transform hover:scale-110 cursor-pointer overflow-hidden border border-transparent hover:border-[var(--border-accent)]"
+        className="inline-flex items-center justify-center w-4 h-4 rounded-shape-xs transition-theme transform hover:scale-110 cursor-pointer overflow-hidden border border-transparent hover:border-[var(--border-accent)] relative before:absolute before:-inset-2.5 before:content-['']"
       >
         <span 
-          className="w-3.5 h-3.5 flex items-center justify-center shrink-0 text-gray-400 group-hover/cite:text-[var(--fg-accent)] group-hover/cite: transition-theme"
+          className="w-3.5 h-3.5 flex items-center justify-center shrink-0 text-[var(--text-muted)] group-hover/cite:text-[var(--fg-accent)] transition-theme"
           style={{ color: brand ? brand.color : 'inherit' }}
         >
           {brand ? brand.icon("w-3.5 h-3.5 rounded-[var(--radius-xs)]") : <img src={favicon} className="w-3.5 h-3.5 object-contain rounded-[var(--radius-xs)] bg-[var(--surface-card)]" alt="" />}

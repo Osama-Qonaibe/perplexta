@@ -299,7 +299,7 @@ ${assistantResponse || 'No response snippet'}
                     onClick={() => fileInputRef.current?.click()}
                     className="flex-1 py-1 px-2 rounded-shape-sm bg-[var(--surface-card)] border border-[var(--border-default)] hover:border-[var(--text-muted)] text-[var(--text-primary)] text-[10px] font-semibold flex items-center justify-center gap-1.5 transition-colors cursor-pointer truncate"
                   >
-                    <Camera size={12} className="text-blue-500 shrink-0" />
+                    <Camera size={12} className="text-[var(--fg-accent)] shrink-0" />
                     <span className="truncate">
                       {attachmentName ? (isRtl ? `مُرفق: ${attachmentName}` : attachmentName) : (isRtl ? 'إرفاق لقطة شاشة' : 'Attach Screenshot')}
                     </span>

@@ -232,7 +232,7 @@ export const ViralMediaStudioModal: React.FC<ViralMediaStudioModalProps> = ({
         <div className="flex-1 overflow-y-auto no-scrollbar p-3 flex flex-col gap-3">
           
           {/* Centered Canvas Viewport Preview */}
-          <div className="w-full flex items-center justify-center bg-[var(--surface-subtle)] rounded-2xl p-2 border border-[var(--border-default)]">
+          <div className="w-full flex items-center justify-center bg-[var(--surface-subtle)] rounded-shape-lg p-2 border border-[var(--border-default)]">
             <MediaCanvasPreview
               projectState={projectState}
               isRtl={isRtl}
@@ -242,11 +242,11 @@ export const ViralMediaStudioModal: React.FC<ViralMediaStudioModalProps> = ({
           </div>
 
           {/* Iconography-Only Segmented Navigation Bar */}
-          <div className="flex items-center justify-around p-1 bg-[var(--surface-subtle)] rounded-xl border border-[var(--border-default)]">
+          <div className="flex items-center justify-around p-1 bg-[var(--surface-subtle)] rounded-shape-md border border-[var(--border-default)]">
             <button
               type="button"
               onClick={() => setActiveTab('format')}
-              className={`p-2 rounded-lg transition-all flex items-center justify-center cursor-pointer ${
+              className={`p-2 rounded-shape-xs transition-all flex items-center justify-center cursor-pointer relative before:absolute before:-inset-1.5 before:content-[''] ${
                 activeTab === 'format'
                   ? 'bg-[var(--surface-card)] text-[var(--accent-foreground)] shadow-xs'
                   : 'text-[var(--text-muted)] hover:text-[var(--text-primary)]'
@@ -261,7 +261,7 @@ export const ViralMediaStudioModal: React.FC<ViralMediaStudioModalProps> = ({
               <button
                 type="button"
                 onClick={() => setActiveTab('motion')}
-                className={`p-2 rounded-lg transition-all flex items-center justify-center cursor-pointer ${
+                className={`p-2 rounded-shape-xs transition-all flex items-center justify-center cursor-pointer relative before:absolute before:-inset-1.5 before:content-[''] ${
                   activeTab === 'motion'
                     ? 'bg-[var(--surface-card)] text-amber-500 shadow-xs'
                     : 'text-[var(--text-muted)] hover:text-[var(--text-primary)]'
@@ -276,9 +276,9 @@ export const ViralMediaStudioModal: React.FC<ViralMediaStudioModalProps> = ({
             <button
               type="button"
               onClick={() => setActiveTab('music')}
-              className={`p-2 rounded-lg transition-all flex items-center justify-center cursor-pointer ${
+              className={`p-2 rounded-shape-xs transition-all flex items-center justify-center cursor-pointer relative before:absolute before:-inset-1.5 before:content-[''] ${
                 activeTab === 'music'
-                  ? 'bg-[var(--surface-card)] text-purple-500 shadow-xs'
+                  ? 'bg-[var(--surface-card)] text-accent shadow-xs'
                   : 'text-[var(--text-muted)] hover:text-[var(--text-primary)]'
               }`}
               title={isRtl ? 'الموسيقى والصوتيات' : 'Music & Audio'}
@@ -290,7 +290,7 @@ export const ViralMediaStudioModal: React.FC<ViralMediaStudioModalProps> = ({
             <button
               type="button"
               onClick={() => setActiveTab('mixer')}
-              className={`p-2 rounded-lg transition-all flex items-center justify-center cursor-pointer ${
+              className={`p-2 rounded-shape-xs transition-all flex items-center justify-center cursor-pointer relative before:absolute before:-inset-1.5 before:content-[''] ${
                 activeTab === 'mixer'
                   ? 'bg-[var(--surface-card)] text-[var(--accent-foreground)] shadow-xs'
                   : 'text-[var(--text-muted)] hover:text-[var(--text-primary)]'
@@ -304,7 +304,7 @@ export const ViralMediaStudioModal: React.FC<ViralMediaStudioModalProps> = ({
             <button
               type="button"
               onClick={() => setActiveTab('cover')}
-              className={`p-2 rounded-lg transition-all flex items-center justify-center cursor-pointer ${
+              className={`p-2 rounded-shape-xs transition-all flex items-center justify-center cursor-pointer relative before:absolute before:-inset-1.5 before:content-[''] ${
                 activeTab === 'cover'
                   ? 'bg-[var(--surface-card)] text-[var(--accent-foreground)] shadow-xs'
                   : 'text-[var(--text-muted)] hover:text-[var(--text-primary)]'
@@ -321,11 +321,11 @@ export const ViralMediaStudioModal: React.FC<ViralMediaStudioModalProps> = ({
             
             {/* Format Selector Tab */}
             {activeTab === 'format' && (
-              <div className="flex items-center gap-2 p-2.5 bg-[var(--surface-card)] rounded-2xl border border-[var(--border-default)] shadow-xs">
+              <div className="flex items-center gap-2 p-2.5 bg-[var(--surface-card)] rounded-shape-lg border border-[var(--border-default)] shadow-xs">
                 <button
                   type="button"
                   onClick={() => setProjectState((p) => ({ ...p, mediaFormat: 'reel', targetAspectRatio: '9:16' }))}
-                  className={`flex-1 py-2 px-3 rounded-xl border flex items-center justify-center gap-2 transition-all cursor-pointer ${
+                  className={`flex-1 py-2 px-3 rounded-shape-sm border flex items-center justify-center gap-2 transition-all cursor-pointer ${
                     projectState.mediaFormat === 'reel'
                       ? 'bg-[var(--accent-foreground)] text-white border-transparent shadow-xs'
                       : 'border-[var(--border-default)] text-[var(--text-muted)] hover:bg-[var(--surface-subtle)]'
@@ -338,7 +338,7 @@ export const ViralMediaStudioModal: React.FC<ViralMediaStudioModalProps> = ({
                 <button
                   type="button"
                   onClick={() => setProjectState((p) => ({ ...p, mediaFormat: 'post', targetAspectRatio: '1:1' }))}
-                  className={`flex-1 py-2 px-3 rounded-xl border flex items-center justify-center gap-2 transition-all cursor-pointer ${
+                  className={`flex-1 py-2 px-3 rounded-shape-sm border flex items-center justify-center gap-2 transition-all cursor-pointer ${
                     projectState.mediaFormat === 'post'
                       ? 'bg-[var(--accent-foreground)] text-white border-transparent shadow-xs'
                       : 'border-[var(--border-default)] text-[var(--text-muted)] hover:bg-[var(--surface-subtle)]'
@@ -353,7 +353,7 @@ export const ViralMediaStudioModal: React.FC<ViralMediaStudioModalProps> = ({
 
             {/* Camera Motion Selector Tab (For Images) */}
             {activeTab === 'motion' && isImage && (
-              <div className="flex items-center gap-2 p-2.5 bg-[var(--surface-card)] rounded-2xl border border-[var(--border-default)] shadow-xs">
+              <div className="flex items-center gap-2 p-2.5 bg-[var(--surface-card)] rounded-shape-lg border border-[var(--border-default)] shadow-xs">
                 <button
                   type="button"
                   onClick={() =>
@@ -362,7 +362,7 @@ export const ViralMediaStudioModal: React.FC<ViralMediaStudioModalProps> = ({
                       visual: p.visual ? { ...p.visual, animation: 'ken_burns_zoom_in' } : null
                     }))
                   }
-                  className={`flex-1 py-2 px-3 rounded-xl border flex items-center justify-center transition-all cursor-pointer ${
+                  className={`flex-1 py-2 px-3 rounded-shape-sm border flex items-center justify-center transition-all cursor-pointer ${
                     projectState.visual?.animation === 'ken_burns_zoom_in'
                       ? 'bg-amber-500/15 border-amber-500 text-amber-500 shadow-xs'
                       : 'border-[var(--border-default)] text-[var(--text-muted)] hover:bg-[var(--surface-subtle)]'
@@ -380,7 +380,7 @@ export const ViralMediaStudioModal: React.FC<ViralMediaStudioModalProps> = ({
                       visual: p.visual ? { ...p.visual, animation: 'ken_burns_pan_right' } : null
                     }))
                   }
-                  className={`flex-1 py-2 px-3 rounded-xl border flex items-center justify-center transition-all cursor-pointer ${
+                  className={`flex-1 py-2 px-3 rounded-shape-sm border flex items-center justify-center transition-all cursor-pointer ${
                     projectState.visual?.animation === 'ken_burns_pan_right'
                       ? 'bg-amber-500/15 border-amber-500 text-amber-500 shadow-xs'
                       : 'border-[var(--border-default)] text-[var(--text-muted)] hover:bg-[var(--surface-subtle)]'
@@ -398,7 +398,7 @@ export const ViralMediaStudioModal: React.FC<ViralMediaStudioModalProps> = ({
                       visual: p.visual ? { ...p.visual, animation: 'none' } : null
                     }))
                   }
-                  className={`flex-1 py-2 px-3 rounded-xl border flex items-center justify-center transition-all cursor-pointer ${
+                  className={`flex-1 py-2 px-3 rounded-shape-sm border flex items-center justify-center transition-all cursor-pointer ${
                     projectState.visual?.animation === 'none'
                       ? 'bg-[var(--surface-subtle)] border-[var(--accent-foreground)] text-[var(--accent-foreground)] shadow-xs'
                       : 'border-[var(--border-default)] text-[var(--text-muted)] hover:bg-[var(--surface-subtle)]'
@@ -414,14 +414,14 @@ export const ViralMediaStudioModal: React.FC<ViralMediaStudioModalProps> = ({
             {/* Music Picker & Trimmer Tab */}
             {activeTab === 'music' && (
               <div className="flex flex-col gap-2">
-                <div className="flex items-center justify-between p-2.5 bg-[var(--surface-card)] rounded-2xl border border-[var(--border-default)] shadow-xs">
+                <div className="flex items-center justify-between p-2.5 bg-[var(--surface-card)] rounded-shape-lg border border-[var(--border-default)] shadow-xs">
                   <span className="text-xs font-bold text-[var(--text-primary)]">
                     {isRtl ? 'المسار الصوتي' : 'Soundtrack'}
                   </span>
                   <button
                     type="button"
                     onClick={() => setIsAudioPickerOpen(true)}
-                    className="p-1.5 rounded-lg bg-purple-500/10 hover:bg-purple-500/20 text-purple-500 transition-colors cursor-pointer"
+                    className="p-1.5 rounded-shape-xs bg-accent/15 hover:bg-accent/25 text-accent transition-colors cursor-pointer relative before:absolute before:-inset-1.5 before:content-['']"
                     title={projectState.musicTrack ? (isRtl ? 'تغيير المقطع' : 'Change Track') : (isRtl ? 'إضافة مقطع' : 'Add Track')}
                     aria-label={projectState.musicTrack ? (isRtl ? 'تغيير المقطع' : 'Change Track') : (isRtl ? 'إضافة مقطع' : 'Add Track')}
                   >

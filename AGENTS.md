@@ -45,6 +45,10 @@ This identity serves as our compass. Every engineering decision—from the "Sile
 - **Server & Client Image Deduplication & Query Optimization**: Memoized client-side URL normalization in `mediaUtils.ts` preventing redundant HTTP fetches across components, fast-tracked public media permissions in `app.ts`, dual-state permission caching, and a 10-minute 404 `missingFileCache` preventing duplicate database queries for non-existent files.
 - **Role-Gated Post Options & Professional Moderation**: Strict role isolation in `PostOptionsMenu.tsx` (owners receive full post controls while non-owners receive interactive controls and professional 7-category moderation reporting).
 - **Categorized Moderation & Automated Alert System**: Backend duplicate-protected reporting pipeline (`/api/bulletin/ads/:id/report`) with real-time in-app admin notifications and formatted HTML email dispatches with post content previews.
+- **Reverse Proxy Upload Liberation (Nginx Upload Resolution)**: Cleared all infrastructure bottlenecks on VPS/Nginx environments by successfully mapping `client_max_body_size` up to 100MB+, unlocking unrestricted, ultra-resilient video and reels uploading.
+- **Sovereign Multi-Tier Video Processing and Fast-Stream Copy**: Re-engineered the backend video processor (`videoProcessor.ts`) to support a lightweight, sub-second Fast-Stream Copy route for compliant formats (`MP4`, `MOV`, `WebM`), safely bypassing intensive synchronous ffmpeg transcoding on files larger than 4MB, preventing server-gateway timeouts (504).
+- **HTTP/1.1 Range Requests & 206 Partial Content Verification**: Established standard compliance for video seekability and adaptive streaming with perfect headers (`Accept-Ranges: bytes`, `Content-Range`, `Content-Length`) to prevent connection resets and ensure smooth mobile/PWA reels performance.
+- **Visual Asset System Cleansing**: Purged old, unused assets (like ipad-touch-icon-167, mstile) from the frontend settings view, matching asset configurations perfectly with backend specifications and eliminating unnecessary 404 browser logs.
 - **File Upload & Ingestion Pipeline**: Full 100MB capacity support with strict multi-layer file size validations and resilient PDF parser integrations.
 - **Audited Wallet Ledger & API Credits**: Append-only transaction logging with instant credit check and 402 Insufficient Balance rejection workflows.
 
@@ -187,7 +191,25 @@ All operations strictly interface with the Core Database schema across 10 dedica
 10. `bulletin_reports` & `bulletin_ad_muted_notifications`: Safety moderation and user notification filtering.
 - **Server Routing Pillar (`server/routes/bulletin.ts`)**: 40+ audited RESTful endpoints supporting media streaming, automated moderation cron cleanups (`server/jobs/cron.ts`), wallet debit/refund integrations on rejection or stopping, and WebSocket-driven updates.
 
-#### 4. Strict Adherence & Evolution Directive (أمر صارم وملزم للتطوير المستقبلي)
+#### 4. The Sovereign Ads & Classifieds Platform Revolution - Roadmap (خطة عمل ثورة منصة الإعلانات والتبويبات السيادية لتصبح الأفضل عالمياً)
+To establish Perplexta's ViralBook classified and advertising ecosystem as the absolute global leader, our development roadmap is systematically categorized into five sovereign phases:
+1. **Premium AI Ad Copywriter & Multimedia Assistant (مساعد الذكاء الاصطناعي لكتابة وتصميم الإعلانات)**:
+   - Integrate an in-composer AI copywriter that crafts highly engaging, sales-optimized ad descriptions in Arabic and English based on the item type and target city.
+   - Deploy automated image quality checks and AI-driven background replacement for product photos to make them look studio-grade instantly.
+2. **Hyper-Localized Interactive Mapping & Routing (الاستهداف الجغرافي الذكي والخرائط التفاعلية)**:
+   - Introduce visual map pins for ads utilizing our high-performance Google Maps Platform Integration.
+   - Empower buyers to filter local ads by exact distance radius (e.g., "within 5km of my current location") and view dynamic route directions directly to the seller or store.
+3. **Advanced Interactive Marketplace Suite (مجموعة أدوات المتجر التفاعلي المتقدم للبيع والشراء)**:
+   - **Bidding & Live Auctions (نظام المزايدات والمزادات الحية)**: Enable sellers to mark an ad as an "Auction" with a starting price, bid increment, and automated countdown timers.
+   - **Offer Engine (محرك تقديم العروض)**: Implement a native, secure "Make an Offer" modal allowing buyers to propose alternative pricing, with instant real-time notification to the seller.
+4. **Sovereign Ad Boosting Engine & Merchant Portal (بوابة التجار ونظام تمويل وترقية الإعلانات)**:
+   - Develop a comprehensive Merchant Dashboard (`/merchant-portal`) where business owners can monitor their active ad campaigns, tracking deep analytics: Impression Funnels, Clicks, Conversion CTR, and WhatsApp chat opens.
+   - Introduce customizable promotional badges ("Hot Deal", "Certified Seller", "Price Drop") funded directly from the user's Ledger Wallet balance with append-only auditing.
+5. **Real-time Live Chat & Video Showrooms (المحادثات المباشرة وغرف العرض المرئية)**:
+   - Upgrade the customer-to-business messenger with live audio call support and instant image/video previews directly inside the chat window.
+   - Support short vertical video reels associated with ads (Shoppable Reels), allowing buyers to purchase or inquire with 1-click while watching the video.
+
+#### 5. Strict Adherence & Evolution Directive (أمر صارم وملزم للتطوير المستقبلي)
 - **MANDATORY PRESERVATION OF APPROVED IDENTITY**: Any future developer or AI assistant working on the Bulletin Board is **STRICTLY PROHIBITED** from altering, stripping, or replacing the Facebook-standard layout, the approved color tokens (`SOCIAL_COLORS`), the verified page structure, or the multi-tab navigation model.
 - **ZERO MOCK / SIMULATION ENFORCEMENT**: Never re-introduce simulated response questions, fake metrics, or client-side placeholder counters. Every element must be directly connected to the PostgreSQL schema and the real-time notification engine.
 - **ROLE-ISOLATED OPTIONS MENU**: Post option dropdowns (`PostOptionsMenu.tsx`) MUST strictly distinguish between post owners/admins (full management, audience, comment controls, archive/trash) and guests/non-owners (save, mute notifications, embed, hide, 7-category moderation reporting).

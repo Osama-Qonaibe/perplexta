@@ -499,7 +499,7 @@ export const InteractiveAudioPlayer: React.FC<InteractiveAudioPlayerProps> = ({
             <span className="w-1.5 h-1.5 rounded-shape-full bg-accent animate-ping" />
             {dir === 'rtl' ? styleLabel.ar : styleLabel.en}
           </div>
-          <p className="text-[10px] text-gray-400 font-medium px-1">
+          <p className="text-[10px] text-[var(--text-muted)] font-medium px-1">
             {dir === 'rtl' ? vocalLabel.ar : vocalLabel.en}
           </p>
         </div>
@@ -523,7 +523,7 @@ export const InteractiveAudioPlayer: React.FC<InteractiveAudioPlayerProps> = ({
                 <span className="text-[11px] font-black text-accent uppercase tracking-widest animate-pulse leading-none mb-1">
                   {dir === 'rtl' ? 'جاري التوليف الابتكاري والهندسة الفنية...' : 'SYNTHESIZING & ORCHESTRATING SOUNDWAVE...'}
                 </span>
-                <span className="text-[9px] text-gray-500 font-bold uppercase tracking-widest">
+                <span className="text-[9px] text-[var(--text-muted)] font-bold uppercase tracking-widest">
                   {dir === 'rtl' ? 'جودة فائقة الدقة استوديو 24 بت' : 'ULTRA-RES 24-BIT DIGITAL SIGNAL PROCESSING'}
                 </span>
               </div>
@@ -635,10 +635,10 @@ export const InteractiveAudioPlayer: React.FC<InteractiveAudioPlayerProps> = ({
           <div className="flex items-center gap-2">
             <button 
               onClick={toggleMute}
-              className="w-10 h-10 rounded-shape-sm bg-transparent border border-transparent transition-theme hover:bg-[var(--surface-inset)] flex items-center justify-center text-gray-400 hover:text-accent"
+              className="w-11 h-11 min-w-[44px] min-h-[44px] rounded-shape-sm bg-transparent border border-transparent transition-theme hover:bg-[var(--surface-inset)] flex items-center justify-center text-[var(--text-muted)] hover:text-accent touch-target-44"
               title={isMuted ? (dir === 'rtl' ? 'إلغاء كتم الصوت' : 'Unmute') : (dir === 'rtl' ? 'كتم الصوت' : 'Mute')}
             >
-              <Volume2 size={16} className={isMuted ? 'text-gray-500 line-through' : 'text-accent'} />
+              <Volume2 size={16} className={isMuted ? 'text-[var(--text-muted)] line-through' : 'text-accent'} />
             </button>
 
             <input 

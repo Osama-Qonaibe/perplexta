@@ -175,7 +175,7 @@ export const QuoteShareModal: React.FC<QuoteShareModalProps> = ({
               {invitedPeople.map((person, idx) => (
                 <div key={idx} className="flex items-center justify-between p-2 rounded-[var(--radius-md)] bg-[var(--surface-subtle)]/40 border border-[var(--border-default)]/40">
                   <div className="flex items-center gap-2.5 min-w-0">
-                    <div className="w-8 h-8 rounded-full bg-blue-500/20 border border-blue-500/30 text-blue-500 font-bold text-xs flex items-center justify-center shrink-0">
+                    <div className="w-8 h-8 rounded-full bg-[var(--fg-accent)]/15 border border-[var(--border-accent)]/30 text-[var(--fg-accent)] font-bold text-xs flex items-center justify-center shrink-0">
                       <UserIcon size={14} />
                     </div>
                     <div className="min-w-0 flex-1">
@@ -226,7 +226,7 @@ export const QuoteShareModal: React.FC<QuoteShareModalProps> = ({
                 }`}
               >
                 <div className="flex items-center gap-2.5">
-                  <Globe size={15} className={accessLevel === 'anyone' ? 'text-blue-500' : 'text-[var(--text-muted)]'} />
+                  <Globe size={15} className={accessLevel === 'anyone' ? 'text-[var(--fg-accent)]' : 'text-[var(--text-muted)]'} />
                   <span>{isRtl ? 'أي شخص لديه الرابط يمكنه العرض' : 'Anyone with the link can view'}</span>
                 </div>
                 {accessLevel === 'anyone' && <Check size={16} className="text-emerald-500 shrink-0" />}

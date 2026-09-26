@@ -212,8 +212,8 @@ export const VideoPlaybackComponent = ({ src, dir: propDir, alt, title, ...props
               <div className="h-full bg-accent" style={{ width: `${progress}%` }} />
             </div>
 
-            <div className="flex items-center gap-1.5 font-mono text-[9px] text-gray-400">
-              <span className="text-gray-200">{currentTime.toFixed(0)}s</span>
+            <div className="flex items-center gap-1.5 font-mono text-[9px] text-[var(--text-muted)]">
+              <span className="text-[var(--text-primary)]">{currentTime.toFixed(0)}s</span>
               <span>/</span>
               <span>{duration ? `${duration.toFixed(0)}s` : '5s'}</span>
             </div>
@@ -221,14 +221,14 @@ export const VideoPlaybackComponent = ({ src, dir: propDir, alt, title, ...props
             <div className="flex items-center gap-2">
               <button 
                 onClick={toggleMute}
-                className="w-8 h-8 rounded-shape-sm bg-[var(--surface-card)] border border-[var(--border-default)] text-[var(--text-primary)] hover:text-accent hover:border-accent/35 hover:bg-[var(--surface-subtle)] transition-theme flex items-center justify-center cursor-pointer active:scale-95 shadow-md"
+                className="w-8 h-8 rounded-shape-sm bg-[var(--surface-card)] border border-[var(--border-default)] text-[var(--text-primary)] hover:text-accent hover:border-accent/35 hover:bg-[var(--surface-subtle)] transition-theme flex items-center justify-center cursor-pointer active:scale-95 shadow-md relative before:absolute before:-inset-1.5 before:content-['']"
                 title={isMuted ? (dir === 'rtl' ? 'إلغاء الكتم' : 'Unmute') : (dir === 'rtl' ? 'كتم الصوت' : 'Mute')}
               >
-                {isMuted ? <VolumeX size={13} className="text-gray-400" /> : <Volume2 size={13} />}
+                {isMuted ? <VolumeX size={13} className="text-[var(--text-muted)]" /> : <Volume2 size={13} />}
               </button>
               <button 
                 onClick={() => setIsPreviewOpen(true)}
-                className="w-8 h-8 rounded-shape-sm bg-[var(--surface-card)] border border-[var(--border-default)] text-[var(--text-primary)] hover:text-accent hover:border-accent/35 hover:bg-[var(--surface-subtle)] transition-theme flex items-center justify-center cursor-pointer active:scale-95 shadow-md"
+                className="w-8 h-8 rounded-shape-sm bg-[var(--surface-card)] border border-[var(--border-default)] text-[var(--text-primary)] hover:text-accent hover:border-accent/35 hover:bg-[var(--surface-subtle)] transition-theme flex items-center justify-center cursor-pointer active:scale-95 shadow-md relative before:absolute before:-inset-1.5 before:content-['']"
                 title={dir === 'rtl' ? 'ملء الشاشة' : 'Fullscreen'}
               >
                 <Maximize2 size={13} />
@@ -283,21 +283,21 @@ export const VideoPlaybackComponent = ({ src, dir: propDir, alt, title, ...props
                   <span className="text-[11px] font-bold text-accent/90 tracking-widest uppercase font-mono">
                     {dir === 'rtl' ? 'عرض السينما الفائقة من بيربليكستا' : 'PERPLEXTA CINEMATIC PRO PREVIEW'}
                   </span>
-                  <span className="text-[10px] text-gray-400 font-medium font-sans">
+                  <span className="text-[10px] text-[var(--text-muted)] font-medium font-sans">
                     {dir === 'rtl' ? 'مخرجات آلة توليد الفيديو المتكاملة بدقة ووضوح فائقين' : 'Engineered high-fidelity video production container'}
                   </span>
                 </div>
                 <div className="flex items-center gap-2">
                   <button
                     onClick={handleDownload}
-                    className="w-10 h-10 rounded-shape-sm bg-[var(--surface-card)] border border-[var(--border-default)] text-[var(--text-primary)] hover:text-accent hover:border-accent/40 hover:bg-[var(--surface-subtle)] transition-theme flex items-center justify-center cursor-pointer shadow-lg active:scale-95"
+                    className="w-11 h-11 min-w-[44px] min-h-[44px] rounded-shape-sm bg-[var(--surface-card)] border border-[var(--border-default)] text-[var(--text-primary)] hover:text-accent hover:border-accent/40 hover:bg-[var(--surface-subtle)] transition-theme flex items-center justify-center cursor-pointer shadow-lg active:scale-95 touch-target-44"
                     title={dir === 'rtl' ? 'تنزيل' : 'Download'}
                   >
                     <Download size={15} />
                   </button>
                   <button
                     onClick={handleShare}
-                    className="w-10 h-10 rounded-shape-sm bg-[var(--surface-card)] border border-[var(--border-default)] text-[var(--text-primary)] hover:text-accent hover:border-accent/40 hover:bg-[var(--surface-subtle)] transition-theme flex items-center justify-center cursor-pointer shadow-lg active:scale-95"
+                    className="w-11 h-11 min-w-[44px] min-h-[44px] rounded-shape-sm bg-[var(--surface-card)] border border-[var(--border-default)] text-[var(--text-primary)] hover:text-accent hover:border-accent/40 hover:bg-[var(--surface-subtle)] transition-theme flex items-center justify-center cursor-pointer shadow-lg active:scale-95 touch-target-44"
                     title={dir === 'rtl' ? 'مشاركة' : 'Share'}
                   >
                     <Share2 size={15} />

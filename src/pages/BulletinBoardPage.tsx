@@ -4407,7 +4407,7 @@ export const BulletinBoardPage: React.FC = () => {
                           <div className="mb-1 min-w-0">
                             <div className="flex items-center gap-1.5 min-w-0">
                               <h3 className="text-base sm:text-lg font-extrabold text-[var(--text-primary)] truncate hover:text-accent transition-colors">{page.name}</h3>
-                              <CheckCircle2 size={16} className="text-blue-500 shrink-0" />
+                              <CheckCircle2 size={16} className="text-[var(--fg-accent)] shrink-0" />
                             </div>
                             <div className="flex items-center gap-2 text-xs text-[var(--text-muted)]">
                               <span className="flex items-center gap-1"><MapPin size={12} className="text-accent" /> {page.city}</span>
@@ -4801,7 +4801,7 @@ export const BulletinBoardPage: React.FC = () => {
                           <div className="min-w-0">
                             <div className="flex items-center gap-1">
                               <h4 className="text-xs font-bold text-[var(--text-primary)] group-hover:text-accent transition-colors truncate">{page.name}</h4>
-                              <CheckCircle2 size={12} className="text-blue-500 shrink-0" />
+                              <CheckCircle2 size={12} className="text-[var(--fg-accent)] shrink-0" />
                             </div>
                             <p className="text-[10px] text-[var(--text-muted)] truncate">{page.city} • {page.followers_count} {isRtl ? 'متابع' : 'followers'}</p>
                           </div>
@@ -5364,8 +5364,8 @@ export const BulletinBoardPage: React.FC = () => {
                   <div className="space-y-2">
                     <div className="flex flex-wrap items-center gap-2">
                       <h2 className="text-xl sm:text-2xl font-extrabold">{selectedPageDetail.page.name}</h2>
-                      <CheckCircle2 size={20} className="text-blue-500 shrink-0" />
-                      <span className="px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-blue-500/10 text-blue-500 border border-blue-500/20">
+                      <CheckCircle2 size={20} className="text-[var(--fg-accent)] shrink-0" />
+                      <span className="px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-[var(--bg-accent-muted)] text-[var(--fg-accent)] border border-[var(--border-accent)]/30">
                         {isRtl ? 'صفحة تجارية موثقة' : 'Commercial Page'}
                       </span>
                     </div>
@@ -6004,7 +6004,7 @@ export const BulletinBoardPage: React.FC = () => {
                           <select
                             value={String(adFormData.page_id || '')}
                             onChange={(e) => setAdFormData({ ...adFormData, page_id: e.target.value })}
-                            className="appearance-none text-[10px] font-bold ps-2 pe-4 py-0.5 h-6 rounded-md bg-[var(--surface-subtle)] text-[var(--text-secondary)] hover:bg-[var(--surface-inset)] border border-[var(--border-default)]/70 transition-colors cursor-pointer outline-none max-w-[110px] truncate"
+                            className="appearance-none text-[10px] font-bold ps-2 pe-4 py-0.5 h-6 rounded-shape-xs bg-[var(--surface-subtle)] text-[var(--text-secondary)] hover:bg-[var(--surface-inset)] border border-[var(--border-default)]/70 transition-colors cursor-pointer outline-none max-w-[110px] truncate relative before:absolute before:-inset-2 before:content-['']"
                           >
                             <option value="">{isRtl ? 'شخصي' : 'Personal'}</option>
                             {myPagesList.map((p) => (
@@ -6019,7 +6019,7 @@ export const BulletinBoardPage: React.FC = () => {
                       <button
                         type="button"
                         onClick={() => setIsAudienceModalOpen(true)}
-                        className="shrink-0 inline-flex items-center gap-1 px-1.5 py-0.5 h-6 rounded-md bg-[var(--surface-subtle)] text-[var(--text-secondary)] hover:bg-[var(--surface-inset)] border border-[var(--border-default)]/70 transition-colors cursor-pointer"
+                        className="shrink-0 inline-flex items-center gap-1 px-1.5 py-0.5 h-6 rounded-shape-xs bg-[var(--surface-subtle)] text-[var(--text-secondary)] hover:bg-[var(--surface-inset)] border border-[var(--border-default)]/70 transition-colors cursor-pointer relative before:absolute before:-inset-2 before:content-['']"
                         title={
                           adFormData.audience === 'friends'
                             ? (isRtl ? 'الأصدقاء' : 'Friends')
@@ -6029,7 +6029,7 @@ export const BulletinBoardPage: React.FC = () => {
                         }
                       >
                         {adFormData.audience === 'friends' ? (
-                          <Users size={12} className="text-blue-500 shrink-0" />
+                          <Users size={12} className="text-[var(--fg-accent)] shrink-0" />
                         ) : adFormData.audience === 'only_me' ? (
                           <Lock size={12} className="text-amber-500 shrink-0" />
                         ) : (
@@ -6047,42 +6047,42 @@ export const BulletinBoardPage: React.FC = () => {
                             ad_format: prev.ad_format === 'post' ? 'reel' : prev.ad_format === 'reel' ? 'story' : 'post'
                           }));
                         }}
-                        className="shrink-0 inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 h-6 rounded-md bg-indigo-500/10 text-indigo-500 hover:bg-indigo-500/15 border border-indigo-500/20 transition-colors cursor-pointer"
+                        className="shrink-0 inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 h-6 rounded-shape-xs bg-[var(--bg-accent-muted)] text-[var(--fg-accent)] hover:opacity-90 border border-[var(--border-accent)]/30 transition-colors cursor-pointer relative before:absolute before:-inset-2 before:content-['']"
                         title={isRtl ? 'تغيير التنسيق' : 'Change format'}
                       >
-                        <Clapperboard size={11} className="shrink-0 text-indigo-500" />
+                        <Clapperboard size={11} className="shrink-0 text-[var(--fg-accent)]" />
                         <span>
                           {adFormData.ad_format === 'reel' ? (isRtl ? 'ريلز' : 'Reel') :
                            adFormData.ad_format === 'story' ? (isRtl ? 'قصة' : 'Story') :
                            (isRtl ? 'منشور' : 'Post')}
                         </span>
-                        <ChevronDown size={10} className="text-indigo-400" />
+                        <ChevronDown size={10} className="text-[var(--fg-accent)]/70" />
                       </button>
 
                       {/* 4. AI Tag Toggle (AI label only) */}
                       <button
                         type="button"
                         onClick={() => setAdFormData(prev => ({ ...prev, is_ai_generated: !prev.is_ai_generated }))}
-                        className={`shrink-0 inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 h-6 rounded-md transition-colors cursor-pointer border ${
+                        className={`shrink-0 inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 h-6 rounded-shape-xs transition-colors cursor-pointer border relative before:absolute before:-inset-2 before:content-[''] ${
                           adFormData.is_ai_generated
-                            ? 'bg-purple-500/15 text-purple-500 border-purple-500/30'
+                            ? 'bg-[var(--bg-accent-muted)] text-[var(--fg-accent)] border-[var(--border-accent)]/40'
                             : 'bg-[var(--surface-subtle)] text-[var(--text-muted)] hover:bg-[var(--surface-inset)] border-[var(--border-default)]/70'
                         }`}
                         title={isRtl ? 'محتوى مُنشأ بالذكاء الاصطناعي' : 'AI generated content'}
                       >
-                        <Sparkles size={11} className={adFormData.is_ai_generated ? 'text-purple-500' : 'text-[var(--text-muted)]'} />
+                        <Sparkles size={11} className={adFormData.is_ai_generated ? 'text-[var(--fg-accent)]' : 'text-[var(--text-muted)]'} />
                         <span>AI</span>
                       </button>
 
                       {/* 5. Location Tag / Button (Icon only or compact city badge) */}
                       {adFormData.location_city ? (
-                        <span className="shrink-0 inline-flex items-center gap-1 text-[10px] font-bold px-1.5 py-0.5 h-6 rounded-md bg-rose-500/15 text-rose-500 border border-rose-500/30">
+                        <span className="shrink-0 inline-flex items-center gap-1 text-[10px] font-bold px-1.5 py-0.5 h-6 rounded-shape-xs bg-rose-500/15 text-rose-500 border border-rose-500/30 relative before:absolute before:-inset-2 before:content-['']">
                           <MapPin size={10} className="shrink-0" />
                           <span className="truncate max-w-[80px]">{adFormData.location_city}</span>
                           <button
                             type="button"
                             onClick={() => setAdFormData(prev => ({ ...prev, location_city: '' }))}
-                            className="hover:text-red-500 transition-colors cursor-pointer ms-0.5"
+                            className="hover:text-red-500 transition-colors cursor-pointer ms-0.5 p-0.5"
                           >
                             <X size={10} />
                           </button>
@@ -6091,7 +6091,7 @@ export const BulletinBoardPage: React.FC = () => {
                         <button
                           type="button"
                           onClick={() => setComposerView('location')}
-                          className="shrink-0 inline-flex items-center gap-1 text-[10px] font-bold px-1.5 py-0.5 h-6 rounded-md bg-[var(--surface-subtle)] text-[var(--text-muted)] hover:bg-[var(--surface-inset)] border border-[var(--border-default)]/70 transition-colors cursor-pointer"
+                          className="shrink-0 inline-flex items-center gap-1 text-[10px] font-bold px-1.5 py-0.5 h-6 rounded-shape-xs bg-[var(--surface-subtle)] text-[var(--text-muted)] hover:bg-[var(--surface-inset)] border border-[var(--border-default)]/70 transition-colors cursor-pointer relative before:absolute before:-inset-2 before:content-['']"
                           title={isRtl ? 'إضافة موقع' : 'Add location'}
                         >
                           <MapPin size={11} className="shrink-0 text-rose-500" />
@@ -6100,13 +6100,13 @@ export const BulletinBoardPage: React.FC = () => {
 
                       {/* Active Feeling Tag (if selected) */}
                       {adFormData.feeling && (
-                        <span className="shrink-0 inline-flex items-center gap-1 text-[10px] font-bold px-1.5 py-0.5 h-6 rounded-md bg-amber-500/15 text-amber-500 border border-amber-500/30">
+                        <span className="shrink-0 inline-flex items-center gap-1 text-[10px] font-bold px-1.5 py-0.5 h-6 rounded-shape-xs bg-amber-500/15 text-amber-500 border border-amber-500/30 relative before:absolute before:-inset-2 before:content-['']">
                           <span>{FEELINGS.find(f => f.id === adFormData.feeling)?.icon}</span>
                           <span className="truncate max-w-[70px]">{isRtl ? FEELINGS.find(f => f.id === adFormData.feeling)?.labelAr : FEELINGS.find(f => f.id === adFormData.feeling)?.labelEn}</span>
                           <button
                             type="button"
                             onClick={() => setAdFormData(prev => ({ ...prev, feeling: '' }))}
-                            className="hover:text-red-500 transition-colors cursor-pointer"
+                            className="hover:text-red-500 transition-colors cursor-pointer p-0.5"
                           >
                             <X size={10} />
                           </button>

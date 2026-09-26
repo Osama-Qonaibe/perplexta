@@ -96,7 +96,7 @@ export const CoverFrameSelector: React.FC<CoverFrameSelectorProps> = ({
   }, [videoUrl, imageUrl, duration]);
 
   return (
-    <div className={`flex flex-col gap-2 p-3 rounded-2xl bg-[var(--surface-card)] border border-[var(--border-default)] shadow-xs ${className}`}>
+    <div className={`flex flex-col gap-2 p-3 rounded-shape-lg bg-[var(--surface-card)] border border-[var(--border-default)] shadow-xs ${className}`}>
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-1.5 text-xs font-bold text-[var(--text-primary)]">
           <ImageIcon size={14} className="text-[var(--accent-foreground)]" />
@@ -119,7 +119,7 @@ export const CoverFrameSelector: React.FC<CoverFrameSelectorProps> = ({
               key={idx}
               type="button"
               onClick={() => onSelectTimestamp(frame.timestamp, frame.dataUrl)}
-              className={`relative shrink-0 w-12 h-16 rounded-lg overflow-hidden border-2 transition-all duration-150 cursor-pointer ${
+              className={`relative shrink-0 w-12 h-16 rounded-shape-xs overflow-hidden border-2 transition-all duration-150 cursor-pointer ${
                 isSelected
                   ? 'border-[var(--accent-foreground)] shadow-xs scale-105 ring-2 ring-[var(--accent-foreground)]/30'
                   : 'border-transparent opacity-75 hover:opacity-100 hover:scale-102'
@@ -142,7 +142,7 @@ export const CoverFrameSelector: React.FC<CoverFrameSelectorProps> = ({
         })}
 
         {frames.length === 0 && !isGenerating && (
-          <div className="w-full py-3 text-center text-xs text-[var(--text-muted)] bg-[var(--surface-subtle)] rounded-lg border border-dashed border-[var(--border-default)]">
+          <div className="w-full py-3 text-center text-xs text-[var(--text-muted)] bg-[var(--surface-subtle)] rounded-shape-xs border border-dashed border-[var(--border-default)]">
             {isRtl ? 'لا توجد لقطات متاحة' : 'No frames available'}
           </div>
         )}

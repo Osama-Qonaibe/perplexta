@@ -18,14 +18,27 @@ export function csrfProtection(req: Request, res: Response, next: NextFunction) 
     return res.status(403).json({ error: 'CSRF protection: State-changing requests must include an Origin, Referer, or Authorization header.' });
   }
 
-  // Allow trusted native mobile and desktop wrapper schemes (Capacitor, Ionic, Cordova, Electron, Chrome extensions)
+  // Allow trusted native mobile wrappers (Capacitor, Ionic)
   const isNativeScheme = origin.startsWith('capacitor://') || 
-                         origin.startsWith('ionic://') || 
-                         origin.startsWith('app://') || 
-                         origin.startsWith('chrome-extension://');
+                         origin.startsWith('ionic://');
 
   if (isNativeScheme) {
     return next();
+  }
+
+  // Chrome extensions: allow only if explicitly whitelisted in env or accompanied by custom anti-CSRF token
+  if (origin.startsWith('chrome-extension://')) {
+    const allowedExtensions = process.env.ALLOWED_CHROME_EXTENSION_IDS 
+      ? process.env.ALLOWED_CHROME_EXTENSION_IDS.split(',').map(s => s.trim()) 
+      : [];
+    const extensionId = origin.replace('chrome-extension://', '').split('/')[0];
+    if (allowedExtensions.length > 0 && allowedExtensions.includes(extensionId)) {
+      return next();
+    }
+    if (req.headers['x-csrf-token'] || req.headers['authorization']) {
+      return next();
+    }
+    return res.status(403).json({ error: 'CSRF protection: Untrusted browser extension origin blocked.' });
   }
 
   if (process.env.NODE_ENV === 'production') {

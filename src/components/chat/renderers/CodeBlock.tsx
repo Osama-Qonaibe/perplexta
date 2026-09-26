@@ -593,7 +593,7 @@ export const CodeBlock: React.FC<CodeBlockProps> = ({
       <code 
         dir="ltr" 
         style={{ direction: 'ltr', unicodeBidi: 'isolate', textAlign: 'left' }} 
-        className={`inline-block mx-0.5 px-1.5 py-0.5 rounded-md bg-[var(--surface-subtle)] dark:bg-[var(--surface-code)] border border-[var(--border-default)] dark:border-slate-800/80 text-xs font-mono text-[var(--fg-accent)]  font-semibold dir-ltr text-left ${className || ''}`}
+        className={`inline-block mx-0.5 px-1.5 py-0.5 rounded-shape-xs bg-[var(--surface-subtle)] border border-[var(--border-default)] text-xs font-mono text-[var(--fg-accent)] font-semibold dir-ltr text-left ${className || ''}`}
       >
         {children}
       </code>

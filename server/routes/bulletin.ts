@@ -2135,13 +2135,17 @@ router.post('/ads', authenticateToken, async (req: any, res) => {
       authorUsername = (userRow?.email ? userRow.email.split('@')[0] : null) || userRow?.name?.toLowerCase().replace(/[^\w\u0600-\u06FF]/g, '') || 'user';
     }
 
+    const normMediaUrls = normGallery.length > 0
+      ? normGallery.map(i => i.url)
+      : (finalImageUrl ? finalImageUrl.split(',').map(u => u.trim()).filter(Boolean) : []);
+
     const insertRes = await pool.query(`
       INSERT INTO bulletin_ads (
         user_id, page_id, location_city, author_name, author_avatar, title, description, image_url,
         whatsapp_number, phone_number, video_url, target_url, hashtags, category, price_paid, duration_days, status,
         feeling, is_ai_generated, tagged_users, has_whatsapp_button, audience, ad_format, quick_questions, expires_at, aspect_ratio, metadata,
-        post_code, author_username, audio_url, audio_title, audio_artist, audio_track_id
-      ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, 0, 0, 'approved', $15, $16, $17, $18, $19, $20, $21, $22, $23, $24, $25, $26, $27, $28, $29, $30)
+        post_code, author_username, audio_url, audio_title, audio_artist, audio_track_id, media_urls
+      ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, 0, 0, 'approved', $15, $16, $17, $18, $19, $20, $21, $22, $23, $24, $25, $26, $27, $28, $29, $30, $31)
       RETURNING *
     `, [
       userId,
@@ -2173,7 +2177,8 @@ router.post('/ads', authenticateToken, async (req: any, res) => {
       audio_url || null,
       audio_title || null,
       audio_artist || null,
-      audio_track_id || null
+      audio_track_id || null,
+      JSON.stringify(normMediaUrls)
     ]);
 
     const createdAd = insertRes.rows[0];
@@ -2430,8 +2435,8 @@ router.post('/stories', authenticateToken, async (req: any, res) => {
       INSERT INTO bulletin_ads (
         user_id, page_id, author_name, author_avatar, title, description,
         image_url, video_url, category, status, ad_format, expires_at, created_at, location_city, metadata,
-        audio_url, audio_track_id
-      ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, 'عام / General', 'approved', 'story', $9, NOW(), 'فلسطين', $10, $11, $12)
+        audio_url, audio_track_id, media_urls
+      ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, 'عام / General', 'approved', 'story', $9, NOW(), 'فلسطين', $10, $11, $12, $13)
       RETURNING *
     `, [
       userId,
@@ -2445,7 +2450,8 @@ router.post('/stories', authenticateToken, async (req: any, res) => {
       expiresAt,
       JSON.stringify(storyMetadata),
       audio_url || null,
-      audio_track_id || null
+      audio_track_id || null,
+      JSON.stringify(finalImageUrl ? [finalImageUrl] : [])
     ]);
 
     const createdStory = insertRes.rows[0];
@@ -5272,6 +5278,10 @@ router.put('/ads/:id', authenticateToken, async (req: any, res) => {
       media_gallery: normGallery.length > 0 ? normGallery : (media_gallery !== undefined ? undefined : existingMetadata.media_gallery)
     };
 
+    const editMediaUrls = normGallery.length > 0
+      ? normGallery.map(i => i.url)
+      : (normEditImg ? normEditImg.split(',').map(u => u.trim()).filter(Boolean) : []);
+
     const updateRes = await pool.query(`
       UPDATE bulletin_ads
       SET title = $1,
@@ -5288,8 +5298,9 @@ router.put('/ads/:id', authenticateToken, async (req: any, res) => {
           quick_questions = $12,
           aspect_ratio = $13,
           metadata = $14,
+          media_urls = $15,
           updated_at = NOW()
-      WHERE id = $15
+      WHERE id = $16
       RETURNING *
     `, [
       title.trim(),
@@ -5306,6 +5317,7 @@ router.put('/ads/:id', authenticateToken, async (req: any, res) => {
       JSON.stringify((quick_questions || []).filter(Boolean)),
       aspect_ratio || 'grid',
       JSON.stringify(updatedMetadata),
+      JSON.stringify(editMediaUrls),
       adId
     ]);
 

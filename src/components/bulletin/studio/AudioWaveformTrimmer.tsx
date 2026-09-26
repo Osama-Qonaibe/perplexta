@@ -181,7 +181,7 @@ export const AudioWaveformTrimmer: React.FC<AudioWaveformTrimmerProps> = ({
 
   if (!track) {
     return (
-      <div className={`p-4 rounded-xl border border-dashed border-[var(--border-default)] bg-[var(--surface-subtle)] text-center text-xs text-[var(--text-muted)] flex flex-col items-center gap-1.5 ${className}`}>
+      <div className={`p-4 rounded-shape-sm border border-dashed border-[var(--border-default)] bg-[var(--surface-subtle)] text-center text-xs text-[var(--text-muted)] flex flex-col items-center gap-1.5 ${className}`}>
         <Music size={20} className="text-[var(--text-muted)]" />
         <span>{isRtl ? 'لم يتم اختيار موسيقى بعد' : 'No music track selected'}</span>
       </div>
@@ -198,7 +198,7 @@ export const AudioWaveformTrimmer: React.FC<AudioWaveformTrimmerProps> = ({
   const widthPercent = (sliceDuration / totalTrackDuration) * 100;
 
   return (
-    <div className={`flex flex-col gap-2 p-3 rounded-2xl bg-[var(--surface-card)] border border-[var(--border-default)] shadow-xs select-none ${className}`}>
+    <div className={`flex flex-col gap-2 p-3 rounded-shape-lg bg-[var(--surface-card)] border border-[var(--border-default)] shadow-xs select-none ${className}`}>
       {/* Hidden preview audio */}
       <audio
         ref={audioPreviewRef}
@@ -213,10 +213,10 @@ export const AudioWaveformTrimmer: React.FC<AudioWaveformTrimmerProps> = ({
           <button
             type="button"
             onClick={togglePlaySlice}
-            className={`w-7 h-7 rounded-lg flex items-center justify-center shrink-0 transition-all cursor-pointer ${
+            className={`w-7 h-7 rounded-shape-xs flex items-center justify-center shrink-0 transition-all cursor-pointer relative before:absolute before:-inset-2 before:content-[''] ${
               isPlayingSlice
-                ? 'bg-purple-600 text-white shadow-xs animate-pulse'
-                : 'bg-purple-500/15 hover:bg-purple-500/25 text-purple-400'
+                ? 'bg-accent text-white shadow-xs animate-pulse'
+                : 'bg-accent/15 hover:bg-accent/25 text-accent'
             }`}
             title={isPlayingSlice ? (isRtl ? 'إيقاف' : 'Pause') : (isRtl ? 'استماع للمقطع' : 'Preview Slice')}
             aria-label={isPlayingSlice ? (isRtl ? 'إيقاف' : 'Pause') : (isRtl ? 'استماع للمقطع' : 'Preview Slice')}
@@ -230,7 +230,7 @@ export const AudioWaveformTrimmer: React.FC<AudioWaveformTrimmerProps> = ({
         </div>
 
         <div className="flex items-center gap-1.5 shrink-0">
-          <span className="text-[10px] font-mono font-bold px-1.5 py-0.5 rounded-md bg-purple-500/10 text-purple-400 border border-purple-500/20">
+          <span className="text-[10px] font-mono font-bold px-1.5 py-0.5 rounded-shape-xs bg-accent/15 text-accent border border-[var(--border-accent)]/30">
             {formatSec(sliceStart)} - {formatSec(sliceStart + sliceDuration)} ({Math.round(sliceDuration)}s)
           </span>
           <button
@@ -239,7 +239,7 @@ export const AudioWaveformTrimmer: React.FC<AudioWaveformTrimmerProps> = ({
               setSliceStart(0);
               onChangeSeekStart(0);
             }}
-            className="p-1 text-[var(--text-muted)] hover:text-[var(--text-primary)] hover:bg-[var(--surface-subtle)] rounded-md transition-colors cursor-pointer"
+            className="p-1 text-[var(--text-muted)] hover:text-[var(--text-primary)] hover:bg-[var(--surface-subtle)] rounded-shape-xs transition-colors cursor-pointer relative before:absolute before:-inset-1.5 before:content-['']"
             title={isRtl ? 'إعادة ضبط للبداية' : 'Reset to start'}
             aria-label={isRtl ? 'إعادة ضبط للبداية' : 'Reset to start'}
           >
@@ -253,13 +253,13 @@ export const AudioWaveformTrimmer: React.FC<AudioWaveformTrimmerProps> = ({
         ref={containerRef}
         onMouseDown={handleMouseDown}
         onTouchStart={handleTouchStart}
-        className="relative h-12 w-full bg-[var(--surface-subtle)] rounded-xl overflow-hidden cursor-ew-resize border border-[var(--border-default)] touch-none flex items-center"
+        className="relative h-12 w-full bg-[var(--surface-subtle)] rounded-shape-sm overflow-hidden cursor-ew-resize border border-[var(--border-default)] touch-none flex items-center"
       >
         <canvas ref={canvasRef} className="w-full h-full block" />
 
         {/* Visual Selection Slider Box */}
         <div
-          className="absolute top-0 bottom-0 border-2 border-purple-500 bg-purple-500/20 rounded-lg pointer-events-none transition-[left] duration-75 shadow-xs flex items-center justify-between px-1"
+          className="absolute top-0 bottom-0 border-2 border-accent bg-accent/20 rounded-shape-xs pointer-events-none transition-[left] duration-75 shadow-xs flex items-center justify-between px-1"
           style={{
             left: `${startPercent}%`,
             width: `${Math.min(100 - startPercent, widthPercent)}%`

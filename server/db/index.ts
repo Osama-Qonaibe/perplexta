@@ -274,6 +274,13 @@ function handleIdleClientError(poolName: string, err: any) {
   console.error(`[DB] Idle ${poolName} client error:`, err?.message || msg);
 }
 
+export function isQuotaExceededError(err: any): boolean {
+  if (!err) return false;
+  const msg = (err?.message || String(err)).toLowerCase();
+  const code = String(err?.code || '');
+  return code === '53000' || /quota|exceeded the quota|exceeded the data transfer|upgrade your plan/i.test(msg);
+}
+
 function patchPoolQuery(p: any) {
   if (!p || p._queryPatched) return p;
   const originalQuery = p.query.bind(p);
@@ -285,7 +292,7 @@ function patchPoolQuery(p: any) {
         return await originalQuery(text, params);
       } catch (err: any) {
         const msg = err?.message || String(err);
-        const isQuotaExceeded = /quota|data transfer quota|exceeded the data transfer/i.test(msg);
+        const isQuotaExceeded = isQuotaExceededError(err);
         const isTransient = !isQuotaExceeded && /Connection terminated unexpectedly|ECONNRESET|ETIMEDOUT|terminating connection|closed|SSL|too many connections|connection slots reserved|remaining connection slots reserved|timeout/i.test(msg);
         if (isTransient && attempt < maxRetries) {
           const jitter = Math.floor(Math.random() * 300);
@@ -490,7 +497,7 @@ export async function initializePerplextaPools(
       const normSecurityUrl = normalizeDatabaseUrl(finalSecurityUrl);
       const normMediaUrl    = normalizeDatabaseUrl(finalMediaUrl);
 
-      const newPool = patchPoolQuery(new Pool({
+      let newPool = patchPoolQuery(new Pool({
         connectionString: normCoreUrl,
         ...getBasePoolConfig(finalCoreMax, 15000, normCoreUrl),
       }));
@@ -544,7 +551,7 @@ export async function initializePerplextaPools(
                   settled = true;
                   clearTimeout(timer);
                   const msg = e?.message || String(e);
-                  if (msg.includes('password authentication failed') || msg.includes('does not exist') || msg.includes('ECONNREFUSED')) {
+                  if (msg.includes('password authentication failed') || msg.includes('does not exist') || msg.includes('ECONNREFUSED') || isQuotaExceededError(e)) {
                     fatalErr = msg;
                   }
                   resolve(false);
@@ -569,7 +576,27 @@ export async function initializePerplextaPools(
         return false;
       };
 
-      const coreOk = await verify(newPool, 'Core DB', 3);
+      let coreOk = await verify(newPool, 'Core DB', 2);
+      if (!coreOk && process.env.EXTERNAL_DATABASE_URL && effectiveCoreUrl !== process.env.EXTERNAL_DATABASE_URL && !isPlaceholderOrUnreachableUrl(process.env.EXTERNAL_DATABASE_URL)) {
+        console.warn(`[DB Failover] ⚠️ Core DB (${redactUrl(effectiveCoreUrl)}) failed check. Testing failover to active External database (${redactUrl(process.env.EXTERNAL_DATABASE_URL)})...`);
+        const failoverUrl = normalizeDatabaseUrl(process.env.EXTERNAL_DATABASE_URL);
+        const failoverPool = patchPoolQuery(new Pool({
+          connectionString: failoverUrl,
+          ...getBasePoolConfig(finalCoreMax, 15000, failoverUrl),
+        }));
+        failoverPool.on('error', (e: any) => handleIdleClientError('core-failover', e));
+        const failoverOk = await verify(failoverPool, 'Failover Core DB', 2);
+        if (failoverOk) {
+          console.log('[DB Failover] ✅ Successfully activated healthy failover database as Core DB.');
+          try { await newPool.end(); } catch {}
+          newPool = failoverPool;
+          effectiveCoreUrl = process.env.EXTERNAL_DATABASE_URL;
+          coreOk = true;
+        } else {
+          try { await failoverPool.end(); } catch {}
+        }
+      }
+
       if (coreOk) {
         console.log('[DB] Core DB connection verified.');
         // Safe swap
@@ -598,7 +625,11 @@ export async function initializePerplextaPools(
 
       if (rawLedgerPool !== rawPool) {
         if (isPlaceholderOrUnreachableUrl(finalLedgerUrl) || !await verify(rawLedgerPool, 'Ledger DB', 2)) {
-          console.warn('[DB] Ledger DB unreachable or placeholder — falling back to Core pool.');
+          if (process.env.STRICT_DB_SEGREGATION === 'true') {
+            resetPoolsToDegradedMode();
+            throw new Error('[DB FATAL] STRICT_DB_SEGREGATION is active: Ledger DB is unreachable or misconfigured. Silent fallback to Core pool is prohibited.');
+          }
+          console.warn('[DB ARCHITECTURE ALERT] ⚠️ Ledger DB unreachable or placeholder — falling back to Core pool. (To strictly forbid fallback, enable STRICT_DB_SEGREGATION=true).');
           const oldLedger = rawLedgerPool;
           rawLedgerPool = rawPool;
           currentLedgerUrl = currentCoreUrl;
@@ -618,7 +649,13 @@ export async function initializePerplextaPools(
             } catch {}
           }
         }
-      } else { console.log('[DB] Ledger DB sharing Core pool.'); }
+      } else { 
+        if (process.env.STRICT_DB_SEGREGATION === 'true') {
+          resetPoolsToDegradedMode();
+          throw new Error('[DB FATAL] STRICT_DB_SEGREGATION is active: Ledger DB URL is identical to or sharing Core pool. Absolute separation is required.');
+        }
+        console.log('[DB] Ledger DB sharing Core pool (Unified Mode).'); 
+      }
 
       if (rawExternalPool !== rawPool) {
         if (isPlaceholderOrUnreachableUrl(finalExternalUrl) || !await verify(rawExternalPool, 'External DB', 2)) {
@@ -646,7 +683,11 @@ export async function initializePerplextaPools(
 
       if (rawSecurityPool !== rawPool) {
         if (isPlaceholderOrUnreachableUrl(finalSecurityUrl) || !await verify(rawSecurityPool, 'Security DB', 2)) {
-          console.warn('[DB] Security DB unreachable or placeholder — falling back to Core pool.');
+          if (process.env.STRICT_DB_SEGREGATION === 'true') {
+            resetPoolsToDegradedMode();
+            throw new Error('[DB FATAL] STRICT_DB_SEGREGATION is active: Security DB is unreachable or misconfigured. Silent fallback to Core pool is prohibited.');
+          }
+          console.warn('[DB ARCHITECTURE ALERT] ⚠️ Security DB unreachable or placeholder — falling back to Core pool. (To strictly forbid fallback, enable STRICT_DB_SEGREGATION=true).');
           const oldSecurity = rawSecurityPool;
           rawSecurityPool = rawPool;
           currentSecurityUrl = currentCoreUrl;
@@ -666,7 +707,13 @@ export async function initializePerplextaPools(
             } catch {}
           }
         }
-      } else { console.log('[DB] Security DB sharing Core pool.'); }
+      } else { 
+        if (process.env.STRICT_DB_SEGREGATION === 'true') {
+          resetPoolsToDegradedMode();
+          throw new Error('[DB FATAL] STRICT_DB_SEGREGATION is active: Security DB URL is identical to or sharing Core pool. Absolute separation is required.');
+        }
+        console.log('[DB] Security DB sharing Core pool (Unified Mode).'); 
+      }
 
       if (rawMediaPool !== rawPool) {
         if (isPlaceholderOrUnreachableUrl(finalMediaUrl) || !await verify(rawMediaPool, 'Media DB', 2)) {
@@ -730,7 +777,7 @@ export async function synchronizePerplextaPoolsFromRegistry() {
       process.env.EXTERNAL_DATABASE_URL,
       process.env.MEDIA_DATABASE_URL
     );
-    const rawDefaultCore  = process.env.DATABASE_URL || '';
+    const rawDefaultCore  = currentCoreUrl || process.env.DATABASE_URL || '';
     const defaultCore     = (isPlaceholderOrUnreachableUrl(rawDefaultCore) || !rawDefaultCore) && detectedCloudDb ? detectedCloudDb : rawDefaultCore;
     const defaultLedger   = (process.env.LEDGER_DATABASE_URL && !isPlaceholderOrUnreachableUrl(process.env.LEDGER_DATABASE_URL)) ? process.env.LEDGER_DATABASE_URL : defaultCore;
     const defaultExternal = (process.env.EXTERNAL_DATABASE_URL && !isPlaceholderOrUnreachableUrl(process.env.EXTERNAL_DATABASE_URL)) ? process.env.EXTERNAL_DATABASE_URL : defaultCore;
@@ -900,7 +947,16 @@ export async function synchronizePerplextaPoolsFromRegistry() {
         console.warn(`[DB] Registry ${id} DB check failed: ${e.message}. Falling back to Core.`);
         if (pool) {
           try {
-            await pool.query("UPDATE db_connections_registry SET status = 'down' WHERE id = $1", [id]);
+            const isFatalQuotaOrUnreachable = /quota|limit|exceeded|disabled|suspended|terminated|ECONNREFUSED|ENOTFOUND/i.test(e.message || '');
+            if (isFatalQuotaOrUnreachable) {
+              const encryptedCore = encrypt(coreUrl);
+              await pool.query(
+                "UPDATE db_connections_registry SET connection_string = $1, host = NULL, status = 'down' WHERE id = $2",
+                [encryptedCore, id]
+              );
+            } else {
+              await pool.query("UPDATE db_connections_registry SET status = 'down' WHERE id = $1", [id]);
+            }
           } catch {}
         }
         return coreUrl;
@@ -1013,10 +1069,10 @@ export async function forceReconnectPool(poolName: 'core' | 'ledger' | 'external
   }
 
   if (poolName === 'core') {
-    const url = currentCoreUrl || process.env.DATABASE_URL;
+    let url = currentCoreUrl || process.env.DATABASE_URL;
     if (!url) throw new Error('Core DB URL not found');
     const oldPool = rawPool;
-    const testPool = patchPoolQuery(new Pool({
+    let testPool = patchPoolQuery(new Pool({
       connectionString: url,
       ...getBasePoolConfig(currentCoreMax || envSizes.coreMax, 10000, url),
     }));
@@ -1028,9 +1084,35 @@ export async function forceReconnectPool(poolName: 'core' | 'ledger' | 'external
         await oldPool.end().catch((e: any) => console.error('[DB] Error ending old core pool:', e.message));
       }
       console.log('[DB] Core pool reconnected successfully.');
-    } catch (err) {
+    } catch (err: any) {
       try { await testPool.end(); } catch {}
+      const isQuota = isQuotaExceededError(err);
+      if (isQuota && process.env.EXTERNAL_DATABASE_URL && url !== process.env.EXTERNAL_DATABASE_URL && !isPlaceholderOrUnreachableUrl(process.env.EXTERNAL_DATABASE_URL)) {
+        console.warn(`[DB Failover] Primary Core DB exceeded quota. Reconnecting to failover database...`);
+        const failoverUrl = normalizeDatabaseUrl(process.env.EXTERNAL_DATABASE_URL);
+        const failoverPool = patchPoolQuery(new Pool({
+          connectionString: failoverUrl,
+          ...getBasePoolConfig(currentCoreMax || envSizes.coreMax, 10000, failoverUrl),
+        }));
+        failoverPool.on('error', (e: any) => handleIdleClientError('core-failover', e));
+        try {
+          await failoverPool.query('SELECT 1');
+          currentCoreUrl = process.env.EXTERNAL_DATABASE_URL;
+          rawPool = failoverPool;
+          if (oldPool && oldPool !== failoverPool) {
+            await oldPool.end().catch(() => {});
+          }
+          console.log('[DB Failover] ✅ Core pool reconnected successfully via active failover database.');
+          return;
+        } catch (failoverErr) {
+          try { await failoverPool.end(); } catch {}
+        }
+      }
       resetPoolsToDegradedMode();
+      if (isQuota) {
+        console.warn(`[DB] Notice: Remote database account exceeded cloud quota. Running in Degraded Mode.`);
+        return;
+      }
       throw err;
     }
   } else if (poolName === 'ledger') {
@@ -1241,11 +1323,18 @@ export function startConnectionHealthCheck(intervalMs = 60000) {
       try {
         await poolInstance.query('SELECT 1');
       } catch (err: any) {
-        console.warn(`[DB Health Check] Pool '${name}' failed health check ("${err?.message || err}"). Attempting automatic reconnection...`);
+        const isQuota = isQuotaExceededError(err);
+        if (isQuota) {
+          console.warn(`[DB Health Check] Pool '${name}' quota limit reached on cloud provider. Triggering auto-failover...`);
+        } else {
+          console.warn(`[DB Health Check] Pool '${name}' failed health check ("${err?.message || err}"). Attempting automatic reconnection...`);
+        }
         try {
           await forceReconnectPool(name);
         } catch (reconnectErr: any) {
-          console.error(`[DB Health Check] Failed to reconnect pool '${name}':`, reconnectErr?.message || reconnectErr);
+          if (!isQuotaExceededError(reconnectErr)) {
+            console.error(`[DB Health Check] Failed to reconnect pool '${name}':`, reconnectErr?.message || reconnectErr);
+          }
         }
       }
     }

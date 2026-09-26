@@ -167,12 +167,12 @@ export const ChatResponseRenderer: React.FC<ChatResponseRendererProps> = ({
   const markdownComponents = useMemo(() => ({
     ...(chatMarkdownComponents || {}),
     h1: ({ children }: any) => (
-      <h1 className="text-[18px] sm:text-[21px] font-black text-[var(--text-primary)] dark:text-slate-100 mt-7 mb-4 leading-snug border-b border-[var(--border-default)] dark:border-slate-800/80 pb-2.5 w-full text-start rtl:text-right ltr:text-left" style={{ unicodeBidi: 'isolate' }}>
+      <h1 className="text-[18px] sm:text-[21px] font-black text-[var(--text-primary)] mt-7 mb-4 leading-snug border-b border-[var(--border-default)] pb-2.5 w-full text-start rtl:text-right ltr:text-left" style={{ unicodeBidi: 'isolate' }}>
         {formatChildren(children)}
       </h1>
     ),
     h2: ({ children }: any) => (
-      <h2 className="text-[16px] sm:text-[18px] font-black text-[var(--text-primary)] dark:text-slate-100 mt-6 mb-3.5 leading-snug border-b border-[var(--border-default)] dark:border-slate-800/80 pb-2 w-full text-start rtl:text-right ltr:text-left" style={{ unicodeBidi: 'isolate' }}>
+      <h2 className="text-[16px] sm:text-[18px] font-black text-[var(--text-primary)] mt-6 mb-3.5 leading-snug border-b border-[var(--border-default)] pb-2 w-full text-start rtl:text-right ltr:text-left" style={{ unicodeBidi: 'isolate' }}>
         {formatChildren(children)}
       </h2>
     ),
@@ -187,7 +187,7 @@ export const ChatResponseRenderer: React.FC<ChatResponseRendererProps> = ({
       </h4>
     ),
     hr: () => (
-      <hr className="my-6 border-t border-[var(--border-default)] dark:border-slate-800/80 w-full" />
+      <hr className="my-6 border-t border-[var(--border-default)] w-full" />
     ),
     table: ({ children, node }: any) => {
       const linePos = node?.position?.start?.line || '0';
@@ -249,12 +249,12 @@ export const ChatResponseRenderer: React.FC<ChatResponseRendererProps> = ({
       );
     },
     ul: ({ children }: any) => (
-      <ul className="list-disc ps-6 pe-4 mb-6 space-y-3 text-[13.5px] sm:text-[14px] text-[var(--text-secondary)] dark:text-slate-300 marker:text-[var(--fg-accent)] text-start rtl:text-right ltr:text-left">
+      <ul className="list-disc ps-6 pe-4 mb-6 space-y-3 text-[13.5px] sm:text-[14px] text-[var(--text-secondary)] marker:text-[var(--fg-accent)] text-start rtl:text-right ltr:text-left">
         {children}
       </ul>
     ),
     ol: ({ children }: any) => (
-      <ol className="list-decimal ps-6 pe-4 mb-6 space-y-3 text-[13.5px] sm:text-[14px] text-[var(--text-secondary)] dark:text-slate-300 marker:text-[var(--fg-accent)] text-start rtl:text-right ltr:text-left">
+      <ol className="list-decimal ps-6 pe-4 mb-6 space-y-3 text-[13.5px] sm:text-[14px] text-[var(--text-secondary)] marker:text-[var(--fg-accent)] text-start rtl:text-right ltr:text-left">
         {children}
       </ol>
     ),
@@ -263,7 +263,7 @@ export const ChatResponseRenderer: React.FC<ChatResponseRendererProps> = ({
       const isLatinBullet = /^[A-Za-z0-9\s.,:\-_\(\)]+$/.test(childrenStr.trim().slice(0, 30));
       return (
         <li 
-          className="leading-[1.85] text-[13.5px] sm:text-[14px] text-[var(--text-primary)] dark:text-slate-200 text-start rtl:text-right ltr:text-left"
+          className="leading-[1.85] text-[13.5px] sm:text-[14px] text-[var(--text-primary)] text-start rtl:text-right ltr:text-left"
           dir={isLatinBullet ? 'ltr' : undefined}
           style={{ unicodeBidi: 'isolate' }}
         >
@@ -272,7 +272,7 @@ export const ChatResponseRenderer: React.FC<ChatResponseRendererProps> = ({
       );
     },
     strong: ({ children }: any) => (
-      <strong className="font-bold text-[var(--text-primary)] dark:text-slate-100" style={{ unicodeBidi: 'isolate' }}>
+      <strong className="font-bold text-[var(--text-primary)]" style={{ unicodeBidi: 'isolate' }}>
         {formatChildren(children)}
       </strong>
     ),
@@ -283,7 +283,7 @@ export const ChatResponseRenderer: React.FC<ChatResponseRendererProps> = ({
         return (
           <code 
             dir="ltr" 
-            className="inline mx-1 px-1.5 py-0.5 rounded-md bg-[var(--surface-subtle)] dark:bg-[var(--surface-code)] border border-[var(--border-default)] dark:border-slate-800/80 text-xs font-mono text-[var(--fg-accent)] font-semibold text-left align-baseline" 
+            className="inline mx-1 px-1.5 py-0.5 rounded-shape-xs bg-[var(--surface-subtle)] border border-[var(--border-default)] text-xs font-mono text-[var(--fg-accent)] font-semibold text-left align-baseline" 
             style={{ direction: 'ltr', unicodeBidi: 'isolate' }}
             {...props}
           >
@@ -340,7 +340,7 @@ export const ChatResponseRenderer: React.FC<ChatResponseRendererProps> = ({
 
       return (
         <p 
-          className="mb-5 leading-[1.85] text-[13.5px] sm:text-[14px] text-[var(--text-primary)] dark:text-slate-200 text-start rtl:text-right ltr:text-left inline-block w-full font-normal transition-all duration-75"
+          className="mb-5 leading-[1.85] text-[13.5px] sm:text-[14px] text-[var(--text-primary)] text-start rtl:text-right ltr:text-left inline-block w-full font-normal transition-all duration-75"
           dir={isLatinParagraph ? 'ltr' : undefined}
           style={{ unicodeBidi: 'isolate' }}
         >

@@ -55,13 +55,13 @@ import { PostOptionsMenu } from './PostOptionsMenu';
 import { toast } from '@/design-system';
 
 const FB_REACTIONS = [
-  { id: 'like', emoji: '👍', labelAr: 'أعجبني', labelEn: 'Like', color: 'text-blue-500' },
-  { id: 'love', emoji: '❤️', labelAr: 'أحببته', labelEn: 'Love', color: 'text-red-500' },
+  { id: 'like', emoji: '👍', labelAr: 'أعجبني', labelEn: 'Like', color: 'text-[var(--fg-accent)]' },
+  { id: 'love', emoji: '❤️', labelAr: 'أحببته', labelEn: 'Love', color: 'text-[var(--fg-danger)]' },
   { id: 'care', emoji: '🥰', labelAr: 'أدعمه', labelEn: 'Care', color: 'text-[var(--fg-warning)]' },
-  { id: 'haha', emoji: '😂', labelAr: 'هاهاها', labelEn: 'Haha', color: 'text-yellow-500' },
-  { id: 'wow', emoji: '😮', labelAr: 'واو', labelEn: 'Wow', color: 'text-yellow-500' },
+  { id: 'haha', emoji: '😂', labelAr: 'هاهاها', labelEn: 'Haha', color: 'text-[var(--fg-warning)]' },
+  { id: 'wow', emoji: '😮', labelAr: 'واو', labelEn: 'Wow', color: 'text-[var(--fg-warning)]' },
   { id: 'sad', emoji: '😢', labelAr: 'أحزنني', labelEn: 'Sad', color: 'text-[var(--fg-warning)]' },
-  { id: 'angry', emoji: '😡', labelAr: 'أغضبني', labelEn: 'Angry', color: 'text-orange-600' },
+  { id: 'angry', emoji: '😡', labelAr: 'أغضبني', labelEn: 'Angry', color: 'text-[var(--fg-danger)]' },
 ];
 
 const renderRichPostText = (text: string | null | undefined, searchQuery?: string) => {
@@ -472,7 +472,14 @@ export const PostFeed: React.FC<PostFeedProps> = ({
 
   const handleWhatsAppShare = (ad: BulletinAd) => {
     const text = encodeURIComponent(getPostShareText(ad, isRtl));
-    window.open(`https://wa.me/?text=${text}`, '_blank');
+    const waUrl = `https://wa.me/?text=${text}`;
+    const a = document.createElement('a');
+    a.href = waUrl;
+    a.target = '_blank';
+    a.rel = 'noopener noreferrer';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
     fetch(`/api/bulletin/ads/${ad.id}/share`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -700,7 +707,7 @@ export const PostFeed: React.FC<PostFeedProps> = ({
                       }
                     >
                       {ad.audience === 'friends' ? (
-                        <Users size={10} className="text-blue-500 shrink-0" />
+                        <Users size={10} className="text-[var(--fg-accent)] shrink-0" />
                       ) : ad.audience === 'only_me' ? (
                         <Lock size={10} className="text-[var(--fg-warning)] shrink-0" />
                       ) : (
@@ -1005,7 +1012,7 @@ export const PostFeed: React.FC<PostFeedProps> = ({
 
                     {/* Audio Track Badge / Player (Only for Audio-Only posts without visual media) */}
                     {(ad as any).audio_url && (!ad.media_gallery || ad.media_gallery.length === 0) && !ad.image_url && !ad.video_url && (
-                      <div className="mt-2 p-2 sm:p-2.5 rounded-xl bg-purple-500/10 border border-purple-500/20 flex items-center justify-between gap-2.5">
+                      <div className="mt-2 p-2 sm:p-2.5 rounded-shape-md bg-[var(--surface-subtle)] border border-[var(--border-default)] flex items-center justify-between gap-2.5">
                         <div className="flex items-center gap-2 min-w-0 flex-1">
                           <button
                             type="button"
@@ -1030,10 +1037,10 @@ export const PostFeed: React.FC<PostFeedProps> = ({
                                 }
                               }
                             }}
-                            className={`w-7 h-7 rounded-lg flex items-center justify-center shrink-0 transition-transform active:scale-95 cursor-pointer shadow-xs ${
+                            className={`w-7 h-7 rounded-shape-xs flex items-center justify-center shrink-0 transition-transform active:scale-95 cursor-pointer shadow-xs relative before:absolute before:-inset-2 before:content-[''] ${
                               playingAudioAdId === ad.id
-                                ? 'bg-purple-600 text-white animate-pulse'
-                                : 'bg-purple-500/20 hover:bg-purple-500/30 text-purple-400'
+                                ? 'bg-accent text-white animate-pulse'
+                                : 'bg-accent/20 hover:bg-accent/30 text-accent'
                             }`}
                             title={playingAudioAdId === ad.id ? (isRtl ? 'إيقاف' : 'Pause') : (isRtl ? 'تشغيل المقطع الصوتي' : 'Play Sound')}
                           >
@@ -1042,7 +1049,7 @@ export const PostFeed: React.FC<PostFeedProps> = ({
 
                           <div className="min-w-0 flex-1">
                             <div className="flex items-center gap-1">
-                              <Music size={11} className="text-purple-400 shrink-0" />
+                              <Music size={11} className="text-accent shrink-0" />
                               <p className="text-xs font-bold text-[var(--text-primary)] truncate">
                                 {(ad as any).audio_title || (isRtl ? 'مقطع صوتي أصلي' : 'Original Sound')}
                               </p>
@@ -1053,7 +1060,7 @@ export const PostFeed: React.FC<PostFeedProps> = ({
                           </div>
                         </div>
 
-                        <span className="text-[9px] font-bold px-1.5 py-0.5 rounded-md bg-purple-500/15 text-purple-400 shrink-0">
+                        <span className="text-[9px] font-bold px-1.5 py-0.5 rounded-shape-xs bg-accent/15 text-accent shrink-0">
                           {isRtl ? 'صوت أصلي' : 'Original Audio'}
                         </span>
                       </div>
@@ -1237,7 +1244,7 @@ export const PostFeed: React.FC<PostFeedProps> = ({
                   <a
                     href={`tel:${ad.phone_number}`}
                     onClick={(e) => e.stopPropagation()}
-                    className="flex-1 min-w-0 min-h-[44px] flex items-center justify-center gap-1 sm:gap-1.5 transition-all duration-base active:scale-95 cursor-pointer py-2 font-bold text-[11px] sm:text-xs select-none text-blue-500/80 hover:text-blue-500 decoration-none"
+                    className="flex-1 min-w-0 min-h-[44px] flex items-center justify-center gap-1 sm:gap-1.5 transition-all duration-base active:scale-95 cursor-pointer py-2 font-bold text-[11px] sm:text-xs select-none text-[var(--fg-accent)]/80 hover:text-[var(--fg-accent)] decoration-none"
                     title={isRtl ? `اتصال: ${ad.phone_number}` : `Call: ${ad.phone_number}`}
                   >
                     <PhoneCall size={14} className="shrink-0" />

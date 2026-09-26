@@ -57,7 +57,7 @@ export const AdComposer: React.FC<AdComposerProps> = ({
             }
             setIsStreamSetupOpen(true);
           }}
-          className="flex-1 h-7 sm:h-8 flex items-center justify-center gap-1 sm:gap-1.5 px-1 sm:px-2 rounded-shape-sm hover:bg-rose-500/10 font-bold transition-all duration-fast text-rose-500 whitespace-nowrap cursor-pointer shadow-2xs active:scale-95"
+          className="flex-1 h-7 sm:h-8 flex items-center justify-center gap-1 sm:gap-1.5 px-1 sm:px-2 rounded-shape-sm hover:bg-rose-500/10 font-bold transition-all duration-fast text-rose-500 whitespace-nowrap cursor-pointer shadow-2xs active:scale-95 relative before:absolute before:-inset-2 before:content-['']"
         >
           <Radio size={12} className="sm:size-[14px] text-rose-500 shrink-0" />
           <span className="truncate">{isRtl ? 'بث مباشر' : 'Live'}</span>
@@ -72,7 +72,7 @@ export const AdComposer: React.FC<AdComposerProps> = ({
             }
             openPostUploadModal();
           }}
-          className="flex-1 h-7 sm:h-8 flex items-center justify-center gap-1 sm:gap-1.5 px-1 sm:px-2 rounded-shape-sm hover:bg-accent/10 font-bold transition-all duration-fast text-accent whitespace-nowrap cursor-pointer shadow-2xs active:scale-95"
+          className="flex-1 h-7 sm:h-8 flex items-center justify-center gap-1 sm:gap-1.5 px-1 sm:px-2 rounded-shape-sm hover:bg-accent/10 font-bold transition-all duration-fast text-accent whitespace-nowrap cursor-pointer shadow-2xs active:scale-95 relative before:absolute before:-inset-2 before:content-['']"
         >
           <Video size={12} className="sm:size-[14px] text-accent shrink-0" />
           <span className="truncate">{isRtl ? 'فيديو/صورة' : 'Media'}</span>
@@ -91,9 +91,9 @@ export const AdComposer: React.FC<AdComposerProps> = ({
               openReelUploadModal();
             }
           }}
-          className="flex-1 h-7 sm:h-8 flex items-center justify-center gap-1 sm:gap-1.5 px-1 sm:px-2 rounded-shape-sm hover:bg-purple-500/10 font-bold transition-all duration-fast text-purple-500 whitespace-nowrap cursor-pointer shadow-2xs active:scale-95"
+          className="flex-1 h-7 sm:h-8 flex items-center justify-center gap-1 sm:gap-1.5 px-1 sm:px-2 rounded-shape-sm hover:bg-accent/10 font-bold transition-all duration-fast text-accent whitespace-nowrap cursor-pointer shadow-2xs active:scale-95 relative before:absolute before:-inset-2 before:content-['']"
         >
-          <Clapperboard size={12} className="sm:size-[14px] text-purple-500 shrink-0" />
+          <Clapperboard size={12} className="sm:size-[14px] text-accent shrink-0" />
           <span className="truncate">{isRtl ? 'استوديو ريلز' : 'Reels Studio'}</span>
         </button>
       </div>

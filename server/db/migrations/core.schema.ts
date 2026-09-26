@@ -603,6 +603,36 @@ export const CORE_SCHEMA_TABLES: { name: string; query: string }[] = [
         keywords_en TEXT,
         keywords_ar TEXT,
         og_image_url TEXT,
+        media_urls JSONB DEFAULT '[]'::JSONB,
+        metadata JSONB DEFAULT '{}'::JSONB,
+        post_code VARCHAR(50),
+        author_username VARCHAR(100),
+        audio_url TEXT,
+        audio_title VARCHAR(255),
+        audio_artist VARCHAR(255),
+        audio_track_id VARCHAR(100),
+        view_count INTEGER DEFAULT 0,
+        click_count INTEGER DEFAULT 0,
+        is_featured BOOLEAN DEFAULT FALSE,
+        is_pinned BOOLEAN DEFAULT FALSE,
+        priority INTEGER DEFAULT 0,
+        badge_text VARCHAR(100),
+        cta_label VARCHAR(100),
+        cta_action VARCHAR(50),
+        cta_payload TEXT,
+        cta_style VARCHAR(50),
+        badge_color VARCHAR(50),
+        tags TEXT[] DEFAULT '{}',
+        who_can_comment VARCHAR(50) DEFAULT 'anyone',
+        allow_translation BOOLEAN DEFAULT TRUE,
+        partnership_code VARCHAR(100),
+        is_partnership BOOLEAN DEFAULT FALSE,
+        partnership_brand VARCHAR(255),
+        deleted_at TIMESTAMP,
+        archived_at TIMESTAMP,
+        boost_goal VARCHAR(100) DEFAULT 'whatsapp_leads',
+        boost_daily_budget NUMERIC(10,2) DEFAULT 2.00,
+        boost_settings JSONB DEFAULT '{}',
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
       )`
@@ -658,6 +688,7 @@ export const CORE_SCHEMA_TABLES: { name: string; query: string }[] = [
         is_verified BOOLEAN DEFAULT TRUE,
         followers_count INTEGER DEFAULT 0,
         ads_count INTEGER DEFAULT 0,
+        managers JSONB DEFAULT '[]'::JSONB,
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
       )`
@@ -692,6 +723,7 @@ export const CORE_SCHEMA_TABLES: { name: string; query: string }[] = [
         id SERIAL PRIMARY KEY,
         ad_id INTEGER NOT NULL,
         user_id INTEGER NOT NULL,
+        reaction VARCHAR(20) DEFAULT 'like',
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         UNIQUE(ad_id, user_id)
       )`
@@ -1264,6 +1296,9 @@ export async function applyCoreColumnEnforcements(targetPool: QueryClient) {
     aspect_ratio: { type: 'VARCHAR(50)', default: "'16:9'" },
     tags: { type: 'TEXT[]', default: "'{}'" },
     metadata: { type: 'JSONB', default: "'{}'" },
+    media_urls: { type: 'JSONB', default: "'[]'" },
+    post_code: { type: 'VARCHAR(50)' },
+    author_username: { type: 'VARCHAR(100)' },
     meta_title_en: { type: 'VARCHAR(255)' },
     meta_title_ar: { type: 'VARCHAR(255)' },
     meta_description_en: { type: 'TEXT' },
@@ -1313,6 +1348,7 @@ export async function applyCoreColumnEnforcements(targetPool: QueryClient) {
     review_count: { type: 'INTEGER', default: 0 },
     is_verified: { type: 'BOOLEAN', default: false },
     is_featured: { type: 'BOOLEAN', default: false },
+    managers: { type: 'JSONB', default: "'[]'" },
     social_links: { type: 'JSONB', default: "'{}'" },
     custom_sections: { type: 'JSONB', default: "'[]'" }
   });
@@ -1331,7 +1367,8 @@ export async function applyCoreColumnEnforcements(targetPool: QueryClient) {
 
   await ensureColumnsBulk(targetPool, 'bulletin_ad_likes', {
     user_id: { type: 'INTEGER' },
-    ad_id: { type: 'INTEGER' }
+    ad_id: { type: 'INTEGER' },
+    reaction: { type: 'VARCHAR(20)', default: `'like'` }
   });
 
   await ensureColumnsBulk(targetPool, 'bulletin_page_followers', {

@@ -148,7 +148,7 @@ export const MediaCanvasPreview: React.FC<MediaCanvasPreviewProps> = ({
       ref={containerRef}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
-      className={`relative w-full aspect-[9/16] max-w-[340px] mx-auto rounded-[28px] overflow-hidden bg-black shadow-2xl border-4 border-neutral-800 dark:border-neutral-700 select-none flex flex-col justify-between ${className}`}
+      className={`relative w-full aspect-[9/16] max-w-[340px] mx-auto rounded-shape-lg overflow-hidden bg-black shadow-2xl border-2 border-[var(--border-default)] select-none flex flex-col justify-between ${className}`}
     >
       {/* Embedded CSS animations for high-precision Ken Burns */}
       <style>{`
@@ -273,7 +273,7 @@ export const MediaCanvasPreview: React.FC<MediaCanvasPreviewProps> = ({
                 e.stopPropagation();
                 togglePlay();
               }}
-              className="p-1 rounded-lg hover:bg-white/20 transition-colors"
+              className="p-1.5 rounded-shape-xs hover:bg-white/20 transition-colors relative before:absolute before:-inset-2 before:content-['']"
             >
               {isPlaying ? <Pause size={15} /> : <Play size={15} className="fill-current" />}
             </button>
@@ -289,7 +289,7 @@ export const MediaCanvasPreview: React.FC<MediaCanvasPreviewProps> = ({
                 e.stopPropagation();
                 setIsMuted(!isMuted);
               }}
-              className={`p-1.5 rounded-lg transition-colors ${
+              className={`p-1.5 rounded-shape-xs transition-colors relative before:absolute before:-inset-2 before:content-[''] ${
                 isMuted ? 'text-rose-400 bg-rose-500/20' : 'text-neutral-200 hover:bg-white/20'
               }`}
               title={isMuted ? (isRtl ? 'إلغاء الكتم' : 'Unmute') : (isRtl ? 'كتم الصوت' : 'Mute')}

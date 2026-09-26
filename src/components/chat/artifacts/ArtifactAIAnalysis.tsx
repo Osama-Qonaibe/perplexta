@@ -472,11 +472,11 @@ const dataMetrics = [
             </div>
           </div>
 
-          <div className="relative rounded-shape-sm overflow-hidden border border-[var(--border-default)] max-h-72 flex items-center justify-center bg-black/5 dark:bg-black/40">
+          <div className="relative rounded-shape-sm overflow-hidden border border-[var(--border-default)] max-h-72 flex items-center justify-center bg-[var(--surface-subtle)]">
             <img
               src={snapshotUrl}
               alt="Artifact Snapshot"
-              className="max-h-72 w-auto object-contain rounded"
+              className="max-h-72 w-auto object-contain rounded-shape-xs"
             />
           </div>
         </div>

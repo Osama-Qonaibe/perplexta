@@ -299,14 +299,14 @@ export const ChatComposer: React.FC<ChatComposerProps> = ({
             className="w-full select-none relative flex flex-col box-border min-w-0 ide-input-box p-3.5 shadow-lg"
           >
           {isRecording && (
-            <div className="px-3.5 py-3.5 bg-red-500/10 border-b border-dashed border-red-500/20 flex flex-col gap-2.5 transition-theme mb-3 rounded-shape-md">
+            <div className="px-3.5 py-3.5 bg-[var(--status-danger)]/10 border-b border-dashed border-[var(--status-danger)]/20 flex flex-col gap-2.5 transition-theme mb-3 rounded-shape-md">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2.5">
                   <span className="relative flex h-2.5 w-2.5">
-                    <span className="animate-ping absolute inline-flex h-full w-full rounded-shape-xs bg-red-400 opacity-75"></span>
-                    <span className="relative inline-flex rounded-shape-xs h-2.5 w-2.5 bg-red-500"></span>
+                    <span className="animate-ping absolute inline-flex h-full w-full rounded-shape-xs bg-[var(--status-danger)]/75"></span>
+                    <span className="relative inline-flex rounded-shape-xs h-2.5 w-2.5 bg-[var(--status-danger)]"></span>
                   </span>
-                  <span className="text-xs font-black text-red-500 animate-pulse uppercase tracking-wider font-sans">
+                  <span className="text-xs font-black text-[var(--status-danger)] animate-pulse uppercase tracking-wider font-sans">
                     {dir === 'rtl' ? 'جاري الاستماع وتدوين الصوت...' : 'LISTENING & TRANSCRIBING...'}
                   </span>
                 </div>
@@ -315,7 +315,7 @@ export const ChatComposer: React.FC<ChatComposerProps> = ({
                     {[1, 2, 3, 4, 5].map((i) => (
                       <motion.span
                         key={`chat-sound-wave-${i}`}
-                        className="w-0.5 bg-red-500 rounded-shape-xs"
+                        className="w-0.5 bg-[var(--status-danger)] rounded-shape-xs"
                         animate={{
                           height: ["4px", "16px", "4px"]
                         }}
@@ -332,7 +332,7 @@ export const ChatComposer: React.FC<ChatComposerProps> = ({
                   <button
                     type="button"
                     onClick={toggleRecording}
-                    className="text-[10px] font-black uppercase text-red-400 hover:text-red-500 px-2 py-0.5 rounded-shape-xs border border-red-500/25 hover:bg-red-500/10 transition-theme"
+                    className="text-[10px] font-black uppercase text-[var(--status-danger)] hover:opacity-90 px-2 py-0.5 rounded-shape-xs border border-[var(--status-danger)]/25 hover:bg-[var(--status-danger)]/10 transition-theme"
                   >
                     {dir === 'rtl' ? 'إيقاف' : 'Stop'}
                   </button>
@@ -424,8 +424,8 @@ export const ChatComposer: React.FC<ChatComposerProps> = ({
                         onChange={(e) => setForensicMode(e.target.checked)}
                         className="sr-only"
                       />
-                      <div className={`w-8 h-4 bg-slate-300 dark:bg-slate-800 rounded-full transition-theme ${forensicMode ? 'bg-[var(--accent)]' : ''}`} />
-                      <div className={`absolute top-0.5 left-0.5 w-3 h-3 rounded-full bg-white shadow-md transition-transform duration-300 ${forensicMode ? 'transform translate-x-4' : ''}`} />
+                      <div className={`w-8 h-4 bg-[var(--surface-subtle)] border border-[var(--border-default)] rounded-full transition-theme ${forensicMode ? 'bg-[var(--accent)] border-[var(--border-accent)]' : ''}`} />
+                      <div className={`absolute top-0.5 left-0.5 w-3 h-3 rounded-full bg-[var(--surface-card)] shadow-xs transition-transform duration-300 ${forensicMode ? 'transform translate-x-4' : ''}`} />
                     </div>
                     <span className={`text-[10px] font-bold font-sans ${forensicMode ? 'text-[var(--fg-accent)]' : 'text-[var(--text-muted)]'}`}>
                       {dir === 'rtl' ? 'وضع التحقيق الجنائي' : 'Forensic Mode'}
@@ -746,7 +746,7 @@ export const ChatComposer: React.FC<ChatComposerProps> = ({
                                             <ArrowUpRight size={13} className="text-[var(--fg-accent)] shrink-0" />
                                           )}
                                           {tool.isNew && !isLocked && !isSelected && !tool.isRouter && (
-                                            <span className="px-1.5 py-0.5 rounded-shape-xs bg-slate-200 dark:bg-slate-800/90 border border-slate-300 dark:border-slate-700/60 text-slate-700 dark:text-slate-300 text-[8.5px] font-mono font-bold uppercase tracking-wider">
+                                            <span className="px-1.5 py-0.5 rounded-shape-xs bg-[var(--surface-subtle)] border border-[var(--border-default)] text-[var(--text-secondary)] text-[8.5px] font-mono font-bold uppercase tracking-wider">
                                               NEW
                                             </span>
                                           )}

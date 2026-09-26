@@ -713,10 +713,34 @@ export const UniversalMediaPlayer: React.FC<UniversalMediaPlayerProps> = ({
         className={`w-full group select-none ${className}`}
         overlaySlot={
           <>
+            {/* Elevated Persistent Floating Sound / Mute Toggle Button (Always clearly visible on video) */}
+            {directVideoUrl && !hasFatalError && (
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  toggleMute();
+                }}
+                className={`absolute top-3.5 end-3.5 z-30 flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-black/80 hover:bg-black text-white backdrop-blur-lg border border-white/35 shadow-2xl transition-all duration-fast active:scale-90 cursor-pointer ${
+                  showOverlayControls || !isPlaying ? 'opacity-100 ring-2 ring-[var(--accent)]/40' : 'opacity-90 hover:opacity-100'
+                }`}
+                title={isMuted ? (isRtl ? 'تشغيل الصوت (كتم)' : 'Unmute') : (isRtl ? 'كتم الصوت' : 'Mute')}
+              >
+                {isMuted || volume === 0 ? (
+                  <VolumeX size={16} className="text-red-400 shrink-0 animate-pulse" />
+                ) : (
+                  <Volume2 size={16} className="text-[#00E5FF] shrink-0" />
+                )}
+                <span className="text-[11px] font-black font-mono tracking-tight select-none text-white drop-shadow-sm">
+                  {isMuted || volume === 0 ? (isRtl ? 'مكتوم' : 'Muted') : `${Math.round(volume * 100)}%`}
+                </span>
+              </button>
+            )}
+
             {showControls ? (
               <div
                 onClick={(e) => e.stopPropagation()}
-                className={`absolute bottom-0 inset-x-0 z-20 px-3 py-2.5 bg-gradient-to-t from-black/90 via-black/60 to-transparent flex flex-col gap-2 transition-opacity duration-media pointer-events-auto ${
+                className={`absolute bottom-0 inset-x-0 z-20 px-3.5 pt-4 pb-3 bg-gradient-to-t from-black/95 via-black/70 to-transparent flex flex-col gap-2.5 transition-opacity duration-media pointer-events-auto ${
                   showOverlayControls || !isPlaying ? 'opacity-100' : 'opacity-0 pointer-events-none'
                 }`}
               >
@@ -784,25 +808,25 @@ export const UniversalMediaPlayer: React.FC<UniversalMediaPlayerProps> = ({
 
               <div className="flex items-center justify-between text-white text-xs font-mono">
                 {/* Play/Pause & Mute & Time */}
-                <div className="flex items-center gap-1 sm:gap-2">
+                <div className="flex items-center gap-1.5 sm:gap-2">
                   <button
                     onClick={togglePlay}
-                    className="p-2 sm:p-1.5 rounded-[var(--radius-sm)] hover:bg-white/20 text-white transition-colors cursor-pointer min-w-[44px] min-h-[44px] sm:min-w-[36px] sm:min-h-[36px] flex items-center justify-center"
+                    className="p-2 sm:p-1.5 rounded-[var(--radius-sm)] bg-white/10 hover:bg-white/20 text-white transition-colors cursor-pointer min-w-[40px] min-h-[40px] sm:min-w-[34px] sm:min-h-[34px] flex items-center justify-center border border-white/10"
                     title={isPlaying ? (isRtl ? 'إيقاف مؤقت' : 'Pause') : (isRtl ? 'تشغيل' : 'Play')}
                   >
-                    {isPlaying ? <Pause size={18} /> : <Play size={18} />}
+                    {isPlaying ? <Pause size={17} /> : <Play size={17} className="ms-0.5 fill-current" />}
                   </button>
 
-                  {/* Volume Button with Expandable Interactive Slider */}
-                  <div className="relative flex items-center group/volume">
+                  {/* Volume Button with Expandable Interactive Slider - Elevated & Clearly Visible */}
+                  <div className="relative flex items-center group/volume bg-white/10 hover:bg-white/15 px-1.5 py-1 rounded-[var(--radius-sm)] border border-white/10 transition-all">
                     <button
                       onClick={toggleMute}
-                      className="p-2 sm:p-1.5 rounded-[var(--radius-sm)] hover:bg-white/20 text-white transition-colors cursor-pointer min-w-[44px] min-h-[44px] sm:min-w-[36px] sm:min-h-[36px] flex items-center justify-center"
+                      className="p-1 sm:p-0.5 text-white transition-colors cursor-pointer min-w-[32px] min-h-[32px] sm:min-w-[28px] sm:min-h-[28px] flex items-center justify-center"
                       title={isMuted ? (isRtl ? 'تشغيل الصوت' : 'Unmute') : (isRtl ? 'كتم الصوت' : 'Mute')}
                     >
-                      {isMuted || volume === 0 ? <VolumeX size={18} className="text-red-400" /> : <Volume2 size={18} />}
+                      {isMuted || volume === 0 ? <VolumeX size={17} className="text-red-400 animate-pulse" /> : <Volume2 size={17} className="text-[var(--fg-accent)]" />}
                     </button>
-                    <div className="overflow-hidden transition-all duration-base ease-out flex items-center max-w-0 group-hover/volume:max-w-[70px] focus-within/volume:max-w-[70px] opacity-0 group-hover/volume:opacity-100 focus-within/volume:opacity-100 ps-1">
+                    <div className="overflow-hidden transition-all duration-base ease-out flex items-center max-w-0 group-hover/volume:max-w-[80px] focus-within/volume:max-w-[80px] opacity-0 group-hover/volume:opacity-100 focus-within/volume:opacity-100 ps-1">
                       <input
                         type="range"
                         min={0}
@@ -810,28 +834,28 @@ export const UniversalMediaPlayer: React.FC<UniversalMediaPlayerProps> = ({
                         step={0.05}
                         value={isMuted ? 0 : volume}
                         onChange={(e) => handleVolumeChange(parseFloat(e.target.value))}
-                        className="w-14 h-1 bg-white/30 hover:h-1.5 rounded-[var(--radius-sm)] appearance-none cursor-pointer accent-[var(--accent)]"
+                        className="w-16 h-1.5 bg-white/30 hover:h-2 rounded-[var(--radius-sm)] appearance-none cursor-pointer accent-[var(--accent)]"
                         title={isRtl ? `مستوى الصوت: ${Math.round(volume * 100)}%` : `Volume: ${Math.round(volume * 100)}%`}
                       />
                     </div>
                   </div>
 
-                  <span className="text-[11px] text-gray-300 font-mono select-none">
+                  <span className="text-[11px] text-gray-200 font-mono select-none ms-1 font-bold">
                     {formatTime(currentTime)} / {formatTime(duration)}
                   </span>
                 </div>
 
                 {/* Right Side: Fullscreen / Reels Expand / Diagnostics HUD */}
-                <div className="flex items-center gap-1">
+                <div className="flex items-center gap-1.5">
                   <button
                     onClick={(e) => {
                       e.stopPropagation();
                       setShowDiagnostics(prev => !prev);
                     }}
-                    className={`p-2 sm:p-1.5 rounded-[var(--radius-sm)] hover:bg-white/20 transition-colors cursor-pointer min-w-[44px] min-h-[44px] sm:min-w-[36px] sm:min-h-[36px] flex items-center justify-center ${showDiagnostics ? 'text-[var(--fg-success)] bg-white/10' : 'text-white'}`}
+                    className={`p-2 sm:p-1.5 rounded-[var(--radius-sm)] bg-white/10 hover:bg-white/20 transition-colors cursor-pointer min-w-[40px] min-h-[40px] sm:min-w-[34px] sm:min-h-[34px] flex items-center justify-center border border-white/10 ${showDiagnostics ? 'text-[var(--fg-success)] bg-white/20' : 'text-white'}`}
                     title={isRtl ? 'لوحة الفحص والتشخيص' : 'Diagnostics HUD'}
                   >
-                    <Activity size={18} />
+                    <Activity size={17} />
                   </button>
 
                   <button
@@ -852,10 +876,10 @@ export const UniversalMediaPlayer: React.FC<UniversalMediaPlayerProps> = ({
                         detail: { adId, url, title }
                       }));
                     }}
-                    className="p-2 sm:p-1.5 rounded-[var(--radius-sm)] hover:bg-white/20 text-white transition-colors cursor-pointer min-w-[44px] min-h-[44px] sm:min-w-[36px] sm:min-h-[36px] flex items-center justify-center"
+                    className="p-2 sm:p-1.5 rounded-[var(--radius-sm)] bg-accent hover:opacity-90 text-white transition-all cursor-pointer min-w-[40px] min-h-[40px] sm:min-w-[34px] sm:min-h-[34px] flex items-center justify-center shadow-sm font-bold"
                     title={isRtl ? 'عرض ريلز بملء الشاشة' : 'Open Reels Fullscreen'}
                   >
-                    <Maximize2 size={18} />
+                    <Maximize2 size={17} />
                   </button>
                 </div>
               </div>

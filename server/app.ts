@@ -509,6 +509,7 @@ app.use(helmet({
 const allowedOrigins = [
   ...(process.env.CORS_ALLOWED_ORIGINS ? process.env.CORS_ALLOWED_ORIGINS.split(',').map(o => o.trim()) : []),
   ...(process.env.ALLOWED_ORIGINS ? process.env.ALLOWED_ORIGINS.split(',').map(o => o.trim()) : []),
+  ...(process.env.APP_URL ? [process.env.APP_URL.trim()] : []),
   'http://localhost:3000',
   'http://localhost:5173',
   'https://perplexta.com',
@@ -517,12 +518,25 @@ const allowedOrigins = [
 
 app.use(cors({
   origin: (origin, callback) => {
-    if (!origin || allowedOrigins.includes(origin) || origin.endsWith('.run.app') || origin.endsWith('.aistudio.google') || process.env.NODE_ENV !== 'production') {
-      callback(null, true);
-    } else {
-      console.warn(`[CORS] Blocked origin: ${origin}`);
-      callback(new Error('Not allowed by CORS'));
-    }
+    if (!origin) return callback(null, true);
+    if (allowedOrigins.includes(origin)) return callback(null, true);
+
+    // AI Studio official development/preview domains
+    if (origin.endsWith('.aistudio.google')) return callback(null, true);
+
+    // Specific Google Cloud Run deployment for this application only (blocks arbitrary 3rd party .run.app origins)
+    const isAuthorizedCloudRun = origin.endsWith('.run.app') && (
+      origin.includes('guaw7b2cx6awvqizmf77ap') ||
+      origin.includes('315908805121') ||
+      origin.includes('ais-dev-') ||
+      origin.includes('ais-pre-')
+    );
+    if (isAuthorizedCloudRun) return callback(null, true);
+
+    if (process.env.NODE_ENV !== 'production') return callback(null, true);
+
+    console.warn(`[CORS] Blocked unauthorized origin: ${origin}`);
+    callback(new Error('Not allowed by CORS'));
   },
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
@@ -532,21 +546,21 @@ app.use(cors({
 }));
 
 app.use(express.json({ 
-  limit: '100mb',
+  limit: '10mb',
   verify: (req: any, res, buf) => {
     if (req.originalUrl && (req.originalUrl.startsWith('/api/payments/webhook') || req.originalUrl.includes('webhook'))) {
       req.rawBody = buf;
     }
   }
 }));
-app.use(express.urlencoded({ limit: '100mb', extended: true }));
+app.use(express.urlencoded({ limit: '10mb', extended: true }));
 
 app.use((err: any, req: express.Request, res: express.Response, next: express.NextFunction) => {
   if (err && (err.type === 'entity.too.large' || err.status === 413 || err.statusCode === 413 || err.name === 'PayloadTooLargeError')) {
     console.warn(`[Payload Too Large] Request size limit exceeded for ${req.method} ${req.path}`);
     return res.status(413).json({
-      error: 'حجم الطلب كبير جداً. الحد الأقصى المسموح به هو 100 ميجابايت.',
-      error_en: 'Payload too large. Maximum allowed request size is 100MB.',
+      error: 'حجم الطلب كبير جداً. الحد الأقصى المسموح به لطلبات JSON هو 10 ميجابايت. للوسائط الكبيرة، يرجى استخدام مسارات رفع الملفات المخصصة.',
+      error_en: 'Payload too large. Maximum allowed JSON request size is 10MB. For larger media, use dedicated multipart upload routes.',
       type: 'PAYLOAD_TOO_LARGE'
     });
   }

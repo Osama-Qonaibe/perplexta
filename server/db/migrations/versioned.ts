@@ -2837,6 +2837,28 @@ export async function runVersionedMigrations(
 
       await tx.query(`CREATE INDEX IF NOT EXISTS idx_email_logs_recipient_email ON email_logs (recipient_email)`);
     });
+
+    await runVersioned('v121_bulletin_schema_perfection', 'Synchronize media_urls, reaction, managers and audio metadata across bulletin tables', async (tx) => {
+      await tx.query(`ALTER TABLE bulletin_ads ADD COLUMN IF NOT EXISTS media_urls JSONB DEFAULT '[]'::JSONB`);
+      await tx.query(`ALTER TABLE bulletin_ads ADD COLUMN IF NOT EXISTS metadata JSONB DEFAULT '{}'::JSONB`);
+      await tx.query(`ALTER TABLE bulletin_ads ADD COLUMN IF NOT EXISTS post_code VARCHAR(50)`);
+      await tx.query(`ALTER TABLE bulletin_ads ADD COLUMN IF NOT EXISTS author_username VARCHAR(100)`);
+      await tx.query(`ALTER TABLE bulletin_ads ADD COLUMN IF NOT EXISTS audio_url TEXT`);
+      await tx.query(`ALTER TABLE bulletin_ads ADD COLUMN IF NOT EXISTS audio_title VARCHAR(255)`);
+      await tx.query(`ALTER TABLE bulletin_ads ADD COLUMN IF NOT EXISTS audio_artist VARCHAR(255)`);
+      await tx.query(`ALTER TABLE bulletin_ads ADD COLUMN IF NOT EXISTS audio_track_id VARCHAR(100)`);
+      await tx.query(`ALTER TABLE bulletin_pages ADD COLUMN IF NOT EXISTS managers JSONB DEFAULT '[]'::JSONB`);
+      await tx.query(`ALTER TABLE bulletin_ad_likes ADD COLUMN IF NOT EXISTS reaction VARCHAR(20) DEFAULT 'like'`);
+      await tx.query(`ALTER TABLE bulletin_comment_likes ADD COLUMN IF NOT EXISTS reaction VARCHAR(20) DEFAULT 'like'`);
+      
+      await tx.query(`
+        UPDATE bulletin_ads 
+        SET media_urls = jsonb_build_array(image_url) 
+        WHERE (media_urls IS NULL OR media_urls = '[]'::jsonb) 
+          AND image_url IS NOT NULL 
+          AND image_url != ''
+      `);
+    });
     
   console.log("[Migrations] All versioned migrations completed successfully.");
 }

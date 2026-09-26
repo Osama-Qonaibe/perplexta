@@ -296,7 +296,7 @@ export const ShareableImageOutput = ({ src, dir: propDir, alt }: { src?: string;
                   setIsPreviewOpen(false);
                   handleEditImage();
                 }}
-                className="px-4 py-2 rounded-shape-sm bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold flex items-center gap-2 shadow-md transition-colors cursor-pointer"
+                className="px-4 py-2 min-h-[44px] rounded-shape-sm bg-[var(--comp-button-primary-bg)] text-[var(--comp-button-primary-fg)] hover:opacity-90 text-xs font-bold flex items-center gap-2 shadow-md transition-theme cursor-pointer"
               >
                 <Palette size={14} />
                 <span>{dir === 'rtl' ? 'تعديل الصورة' : 'Edit Image'}</span>

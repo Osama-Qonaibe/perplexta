@@ -232,14 +232,14 @@ export const ProductionSuite: React.FC<ProductionSuiteProps> = ({
                       p: 'div',
                       blockquote: ({ children }: any) => <BlockquoteWithActions dir={dir}>{children}</BlockquoteWithActions>,
                       img: ({ node, ...props }: any) => (
-                        <div className="relative w-full aspect-video rounded-lg overflow-hidden border border-[var(--border-default)] shadow-2xl group/video">
+                        <div className="relative w-full aspect-video rounded-shape-md overflow-hidden border border-[var(--border-default)] shadow-2xl group/video">
                           <img {...props} className="w-full h-full object-cover transition-transform duration-300 group-hover/video:scale-110" referrerPolicy="no-referrer" />
                           <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent flex items-center justify-center">
-                             <div className="w-20 h-20 rounded-[var(--radius-xs)] bg-[var(--surface-subtle)] backdrop-blur-md border border-[var(--border-accent)] flex items-center justify-center text-[var(--fg-accent)] animate-pulse">
+                             <div className="w-20 h-20 rounded-shape-xs bg-[var(--surface-subtle)] backdrop-blur-md border border-[var(--border-accent)] flex items-center justify-center text-[var(--fg-accent)] animate-pulse">
                                <Music size={40} />
                              </div>
                           </div>
-                          <div className="absolute top-4 right-4 px-3 py-1 bg-black/60 backdrop-blur-md rounded-[var(--radius-xs)] border border-white/10 text-[10px] font-bold text-white uppercase tracking-widest">
+                          <div className="absolute top-4 right-4 px-3 py-1 bg-black/60 backdrop-blur-md rounded-shape-xs border border-white/10 text-[10px] font-bold text-white uppercase tracking-widest">
                             {dir === 'rtl' ? 'عرض فني من بيربليكستا' : 'PERPLEXTA ART VIEW'}
                           </div>
                         </div>

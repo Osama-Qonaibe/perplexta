@@ -857,7 +857,7 @@ export const ArtifactImageEditor: React.FC<ArtifactImageEditorProps> = ({
                         setElements(prev => prev.map(el => el.id === selectedId ? { ...el, color: col } : el));
                       }
                     }}
-                    className="w-5 h-5 rounded-full border border-slate-800 cursor-pointer active:scale-95 transition-transform flex items-center justify-center shrink-0"
+                    className="w-5 h-5 rounded-full border border-[var(--border-default)] cursor-pointer active:scale-95 transition-transform flex items-center justify-center shrink-0"
                     style={{ backgroundColor: col }}
                   >
                     {activeColor === col && (
@@ -870,7 +870,7 @@ export const ArtifactImageEditor: React.FC<ArtifactImageEditorProps> = ({
 
             {/* Line Thickness Slider */}
             {['draw', 'arrow', 'rect', 'circle'].includes(activeTool) && (
-              <div className="flex items-center gap-1.5 text-[11px] text-slate-400">
+              <div className="flex items-center gap-1.5 text-[11px] text-[var(--text-muted)]">
                 <span>{isAr ? 'السمك:' : 'Thickness:'}</span>
                 <input
                   type="range"
@@ -987,7 +987,7 @@ export const ArtifactImageEditor: React.FC<ArtifactImageEditorProps> = ({
 
           {/* Font Size Input */}
           <div className="flex items-center gap-1">
-            <span className="text-[10px] text-slate-500">{isAr ? 'الحجم:' : 'Size:'}</span>
+            <span className="text-[10px] text-[var(--text-muted)]">{isAr ? 'الحجم:' : 'Size:'}</span>
             <input
               type="number"
               value={selectedElement.fontSize || 24}
@@ -995,13 +995,13 @@ export const ArtifactImageEditor: React.FC<ArtifactImageEditorProps> = ({
                 const val = Math.max(10, Math.min(parseInt(e.target.value) || 24, 150));
                 setElements(prev => prev.map(el => el.id === selectedId ? { ...el, fontSize: val } : el));
               }}
-              className="w-14 h-7 px-1 text-center bg-slate-900 border border-slate-800 rounded-shape-sm text-[11px] text-slate-200 focus:outline-none focus:border-indigo-500 font-mono"
+              className="w-14 h-7 px-1 text-center bg-[var(--surface-subtle)] border border-[var(--border-default)] rounded-shape-sm text-[11px] text-[var(--text-primary)] focus:outline-none focus:border-[var(--border-accent)] font-mono"
             />
           </div>
 
           {/* Color Picker */}
           <div className="flex items-center gap-1">
-            <span className="text-[10px] text-slate-500">{isAr ? 'اللون:' : 'Color:'}</span>
+            <span className="text-[10px] text-[var(--text-muted)]">{isAr ? 'اللون:' : 'Color:'}</span>
             <input
               type="color"
               value={selectedElement.color || '#ffffff'}
@@ -1020,7 +1020,7 @@ export const ArtifactImageEditor: React.FC<ArtifactImageEditorProps> = ({
               setElements(prev => prev.map(el => el.id === selectedId ? { ...el, fontWeight: isBold ? 'normal' : 'bold' } : el));
             }}
             className={`h-7 px-2.5 rounded-shape-sm border text-[11px] font-bold cursor-pointer transition-colors ${
-              selectedElement.fontWeight === 'bold' ? 'bg-indigo-600 text-white border-indigo-500' : 'bg-slate-900 text-slate-400 border-slate-800 hover:text-slate-200'
+              selectedElement.fontWeight === 'bold' ? 'bg-[var(--comp-button-primary-bg)] text-[var(--comp-button-primary-fg)] border-transparent' : 'bg-[var(--surface-subtle)] text-[var(--text-muted)] border-[var(--border-default)] hover:text-[var(--text-primary)]'
             }`}
           >
             B
@@ -1034,14 +1034,14 @@ export const ArtifactImageEditor: React.FC<ArtifactImageEditorProps> = ({
               setElements(prev => prev.map(el => el.id === selectedId ? { ...el, fontStyle: isItalic ? 'normal' : 'italic' } : el));
             }}
             className={`h-7 px-2.5 rounded-shape-sm border text-[11px] italic cursor-pointer transition-colors ${
-              selectedElement.fontStyle === 'italic' ? 'bg-indigo-600 text-white border-indigo-500' : 'bg-slate-900 text-slate-400 border-slate-800 hover:text-slate-200'
+              selectedElement.fontStyle === 'italic' ? 'bg-[var(--comp-button-primary-bg)] text-[var(--comp-button-primary-fg)] border-transparent' : 'bg-[var(--surface-subtle)] text-[var(--text-muted)] border-[var(--border-default)] hover:text-[var(--text-primary)]'
             }`}
           >
             I
           </button>
 
           {/* Alignment */}
-          <div className="flex items-center gap-0.5 p-0.5 bg-slate-900/60 rounded-shape-md border border-slate-800">
+          <div className="flex items-center gap-0.5 p-0.5 bg-[var(--surface-subtle)] rounded-shape-md border border-[var(--border-default)]">
             {['left', 'center', 'right'].map(align => (
               <button
                 key={align}
@@ -1050,7 +1050,7 @@ export const ArtifactImageEditor: React.FC<ArtifactImageEditorProps> = ({
                   setElements(prev => prev.map(el => el.id === selectedId ? { ...el, textAlign: align } : el));
                 }}
                 className={`px-2 h-6 rounded-shape-xs text-[10px] font-bold capitalize cursor-pointer transition-colors ${
-                  (selectedElement.textAlign || 'left') === align ? 'bg-indigo-600 text-white' : 'text-slate-500 hover:text-slate-300'
+                  (selectedElement.textAlign || 'left') === align ? 'bg-[var(--comp-button-primary-bg)] text-[var(--comp-button-primary-fg)]' : 'text-[var(--text-muted)] hover:text-[var(--text-primary)]'
                 }`}
               >
                 {align}
@@ -1066,7 +1066,7 @@ export const ArtifactImageEditor: React.FC<ArtifactImageEditorProps> = ({
               setElements(prev => prev.map(el => el.id === selectedId ? { ...el, textShadow: hasShadow } : el));
             }}
             className={`h-7 px-2.5 rounded-shape-sm border text-[11px] cursor-pointer transition-colors ${
-              selectedElement.textShadow ? 'bg-indigo-600 text-white border-indigo-500' : 'bg-slate-900 text-slate-400 border-slate-800 hover:text-slate-200'
+              selectedElement.textShadow ? 'bg-[var(--comp-button-primary-bg)] text-[var(--comp-button-primary-fg)] border-transparent' : 'bg-[var(--surface-subtle)] text-[var(--text-muted)] border-[var(--border-default)] hover:text-[var(--text-primary)]'
             }`}
             title={isAr ? 'إضافة ظل خلفي للوضوح' : 'Add text drop shadow for clarity'}
           >
@@ -1075,7 +1075,7 @@ export const ArtifactImageEditor: React.FC<ArtifactImageEditorProps> = ({
 
           {/* Background Fill Color */}
           <div className="flex items-center gap-1.5 min-w-[150px]">
-            <span className="text-[10px] text-slate-500 shrink-0">{isAr ? 'الخلفية:' : 'BG:'}</span>
+            <span className="text-[10px] text-[var(--text-muted)] shrink-0">{isAr ? 'الخلفية:' : 'BG:'}</span>
             <div className="flex-1">
               <SelectDropdown
                 size="sm"

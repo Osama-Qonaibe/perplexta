@@ -476,7 +476,7 @@ export function ArtifactPreview({ artifact }: ArtifactPreviewProps) {
               </div>
             </div>
 
-            <div className="flex-1 overflow-y-auto p-3 font-mono text-[11px] leading-relaxed select-text space-y-1.5 custom-scrollbar bg-[var(--surface-inset)] dark:bg-[var(--surface-code)] text-[var(--text-primary)] dark:text-slate-100">
+            <div className="flex-1 overflow-y-auto p-3 font-mono text-[11px] leading-relaxed select-text space-y-1.5 custom-scrollbar bg-[var(--surface-inset)] dark:bg-[var(--surface-code)] text-[var(--text-primary)]">
               {logs.length === 0 ? (
                 <div className="h-full flex items-center justify-center text-[var(--text-muted)] italic text-xs">
                   {isAr ? 'لا توجد سجلات.' : 'No console logs captured.'}
