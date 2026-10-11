@@ -1,4 +1,4 @@
-import { CanvasElement } from '../components/chat/artifacts/ArtifactImageEditor';
+import type { CanvasElement } from '../components/chat/artifacts/ArtifactImageEditor';
 import { RataqRepoTemplates, RataqRepoTemplate } from './templates';
 import { convertRataqTemplateToCanvasElements } from '../utils/rataqTemplateLoader';
 import { IMPORTED_TEMPLATES } from './importedTemplates';

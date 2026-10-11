@@ -93,7 +93,7 @@ interface ArtifactImageEditorProps {
 
 export interface CanvasElement {
   id: string;
-  type: 'text' | 'rect' | 'circle' | 'arrow' | 'line' | 'star' | 'badge' | 'draw' | 'sticker' | 'svg' | 'frame';
+  type: 'text' | 'rect' | 'circle' | 'arrow' | 'line' | 'star' | 'badge' | 'draw' | 'sticker' | 'svg' | 'frame' | 'image' | 'photo' | 'picture';
   name?: string;
   x: number;
   y: number;
@@ -155,6 +155,8 @@ export interface CanvasElement {
   
   // Image / Sticker specific
   imgSrc?: string;
+  src?: string;
+  url?: string;
   imgElement?: HTMLImageElement;
 
   // Effects & Animations
@@ -562,6 +564,9 @@ export function safeSvgDataUrl(svgRawOrUrl: string): string {
   return svgRawOrUrl;
 }
 
+// Shared module-level cache for image elements to optimize canvas rendering & export
+export const previewImageCache = new Map<string, HTMLImageElement>();
+
 // Pure rendering function for drawing elements onto any canvas context
 export function renderElementsToCanvas(
   ctx: CanvasRenderingContext2D,
@@ -572,7 +577,8 @@ export function renderElementsToCanvas(
   filters: EditorFilters,
   hoveredFrameId?: string | null,
   editingFrameId?: string | null,
-  bgColor?: string
+  bgColor?: string,
+  onImageLoaded?: () => void
 ) {
   if (!ctx || w === 0 || h === 0) return;
   ctx.clearRect(0, 0, w, h);
@@ -598,6 +604,11 @@ export function renderElementsToCanvas(
   } else {
     ctx.fillStyle = bgColor || '#0f172a';
     ctx.fillRect(0, 0, w, h);
+    
+    // If bgImg is provided but not complete, it's still loading - we should request a redraw when it finishes
+    if (bgImg instanceof HTMLImageElement && !bgImg.complete) {
+      bgImg.onload = () => onImageLoaded?.();
+    }
   }
 
   // 2. Render Page Elements
@@ -610,15 +621,6 @@ export function renderElementsToCanvas(
     let rotation = el.rotation || 0;
 
     ctx.globalAlpha = opacity;
-    
-    // Apply Rotation around element center
-    if (rotation !== 0) {
-      const cx = el.x + el.w / 2;
-      const cy = el.y + el.h / 2;
-      ctx.translate(cx, cy);
-      ctx.rotate((rotation * Math.PI) / 180);
-      ctx.translate(-cx, -cy);
-    }
     
     // Apply Rotation around element center
     if (rotation !== 0) {
@@ -735,6 +737,31 @@ export function renderElementsToCanvas(
           ctx.fill(path);
         } catch {}
         ctx.restore();
+      }
+    } else if ((el.type === 'sticker' || el.type === 'image' || el.type === 'photo' || el.type === 'picture' || el.imgSrc || el.src || el.url) && el.type !== 'frame') {
+      const imgSrc = el.imgSrc || el.src || el.url || '';
+      let stickerImg: any = el.imgElement;
+      if (!stickerImg && imgSrc && previewImageCache.has(imgSrc)) {
+        stickerImg = previewImageCache.get(imgSrc);
+        el.imgElement = stickerImg;
+      }
+      if (
+        stickerImg &&
+        ((stickerImg instanceof HTMLImageElement && stickerImg.complete && stickerImg.naturalWidth > 0) ||
+         (stickerImg instanceof HTMLCanvasElement))
+      ) {
+        ctx.drawImage(stickerImg, el.x, el.y, el.w, el.h);
+      } else if (imgSrc) {
+        const img = new Image();
+        if (imgSrc.startsWith('http')) {
+          img.crossOrigin = 'anonymous';
+        }
+        img.onload = () => {
+          previewImageCache.set(imgSrc, img);
+          el.imgElement = img;
+          onImageLoaded?.();
+        };
+        img.src = imgSrc;
       }
     } else if (el.type === 'frame' || el.frameShape) {
       const shape = el.frameShape || 'circle';
@@ -879,6 +906,7 @@ export function renderElementsToCanvas(
           img.src = el.frameImgSrc;
           img.onload = () => {
             el.frameImgElement = img;
+            onImageLoaded?.();
           };
           previewImageCache.set(el.frameImgSrc, img);
           frameImg = img;
@@ -1006,91 +1034,15 @@ export function renderElementsToCanvas(
         ctx.lineWidth = 3;
         const r = Math.min(frameW, frameH) / 2;
         ctx.beginPath();
-        ctx.arc(x + frameW / 2, y + frameH / 2, Math.max(2, r - 3), -Math.PI / 4, (3 * Math.PI) / 4);
+        ctx.arc(x + frameW / 2, y + frameH / 2, r, 0, Math.PI * 2);
         ctx.stroke();
         ctx.restore();
-      } else if (shape === 'phone') {
-        ctx.fillStyle = '#000000';
-        ctx.beginPath();
-        ctx.roundRect(x + frameW / 2 - 24, y + 8, 48, 12, 6);
-        ctx.fill();
-      }
-
-      // Active Frame Hover / Drop Target Highlight
-      if (hoveredFrameId === el.id) {
-        ctx.save();
-        ctx.strokeStyle = '#ec4899';
-        ctx.lineWidth = 4;
-        ctx.shadowColor = '#ec4899';
-        ctx.shadowBlur = 16;
-        ctx.setLineDash([8, 8]);
-        createFramePath(ctx, shape, x - 2, y - 2, frameW + 4, frameH + 4);
-        ctx.stroke();
-        ctx.setLineDash([]);
-
-        const badgeW = 130;
-        const badgeH = 26;
-        ctx.fillStyle = '#ec4899';
-        ctx.beginPath();
-        ctx.roundRect(x + frameW / 2 - badgeW / 2, y + frameH / 2 - badgeH / 2, badgeW, badgeH, 13);
-        ctx.fill();
-        ctx.fillStyle = '#ffffff';
-        ctx.font = 'bold 11px Tajawal, sans-serif';
-        ctx.textAlign = 'center';
-        ctx.fillText('✨ أفلت لإدراج الصورة', x + frameW / 2, y + frameH / 2 + 4);
-        ctx.restore();
-      }
-
-      // Active In-Frame Crop Mode Highlight Indicator
-      if (editingFrameId === el.id) {
-        ctx.save();
-        ctx.strokeStyle = '#0284c7';
-        ctx.lineWidth = 3.5;
-        ctx.shadowColor = '#0284c7';
-        ctx.shadowBlur = 14;
-        ctx.setLineDash([6, 6]);
-        createFramePath(ctx, shape, x - 2, y - 2, frameW + 4, frameH + 4);
-        ctx.stroke();
-        ctx.setLineDash([]);
-
-        const badgeW = 165;
-        const badgeH = 26;
-        ctx.fillStyle = '#0284c7';
-        ctx.beginPath();
-        ctx.roundRect(x + frameW / 2 - badgeW / 2, y - 32, badgeW, badgeH, 13);
-        ctx.fill();
-        ctx.fillStyle = '#ffffff';
-        ctx.font = 'bold 11px Tajawal, sans-serif';
-        ctx.textAlign = 'center';
-        ctx.fillText('✥ اسحب الصورة للتحريك والضبط', x + frameW / 2, y - 15);
-        ctx.restore();
-      }
-    } else if (el.type === 'sticker' || el.imgSrc) {
-      let stickerImg: any = el.imgElement;
-      if (!stickerImg && el.imgSrc) {
-        if (previewImageCache.has(el.imgSrc)) {
-          stickerImg = previewImageCache.get(el.imgSrc);
-        } else {
-          const img = new Image();
-          img.crossOrigin = 'anonymous';
-          img.src = el.imgSrc;
-          previewImageCache.set(el.imgSrc, img);
-          stickerImg = img;
-        }
-      }
-      if (
-        stickerImg &&
-        ((stickerImg instanceof HTMLImageElement && stickerImg.complete && stickerImg.naturalWidth > 0) ||
-         stickerImg instanceof HTMLCanvasElement)
-      ) {
-        ctx.drawImage(stickerImg, el.x, el.y, el.w, el.h);
       }
     }
+
     ctx.restore();
   });
 }
-
-const previewImageCache = new Map<string, HTMLImageElement>();
 
 // Sub-component for rendering non-active page previews in vertical scroll stage
 const PageCanvasPreview: React.FC<{
@@ -1102,8 +1054,11 @@ const PageCanvasPreview: React.FC<{
   filters: EditorFilters;
 }> = ({ elements, imageSize, bgImgSrc, bgColor, defaultBgImg, filters }) => {
   const previewCanvasRef = useRef<HTMLCanvasElement>(null);
-  const hoveredFrameId = null;
-  const editingFrameId = null;
+  const [, setRenderTick] = useState(0);
+
+  const handleImageLoaded = useCallback(() => {
+    setRenderTick(t => t + 1);
+  }, []);
 
   useEffect(() => {
     const canvas = previewCanvasRef.current;
@@ -1116,27 +1071,37 @@ const PageCanvasPreview: React.FC<{
 
     let targetBg: HTMLImageElement | HTMLCanvasElement | null = defaultBgImg || null;
 
-    if (bgImgSrc) {
-      if (previewImageCache.has(bgImgSrc)) {
-        targetBg = previewImageCache.get(bgImgSrc)!;
+    if (bgImgSrc && !bgImgSrc.startsWith('#') && !bgImgSrc.startsWith('rgb')) {
+      const cached = previewImageCache.get(bgImgSrc);
+      if (cached && (cached.complete || cached.naturalWidth > 0)) {
+        targetBg = cached;
       } else {
         const img = new Image();
-        img.crossOrigin = 'anonymous';
-        img.src = bgImgSrc;
-        previewImageCache.set(bgImgSrc, img);
+        if (bgImgSrc.startsWith('http')) {
+          img.crossOrigin = 'anonymous';
+        }
         img.onload = () => {
-          if (previewCanvasRef.current) {
-            const freshCtx = previewCanvasRef.current.getContext('2d');
-            if (freshCtx) {
-              renderElementsToCanvas(freshCtx, elements, img, imageSize.width, imageSize.height, filters, null, null, bgColor);
-            }
-          }
+          previewImageCache.set(bgImgSrc, img);
+          handleImageLoaded();
         };
+        img.src = bgImgSrc;
+        // Don't set targetBg yet, wait for onload redraw
       }
     }
 
-    renderElementsToCanvas(ctx, elements, targetBg, imageSize.width, imageSize.height, filters, hoveredFrameId, editingFrameId, bgColor);
-  }, [elements, imageSize, bgImgSrc, bgColor, defaultBgImg, filters]);
+    renderElementsToCanvas(
+      ctx, 
+      elements || [], 
+      targetBg, 
+      imageSize.width, 
+      imageSize.height, 
+      filters, 
+      null, 
+      null, 
+      bgColor, 
+      handleImageLoaded
+    );
+  }, [elements, imageSize, bgImgSrc, bgColor, defaultBgImg, filters, handleImageLoaded]);
 
   return (
     <canvas 
@@ -1236,7 +1201,7 @@ export const ArtifactImageEditor: React.FC<ArtifactImageEditorProps> = ({
       setCurrentPageIndex(0);
     } else {
       setPages([{
-        id: `page-${Date.now()}`,
+        id: `page-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
         title: proj.title,
         elements: JSON.parse(JSON.stringify(proj.elements || [])),
         bgImgSrc: safeSvgDataUrl(proj.canvasBackground || proj.previewUrl)
@@ -1347,7 +1312,7 @@ export const ArtifactImageEditor: React.FC<ArtifactImageEditorProps> = ({
     setCustomWidth(width);
     setCustomHeight(height);
     setDesignTitle(title);
-    setPages([{ id: `page-${Date.now()}`, title: isAr ? 'الصفحة الأولى' : 'Page 1', elements: [] }]);
+    setPages([{ id: `page-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`, title: isAr ? 'الصفحة الأولى' : 'Page 1', elements: [] }]);
     setCurrentPageIndex(0);
     setCurrentProjId(defaultId);
 
@@ -1388,6 +1353,7 @@ export const ArtifactImageEditor: React.FC<ArtifactImageEditorProps> = ({
   const [templateSearchQuery, setTemplateSearchQuery] = useState<string>('');
   const [templateViewColumns, setTemplateViewColumns] = useState<1 | 2>(2);
   const [filterTemplatesByDimensions, setFilterTemplatesByDimensions] = useState<boolean>(true);
+  const [templateVisibleLimit, setTemplateVisibleLimit] = useState<number>(40);
   const [createPresetCategory, setCreatePresetCategory] = useState<string>('all');
   const [createPresetSearch, setCreatePresetSearch] = useState<string>('');
   const [autoSaveStatus, setAutoSaveStatus] = useState<'saved' | 'saving'>('saved');
@@ -2038,9 +2004,9 @@ export const ArtifactImageEditor: React.FC<ArtifactImageEditorProps> = ({
     setTimeout(() => {
       const el = document.getElementById(`page-stage-card-${pageIdx}`);
       if (el) {
-        el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        el.scrollIntoView({ behavior: 'smooth', block: 'center', inline: 'nearest' });
       }
-    }, 30);
+    }, 50);
   }, []);
 
   // Center and fit image smoothly to viewport
@@ -2098,7 +2064,7 @@ export const ArtifactImageEditor: React.FC<ArtifactImageEditorProps> = ({
     recordHistory();
     const newPageNum = pages.length + 1;
     const newPage: StudioPageItem = {
-      id: `page-${Date.now()}`,
+      id: `page-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`,
       title: isAr ? `الصفحة ${newPageNum}` : `Page ${newPageNum}`,
       elements: [],
       bgImgSrc: artifact.content,
@@ -2129,7 +2095,7 @@ export const ArtifactImageEditor: React.FC<ArtifactImageEditorProps> = ({
     const curElements = idxToDuplicate === currentPageIndex ? elements : target.elements;
 
     const newPage: StudioPageItem = {
-      id: `page-${Date.now()}`,
+      id: `page-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`,
       title: isAr ? `${target.title || 'صفحة'} (نسخة)` : `${target.title || 'Page'} (Copy)`,
       elements: JSON.parse(JSON.stringify(curElements)),
       bgImgSrc: target.bgImgSrc || artifact.content,
@@ -2172,8 +2138,9 @@ export const ArtifactImageEditor: React.FC<ArtifactImageEditorProps> = ({
   }, [pages, currentPageIndex, isAr, recordHistory, scrollToPageCard]);
 
   const handleSwitchPage = useCallback((targetIdx: number, autoScroll = false) => {
-    if (targetIdx < 0 || targetIdx >= pages.length) return;
+    if (targetIdx < 0) return;
     setPages(prev => {
+      if (targetIdx >= prev.length) return prev;
       const next = [...prev];
       if (next[currentPageIndex]) {
         next[currentPageIndex] = {
@@ -2181,18 +2148,18 @@ export const ArtifactImageEditor: React.FC<ArtifactImageEditorProps> = ({
           elements: JSON.parse(JSON.stringify(elements))
         };
       }
+      const targetPage = next[targetIdx];
+      if (targetPage) {
+        setElements(JSON.parse(JSON.stringify(targetPage.elements || [])));
+      }
       return next;
     });
     setCurrentPageIndex(targetIdx);
-    const targetPage = pages[targetIdx];
-    if (targetPage) {
-      setElements(JSON.parse(JSON.stringify(targetPage.elements)));
-    }
     setSelectedId(null);
     if (autoScroll) {
       scrollToPageCard(targetIdx);
     }
-  }, [currentPageIndex, pages, elements, scrollToPageCard]);
+  }, [currentPageIndex, elements, scrollToPageCard]);
 
   const handleToggleLockCurrentPage = useCallback(() => {
     setPages(prev => prev.map((p, idx) => idx === currentPageIndex ? { ...p, locked: !p.locked } : p));
@@ -2458,14 +2425,15 @@ export const ArtifactImageEditor: React.FC<ArtifactImageEditorProps> = ({
           previewUrl: curArtifact.content,
           width: targetImageSize.width,
           height: targetImageSize.height,
-          canvasBackground: curArtifact.content,
+          canvasBackground: targetPages[targetPageIndex]?.bgImgSrc || curArtifact.content,
           elements: cleanElements,
+          pages: cleanPages,
           filters: targetFilters,
           createdAt: Date.now(),
           updatedAt: Date.now(),
           tags: [isAr ? 'استوديو رينكس' : 'Rinex Studio'],
           isPublic: isDesignPublic
-        } as any;
+        };
         saveUserStudioProject(user.id, project);
         if (onSaveProject) {
           onSaveProject(project);
@@ -2513,27 +2481,50 @@ export const ArtifactImageEditor: React.FC<ArtifactImageEditorProps> = ({
     }
 
     setElements(JSON.parse(JSON.stringify(tpl.elements || [])));
+    imageRef.current = null;
+    setImageLoaded(false); // Clear main canvas loader to fix persistence
     setSelectedId(null);
     setPendingTemplatePrompt(null);
+    
+    // Clear canvas immediately to fix persistence and show loading state
+    if (canvasRef.current) {
+      const ctx = canvasRef.current.getContext('2d');
+      if (ctx) {
+        ctx.clearRect(0, 0, canvasRef.current.width, canvasRef.current.height);
+        ctx.fillStyle = (tpl as any).backgroundColor || '#0f172a';
+        ctx.fillRect(0, 0, canvasRef.current.width, canvasRef.current.height);
+      }
+    }
 
     if (templateBgUrl && !templateBgUrl.startsWith('#') && !templateBgUrl.startsWith('rgb')) {
-      const img = new Image();
-      if (templateBgUrl.startsWith('http')) {
-        img.crossOrigin = 'anonymous';
-      }
-      img.src = templateBgUrl;
-      img.onload = () => {
-        imageRef.current = img;
+      if (previewImageCache.has(templateBgUrl)) {
+        imageRef.current = previewImageCache.get(templateBgUrl)!;
         if (canvasRef.current) {
           const ctx = canvasRef.current.getContext('2d');
           if (ctx) {
-            ctx.drawImage(img, 0, 0, canvasRef.current.width, canvasRef.current.height);
+            ctx.drawImage(imageRef.current, 0, 0, canvasRef.current.width, canvasRef.current.height);
           }
         }
-      };
-      img.onerror = () => {
-        imageRef.current = null;
-      };
+      } else {
+        const img = new Image();
+        if (templateBgUrl.startsWith('http')) {
+          img.crossOrigin = 'anonymous';
+        }
+        img.onload = () => {
+          previewImageCache.set(templateBgUrl, img);
+          imageRef.current = img;
+          if (canvasRef.current) {
+            const ctx = canvasRef.current.getContext('2d');
+            if (ctx) {
+              ctx.drawImage(img, 0, 0, canvasRef.current.width, canvasRef.current.height);
+            }
+          }
+        };
+        img.onerror = () => {
+          imageRef.current = null;
+        };
+        img.src = templateBgUrl;
+      }
     } else {
       imageRef.current = null;
     }
@@ -2619,7 +2610,7 @@ export const ArtifactImageEditor: React.FC<ArtifactImageEditorProps> = ({
 
     const newPageNum = pages.length + 1;
     const newPage: StudioPageItem = {
-      id: `page-${Date.now()}`,
+      id: `page-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`,
       title: isAr ? `${tpl.titleAr}` : `${tpl.titleEn}`,
       elements: JSON.parse(JSON.stringify(tpl.elements || [])),
       bgImgSrc: templateBgUrl,
@@ -2638,22 +2629,41 @@ export const ArtifactImageEditor: React.FC<ArtifactImageEditorProps> = ({
     const newIdx = pages.length;
     setCurrentPageIndex(newIdx);
     setElements(JSON.parse(JSON.stringify(tpl.elements || [])));
+    imageRef.current = null;
+    setImageLoaded(false); // Clear main canvas loader to fix persistence
     setSelectedId(null);
     setPendingTemplatePrompt(null);
+    
+    // Clear canvas immediately to fix persistence
+    if (canvasRef.current) {
+      const ctx = canvasRef.current.getContext('2d');
+      if (ctx) ctx.clearRect(0, 0, canvasRef.current.width, canvasRef.current.height);
+    }
 
-    if (templateBgUrl) {
-      const img = new Image();
-      img.crossOrigin = 'anonymous';
-      img.src = templateBgUrl;
-      img.onload = () => {
-        imageRef.current = img;
+    if (templateBgUrl && !templateBgUrl.startsWith('#') && !templateBgUrl.startsWith('rgb')) {
+      if (previewImageCache.has(templateBgUrl)) {
+        imageRef.current = previewImageCache.get(templateBgUrl)!;
         if (canvasRef.current) {
           const ctx = canvasRef.current.getContext('2d');
           if (ctx) {
-            ctx.drawImage(img, 0, 0, canvasRef.current.width, canvasRef.current.height);
+            ctx.drawImage(imageRef.current, 0, 0, canvasRef.current.width, canvasRef.current.height);
           }
         }
-      };
+      } else {
+        const img = new Image();
+        img.crossOrigin = 'anonymous';
+        img.onload = () => {
+          previewImageCache.set(templateBgUrl, img);
+          imageRef.current = img;
+          if (canvasRef.current) {
+            const ctx = canvasRef.current.getContext('2d');
+            if (ctx) {
+              ctx.drawImage(img, 0, 0, canvasRef.current.width, canvasRef.current.height);
+            }
+          }
+        };
+        img.src = templateBgUrl;
+      }
     }
 
     if (tpl.width && tpl.height && (imageSize.width !== tpl.width || imageSize.height !== tpl.height)) {
@@ -3070,893 +3080,24 @@ export const ArtifactImageEditor: React.FC<ArtifactImageEditorProps> = ({
     canvas.width = imageSize.width;
     canvas.height = imageSize.height;
 
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-    // Apply CSS Filters & Post-Production Effects
-    ctx.filter = `
-      brightness(${filters.brightness}%) 
-      contrast(${filters.contrast}%) 
-      saturate(${filters.saturation}%) 
-      blur(${filters.blur}px) 
-      grayscale(${filters.grayscale}%) 
-      sepia(${filters.sepia}%)
-      hue-rotate(${filters.hueRotate}deg)
-      invert(${filters.invert}%)
-    `.trim();
-
     const currentBgImg: any = imageRef.current;
-    if (studioMode === 'video') {
-      const activeScene = videoScenes[activeSceneIndex];
-      if (
-        currentBgImg &&
-        ((currentBgImg instanceof HTMLImageElement && currentBgImg.complete && currentBgImg.naturalWidth > 0) ||
-         (currentBgImg instanceof HTMLCanvasElement))
-      ) {
-        ctx.drawImage(currentBgImg, 0, 0, canvas.width, canvas.height);
-      } else {
-        ctx.fillStyle = activeScene?.backgroundColor || '#090d16';
-        ctx.fillRect(0, 0, canvas.width, canvas.height);
-      }
-    } else {
-      if (
-        currentBgImg &&
-        ((currentBgImg instanceof HTMLImageElement && currentBgImg.complete && currentBgImg.naturalWidth > 0) ||
-         (currentBgImg instanceof HTMLCanvasElement))
-      ) {
-        ctx.drawImage(currentBgImg, 0, 0, canvas.width, canvas.height);
-      } else {
-        const curPage = pages[currentPageIndex];
-        const pageBg = curPage?.bgImgSrc;
-        if (pageBg && typeof pageBg === 'string' && (pageBg.startsWith('#') || pageBg.startsWith('rgb') || pageBg.startsWith('hsl'))) {
-          ctx.fillStyle = pageBg;
-        } else {
-          ctx.fillStyle = '#ffffff';
-        }
-        ctx.fillRect(0, 0, canvas.width, canvas.height);
-      }
-    }
-    ctx.filter = 'none';
-
-    // Render Canvas Elements in Z-Index Order
-    elements.forEach(el => {
-      if (el.hidden) return;
-
-      ctx.save();
-      ctx.globalAlpha = el.opacity !== undefined ? el.opacity : 1;
-
-      // Apply 360-degree rotation around element center
-      if (el.rotation) {
-        const cx = el.x + (el.w || 0) / 2;
-        const cy = el.y + (el.h || 0) / 2;
-        ctx.translate(cx, cy);
-        ctx.rotate((el.rotation * Math.PI) / 180);
-        ctx.translate(-cx, -cy);
-      }
-
-      // 1. Render Brush Drawing
-      if (el.type === 'draw' && el.points && el.points.length > 0) {
-        const sw = el.strokeWidth || 4;
-        ctx.strokeStyle = el.color;
-        ctx.lineWidth = sw;
-        ctx.lineCap = 'round';
-        ctx.lineJoin = 'round';
-
-        if (el.brushMode === 'highlighter') {
-          ctx.globalAlpha = (el.opacity || 0.45) * 0.45;
-          ctx.lineWidth = Math.max(12, sw * 2.5);
-        } else if (el.brushMode === 'marker') {
-          ctx.lineWidth = Math.max(8, sw * 1.8);
-        }
-
-        ctx.beginPath();
-        el.points.forEach((pt, idx) => {
-          if (idx === 0) ctx.moveTo(pt.x, pt.y);
-          else ctx.lineTo(pt.x, pt.y);
-        });
-        ctx.stroke();
-      }
-
-      // 2. Render Text Element (Strict Calibrated Frame & Multi-line Auto-wrap)
-      else if (el.type === 'text' && el.text) {
-        let displayText = el.text;
-        if (el.textUppercase) displayText = displayText.toUpperCase();
-
-        const fontSize = el.fontSize || 32;
-        const fontFamily = el.fontFamily || 'Tajawal, sans-serif';
-        const fontWeight = el.fontWeight || 'bold';
-        const fontStyle = el.fontStyle || 'normal';
-        const maxWidth = el.w && el.w > 30 ? el.w - 12 : undefined;
-
-        ctx.font = `${fontStyle} ${fontWeight} ${fontSize}px ${fontFamily}`;
-        ctx.textAlign = el.textAlign || 'center';
-        ctx.textBaseline = 'top';
-
-        const metrics = computeTextMetrics(
-          displayText,
-          fontFamily,
-          fontSize,
-          fontWeight,
-          fontStyle,
-          maxWidth,
-          el.textLineHeight || 1.25,
-          false
-        );
-        const lines = metrics.lines;
-        const lineHeight = metrics.lineHeight;
-        const pad = el.textBgPadding !== undefined ? el.textBgPadding : 6;
-        const rad = el.textBgCornerRadius !== undefined ? el.textBgCornerRadius : 6;
-
-        // Background box matching element bounds or tight line bounds
-        if (el.textBgColor && el.textBgColor !== 'transparent') {
-          ctx.fillStyle = el.textBgColor;
-          ctx.beginPath();
-          const bgW = el.w || (metrics.width + pad * 2);
-          const bgH = el.h || (metrics.height + pad * 2);
-          ctx.roundRect(el.x, el.y, bgW, bgH, rad);
-          ctx.fill();
-        }
-
-        // When actively editing in textarea, do not render duplicate text on canvas
-        if (editingTextId === el.id) {
-          ctx.restore();
-          return;
-        }
-
-        // Drop shadow / 3D Offset
-        if (el.textShadow) {
-          ctx.shadowColor = el.shadowColor || 'rgba(0, 0, 0, 0.85)';
-          ctx.shadowBlur = el.shadowBlur !== undefined ? el.shadowBlur : 8;
-          ctx.shadowOffsetX = el.shadowOffsetX !== undefined ? el.shadowOffsetX : 3;
-          ctx.shadowOffsetY = el.shadowOffsetY !== undefined ? el.shadowOffsetY : 3;
-        }
-
-        // Curved Text Mode
-        if (el.textCurve && el.textCurve !== 0 && lines.length === 1) {
-          const text = lines[0];
-          const radius = (100 / Math.abs(el.textCurve)) * Math.max(el.w || 200, 150);
-          const isUpward = el.textCurve > 0;
-          const totalAngle = (text.length * (el.fontSize || 32) * 0.55) / radius;
-
-          ctx.save();
-          ctx.translate(el.x + (el.w || 200) / 2, isUpward ? el.y + radius : el.y - radius);
-
-          for (let i = 0; i < text.length; i++) {
-            const char = text[i];
-            const charAngle = -totalAngle / 2 + (i / Math.max(text.length - 1, 1)) * totalAngle;
-            ctx.save();
-            ctx.rotate(isUpward ? charAngle : -charAngle);
-            ctx.translate(0, isUpward ? -radius : radius);
-
-            if (el.textStrokeWidth && el.textStrokeWidth > 0) {
-              ctx.strokeStyle = el.textStrokeColor || '#000000';
-              ctx.lineWidth = el.textStrokeWidth;
-              ctx.strokeText(char, 0, 0);
-            }
-
-            ctx.fillStyle = el.color;
-            ctx.fillText(char, 0, 0);
-            ctx.restore();
-          }
-          ctx.restore();
-        } else {
-          // Standard Multi-line Rendering within frame bounds
-          const totalTextHeight = lines.length * lineHeight;
-          const topOffsetY = el.h && el.h > totalTextHeight ? Math.max(0, (el.h - totalTextHeight) / 2) : 4;
-
-          lines.forEach((line, idx) => {
-            let drawX = el.x + 6;
-            if (el.textAlign === 'center') drawX = el.x + (el.w || metrics.width + 12) / 2;
-            else if (el.textAlign === 'right') drawX = el.x + (el.w || metrics.width + 12) - 6;
-
-            const drawY = el.y + topOffsetY + idx * lineHeight;
-
-            // Optional Letter Spacing
-            if (el.textLetterSpacing && el.textLetterSpacing > 0) {
-              let currentX = drawX;
-              for (let i = 0; i < line.length; i++) {
-                const ch = line[i];
-                if (el.textStrokeWidth && el.textStrokeWidth > 0) {
-                  ctx.strokeStyle = el.textStrokeColor || '#000000';
-                  ctx.lineWidth = el.textStrokeWidth;
-                  ctx.strokeText(ch, currentX, drawY);
-                }
-                ctx.fillStyle = el.color;
-                ctx.fillText(ch, currentX, drawY);
-                currentX += ctx.measureText(ch).width + el.textLetterSpacing;
-              }
-            } else {
-              if (el.textStrokeWidth && el.textStrokeWidth > 0) {
-                ctx.strokeStyle = el.textStrokeColor || '#000000';
-                ctx.lineWidth = el.textStrokeWidth;
-                ctx.strokeText(line, drawX, drawY);
-              }
-              ctx.fillStyle = el.color;
-              ctx.fillText(line, drawX, drawY);
-            }
-          });
-        }
-      }
-
-      // 3. Render Rectangle / Rounded Rect
-      else if (el.type === 'rect') {
-        const sw = el.strokeWidth || 0;
-        ctx.strokeStyle = el.strokeColor || el.color;
-        ctx.lineWidth = sw;
-        ctx.fillStyle = el.fillColor || 'transparent';
-
-        ctx.beginPath();
-        if (el.cornerRadius) {
-          ctx.roundRect(el.x, el.y, el.w, el.h, el.cornerRadius);
-        } else {
-          ctx.rect(el.x, el.y, el.w, el.h);
-        }
-        if (el.fillColor && el.fillColor !== 'transparent') ctx.fill();
-        if (sw > 0) ctx.stroke();
-      }
-
-      // 4. Render Circle / Ellipse
-      else if (el.type === 'circle') {
-        const sw = el.strokeWidth || 0;
-        ctx.strokeStyle = el.strokeColor || el.color;
-        ctx.lineWidth = sw;
-        ctx.fillStyle = el.fillColor || 'transparent';
-
-        const rx = Math.abs(el.w) / 2;
-        const ry = Math.abs(el.h) / 2;
-        const cx = el.x + rx;
-        const cy = el.y + ry;
-
-        ctx.beginPath();
-        ctx.ellipse(cx, cy, rx, ry, 0, 0, Math.PI * 2);
-        if (el.fillColor && el.fillColor !== 'transparent') ctx.fill();
-        if (sw > 0) ctx.stroke();
-      }
-
-      // 5. Render Arrow
-      else if (el.type === 'arrow') {
-        const sw = el.strokeWidth || 4;
-        ctx.strokeStyle = el.color;
-        ctx.fillStyle = el.color;
-        ctx.lineWidth = sw;
-        ctx.lineCap = 'round';
-
-        const headLength = Math.max(16, sw * 3.5);
-        const dx = el.w;
-        const dy = el.h;
-        const angle = Math.atan2(dy, dx);
-        const endX = el.x + el.w;
-        const endY = el.y + el.h;
-
-        ctx.beginPath();
-        ctx.moveTo(el.x, el.y);
-        ctx.lineTo(endX, endY);
-        ctx.stroke();
-
-        ctx.beginPath();
-        ctx.moveTo(endX, endY);
-        ctx.lineTo(endX - headLength * Math.cos(angle - Math.PI / 6), endY - headLength * Math.sin(angle - Math.PI / 6));
-        ctx.lineTo(endX - headLength * Math.cos(angle + Math.PI / 6), endY - headLength * Math.sin(angle + Math.PI / 6));
-        ctx.closePath();
-        ctx.fill();
-      }
-
-      // 6. Render Star
-      else if (el.type === 'star') {
-        const sw = el.strokeWidth || 0;
-        ctx.strokeStyle = el.strokeColor || el.color;
-        ctx.fillStyle = el.fillColor || el.color;
-        ctx.lineWidth = sw;
-
-        const cx = el.x + el.w / 2;
-        const cy = el.y + el.h / 2;
-        const spikes = 5;
-        const outerRadius = Math.min(Math.abs(el.w), Math.abs(el.h)) / 2;
-        const innerRadius = outerRadius / 2.2;
-
-        let rot = (Math.PI / 2) * 3;
-        const step = Math.PI / spikes;
-
-        ctx.beginPath();
-        ctx.moveTo(cx, cy - outerRadius);
-        for (let i = 0; i < spikes; i++) {
-          let x = cx + Math.cos(rot) * outerRadius;
-          let y = cy + Math.sin(rot) * outerRadius;
-          ctx.lineTo(x, y);
-          rot += step;
-
-          x = cx + Math.cos(rot) * innerRadius;
-          y = cy + Math.sin(rot) * innerRadius;
-          ctx.lineTo(x, y);
-          rot += step;
-        }
-        ctx.lineTo(cx, cy - outerRadius);
-        ctx.closePath();
-        if (el.fillColor && el.fillColor !== 'transparent') ctx.fill();
-        if (sw > 0) ctx.stroke();
-      }
-
-      // 7. Render Custom Image / Sticker Overlay
-      else if (el.type === 'sticker' || el.imgSrc) {
-        const stickerImg: any = el.imgElement;
-        if (
-          stickerImg &&
-          ((stickerImg instanceof HTMLImageElement && stickerImg.complete && stickerImg.naturalWidth > 0) ||
-           (stickerImg instanceof HTMLCanvasElement))
-        ) {
-          ctx.drawImage(stickerImg, el.x, el.y, el.w, el.h);
-        } else if (el.imgSrc) {
-          // Lazily instantiate imgElement if missing or lost during state clone / JSON serialization
-          const img = new Image();
-          img.crossOrigin = 'anonymous';
-          img.src = el.imgSrc;
-          img.onload = () => {
-            el.imgElement = img;
-            drawCanvas();
-          };
-        }
-      }
-
-
-      // 8. Render Vector SVG Shape
-      else if (el.type === 'svg' && el.svgPath) {
-        ctx.save();
-        ctx.translate(el.x, el.y);
-        const scaleFactorX = (el.w || 60) / 24;
-        const scaleFactorY = (el.h || 60) / 24;
-        ctx.scale(scaleFactorX, scaleFactorY);
-        const pathObj = new Path2D(el.svgPath);
-        ctx.fillStyle = el.fillColor || el.color;
-        ctx.fill(pathObj);
-        if (el.strokeWidth && el.strokeWidth > 0) {
-          ctx.strokeStyle = el.strokeColor || el.color;
-          ctx.lineWidth = el.strokeWidth / Math.max(scaleFactorX, scaleFactorY, 0.1);
-          ctx.stroke(pathObj);
-        }
-        ctx.restore();
-      }
-
-      // 9. Render Photo Container Frame (Clipping Image Container)
-      else if (el.type === 'frame' || el.frameShape) {
-        const shape = el.frameShape || 'circle';
-        const frameW = el.w || 200;
-        const frameH = el.h || 200;
-        const x = el.x;
-        const y = el.y;
-
-        // 1. Draw Frame Outer Body / Backdrop for Special Frame Mockups
-        if (shape === 'polaroid') {
-          ctx.fillStyle = '#ffffff';
-          ctx.shadowColor = 'rgba(0,0,0,0.2)';
-          ctx.shadowBlur = 12;
-          ctx.shadowOffsetY = 4;
-          ctx.beginPath();
-          ctx.roundRect(x, y, frameW, frameH, 8);
-          ctx.fill();
-          ctx.shadowColor = 'transparent';
-        } else if (shape === 'phone') {
-          ctx.fillStyle = el.color || '#1e293b';
-          ctx.shadowColor = 'rgba(0,0,0,0.3)';
-          ctx.shadowBlur = 16;
-          ctx.beginPath();
-          ctx.roundRect(x, y, frameW, frameH, 28);
-          ctx.fill();
-          ctx.shadowColor = 'transparent';
-        } else if (shape === 'laptop') {
-          ctx.fillStyle = '#334155';
-          ctx.beginPath();
-          ctx.roundRect(x + frameW * 0.08, y, frameW * 0.84, frameH * 0.8, 8);
-          ctx.fill();
-          ctx.fillStyle = '#94a3b8';
-          ctx.beginPath();
-          ctx.roundRect(x, y + frameH * 0.8, frameW, frameH * 0.15, 6);
-          ctx.fill();
-        } else if (shape === 'browser') {
-          ctx.fillStyle = '#ffffff';
-          ctx.shadowColor = 'rgba(0,0,0,0.15)';
-          ctx.shadowBlur = 10;
-          ctx.beginPath();
-          ctx.roundRect(x, y, frameW, frameH, 10);
-          ctx.fill();
-          ctx.shadowColor = 'transparent';
-          ctx.fillStyle = '#e2e8f0';
-          ctx.beginPath();
-          ctx.roundRect(x, y, frameW, 30, [10, 10, 0, 0]);
-          ctx.fill();
-          const dotY = y + 15;
-          ctx.fillStyle = '#ef4444'; ctx.beginPath(); ctx.arc(x + 16, dotY, 4, 0, Math.PI * 2); ctx.fill();
-          ctx.fillStyle = '#f59e0b'; ctx.beginPath(); ctx.arc(x + 28, dotY, 4, 0, Math.PI * 2); ctx.fill();
-          ctx.fillStyle = '#10b981'; ctx.beginPath(); ctx.arc(x + 40, dotY, 4, 0, Math.PI * 2); ctx.fill();
-        } else if (shape === 'gold_luxury') {
-          const g = ctx.createLinearGradient(x, y, x + frameW, y + frameH);
-          g.addColorStop(0, '#f59e0b');
-          g.addColorStop(0.5, '#fef08a');
-          g.addColorStop(1, '#d97706');
-          ctx.fillStyle = g;
-          ctx.beginPath();
-          ctx.roundRect(x - 6, y - 6, frameW + 12, frameH + 12, 12);
-          ctx.fill();
-        } else if (shape === 'neon_cyber') {
-          ctx.shadowColor = '#38bdf8';
-          ctx.shadowBlur = 18;
-          ctx.strokeStyle = '#38bdf8';
-          ctx.lineWidth = 4;
-          createFramePath(ctx, shape, x, y, frameW, frameH);
-          ctx.stroke();
-          ctx.shadowColor = 'transparent';
-        }
-
-        // 1.5 Translucent Ghost Unclipped Image Preview for Active In-Frame Crop Mode
-        let ghostFrameImg: any = el.frameImgElement;
-        const isGhostValid = ghostFrameImg && (ghostFrameImg instanceof HTMLImageElement || ghostFrameImg instanceof HTMLCanvasElement);
-        if (!isGhostValid && el.frameImgSrc) {
-          if (previewImageCache.has(el.frameImgSrc)) {
-            ghostFrameImg = previewImageCache.get(el.frameImgSrc);
-            el.frameImgElement = ghostFrameImg;
-            drawCanvas();
-          } else {
-            const img = new Image();
-            img.crossOrigin = 'anonymous';
-            img.src = el.frameImgSrc;
-            img.onload = () => {
-              el.frameImgElement = img;
-              drawCanvas();
-            };
-            previewImageCache.set(el.frameImgSrc, img);
-            ghostFrameImg = img;
-          }
-        }
-
-        if (
-          editingFrameId === el.id &&
-          ghostFrameImg &&
-          ((ghostFrameImg instanceof HTMLImageElement && ghostFrameImg.complete && ghostFrameImg.naturalWidth > 0) ||
-           (ghostFrameImg instanceof HTMLCanvasElement))
-        ) {
-          const imgW = (ghostFrameImg as HTMLImageElement).naturalWidth || ghostFrameImg.width || 400;
-          const imgH = (ghostFrameImg as HTMLImageElement).naturalHeight || ghostFrameImg.height || 400;
-
-          let areaX = x, areaY = y, areaW = frameW, areaH = frameH;
-          if (shape === 'polaroid') {
-            const margin = frameW * 0.08;
-            areaX = x + margin; areaY = y + margin;
-            areaW = frameW - margin * 2; areaH = frameH * 0.72;
-          } else if (shape === 'phone') {
-            const b = frameW * 0.05;
-            areaX = x + b; areaY = y + b; areaW = frameW - b * 2; areaH = frameH - b * 2;
-          } else if (shape === 'laptop') {
-            areaX = x + frameW * 0.12; areaY = y + frameH * 0.08;
-            areaW = frameW * 0.76; areaH = frameH * 0.68;
-          } else if (shape === 'browser') {
-            areaY = y + 30; areaH = frameH - 30;
-          }
-
-          const userScale = el.frameImgScale || 1;
-          const scale = Math.max(areaW / imgW, areaH / imgH) * userScale;
-          const drawW = imgW * scale;
-          const drawH = imgH * scale;
-
-          const offsetX = el.frameImgOffsetX || 0;
-          const offsetY = el.frameImgOffsetY || 0;
-
-          const drawX = areaX + (areaW - drawW) / 2 + offsetX;
-          const drawY = areaY + (areaH - drawH) / 2 + offsetY;
-
-          ctx.save();
-          ctx.globalAlpha = 0.35;
-          ctx.drawImage(ghostFrameImg, drawX, drawY, drawW, drawH);
-          ctx.strokeStyle = '#38bdf8';
-          ctx.lineWidth = 1.5;
-          ctx.setLineDash([4, 4]);
-          ctx.strokeRect(drawX, drawY, drawW, drawH);
-          ctx.restore();
-        }
-
-        // 2. Save Context & Create Mask Path for Photo Clipping
-        ctx.save();
-        createFramePath(ctx, shape, x, y, frameW, frameH);
-        ctx.clip();
-
-        // 3. Render Loaded Image or Placeholder Fill inside Frame Path
-        let frameImg: any = el.frameImgElement;
-        const isFrameImgValid = frameImg && (frameImg instanceof HTMLImageElement || frameImg instanceof HTMLCanvasElement);
-        if (!isFrameImgValid && el.frameImgSrc) {
-          if (previewImageCache.has(el.frameImgSrc)) {
-            frameImg = previewImageCache.get(el.frameImgSrc);
-            el.frameImgElement = frameImg;
-            drawCanvas();
-          } else {
-            const img = new Image();
-            img.crossOrigin = 'anonymous';
-            img.src = el.frameImgSrc;
-            img.onload = () => {
-              el.frameImgElement = img;
-              drawCanvas();
-            };
-            previewImageCache.set(el.frameImgSrc, img);
-            frameImg = img;
-          }
-        }
-
-        if (
-          frameImg &&
-          ((frameImg instanceof HTMLImageElement && frameImg.complete && frameImg.naturalWidth > 0) ||
-           (frameImg instanceof HTMLCanvasElement))
-        ) {
-          const imgW = (frameImg as HTMLImageElement).naturalWidth || frameImg.width || 400;
-          const imgH = (frameImg as HTMLImageElement).naturalHeight || frameImg.height || 400;
-
-          let areaX = x, areaY = y, areaW = frameW, areaH = frameH;
-          if (shape === 'polaroid') {
-            const margin = frameW * 0.08;
-            areaX = x + margin; areaY = y + margin;
-            areaW = frameW - margin * 2; areaH = frameH * 0.72;
-          } else if (shape === 'phone') {
-            const b = frameW * 0.05;
-            areaX = x + b; areaY = y + b; areaW = frameW - b * 2; areaH = frameH - b * 2;
-          } else if (shape === 'laptop') {
-            areaX = x + frameW * 0.12; areaY = y + frameH * 0.08;
-            areaW = frameW * 0.76; areaH = frameH * 0.68;
-          } else if (shape === 'browser') {
-            areaY = y + 30; areaH = frameH - 30;
-          }
-
-          const userScale = el.frameImgScale || 1;
-          const scale = Math.max(areaW / imgW, areaH / imgH) * userScale;
-          const drawW = imgW * scale;
-          const drawH = imgH * scale;
-
-          const offsetX = el.frameImgOffsetX || 0;
-          const offsetY = el.frameImgOffsetY || 0;
-
-          const drawX = areaX + (areaW - drawW) / 2 + offsetX;
-          const drawY = areaY + (areaH - drawH) / 2 + offsetY;
-
-          ctx.drawImage(frameImg, drawX, drawY, drawW, drawH);
-        } else {
-          // Empty Frame Container Placeholder
-          ctx.fillStyle = el.frameBgColor || '#f8fafc';
-          ctx.fillRect(x, y, frameW, frameH);
-
-          // Dashed Inner Shape Outline
-          ctx.strokeStyle = el.frameBorderColor || el.color || '#6366f1';
-          ctx.lineWidth = 2;
-          ctx.setLineDash([6, 6]);
-          createFramePath(ctx, shape, x + 6, y + 6, frameW - 12, frameH - 12);
-          ctx.stroke();
-          ctx.setLineDash([]);
-
-          // Center Icon & "+ إضافة صورة"
-          const cx = x + frameW / 2;
-          const cy = y + frameH / 2;
-          ctx.fillStyle = el.frameBorderColor || el.color || '#6366f1';
-          
-          ctx.beginPath();
-          ctx.roundRect(cx - 16, cy - 18, 32, 22, 4);
-          ctx.fill();
-          ctx.fillStyle = '#ffffff';
-          ctx.beginPath();
-          ctx.arc(cx, cy - 7, 5, 0, Math.PI * 2);
-          ctx.fill();
-
-          ctx.fillStyle = el.frameBorderColor || el.color || '#4338ca';
-          ctx.font = 'bold 12px Tajawal, sans-serif';
-          ctx.textAlign = 'center';
-          ctx.fillText('+ إضافة صورة', cx, cy + 14);
-        }
-        ctx.restore();
-
-        // 4. Outer Frame Borders, Rings & Accents
-        const borderWidth = el.frameBorderWidth !== undefined ? el.frameBorderWidth : (el.frameImgSrc ? 0 : 2);
-        if (borderWidth > 0 && !['polaroid', 'phone', 'laptop', 'browser', 'double_circle', 'dotted_circle', 'neon_cyber', 'gold_luxury', 'circle_3d'].includes(shape)) {
-          ctx.strokeStyle = el.frameBorderColor || el.color || '#6366f1';
-          ctx.lineWidth = borderWidth;
-          if (shape === 'dotted_circle') {
-            ctx.setLineDash([5, 5]);
-          }
-          createFramePath(ctx, shape, x, y, frameW, frameH);
-          ctx.stroke();
-          ctx.setLineDash([]);
-        }
-
-        if (shape === 'double_circle') {
-          ctx.strokeStyle = el.frameBorderColor || '#f59e0b';
-          ctx.lineWidth = 3;
-          const r = Math.min(frameW, frameH) / 2;
-          ctx.beginPath();
-          ctx.arc(x + frameW / 2, y + frameH / 2, Math.max(2, r - 6), 0, Math.PI * 2);
-          ctx.stroke();
-        } else if (shape === 'dotted_circle') {
-          ctx.save();
-          ctx.strokeStyle = el.frameBorderColor || '#ec4899';
-          ctx.lineWidth = 3;
-          ctx.setLineDash([5, 5]);
-          const r = Math.min(frameW, frameH) / 2;
-          ctx.beginPath();
-          ctx.arc(x + frameW / 2, y + frameH / 2, r, 0, Math.PI * 2);
-          ctx.stroke();
-          ctx.restore();
-        } else if (shape === 'neon_cyber') {
-          ctx.save();
-          ctx.strokeStyle = el.frameBorderColor || '#06b6d4';
-          ctx.lineWidth = 4;
-          ctx.shadowColor = '#06b6d4';
-          ctx.shadowBlur = 12;
-          const r = Math.min(frameW, frameH) / 2;
-          ctx.beginPath();
-          ctx.arc(x + frameW / 2, y + frameH / 2, r, 0, Math.PI * 2);
-          ctx.stroke();
-          ctx.restore();
-        } else if (shape === 'gold_luxury') {
-          ctx.save();
-          const g = ctx.createLinearGradient(x, y, x + frameW, y + frameH);
-          g.addColorStop(0, '#f59e0b');
-          g.addColorStop(0.5, '#fef08a');
-          g.addColorStop(1, '#d97706');
-          ctx.strokeStyle = g;
-          ctx.lineWidth = 5;
-          const r = Math.min(frameW, frameH) / 2;
-          ctx.beginPath();
-          ctx.arc(x + frameW / 2, y + frameH / 2, r, 0, Math.PI * 2);
-          ctx.stroke();
-          ctx.restore();
-        } else if (shape === 'circle_3d') {
-          ctx.save();
-          ctx.strokeStyle = 'rgba(255, 255, 255, 0.8)';
-          ctx.lineWidth = 3;
-          const r = Math.min(frameW, frameH) / 2;
-          ctx.beginPath();
-          ctx.arc(x + frameW / 2, y + frameH / 2, Math.max(2, r - 3), -Math.PI / 4, (3 * Math.PI) / 4);
-          ctx.stroke();
-          ctx.restore();
-        } else if (shape === 'phone') {
-          ctx.fillStyle = '#000000';
-          ctx.beginPath();
-          ctx.roundRect(x + frameW / 2 - 24, y + 8, 48, 12, 6);
-          ctx.fill();
-        }
-
-        // Active Frame Hover / Drop Target Highlight
-        if (hoveredFrameId === el.id) {
-          ctx.save();
-          ctx.strokeStyle = '#ec4899';
-          ctx.lineWidth = 4;
-          ctx.shadowColor = '#ec4899';
-          ctx.shadowBlur = 16;
-          ctx.setLineDash([8, 8]);
-          createFramePath(ctx, shape, x - 2, y - 2, frameW + 4, frameH + 4);
-          ctx.stroke();
-          ctx.setLineDash([]);
-
-          const badgeW = 130;
-          const badgeH = 26;
-          ctx.fillStyle = '#ec4899';
-          ctx.beginPath();
-          ctx.roundRect(x + frameW / 2 - badgeW / 2, y + frameH / 2 - badgeH / 2, badgeW, badgeH, 13);
-          ctx.fill();
-          ctx.fillStyle = '#ffffff';
-          ctx.font = 'bold 11px Tajawal, sans-serif';
-          ctx.textAlign = 'center';
-          ctx.fillText('✨ أفلت لإدراج الصورة', x + frameW / 2, y + frameH / 2 + 4);
-          ctx.restore();
-        }
-
-        // Active In-Frame Crop Mode Highlight Indicator
-        if (editingFrameId === el.id) {
-          ctx.save();
-          ctx.strokeStyle = '#0284c7';
-          ctx.lineWidth = 3.5;
-          ctx.shadowColor = '#0284c7';
-          ctx.shadowBlur = 14;
-          ctx.setLineDash([6, 6]);
-          createFramePath(ctx, shape, x - 2, y - 2, frameW + 4, frameH + 4);
-          ctx.stroke();
-          ctx.setLineDash([]);
-
-          const badgeW = 165;
-          const badgeH = 26;
-          ctx.fillStyle = '#0284c7';
-          ctx.beginPath();
-          ctx.roundRect(x + frameW / 2 - badgeW / 2, y - 32, badgeW, badgeH, 13);
-          ctx.fill();
-          ctx.fillStyle = '#ffffff';
-          ctx.font = 'bold 11px Tajawal, sans-serif';
-          ctx.textAlign = 'center';
-          ctx.fillText('✥ اسحب الصورة للتحريك والضبط', x + frameW / 2, y - 15);
-          ctx.restore();
-        }
-      }
-
-      ctx.restore();
-    });
-
-    // Render Active In-Progress Brush Line
-    if (isDrawing && currentLine.length > 1) {
-      ctx.save();
-      ctx.strokeStyle = activeColor;
-      ctx.lineWidth = strokeWidth;
-      ctx.lineCap = 'round';
-      ctx.lineJoin = 'round';
-      if (brushMode === 'highlighter') {
-        ctx.globalAlpha = 0.45;
-        ctx.lineWidth = strokeWidth * 2.5;
-      }
-      ctx.beginPath();
-      currentLine.forEach((pt, idx) => {
-        if (idx === 0) ctx.moveTo(pt.x, pt.y);
-        else ctx.lineTo(pt.x, pt.y);
-      });
-      ctx.stroke();
-      ctx.restore();
-    }
-
-    // Render Active Magic Eraser Stroke
-    if (isErasing && eraserPoints.length > 0) {
-      ctx.save();
-      ctx.strokeStyle = 'rgba(244, 63, 94, 0.65)';
-      ctx.fillStyle = 'rgba(244, 63, 94, 0.65)';
-      ctx.lineWidth = eraserBrushSize;
-      ctx.lineCap = 'round';
-      ctx.lineJoin = 'round';
-      ctx.beginPath();
-      eraserPoints.forEach((pt, idx) => {
-        if (idx === 0) ctx.moveTo(pt.x, pt.y);
-        else ctx.lineTo(pt.x, pt.y);
-      });
-      ctx.stroke();
-      ctx.restore();
-    }
-
-    // 9. Render Design Safe Margins & Boundary Guides (If showMargins is active)
-    if (showMargins) {
-      ctx.save();
-      const margin = Math.round(Math.min(imageSize.width, imageSize.height) * 0.05) || 40;
-      const marginW = imageSize.width - margin * 2;
-      const marginH = imageSize.height - margin * 2;
-
-      // Dashed Margin Safe Zone Rectangle
-      ctx.strokeStyle = 'rgba(225, 29, 72, 0.45)';
-      ctx.lineWidth = 1.5;
-      ctx.setLineDash([6, 6]);
-      ctx.strokeRect(margin, margin, marginW, marginH);
-
-      // Corner L-Marks
-      ctx.setLineDash([]);
-      ctx.strokeStyle = '#e11d48';
-      ctx.lineWidth = 2;
-      const tickLen = 14;
-
-      // Top-Left
-      ctx.beginPath();
-      ctx.moveTo(margin - tickLen, margin);
-      ctx.lineTo(margin, margin);
-      ctx.lineTo(margin, margin - tickLen);
-      ctx.stroke();
-
-      // Top-Right
-      ctx.beginPath();
-      ctx.moveTo(margin + marginW + tickLen, margin);
-      ctx.lineTo(margin + marginW, margin);
-      ctx.lineTo(margin + marginW, margin - tickLen);
-      ctx.stroke();
-
-      // Bottom-Left
-      ctx.beginPath();
-      ctx.moveTo(margin - tickLen, margin + marginH);
-      ctx.lineTo(margin, margin + marginH);
-      ctx.lineTo(margin, margin + marginH + tickLen);
-      ctx.stroke();
-
-      // Bottom-Right
-      ctx.beginPath();
-      ctx.moveTo(margin + marginW + tickLen, margin + marginH);
-      ctx.lineTo(margin + marginW, margin + marginH);
-      ctx.lineTo(margin + marginW, margin + marginH + tickLen);
-      ctx.stroke();
-
-      ctx.restore();
-    }
-
-    // 10. Render Active Dynamic Snap Alignment Guides & Center Crosshair
-    if (snapGuides.x !== undefined || snapGuides.y !== undefined) {
-      ctx.save();
-
-      // Vertical Guide Line
-      if (snapGuides.x !== undefined) {
-        ctx.beginPath();
-        ctx.strokeStyle = snapGuides.isCenterVertical ? '#e11d48' : '#38bdf8';
-        ctx.lineWidth = snapGuides.isCenterVertical ? 2 : 1.5;
-        ctx.setLineDash(snapGuides.isCenterVertical ? [4, 4] : [3, 3]);
-        ctx.moveTo(snapGuides.x, 0);
-        ctx.lineTo(snapGuides.x, imageSize.height);
-        ctx.stroke();
-      }
-
-      // Horizontal Guide Line
-      if (snapGuides.y !== undefined) {
-        ctx.beginPath();
-        ctx.strokeStyle = snapGuides.isCenterHorizontal ? '#e11d48' : '#38bdf8';
-        ctx.lineWidth = snapGuides.isCenterHorizontal ? 2 : 1.5;
-        ctx.setLineDash(snapGuides.isCenterHorizontal ? [4, 4] : [3, 3]);
-        ctx.moveTo(0, snapGuides.y);
-        ctx.lineTo(imageSize.width, snapGuides.y);
-        ctx.stroke();
-      }
-
-      // High-Precision Center Intersection Reticle (عند التقاء خطي المنتصف باللون الأحمر/البراند)
-      if (snapGuides.isCenterIntersection) {
-        const cx = Math.round(imageSize.width / 2);
-        const cy = Math.round(imageSize.height / 2);
-
-        ctx.setLineDash([]);
-        
-        // Outer Glowing Halo
-        ctx.beginPath();
-        ctx.arc(cx, cy, 24, 0, Math.PI * 2);
-        ctx.fillStyle = 'rgba(225, 29, 72, 0.15)';
-        ctx.fill();
-        ctx.strokeStyle = '#e11d48';
-        ctx.lineWidth = 2;
-        ctx.stroke();
-
-        // Inner Circle
-        ctx.beginPath();
-        ctx.arc(cx, cy, 8, 0, Math.PI * 2);
-        ctx.fillStyle = 'rgba(225, 29, 72, 0.4)';
-        ctx.fill();
-        ctx.strokeStyle = '#ffffff';
-        ctx.lineWidth = 1.5;
-        ctx.stroke();
-
-        // Central Bullseye Dot
-        ctx.beginPath();
-        ctx.arc(cx, cy, 3.5, 0, Math.PI * 2);
-        ctx.fillStyle = '#e11d48';
-        ctx.fill();
-
-        // Crosshair Ticks
-        ctx.strokeStyle = '#e11d48';
-        ctx.lineWidth = 2;
-        ctx.beginPath();
-        ctx.moveTo(cx - 32, cy);
-        ctx.lineTo(cx - 10, cy);
-        ctx.moveTo(cx + 10, cy);
-        ctx.lineTo(cx + 32, cy);
-        ctx.moveTo(cx, cy - 32);
-        ctx.lineTo(cx, cy - 10);
-        ctx.moveTo(cx, cy + 10);
-        ctx.lineTo(cx, cy + 32);
-        ctx.stroke();
-
-        // Center Pill Badge
-        const tagText = isAr ? 'المركز التام (100% Center)' : '100% Canvas Center';
-        ctx.font = 'bold 12px Tajawal, sans-serif';
-        const tagMetrics = ctx.measureText(tagText);
-        const tagW = tagMetrics.width + 16;
-        const tagH = 22;
-        const tagX = cx - tagW / 2;
-        const tagY = cy - 42;
-
-        ctx.fillStyle = '#e11d48';
-        ctx.beginPath();
-        if ((ctx as any).roundRect) {
-          (ctx as any).roundRect(tagX, tagY, tagW, tagH, 6);
-        } else {
-          ctx.rect(tagX, tagY, tagW, tagH);
-        }
-        ctx.fill();
-        ctx.strokeStyle = '#ffffff';
-        ctx.lineWidth = 1;
-        ctx.stroke();
-
-        ctx.fillStyle = '#ffffff';
-        ctx.textAlign = 'center';
-        ctx.textBaseline = 'middle';
-        ctx.fillText(tagText, cx, tagY + tagH / 2);
-      }
-
-      ctx.restore();
-    }
-  }, [elements, filters, selectedId, isDrawing, currentLine, isErasing, eraserPoints, eraserBrushSize, activeColor, strokeWidth, brushMode, imageSize, showMargins, snapGuides, isAr]);
+    const activePage = pages[currentPageIndex];
+    const pageBg = activePage?.bgImgSrc;
+    const targetBgColor = (pageBg && typeof pageBg === 'string' && (pageBg.startsWith('#') || pageBg.startsWith('rgb') || pageBg.startsWith('hsl'))) ? pageBg : '#ffffff';
+
+    renderElementsToCanvas(
+      ctx,
+      elements,
+      currentBgImg,
+      imageSize.width,
+      imageSize.height,
+      filters,
+      selectedId,
+      hoveredFrameId,
+      targetBgColor,
+      drawCanvas
+    );
+  }, [elements, imageSize, filters, selectedId, hoveredFrameId, currentPageIndex, pages, editingFrameId]);
 
   useEffect(() => {
     drawCanvasRef.current = drawCanvas;
@@ -3968,24 +3109,29 @@ export const ArtifactImageEditor: React.FC<ArtifactImageEditorProps> = ({
     const activePage = pages[currentPageIndex];
     const bgSrc = activePage?.bgImgSrc || artifact?.content;
     
-    if (!bgSrc) {
+    if (!bgSrc || (typeof bgSrc === 'string' && (bgSrc.startsWith('#') || bgSrc.startsWith('rgb') || bgSrc.startsWith('hsl')))) {
       imageRef.current = null;
       setImageLoaded(true);
       drawCanvas();
       return;
     }
 
-    if (typeof bgSrc === 'string' && (bgSrc.startsWith('#') || bgSrc.startsWith('rgb') || bgSrc.startsWith('hsl'))) {
-      imageRef.current = null;
+    // Use cache if available for instant page switching
+    if (previewImageCache.has(bgSrc)) {
+      imageRef.current = previewImageCache.get(bgSrc)!;
       setImageLoaded(true);
       drawCanvas();
       return;
     }
+
+    // New image: clear current to prevent high-res persistence from previous page
+    imageRef.current = null;
+    setImageLoaded(false); // Trigger loading state
 
     const img = new Image();
     img.crossOrigin = 'anonymous';
-    img.src = bgSrc;
     img.onload = () => {
+      previewImageCache.set(bgSrc, img);
       imageRef.current = img;
       setImageLoaded(true);
       if (imageSize.width === 0 || !imageSize.width) {
@@ -4003,6 +3149,7 @@ export const ArtifactImageEditor: React.FC<ArtifactImageEditorProps> = ({
       setImageLoaded(true);
       drawCanvas();
     };
+    img.src = bgSrc;
   }, [currentPageIndex, pages, artifact?.content, drawCanvas, imageSize.width, imageSize.height]);
 
   // Coordinate Conversion with Pan & Zoom Compensation
@@ -4831,347 +3978,18 @@ export const ArtifactImageEditor: React.FC<ArtifactImageEditorProps> = ({
         }
       }
 
-      // Draw all elements on export canvas
-      elements.forEach(el => {
-        if (el.hidden) return;
-        exportCtx.save();
-        exportCtx.globalAlpha = el.opacity !== undefined ? el.opacity : 1;
-
-        if (el.type === 'draw' && el.points && el.points.length > 0) {
-          const sw = el.strokeWidth || 4;
-          exportCtx.strokeStyle = el.color;
-          exportCtx.lineWidth = sw;
-          exportCtx.lineCap = 'round';
-          exportCtx.lineJoin = 'round';
-          if (el.brushMode === 'highlighter') {
-            exportCtx.globalAlpha = (el.opacity || 0.45) * 0.45;
-            exportCtx.lineWidth = Math.max(12, sw * 2.5);
-          }
-          exportCtx.beginPath();
-          el.points.forEach((pt, idx) => {
-            if (idx === 0) exportCtx.moveTo(pt.x, pt.y);
-            else exportCtx.lineTo(pt.x, pt.y);
-          });
-          exportCtx.stroke();
-        } else if (el.type === 'text' && el.text) {
-          let displayText = el.text;
-          if (el.textUppercase) displayText = displayText.toUpperCase();
-
-          const fontSize = el.fontSize || 32;
-          const fontFamily = el.fontFamily || 'Tajawal, sans-serif';
-          const fontWeight = el.fontWeight || 'bold';
-          const fontStyle = el.fontStyle || 'normal';
-          const maxWidth = el.w && el.w > 30 ? el.w - 12 : undefined;
-
-          exportCtx.font = `${fontStyle} ${fontWeight} ${fontSize}px ${fontFamily}`;
-          exportCtx.textAlign = el.textAlign || 'center';
-          exportCtx.textBaseline = 'top';
-
-          const metrics = computeTextMetrics(
-            displayText,
-            fontFamily,
-            fontSize,
-            fontWeight,
-            fontStyle,
-            maxWidth,
-            el.textLineHeight || 1.25,
-            false
-          );
-          const lines = metrics.lines;
-          const lineHeight = metrics.lineHeight;
-          const pad = el.textBgPadding !== undefined ? el.textBgPadding : 6;
-          const rad = el.textBgCornerRadius !== undefined ? el.textBgCornerRadius : 6;
-
-          if (el.textBgColor && el.textBgColor !== 'transparent') {
-            exportCtx.fillStyle = el.textBgColor;
-            exportCtx.beginPath();
-            const bgW = el.w || (metrics.width + pad * 2);
-            const bgH = el.h || (metrics.height + pad * 2);
-            exportCtx.roundRect(el.x, el.y, bgW, bgH, rad);
-            exportCtx.fill();
-          }
-
-          if (el.textShadow) {
-            exportCtx.shadowColor = el.shadowColor || 'rgba(0, 0, 0, 0.85)';
-            exportCtx.shadowBlur = el.shadowBlur !== undefined ? el.shadowBlur : 8;
-            exportCtx.shadowOffsetX = el.shadowOffsetX !== undefined ? el.shadowOffsetX : 3;
-            exportCtx.shadowOffsetY = el.shadowOffsetY !== undefined ? el.shadowOffsetY : 3;
-          }
-
-          const totalTextHeight = lines.length * lineHeight;
-          const topOffsetY = el.h && el.h > totalTextHeight ? Math.max(0, (el.h - totalTextHeight) / 2) : 4;
-
-          lines.forEach((line, idx) => {
-            let drawX = el.x + 6;
-            if (el.textAlign === 'center') drawX = el.x + (el.w || metrics.width + 12) / 2;
-            else if (el.textAlign === 'right') drawX = el.x + (el.w || metrics.width + 12) - 6;
-
-            const drawY = el.y + topOffsetY + idx * lineHeight;
-
-            if (el.textStrokeWidth && el.textStrokeWidth > 0) {
-              exportCtx.strokeStyle = el.textStrokeColor || '#000000';
-              exportCtx.lineWidth = el.textStrokeWidth;
-              exportCtx.strokeText(line, drawX, drawY);
-            }
-            exportCtx.fillStyle = el.color;
-            exportCtx.fillText(line, drawX, drawY);
-          });
-        } else if (el.type === 'rect') {
-          const sw = el.strokeWidth || 0;
-          exportCtx.strokeStyle = el.strokeColor || el.color;
-          exportCtx.lineWidth = sw;
-          exportCtx.fillStyle = el.fillColor || 'transparent';
-          exportCtx.beginPath();
-          if (el.cornerRadius) exportCtx.roundRect(el.x, el.y, el.w, el.h, el.cornerRadius);
-          else exportCtx.rect(el.x, el.y, el.w, el.h);
-          if (el.fillColor && el.fillColor !== 'transparent') exportCtx.fill();
-          if (sw > 0) exportCtx.stroke();
-        } else if (el.type === 'circle') {
-          const sw = el.strokeWidth || 0;
-          exportCtx.strokeStyle = el.strokeColor || el.color;
-          exportCtx.lineWidth = sw;
-          exportCtx.fillStyle = el.fillColor || 'transparent';
-          const rx = Math.abs(el.w) / 2;
-          const ry = Math.abs(el.h) / 2;
-          exportCtx.beginPath();
-          exportCtx.ellipse(el.x + rx, el.y + ry, rx, ry, 0, 0, Math.PI * 2);
-          if (el.fillColor && el.fillColor !== 'transparent') exportCtx.fill();
-          if (sw > 0) exportCtx.stroke();
-        } else if ((el.type === 'sticker' || el.imgSrc) && el.imgElement && el.type !== 'frame') {
-          if (el.imgElement instanceof HTMLImageElement && el.imgElement.complete && el.imgElement.naturalWidth > 0) {
-            exportCtx.drawImage(el.imgElement, el.x, el.y, el.w, el.h);
-          }
-        } else if (el.type === 'frame' || el.frameShape) {
-          const shape = el.frameShape || 'circle';
-          const frameW = el.w || 200;
-          const frameH = el.h || 200;
-          const x = el.x;
-          const y = el.y;
-
-          // 1. Draw Frame Outer Body / Backdrop for Special Frame Mockups
-          if (shape === 'polaroid') {
-            exportCtx.fillStyle = '#ffffff';
-            exportCtx.shadowColor = 'rgba(0,0,0,0.2)';
-            exportCtx.shadowBlur = 12;
-            exportCtx.shadowOffsetY = 4;
-            exportCtx.beginPath();
-            exportCtx.roundRect(x, y, frameW, frameH, 8);
-            exportCtx.fill();
-            exportCtx.shadowColor = 'transparent';
-          } else if (shape === 'phone') {
-            exportCtx.fillStyle = el.color || '#1e293b';
-            exportCtx.shadowColor = 'rgba(0,0,0,0.3)';
-            exportCtx.shadowBlur = 16;
-            exportCtx.beginPath();
-            exportCtx.roundRect(x, y, frameW, frameH, 28);
-            exportCtx.fill();
-            exportCtx.shadowColor = 'transparent';
-          } else if (shape === 'laptop') {
-            exportCtx.fillStyle = '#334155';
-            exportCtx.beginPath();
-            exportCtx.roundRect(x + frameW * 0.08, y, frameW * 0.84, frameH * 0.8, 8);
-            exportCtx.fill();
-            exportCtx.fillStyle = '#94a3b8';
-            exportCtx.beginPath();
-            exportCtx.roundRect(x, y + frameH * 0.8, frameW, frameH * 0.15, 6);
-            exportCtx.fill();
-          } else if (shape === 'browser') {
-            exportCtx.fillStyle = '#ffffff';
-            exportCtx.shadowColor = 'rgba(0,0,0,0.15)';
-            exportCtx.shadowBlur = 10;
-            exportCtx.beginPath();
-            exportCtx.roundRect(x, y, frameW, frameH, 10);
-            exportCtx.fill();
-            exportCtx.shadowColor = 'transparent';
-            exportCtx.fillStyle = '#e2e8f0';
-            exportCtx.beginPath();
-            exportCtx.roundRect(x, y, frameW, 30, [10, 10, 0, 0]);
-            exportCtx.fill();
-            const dotY = y + 15;
-            exportCtx.fillStyle = '#ef4444'; exportCtx.beginPath(); exportCtx.arc(x + 16, dotY, 4, 0, Math.PI * 2); exportCtx.fill();
-            exportCtx.fillStyle = '#f59e0b'; exportCtx.beginPath(); exportCtx.arc(x + 28, dotY, 4, 0, Math.PI * 2); exportCtx.fill();
-            exportCtx.fillStyle = '#10b981'; exportCtx.beginPath(); exportCtx.arc(x + 40, dotY, 4, 0, Math.PI * 2); exportCtx.fill();
-          } else if (shape === 'gold_luxury') {
-            const g = exportCtx.createLinearGradient(x, y, x + frameW, y + frameH);
-            g.addColorStop(0, '#f59e0b');
-            g.addColorStop(0.5, '#fef08a');
-            g.addColorStop(1, '#d97706');
-            exportCtx.fillStyle = g;
-            exportCtx.beginPath();
-            exportCtx.roundRect(x - 6, y - 6, frameW + 12, frameH + 12, 12);
-            exportCtx.fill();
-          }
-
-          // 2. Save Context & Create Mask Path for Photo Clipping
-          exportCtx.save();
-          createFramePath(exportCtx, shape, x, y, frameW, frameH);
-          exportCtx.clip();
-
-          // 3. Render Loaded Image or Placeholder Fill inside Frame Path
-          let frameImg: any = el.frameImgElement;
-          const isFrameImgValid = frameImg && (frameImg instanceof HTMLImageElement || frameImg instanceof HTMLCanvasElement);
-          if (!isFrameImgValid && el.frameImgSrc) {
-            if (previewImageCache.has(el.frameImgSrc)) {
-              frameImg = previewImageCache.get(el.frameImgSrc);
-              el.frameImgElement = frameImg;
-            } else {
-              const img = new Image();
-              img.crossOrigin = 'anonymous';
-              img.src = el.frameImgSrc;
-              previewImageCache.set(el.frameImgSrc, img);
-              frameImg = img;
-            }
-          }
-
-          if (
-            frameImg &&
-            ((frameImg instanceof HTMLImageElement && frameImg.complete && frameImg.naturalWidth > 0) ||
-             frameImg instanceof HTMLCanvasElement)
-          ) {
-            const imgW = (frameImg as HTMLImageElement).naturalWidth || frameImg.width || 400;
-            const imgH = (frameImg as HTMLImageElement).naturalHeight || frameImg.height || 400;
-
-            let areaX = x, areaY = y, areaW = frameW, areaH = frameH;
-            if (shape === 'polaroid') {
-              const margin = frameW * 0.08;
-              areaX = x + margin; areaY = y + margin;
-              areaW = frameW - margin * 2; areaH = frameH * 0.72;
-            } else if (shape === 'phone') {
-              const b = frameW * 0.05;
-              areaX = x + b; areaY = y + b; areaW = frameW - b * 2; areaH = frameH - b * 2;
-            } else if (shape === 'laptop') {
-              areaX = x + frameW * 0.12; areaY = y + frameH * 0.08;
-              areaW = frameW * 0.76; areaH = frameH * 0.68;
-            } else if (shape === 'browser') {
-              areaY = y + 30; areaH = frameH - 30;
-            }
-
-            const userScale = el.frameImgScale || 1;
-            const scale = Math.max(areaW / imgW, areaH / imgH) * userScale;
-            const drawW = imgW * scale;
-            const drawH = imgH * scale;
-
-            const offsetX = el.frameImgOffsetX || 0;
-            const offsetY = el.frameImgOffsetY || 0;
-
-            const drawX = areaX + (areaW - drawW) / 2 + offsetX;
-            const drawY = areaY + (areaH - drawH) / 2 + offsetY;
-
-            exportCtx.drawImage(frameImg, drawX, drawY, drawW, drawH);
-          } else {
-            exportCtx.fillStyle = el.frameBgColor || '#f8fafc';
-            exportCtx.fillRect(x, y, frameW, frameH);
-
-            exportCtx.strokeStyle = el.frameBorderColor || el.color || '#6366f1';
-            exportCtx.lineWidth = 2;
-            exportCtx.setLineDash([6, 6]);
-            createFramePath(exportCtx, shape, x + 6, y + 6, frameW - 12, frameH - 12);
-            exportCtx.stroke();
-            exportCtx.setLineDash([]);
-
-            const cx = x + frameW / 2;
-            const cy = y + frameH / 2;
-            exportCtx.fillStyle = el.frameBorderColor || el.color || '#6366f1';
-            
-            exportCtx.beginPath();
-            exportCtx.roundRect(cx - 16, cy - 18, 32, 22, 4);
-            exportCtx.fill();
-            exportCtx.fillStyle = '#ffffff';
-            exportCtx.beginPath();
-            exportCtx.arc(cx, cy - 7, 5, 0, Math.PI * 2);
-            exportCtx.fill();
-
-            exportCtx.fillStyle = el.frameBorderColor || el.color || '#4338ca';
-            exportCtx.font = 'bold 12px Tajawal, sans-serif';
-            exportCtx.textAlign = 'center';
-            exportCtx.fillText('+ إضافة صورة', cx, cy + 14);
-          }
-          exportCtx.restore();
-
-          // 4. Draw Outer Frame Borders, Rings & Accents
-          const borderWidth = el.frameBorderWidth !== undefined ? el.frameBorderWidth : (el.frameImgSrc ? 0 : 2);
-          if (borderWidth > 0 && !['polaroid', 'phone', 'laptop', 'browser', 'double_circle', 'dotted_circle', 'neon_cyber', 'gold_luxury', 'circle_3d'].includes(shape)) {
-            exportCtx.strokeStyle = el.frameBorderColor || el.color || '#6366f1';
-            exportCtx.lineWidth = borderWidth;
-            createFramePath(exportCtx, shape, x, y, frameW, frameH);
-            exportCtx.stroke();
-          }
-
-          if (shape === 'double_circle') {
-            exportCtx.strokeStyle = el.frameBorderColor || '#f59e0b';
-            exportCtx.lineWidth = 3;
-            const r = Math.min(frameW, frameH) / 2;
-            exportCtx.beginPath();
-            exportCtx.arc(x + frameW / 2, y + frameH / 2, Math.max(2, r - 6), 0, Math.PI * 2);
-            exportCtx.stroke();
-          } else if (shape === 'dotted_circle') {
-            exportCtx.save();
-            exportCtx.strokeStyle = el.frameBorderColor || '#ec4899';
-            exportCtx.lineWidth = 3;
-            exportCtx.setLineDash([5, 5]);
-            const r = Math.min(frameW, frameH) / 2;
-            exportCtx.beginPath();
-            exportCtx.arc(x + frameW / 2, y + frameH / 2, r, 0, Math.PI * 2);
-            exportCtx.stroke();
-            exportCtx.restore();
-          } else if (shape === 'neon_cyber') {
-            exportCtx.save();
-            exportCtx.strokeStyle = el.frameBorderColor || '#06b6d4';
-            exportCtx.lineWidth = 4;
-            exportCtx.shadowColor = '#06b6d4';
-            exportCtx.shadowBlur = 12;
-            const r = Math.min(frameW, frameH) / 2;
-            exportCtx.beginPath();
-            exportCtx.arc(x + frameW / 2, y + frameH / 2, r, 0, Math.PI * 2);
-            exportCtx.stroke();
-            exportCtx.restore();
-          } else if (shape === 'gold_luxury') {
-            exportCtx.save();
-            const g = exportCtx.createLinearGradient(x, y, x + frameW, y + frameH);
-            g.addColorStop(0, '#f59e0b');
-            g.addColorStop(0.5, '#fef08a');
-            g.addColorStop(1, '#d97706');
-            exportCtx.strokeStyle = g;
-            exportCtx.lineWidth = 5;
-            const r = Math.min(frameW, frameH) / 2;
-            exportCtx.beginPath();
-            exportCtx.arc(x + frameW / 2, y + frameH / 2, r, 0, Math.PI * 2);
-            exportCtx.stroke();
-            exportCtx.restore();
-          } else if (shape === 'circle_3d') {
-            exportCtx.save();
-            exportCtx.strokeStyle = 'rgba(255, 255, 255, 0.8)';
-            exportCtx.lineWidth = 3;
-            const r = Math.min(frameW, frameH) / 2;
-            exportCtx.beginPath();
-            exportCtx.arc(x + frameW / 2, y + frameH / 2, Math.max(2, r - 3), -Math.PI / 4, (3 * Math.PI) / 4);
-            exportCtx.stroke();
-            exportCtx.restore();
-          } else if (shape === 'phone') {
-            exportCtx.fillStyle = '#000000';
-            exportCtx.beginPath();
-            exportCtx.roundRect(x + frameW / 2 - 24, y + 8, 48, 12, 6);
-            exportCtx.fill();
-        }
-        } else if (el.type === 'svg' && el.svgPath) {
-          exportCtx.save();
-          exportCtx.translate(el.x, el.y);
-          const scaleFactorX = (el.w || 60) / 24;
-          const scaleFactorY = (el.h || 60) / 24;
-          exportCtx.scale(scaleFactorX, scaleFactorY);
-          const pathObj = new Path2D(el.svgPath);
-          exportCtx.fillStyle = el.fillColor || el.color;
-          exportCtx.fill(pathObj);
-          if (el.strokeWidth && el.strokeWidth > 0) {
-            exportCtx.strokeStyle = el.strokeColor || el.color;
-            exportCtx.lineWidth = el.strokeWidth / Math.max(scaleFactorX, scaleFactorY, 0.1);
-            exportCtx.stroke(pathObj);
-          }
-          exportCtx.restore();
-        }
-
-        exportCtx.restore();
-      });
+      renderElementsToCanvas(
+        exportCtx,
+        elements,
+        imageRef.current,
+        imageSize.width,
+        imageSize.height,
+        filters,
+        null,
+        null,
+        (exportTransparent && exportFormat === 'png') ? 'transparent' : '#ffffff',
+        undefined
+      );
 
       const fileName = (customFileName.trim() || artifact.title || 'perplexta_design').replace(/\s+/g, '_');
 
@@ -5788,8 +4606,9 @@ export const ArtifactImageEditor: React.FC<ArtifactImageEditorProps> = ({
         previewUrl,
         width: imageSize.width,
         height: imageSize.height,
-        canvasBackground: artifact.content,
+        canvasBackground: pages[currentPageIndex]?.bgImgSrc || artifact.content,
         elements,
+        pages: sanitizePagesForStorage(pages),
         filters,
         createdAt: Date.now(),
         updatedAt: Date.now(),
@@ -6232,6 +5051,80 @@ export const ArtifactImageEditor: React.FC<ArtifactImageEditorProps> = ({
     });
     return [...Array.from(uniqueCustom.values()), ...base];
   }, [brandKit.fonts.customFonts, uploads]);
+
+  // Memoized sidebar template list to prevent CPU spikes and thread freeze during renders
+  const sidebarTemplateList = useMemo(() => {
+    const communityTpls = communityTemplates;
+    const curatedTpls = CURATED_PUBLIC_TEMPLATES.map(c => {
+      const isVertical = c.dimensions.includes('1920');
+      const isBanner = c.dimensions.includes('720') || c.dimensions.includes('630');
+      const width = isVertical ? 1080 : (isBanner ? 1280 : 1080);
+      const height = isVertical ? 1920 : (c.dimensions.includes('720') ? 720 : (c.dimensions.includes('630') ? 630 : 1080));
+      const aspectRatio: '1:1' | '9:16' | '16:9' | '1.91:1' | '4:5' = isVertical ? '9:16' : (isBanner ? '16:9' : '1:1');
+      return {
+        id: c.id,
+        titleAr: c.titleAr,
+        titleEn: c.titleEn,
+        category: (c.category === 'reels' || c.category === 'story' ? 'story' : 'marketing') as any,
+        thumbnailUrl: c.src,
+        backgroundColor: c.canvasBackground || '#090d16',
+        width,
+        height,
+        aspectRatio,
+        elements: c.elements || [],
+        rating: 4.9,
+        usesCount: 3100
+      } as StudioTemplate;
+    });
+    let allUnifiedTemplates = [...communityTpls, ...curatedTpls, ...RATAQ_TEMPLATES];
+
+    if (templateSearchQuery.trim()) {
+      const q = templateSearchQuery.trim().toLowerCase();
+      allUnifiedTemplates = allUnifiedTemplates.filter(t => 
+        t.titleAr.toLowerCase().includes(q) ||
+        t.titleEn.toLowerCase().includes(q) ||
+        t.category.toLowerCase().includes(q) ||
+        (t.creatorName && t.creatorName.toLowerCase().includes(q))
+      );
+    }
+
+    let list = [...allUnifiedTemplates];
+
+    if (selectedTemplateCat === 'square') {
+      list = list.filter(t => t.aspectRatio === '1:1' || t.width === t.height || t.category === 'posts' || t.category === 'quotes');
+    } else if (selectedTemplateCat === 'posts') {
+      list = list.filter(t => t.category === 'posts' || t.category === 'social' || t.aspectRatio === '1:1' || t.aspectRatio === '4:5');
+    } else if (selectedTemplateCat === 'story' || selectedTemplateCat === 'reels') {
+      list = list.filter(t => t.category === 'story' || t.aspectRatio === '9:16' || t.height > t.width || t.id.includes('reel') || t.titleAr.includes('ريلز') || t.titleAr.includes('ستوري'));
+    } else if (selectedTemplateCat === 'banner' || selectedTemplateCat === 'youtube') {
+      list = list.filter(t => t.category === 'banner' || t.aspectRatio === '16:9' || t.width > t.height || t.id.includes('yt') || t.titleAr.includes('يوتيوب') || t.titleAr.includes('بنر'));
+    } else if (selectedTemplateCat !== 'all') {
+      list = list.filter(t => t.category === selectedTemplateCat);
+    }
+
+    const canvasWidth = imageSize.width || 1080;
+    const canvasHeight = imageSize.height || 1080;
+    const canvasRatio = canvasWidth / canvasHeight;
+
+    if (filterTemplatesByDimensions) {
+      const dimMatched = list.filter(t => {
+        const tRatio = (t.width && t.height) ? (t.width / t.height) : 1;
+        return Math.abs(canvasRatio - tRatio) <= 0.15 || (t.width === canvasWidth && t.height === canvasHeight);
+      });
+      if (dimMatched.length > 0) {
+        list = dimMatched;
+      }
+    }
+
+    return [...list].sort((a, b) => {
+      const aRatioMatch = Math.abs(canvasRatio - (a.width / a.height)) <= 0.05 ? 1 : 0;
+      const bRatioMatch = Math.abs(canvasRatio - (b.width / b.height)) <= 0.05 ? 1 : 0;
+      if (aRatioMatch !== bRatioMatch) return bRatioMatch - aRatioMatch;
+      const aExact = (a.width === canvasWidth && a.height === canvasHeight) ? 1 : 0;
+      const bExact = (b.width === canvasWidth && b.height === canvasHeight) ? 1 : 0;
+      return bExact - aExact;
+    });
+  }, [communityTemplates, templateSearchQuery, selectedTemplateCat, filterTemplatesByDimensions, imageSize.width, imageSize.height]);
 
   const selectedElement = useMemo(() => {
     return elements.find(el => el.id === selectedId);
@@ -7334,6 +6227,32 @@ export const ArtifactImageEditor: React.FC<ArtifactImageEditorProps> = ({
                       )}
                     </div>
 
+                    {/* Dimension Smart Filter Toggle Bar */}
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setFilterTemplatesByDimensions(prev => !prev);
+                        setTemplateVisibleLimit(20);
+                      }}
+                      className={`w-full py-1.5 px-2.5 rounded-shape-xs text-[10.5px] font-extrabold flex items-center justify-between transition-all border cursor-pointer active:scale-95 ${
+                        filterTemplatesByDimensions
+                          ? 'bg-[var(--bg-accent-muted)] border-[var(--border-accent)] text-[var(--fg-accent)] shadow-2xs'
+                          : 'bg-[var(--surface-card)] border-[var(--border-default)] text-[var(--text-muted)] hover:text-[var(--text-primary)]'
+                      }`}
+                    >
+                      <div className="flex items-center gap-1.5 min-w-0">
+                        <Sliders size={12} className="shrink-0" />
+                        <span className="truncate">
+                          {filterTemplatesByDimensions
+                            ? (isAr ? `تصفية حصرية حسب مقاس ساحتك (${imageSize.width} × ${imageSize.height} px)` : `Filtered by Canvas (${imageSize.width}×${imageSize.height} px)`)
+                            : (isAr ? 'عرض كافة المقاسات والأبعاد' : 'Showing All Dimensions')}
+                        </span>
+                      </div>
+                      <span className="text-[9px] font-mono font-bold px-1.5 py-0.5 rounded bg-black/30 shrink-0">
+                        {filterTemplatesByDimensions ? (isAr ? 'نشط 🎯' : 'Active') : (isAr ? 'الكل 🌐' : 'All')}
+                      </span>
+                    </button>
+
                     {/* Category Filter Chips Bar without creators category */}
                     <div className="flex items-center gap-1.5 overflow-x-auto custom-scrollbar pb-0.5 text-[11px] no-scrollbar">
                       {[
@@ -7355,7 +6274,10 @@ export const ArtifactImageEditor: React.FC<ArtifactImageEditorProps> = ({
                           <button
                             key={cat.id}
                             type="button"
-                            onClick={() => setSelectedTemplateCat(cat.id)}
+                            onClick={() => {
+                              setSelectedTemplateCat(cat.id);
+                              setTemplateVisibleLimit(20);
+                            }}
                             className={`px-2 py-0.5 rounded-shape-xs text-[10px] font-medium whitespace-nowrap transition-all cursor-pointer border active:scale-95 shadow-2xs ${
                               isSelected
                                 ? 'bg-[var(--accent)] text-white border-[var(--accent)] shadow-2xs font-bold'
@@ -7372,67 +6294,8 @@ export const ArtifactImageEditor: React.FC<ArtifactImageEditorProps> = ({
                   {/* Template Cards List - Clean 2-column grid extending to bottom */}
                   <div className="flex-1 overflow-y-auto custom-scrollbar p-2 sm:p-2.5 min-h-0 border-0 content-start auto-rows-max grid grid-cols-2 gap-2 pb-4">
                     {(() => {
-                      const communityTpls = communityTemplates;
-                      const curatedTpls = CURATED_PUBLIC_TEMPLATES.map(c => {
-                        const isVertical = c.dimensions.includes('1920');
-                        const isBanner = c.dimensions.includes('720') || c.dimensions.includes('630');
-                        const width = isVertical ? 1080 : (isBanner ? 1280 : 1080);
-                        const height = isVertical ? 1920 : (c.dimensions.includes('720') ? 720 : (c.dimensions.includes('630') ? 630 : 1080));
-                        const aspectRatio: '1:1' | '9:16' | '16:9' | '1.91:1' | '4:5' = isVertical ? '9:16' : (isBanner ? '16:9' : '1:1');
-                        return {
-                          id: c.id,
-                          titleAr: c.titleAr,
-                          titleEn: c.titleEn,
-                          category: (c.category === 'reels' || c.category === 'story' ? 'story' : 'marketing') as any,
-                          thumbnailUrl: c.src,
-                          backgroundColor: c.canvasBackground || '#090d16',
-                          width,
-                          height,
-                          aspectRatio,
-                          elements: c.elements || [],
-                          rating: 4.9,
-                          usesCount: 3100
-                        } as StudioTemplate;
-                      });
-                      let allUnifiedTemplates = [...communityTpls, ...curatedTpls, ...RATAQ_TEMPLATES];
-
-                      if (templateSearchQuery.trim()) {
-                        const q = templateSearchQuery.trim().toLowerCase();
-                        allUnifiedTemplates = allUnifiedTemplates.filter(t => 
-                          t.titleAr.toLowerCase().includes(q) ||
-                          t.titleEn.toLowerCase().includes(q) ||
-                          t.category.toLowerCase().includes(q) ||
-                          (t.creatorName && t.creatorName.toLowerCase().includes(q))
-                        );
-                      }
-
-                      let list = [...allUnifiedTemplates];
-
-                      if (selectedTemplateCat === 'square') {
-                        list = list.filter(t => t.aspectRatio === '1:1' || t.width === t.height || t.category === 'posts' || t.category === 'quotes');
-                      } else if (selectedTemplateCat === 'posts') {
-                        list = list.filter(t => t.category === 'posts' || t.category === 'social' || t.aspectRatio === '1:1' || t.aspectRatio === '4:5');
-                      } else if (selectedTemplateCat === 'story' || selectedTemplateCat === 'reels') {
-                        list = list.filter(t => t.category === 'story' || t.aspectRatio === '9:16' || t.height > t.width || t.id.includes('reel') || t.titleAr.includes('ريلز') || t.titleAr.includes('ستوري'));
-                      } else if (selectedTemplateCat === 'banner' || selectedTemplateCat === 'youtube') {
-                        list = list.filter(t => t.aspectRatio === '16:9' || t.width > t.height || t.id.includes('yt') || t.titleAr.includes('يوتيوب') || t.titleAr.includes('بنر'));
-                      } else if (selectedTemplateCat !== 'all') {
-                        list = list.filter(t => t.category === selectedTemplateCat);
-                      }
-
-                      // Sort: exact canvas ratio/dimension match prioritized first, followed by rich templates
-                      const canvasWidth = imageSize.width || 1080;
-                      const canvasHeight = imageSize.height || 1080;
-                      const canvasRatio = canvasWidth / canvasHeight;
-
-                      list.sort((a, b) => {
-                        const aRatioMatch = Math.abs(canvasRatio - (a.width / a.height)) <= 0.05 ? 1 : 0;
-                        const bRatioMatch = Math.abs(canvasRatio - (b.width / b.height)) <= 0.05 ? 1 : 0;
-                        if (aRatioMatch !== bRatioMatch) return bRatioMatch - aRatioMatch;
-                        const aExact = (a.width === canvasWidth && a.height === canvasHeight) ? 1 : 0;
-                        const bExact = (b.width === canvasWidth && b.height === canvasHeight) ? 1 : 0;
-                        return bExact - aExact;
-                      });
+                      const list = sidebarTemplateList;
+                      const visibleList = list.slice(0, templateVisibleLimit);
 
                       if (list.length === 0) {
                         return (
@@ -7441,9 +6304,21 @@ export const ArtifactImageEditor: React.FC<ArtifactImageEditorProps> = ({
                             <p className="text-xs font-bold text-[var(--text-primary)]">
                               {templateSearchQuery 
                                 ? (isAr ? 'لا توجد نتائج مطابقة لبحثك' : 'No templates match your search') 
-                                : (isAr ? 'لا توجد قوالب في هذه الفئة' : 'No templates found in this category')}
+                                : (isAr ? 'لا توجد قوالب مطابقة لمقاس الساحة الحالية' : 'No templates found matching current canvas size')}
                             </p>
-                            <div className="flex items-center justify-center gap-2 pt-1">
+                            <div className="flex flex-col items-center justify-center gap-2 pt-1">
+                              {filterTemplatesByDimensions && (
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    setFilterTemplatesByDimensions(false);
+                                    setTemplateVisibleLimit(20);
+                                  }}
+                                  className="px-3 py-1.5 text-[10.5px] font-bold rounded-shape-xs bg-[var(--comp-button-primary-bg)] text-[var(--comp-button-primary-fg)] cursor-pointer active:scale-95 shadow-2xs"
+                                >
+                                  {isAr ? 'إلغاء التصفية حسب المقاس وعرض كافة القوالب 🌐' : 'Show All Dimensions 🌐'}
+                                </button>
+                              )}
                               {templateSearchQuery && (
                                 <button
                                   type="button"
@@ -7453,89 +6328,101 @@ export const ArtifactImageEditor: React.FC<ArtifactImageEditorProps> = ({
                                   {isAr ? 'إلغاء البحث' : 'Clear Search'}
                                 </button>
                               )}
-                              <button
-                                type="button"
-                                onClick={() => {
-                                  setSelectedTemplateCat('all');
-                                  setTemplateSearchQuery('');
-                                }}
-                                className="px-3 py-1 text-[10.5px] font-bold rounded-shape-xs bg-[var(--accent)] text-white shadow-2xs cursor-pointer active:scale-95"
-                              >
-                                {isAr ? 'عرض جميع القوالب' : 'Show All Templates'}
-                              </button>
                             </div>
                           </div>
                         );
                       }
 
-                      return list.map((tpl) => {
-                        const isExactSizeMatch = tpl.width === imageSize.width && tpl.height === imageSize.height;
+                      return (
+                        <>
+                          {visibleList.map((tpl) => {
+                            const isExactSizeMatch = tpl.width === imageSize.width && tpl.height === imageSize.height;
 
-                        return (
-                          <div
-                            key={tpl.id}
-                            className={`group relative aspect-square w-full rounded-shape-sm border overflow-hidden transition-all shadow-2xs cursor-pointer active:scale-[0.98] select-none bg-slate-900/80 ${
-                              isExactSizeMatch 
-                                ? 'border-[var(--accent)] ring-1 ring-[var(--accent)]/50' 
-                                : 'border-[var(--border-default)] hover:border-[var(--border-accent)]'
-                            }`}
-                            onClick={() => handleLoadTemplate(tpl)}
-                          >
-                            {/* Full Cover Thumbnail Image */}
-                            <img
-                              src={safeSvgDataUrl(tpl.thumbnailUrl)}
-                              alt={tpl.titleAr}
-                              className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                              onError={(e) => {
-                                const target = e.currentTarget as HTMLImageElement;
-                                target.style.display = 'none';
-                                if (target.parentElement) {
-                                  target.parentElement.style.background = tpl.backgroundColor || 'linear-gradient(135deg, #1e293b 0%, #0f172a 100%)';
-                                }
-                              }}
-                            />
+                            return (
+                              <div
+                                key={tpl.id}
+                                className={`group relative aspect-square w-full rounded-shape-sm border overflow-hidden transition-all shadow-2xs cursor-pointer active:scale-[0.98] select-none bg-slate-900/80 ${
+                                  isExactSizeMatch 
+                                    ? 'border-[var(--accent)] ring-1 ring-[var(--accent)]/50' 
+                                    : 'border-[var(--border-default)] hover:border-[var(--border-accent)]'
+                                }`}
+                                onClick={() => handleLoadTemplate(tpl)}
+                              >
+                                {/* Full Cover Thumbnail Image */}
+                                <img
+                                  src={safeSvgDataUrl(tpl.thumbnailUrl)}
+                                  alt={tpl.titleAr}
+                                  loading="lazy"
+                                  className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                                  onError={(e) => {
+                                    const target = e.currentTarget as HTMLImageElement;
+                                    target.style.display = 'none';
+                                    if (target.parentElement) {
+                                      target.parentElement.style.background = tpl.backgroundColor || 'linear-gradient(135deg, #1e293b 0%, #0f172a 100%)';
+                                    }
+                                  }}
+                                />
 
-                            {/* Balanced Vignette / Gradient Overlay */}
-                            <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-black/30 pointer-events-none group-hover:from-black/95 transition-colors" />
+                                {/* Balanced Vignette / Gradient Overlay */}
+                                <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-black/30 pointer-events-none group-hover:from-black/95 transition-colors" />
 
-                            {/* Top Badges (Pins at top of the square) */}
-                            <div className="absolute top-1.5 start-1.5 end-1.5 flex items-center justify-between z-10 pointer-events-none">
-                              {isExactSizeMatch ? (
-                                <span className="px-1.5 py-0.5 text-[8px] font-extrabold rounded-shape-xs bg-[var(--fg-success)] text-white shadow-xs flex items-center gap-0.5">
-                                  <CheckCheck size={9} />
-                                  <span>{isAr ? 'مطابق' : 'Match'}</span>
-                                </span>
-                              ) : (
-                                <span className="px-1.5 py-0.5 text-[8px] font-mono font-bold bg-black/65 text-slate-200 rounded-shape-xs backdrop-blur-xs">
-                                  {tpl.aspectRatio || `${tpl.width}:${tpl.height}`}
-                                </span>
-                              )}
+                                {/* Top Badges (Pins at top of the square) */}
+                                <div className="absolute top-1.5 start-1.5 end-1.5 flex items-center justify-between z-10 pointer-events-none">
+                                  {isExactSizeMatch ? (
+                                    <span className="px-1.5 py-0.5 text-[8px] font-extrabold rounded-shape-xs bg-[var(--fg-success)] text-white shadow-xs flex items-center gap-0.5">
+                                      <CheckCheck size={9} />
+                                      <span>{isAr ? 'مطابق' : 'Match'}</span>
+                                    </span>
+                                  ) : (
+                                    <span className="px-1.5 py-0.5 text-[8px] font-mono font-bold bg-black/65 text-slate-200 rounded-shape-xs backdrop-blur-xs">
+                                      {tpl.aspectRatio || `${tpl.width}:${tpl.height}`}
+                                    </span>
+                                  )}
 
-                              <span className="text-[8px] font-mono font-bold px-1.5 py-0.5 bg-black/75 text-white rounded-shape-xs backdrop-blur-xs">
-                                {tpl.width}×{tpl.height}
-                              </span>
-                            </div>
+                                  <span className="text-[8px] font-mono font-bold px-1.5 py-0.5 bg-black/75 text-white rounded-shape-xs backdrop-blur-xs">
+                                    {tpl.width}×{tpl.height}
+                                  </span>
+                                </div>
 
-                            {/* Bottom Info Bar inside the square */}
-                            <div className="absolute bottom-0 inset-x-0 p-2 z-10 flex flex-col justify-end space-y-0.5">
-                              <h4 className="text-[10.5px] font-bold text-white truncate drop-shadow-md">
-                                {isAr ? tpl.titleAr : tpl.titleEn}
-                              </h4>
+                                {/* Bottom Info Bar inside the square */}
+                                <div className="absolute bottom-0 inset-x-0 p-2 z-10 flex flex-col justify-end space-y-0.5">
+                                  <h4 className="text-[10.5px] font-bold text-white truncate drop-shadow-md">
+                                    {isAr ? tpl.titleAr : tpl.titleEn}
+                                  </h4>
 
-                              {/* Creator Attribution */}
-                              <div className="flex items-center justify-between text-[8.5px] text-amber-300 font-medium truncate">
-                                <span className="truncate flex items-center gap-1">
-                                  <User size={10} className="shrink-0" />
-                                  <span className="truncate">{tpl.creatorName || (isAr ? 'فريق رينكس' : 'Rinex Team')}</span>
-                                </span>
-                                <span className="text-slate-300 font-mono text-[8px] shrink-0">
-                                  {tpl.elements.length} {isAr ? 'طبقات' : 'L'}
-                                </span>
+                                  {/* Creator Attribution */}
+                                  <div className="flex items-center justify-between text-[8.5px] text-amber-300 font-medium truncate">
+                                    <span className="truncate flex items-center gap-1">
+                                      <User size={10} className="shrink-0" />
+                                      <span className="truncate">{tpl.creatorName || (isAr ? 'فريق رينكس' : 'Rinex Team')}</span>
+                                    </span>
+                                    <span className="text-slate-300 font-mono text-[8px] shrink-0">
+                                      {tpl.elements.length} {isAr ? 'طبقات' : 'L'}
+                                    </span>
+                                  </div>
+                                </div>
                               </div>
+                            );
+                          })}
+
+                          {list.length > templateVisibleLimit && (
+                            <div className="col-span-2 pt-2 pb-1 flex justify-center">
+                              <button
+                                type="button"
+                                onClick={() => setTemplateVisibleLimit(prev => prev + 20)}
+                                className="w-full py-2.5 px-3 rounded-shape-xs bg-[var(--comp-button-primary-bg)] text-[var(--comp-button-primary-fg)] font-extrabold text-xs flex items-center justify-center gap-1.5 hover:opacity-90 transition-all shadow-2xs cursor-pointer active:scale-98"
+                              >
+                                <Plus size={14} />
+                                <span>
+                                  {isAr 
+                                    ? `عرض المزيد من القوالب (+20) - المتبقي ${list.length - templateVisibleLimit}` 
+                                    : `Load More Templates (+20) - ${list.length - templateVisibleLimit} left`}
+                                </span>
+                              </button>
                             </div>
-                          </div>
-                        );
-                      });
+                          )}
+                        </>
+                      );
                     })()}
                   </div>
                 </div>
@@ -10739,17 +9626,18 @@ export const ArtifactImageEditor: React.FC<ArtifactImageEditorProps> = ({
           {/* Interactive Pan & Zoom Vertical Scrollable Canvas Stage Viewport (Multi-Page Stage) */}
           <div 
             ref={containerRef}
-            className="flex-1 relative bg-[var(--surface-inset)] overflow-auto min-w-0 custom-scrollbar p-4 md:p-8 flex flex-col items-center select-none"
+            className="flex-1 relative bg-[var(--surface-inset)] overflow-auto min-w-0 custom-scrollbar p-4 md:p-12 flex flex-col items-stretch justify-start select-none"
+            style={{ scrollBehavior: 'smooth', minHeight: 0 }}
           >
             {!imageLoaded && (
-              <div className="flex flex-col items-center gap-3 text-[var(--text-muted)] animate-pulse m-auto">
+              <div className="flex flex-col items-center gap-3 text-[var(--text-muted)] animate-pulse m-auto sticky top-1/2 -translate-y-1/2">
                 <RefreshCw className="animate-spin text-[var(--fg-accent)]" size={26} />
                 <span className="text-xs font-bold">{isAr ? 'جاري تحميل لوحة التصميم...' : 'Loading Visual Design Stage...'}</span>
               </div>
             )}
 
             {imageLoaded && (
-              <div className="w-fit min-w-full flex flex-col items-center justify-center gap-12 py-6 m-auto min-h-full">
+              <div className="w-fit min-w-full min-h-full flex flex-col items-center justify-start gap-16 py-12 px-4 mx-auto">
                 {pages.map((pageItem, pageIdx) => {
                   const isActive = pageIdx === currentPageIndex;
 
@@ -11592,7 +10480,7 @@ export const ArtifactImageEditor: React.FC<ArtifactImageEditorProps> = ({
                               elements={pageItem.elements} 
                               imageSize={imageSize} 
                               bgImgSrc={pageItem.bgImgSrc} 
-                              defaultBgImg={imageRef.current} 
+                              defaultBgImg={pageIdx === currentPageIndex ? imageRef.current : null} 
                               filters={filters} 
                             />
                           </div>
@@ -12614,29 +11502,36 @@ export const ArtifactImageEditor: React.FC<ArtifactImageEditorProps> = ({
                     const storedRaw = localStorage.getItem(registryKey);
                     const existing = storedRaw ? JSON.parse(storedRaw) : [];
                     
-                    const newTpl = {
+                    const currentPage = pages[currentPageIndex];
+                    const currentBg = currentPage?.bgImgSrc || artifact.content;
+                    
+                    const newTpl: StudioTemplate = {
                       id: `m-tpl-${Date.now()}`,
-                      creatorId: 'creator-1', // Simulated Sarah
-                      creatorName: user?.name || 'سارة العتيبي',
-                      creatorUsername: (user as any)?.username || 'sarah_designs',
-                      creatorAvatar: (user as any)?.avatar || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=300&q=80',
                       titleAr: publishTitle,
                       titleEn: publishTitle,
                       descriptionAr: publishDesc || (isAr ? 'قالب رينكس المبتكر المصمم باحترافية لتعديله فوراً.' : 'Premium Rinex template designed for instant customization.'),
                       descriptionEn: publishDesc || 'Premium Rinex template designed for instant customization.',
-                      thumbnail: artifact.content || 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=800&q=80',
-                      category: publishCategory,
-                      categoryLabelAr: publishCategory === 'marketing' ? 'تسويقي' : (publishCategory === 'banner' ? 'بنرات وأغلفة' : (publishCategory === 'story' ? 'قصة واستوري' : 'سوشيال ميديا')),
+                      category: publishCategory as any,
+                      thumbnailUrl: currentBg || 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=800&q=80',
+                      backgroundColor: currentPage?.backgroundColor || '#0f172a',
+                      width: imageSize.width,
+                      height: imageSize.height,
+                      aspectRatio: (imageSize.width === imageSize.height ? '1:1' : (imageSize.width > imageSize.height ? '16:9' : '9:16')) as any,
                       dimensions: `${imageSize.width} × ${imageSize.height}`,
                       priceType: publishPriceType,
                       price: publishPriceType === 'points' ? publishPrice : 0,
+                      elements: JSON.parse(JSON.stringify(elements)),
+                      creatorId: user?.id || 'creator-1',
+                      creatorName: user?.name || (isAr ? 'مبدع رينكس' : 'Rinex Creator'),
+                      creatorAvatar: (user as any)?.avatar || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=300&q=80',
+                      creatorUsername: (user as any)?.username || 'rinex_creator',
+                      rating: 5.0,
                       viewsCount: 1,
                       usesCount: 0,
-                      rating: 5.0,
                       createdAt: Date.now(),
-                      elements,
-                      canvasBackground: artifact.content
-                    };
+                      // Custom field for editor loading - preserves high-res background
+                      canvasBackground: currentBg
+                    } as any;
                     
                     localStorage.setItem(registryKey, JSON.stringify([newTpl, ...existing]));
                     setIsPublishModalOpen(false);

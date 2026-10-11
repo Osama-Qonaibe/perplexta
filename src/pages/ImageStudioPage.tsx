@@ -327,10 +327,17 @@ export const ImageStudioPage: React.FC = () => {
     return undefined;
   });
 
+  const processedTemplateRef = useRef<string | null>(null);
+  const isInitializingRef = useRef<boolean>(false);
+
   useEffect(() => {
     async function loadPending() {
       if (location.state && location.state.loadMarketplaceTemplate) {
         const tpl = location.state.loadMarketplaceTemplate;
+        if (processedTemplateRef.current === tpl.id) return;
+        processedTemplateRef.current = tpl.id;
+        isInitializingRef.current = true;
+
         const newId = `project-marketplace-${tpl.id}-${Date.now()}`;
         setActiveProjectId(newId);
 
@@ -367,19 +374,27 @@ export const ImageStudioPage: React.FC = () => {
           title: isAr ? (tpl.titleAr || tpl.title) : (tpl.titleEn || tpl.title),
           content: loadedBg
         });
-        // Clear location state after processing to avoid reload trigger
+        
+        // Clear React Router location state and browser history
         window.history.replaceState({}, document.title);
+        navigate(location.pathname, { replace: true, state: {} });
+        isInitializingRef.current = false;
       } else if (user) {
         try {
           const pendingTplId = sessionStorage.getItem('pending_studio_template');
           const pendingTplPayload = sessionStorage.getItem('pending_studio_template_payload');
           if (pendingTplPayload || pendingTplId) {
+            isInitializingRef.current = true;
+            sessionStorage.removeItem('pending_studio_template');
+            sessionStorage.removeItem('pending_studio_template_payload');
+
             const allTpls = await getStoredMarketplaceTemplates();
             let tpl = pendingTplPayload ? JSON.parse(pendingTplPayload) : null;
             if (!tpl && pendingTplId) {
               tpl = allTpls.find(t => t.id === pendingTplId) || (PUBLIC_TEMPLATES.find(t => t.id === pendingTplId) as any);
             }
-            if (tpl) {
+            if (tpl && processedTemplateRef.current !== tpl.id) {
+              processedTemplateRef.current = tpl.id;
               await recordTemplateUse(tpl.id);
               const newId = `project-pending-${tpl.id}-${Date.now()}`;
               setActiveProjectId(newId);
@@ -422,19 +437,26 @@ export const ImageStudioPage: React.FC = () => {
                   : 'Requested template initialized in your protected workspace!'
               );
             }
-            sessionStorage.removeItem('pending_studio_template');
-            sessionStorage.removeItem('pending_studio_template_payload');
+            isInitializingRef.current = false;
           }
-        } catch (e) {}
+        } catch (e) {
+          isInitializingRef.current = false;
+        }
       }
     }
     loadPending();
-  }, [location.state, user, isAr]);
+  }, [location.state, user, isAr, navigate, location.pathname]);
 
   // Auto-initialize a blank design for logged-in users if there is no active session/artifact,
   // taking them directly to the workspace/canvas without any intermediate dashboard.
   useEffect(() => {
-    if (user && !activeImageArtifact) {
+    const hasPendingSession = typeof window !== 'undefined' && Boolean(
+      sessionStorage.getItem('pending_studio_template') || 
+      sessionStorage.getItem('pending_studio_template_payload') ||
+      location.state?.loadMarketplaceTemplate
+    );
+
+    if (user && !activeImageArtifact && !isInitializingRef.current && !hasPendingSession) {
       const defaultId = `project-default-${Date.now()}`;
       const defaultWidth = 1080;
       const defaultHeight = 1080;

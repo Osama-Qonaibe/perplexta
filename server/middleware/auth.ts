@@ -109,9 +109,12 @@ export const authenticateToken = (req: Request, res: Response, next: NextFunctio
 
           if (err.name === 'TokenExpiredError') {
             res.status(401).json({ error: 'TokenExpiredError', message: 'Token has expired' });
+          } else if (err.name === 'JsonWebTokenError') {
+            console.warn(`[Auth] Invalid JWT token signature or structure: ${err.message}`);
+            res.status(401).json({ error: 'JsonWebTokenError', message: 'Invalid or expired token signature' });
           } else {
-            console.error(`[Auth] JWT Error: ${err.name}`);
-            res.status(403).json({ error: 'Forbidden', message: 'Token verification failed' });
+            console.warn(`[Auth] Token verification failed: ${err.name}`);
+            res.status(401).json({ error: 'Unauthorized', message: 'Token verification failed' });
           }
           return;
         }

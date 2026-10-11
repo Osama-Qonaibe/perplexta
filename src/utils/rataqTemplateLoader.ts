@@ -1,13 +1,20 @@
 import { CanvasElement } from '../components/chat/artifacts/ArtifactImageEditor';
 import { RataqRepoTemplate, TemplateObject } from '../data/templates';
 
+const loadedFontsCache = new Set<string>();
+
 /**
  * Dynamically ensures font file is registered in document.fonts before drawing text
  */
 export async function ensureCustomFontLoaded(fontFamily?: string): Promise<boolean> {
-  if (!fontFamily || ['sans-serif', 'Arial', 'Tahoma', 'Verdana', 'Times New Roman', 'serif'].includes(fontFamily)) {
+  if (!fontFamily || ['sans-serif', 'Arial', 'Tahoma', 'Verdana', 'Times New Roman', 'serif', 'Tajawal', 'Cairo', 'Alexandria', 'Almarai'].some(f => fontFamily.includes(f))) {
     return true;
   }
+  if (loadedFontsCache.has(fontFamily)) {
+    return true;
+  }
+  loadedFontsCache.add(fontFamily);
+
   try {
     if (typeof document !== 'undefined' && document.fonts?.check?.(`12px "${fontFamily}"`)) {
       return true;
@@ -17,11 +24,7 @@ export async function ensureCustomFontLoaded(fontFamily?: string): Promise<boole
     }
     const fontNamesToTry = [
       `/fonts/${fontFamily}.ttf`,
-      `/fonts/${fontFamily}.otf`,
-      `/fonts/${fontFamily}.woff2`,
-      `/fonts/${fontFamily}.woff`,
-      `/fonts/${fontFamily.replace(/_/g, ' ')}.ttf`,
-      `/fonts/${fontFamily.replace(/ /g, '_')}.ttf`
+      `/fonts/${fontFamily}.woff2`
     ];
     for (const fontUrl of fontNamesToTry) {
       try {
@@ -149,6 +152,7 @@ export function convertRataqTemplateToCanvasElements(template: RataqRepoTemplate
       const baseDims = ASSET_NATURAL_DIMS[cleanSrc] || { w: 800, h: 800 };
       const w = Math.round(baseDims.w * (obj.scaleX || 1));
       const h = Math.round(baseDims.h * (obj.scaleY || 1));
+      const imagePath = obj.src || '';
       return {
         id,
         type: 'sticker',
@@ -157,15 +161,14 @@ export function convertRataqTemplateToCanvasElements(template: RataqRepoTemplate
         y,
         w,
         h,
-        src: obj.src || '',
-        imgSrc: obj.src || '',
+        src: imagePath,
+        imgSrc: imagePath,
         rotation: angle,
         opacity,
         color: obj.fill || '#ffffff',
         strokeWidth: obj.strokeWidth || 0
       };
     } else if (obj.type === 'svg') {
-      // SVGs in /shapes/ have viewBox 24x24
       const baseSize = 24;
       const w = Math.round(baseSize * (obj.scaleX || 1));
       const h = Math.round(baseSize * (obj.scaleY || 1));

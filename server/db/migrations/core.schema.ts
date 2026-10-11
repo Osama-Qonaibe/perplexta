@@ -1806,6 +1806,7 @@ export async function applyCoreColumnEnforcements(targetPool: QueryClient) {
   });
 
   await ensureColumnsBulk(targetPool, 'rinex_creators', {
+    user_id: { type: 'INTEGER' },
     username: { type: 'VARCHAR(100)' },
     name: { type: 'VARCHAR(255)' },
     email: { type: 'VARCHAR(255)' },

@@ -11,11 +11,13 @@ export interface StudioProject {
   height: number;
   canvasBackground: string; // Base image data or color
   elements: CanvasElement[];
+  pages?: any[]; // multi-page support
   filters?: EditorFilters;
   createdAt: number;
   updatedAt: number;
   tags?: string[];
   isFavorite?: boolean;
+  isPublic?: boolean;
 }
 
 const DEFAULT_FILTERS: EditorFilters = {

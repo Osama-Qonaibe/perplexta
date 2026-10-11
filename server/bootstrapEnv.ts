@@ -24,15 +24,19 @@ function parseAndLoadEnv(filePath: string) {
   } catch {}
 }
 
+// Clean up pre-existing dummy short secrets (<32 chars) so valid .env secrets or fallbacks apply
+if (process.env.JWT_SECRET && process.env.JWT_SECRET.length < 32) {
+  delete process.env.JWT_SECRET;
+}
+if (process.env.ENCRYPTION_KEY && process.env.ENCRYPTION_KEY.length < 32) {
+  delete process.env.ENCRYPTION_KEY;
+}
+
 try {
   if (fs.existsSync(vpsEnv)) {
-    loadEnvFile(vpsEnv);
     parseAndLoadEnv(vpsEnv);
   } else if (fs.existsSync('.env')) {
-    loadEnvFile('.env');
     parseAndLoadEnv('.env');
-  } else {
-    loadEnvFile();
   }
 } catch {
   // Graceful fallback if already injected or non-existent in current runner

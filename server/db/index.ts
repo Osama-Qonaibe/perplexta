@@ -779,27 +779,84 @@ export async function synchronizePerplextaPoolsFromRegistry() {
   }
 }
 
-export function startConnectionHealthCheck(): void {
+export function startConnectionHealthCheck(io?: any, intervalMs?: number): void {
   console.log('[DB] Connection health check background task active.');
 }
 
-export function startPoolSaturationGuardian(): void {
+export function startPoolSaturationGuardian(io?: any, intervalMs?: number): void {
   console.log('[DB] Pool saturation guardian active.');
 }
 
-export function getPoolMetrics() {
-  const getMetrics = (p: any) => ({
-    totalCount: p?.totalCount || 0,
-    idleCount: p?.idleCount || 0,
-    waitingCount: p?.waitingCount || 0,
-    max: p?.options?.max || 20
-  });
+export async function forceReconnectPool(poolName?: string): Promise<void> {
+  console.log(`[DB] Force reconnect requested for pool: ${poolName || 'all'}`);
+  await initializePerplextaPools(
+    process.env.DATABASE_URL || '',
+    process.env.LEDGER_DATABASE_URL || '',
+    process.env.EXTERNAL_DATABASE_URL || '',
+    process.env.SECURITY_DATABASE_URL || '',
+    process.env.MEDIA_DATABASE_URL || ''
+  );
+}
+
+export function getPoolMetrics(specificPool?: any, poolName?: string) {
+  const getMetricsForPool = (p: any) => {
+    const totalCount = p?.totalCount || 0;
+    const idleCount = p?.idleCount || 0;
+    const waitingCount = p?.waitingCount || 0;
+    const max = p?.options?.max || 20;
+    const active = Math.max(0, totalCount - idleCount);
+    const utilization_percent = max > 0 ? Math.round((active / max) * 100) : 0;
+    const saturated = utilization_percent >= 85 || waitingCount > 0;
+    const backpressure_level = waitingCount > 5 ? 'high' : waitingCount > 0 ? 'medium' : 'normal';
+
+    return {
+      totalCount,
+      total: totalCount,
+      idleCount,
+      idle: idleCount,
+      waitingCount,
+      waiting: waitingCount,
+      active,
+      max,
+      utilization_percent,
+      saturated,
+      backpressure_level
+    };
+  };
+
+  if (specificPool) {
+    return getMetricsForPool(specificPool);
+  }
+
+  const core = getMetricsForPool(rawPool);
+  const ledger = getMetricsForPool(rawLedgerPool || rawPool);
+  const external = getMetricsForPool(rawExternalPool || rawPool);
+  const security = getMetricsForPool(rawSecurityPool || rawPool);
+  const media = getMetricsForPool(rawMediaPool || rawPool);
+
+  const maxVal = Math.max(core.max, ledger.max, external.max, security.max, media.max);
+  const utilization_percent = Math.max(core.utilization_percent, ledger.utilization_percent, external.utilization_percent, security.utilization_percent, media.utilization_percent);
+  const backpressure_level = (core.backpressure_level === 'high' || ledger.backpressure_level === 'high') ? 'high' : (core.backpressure_level === 'medium' || ledger.backpressure_level === 'medium') ? 'medium' : 'normal';
+  const saturated = core.saturated || ledger.saturated || external.saturated || security.saturated || media.saturated;
+  const waiting = core.waiting + ledger.waiting + external.waiting + security.waiting + media.waiting;
+  const total = core.total + ledger.total + external.total + security.total + media.total;
+  const idle = core.idle + ledger.idle + external.idle + security.idle + media.idle;
+  const active = core.active + ledger.active + external.active + security.active + media.active;
+
   return {
-    core: getMetrics(rawPool),
-    ledger: getMetrics(rawLedgerPool || rawPool),
-    external: getMetrics(rawExternalPool || rawPool),
-    security: getMetrics(rawSecurityPool || rawPool),
-    media: getMetrics(rawMediaPool || rawPool)
+    core,
+    ledger,
+    external,
+    security,
+    media,
+    max: maxVal,
+    utilization_percent,
+    backpressure_level,
+    saturated,
+    waiting,
+    total,
+    idle,
+    active
   };
 }
 

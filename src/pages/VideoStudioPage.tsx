@@ -109,12 +109,17 @@ export const VideoStudioPage: React.FC = () => {
   const [activeInitialElements, setActiveInitialElements] = useState<any[] | undefined>(undefined);
   const [activeInitialVideoSize, setActiveInitialVideoSize] = useState<{ width: number; height: number } | undefined>(undefined);
 
+  const processedVideoTemplateRef = useRef<string | null>(null);
+
   // Restore Active Session
   useEffect(() => {
     async function loadInitial() {
       // 1. Handle Marketplace Template Navigation
       if (location.state && location.state.loadMarketplaceTemplate) {
         const tpl = location.state.loadMarketplaceTemplate;
+        if (processedVideoTemplateRef.current === tpl.id) return;
+        processedVideoTemplateRef.current = tpl.id;
+
         const newId = `video-project-${tpl.id}-${Date.now()}`;
         setActiveProjectId(newId);
         setActiveInitialElements(tpl.elements || []);
@@ -126,6 +131,7 @@ export const VideoStudioPage: React.FC = () => {
           content: tpl.videoUrl || tpl.thumbnail || tpl.src
         });
         window.history.replaceState({}, document.title);
+        navigate(location.pathname, { replace: true, state: {} });
         return;
       }
 
@@ -152,7 +158,7 @@ export const VideoStudioPage: React.FC = () => {
       }
     }
     loadInitial();
-  }, [location.state, isAr, user]);
+  }, [location.state, isAr, user, navigate, location.pathname]);
 
   const handleCreateBlankVideo = (width: number, height: number, title: string) => {
     if (!user) {

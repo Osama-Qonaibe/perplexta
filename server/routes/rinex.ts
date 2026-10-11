@@ -1,6 +1,7 @@
 import express from 'express';
 import { pool, ledgerPool } from '../db/index.js';
 import { authenticateToken, authenticateTokenOptional } from '../middleware/auth.js';
+import { getUserWallet } from '../services/wallet.js';
 
 const router = express.Router();
 
@@ -570,9 +571,9 @@ router.post('/creators', authenticateToken, async (req: any, res) => {
     const isVerified = ['admin', 'owner', 'elite', 'developer', 'verified'].includes(userRole);
 
     const insertRes = await pool.query(
-      `INSERT INTO rinex_creators (id, username, name, email, role_ar, role_en, avatar, bio_ar, bio_en, verified, total_views, total_uses, rating, earnings_balance, followers_count, likes_count, profile_visits_count, social_links)
-       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, 1, 0, 5.0, 50.00, 1, 0, 1, $11) RETURNING *`,
-      [id, cleanUsername, name, req.user.email || null, defaultRoleAr, defaultRoleEn, defaultAvatar, defaultBioAr, defaultBioEn, isVerified, JSON.stringify(socialLinks)]
+      `INSERT INTO rinex_creators (id, user_id, username, name, email, role_ar, role_en, avatar, bio_ar, bio_en, verified, total_views, total_uses, rating, earnings_balance, followers_count, likes_count, profile_visits_count, social_links)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, 1, 0, 5.0, 50.00, 1, 0, 1, $12) RETURNING *`,
+      [id, req.user.id, cleanUsername, name, req.user.email || null, defaultRoleAr, defaultRoleEn, defaultAvatar, defaultBioAr, defaultBioEn, isVerified, JSON.stringify(socialLinks)]
     );
 
     res.json(insertRes.rows[0]);
@@ -767,28 +768,50 @@ router.post('/templates/:id/use', authenticateTokenOptional, async (req, res) =>
     // We log this as a 'rinex_template_royalty' transaction in the ledger pool
     try {
       if (ledgerPool) {
-        await ledgerPool.query(
-          `INSERT INTO ledger_transactions (
-            transaction_type, 
-            amount, 
-            status, 
-            reference_id, 
-            metadata, 
-            description
-          ) VALUES ($1, $2, $3, $4, $5, $6)`,
-          [
-            'rinex_template_royalty',
-            commission,
-            'completed',
-            templateId,
-            JSON.stringify({ 
-              creator_id: tpl.creator_id, 
-              template_title: tpl.title_en,
-              usage_type: tpl.price_type 
-            }),
-            `Royalty for template use: ${tpl.title_en} (@${tpl.creator_username})`
-          ]
-        );
+        // Try to find creator's user_id
+        let creatorUserId = tpl.user_id;
+        if (!creatorUserId) {
+          const cRes = await pool.query('SELECT user_id, email FROM rinex_creators WHERE id = $1', [tpl.creator_id]);
+          creatorUserId = cRes.rows[0]?.user_id;
+          
+          // Fallback: search user by email if user_id is missing (legacy creators)
+          if (!creatorUserId && cRes.rows[0]?.email) {
+            const uRes = await pool.query('SELECT id FROM users WHERE email = $1', [cRes.rows[0].email]);
+            creatorUserId = uRes.rows[0]?.id;
+          }
+        }
+
+        if (creatorUserId) {
+          const wallet = await getUserWallet(creatorUserId);
+          if (wallet && wallet.id) {
+            await ledgerPool.query(
+              `INSERT INTO ledger_transactions (
+                user_id,
+                wallet_id,
+                transaction_type, 
+                amount, 
+                status, 
+                reference_id, 
+                metadata, 
+                description
+              ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8)`,
+              [
+                creatorUserId,
+                wallet.id,
+                'rinex_template_royalty',
+                commission,
+                'success',
+                templateId,
+                JSON.stringify({ 
+                  creator_id: tpl.creator_id, 
+                  template_title: tpl.title_en,
+                  usage_type: tpl.price_type 
+                }),
+                `Royalty for template use: ${tpl.title_en} (@${tpl.creator_username})`
+              ]
+            );
+          }
+        }
       }
     } catch (ledgerErr) {
       console.warn('[Rinex Ledger Log Error]:', ledgerErr);
