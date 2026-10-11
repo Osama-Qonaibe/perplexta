@@ -131,6 +131,7 @@
     "dompurify": "^3.4.16",
     "fast-uri": "^4.2.1",
     "ip-address": "^10.7.3",
-    "serialize-javascript": "^7.1.2"
+    "serialize-javascript": "^7.1.2",
+    "argparse": "^2.0.1"
   }
 }
