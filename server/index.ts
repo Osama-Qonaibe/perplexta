@@ -1,6 +1,6 @@
 import './bootstrapEnv.js';
 import fs from 'fs';
-import './utils/validateSecrets.js';
+import './utils/validateSecrets.js'; // Auto-validates secrets on import
 import { createServer } from 'http';
 
 process.on('uncaughtException', (err: any) => {
@@ -22,9 +22,9 @@ process.on('unhandledRejection', (reason: any) => {
 
 import app, { ensureApiPerfLogsTable } from './app.js';
 import { initSocket } from './config/socket.js';
-import { initializePerplextaPools, synchronizePerplextaPoolsFromRegistry, startConnectionHealthCheck, startPoolSaturationGuardian, isDatabaseConnected } from './db/index.js';
+import { initializePerplextaPools, synchronizePerplextaPoolsFromRegistry, startConnectionHealthCheck, startPoolSaturationGuardian, isDatabaseConnected, pool } from './db/index.js';
 import { createServer as createViteServer } from 'vite';
-import { runDatabaseMigrations, setIo, verifySchemaIntegrity } from './db/migrations.js';
+import { runDatabaseMigrations, setIo } from './db/migrations.js';
 import { ensureDatabaseTables } from './services/database-initializer.js';
 import { syncSystemTemplates } from './services/email.js';
 import { refreshCachedAppName } from './services/system.js';
@@ -32,24 +32,67 @@ import { initializeSystemAssetSuite } from './services/systemAssetManager.js';
 import { ensureAdsSeedData } from './routes/ads.js';
 import { ensureBulletinSeedData } from './routes/bulletin.js';
 import { initCronJobs } from './jobs/cron.js';
-import { validateRequiredSecrets } from './utils/validateSecrets.js';
 import { initUploadsMonitor } from './services/uploadsMonitorService.js';
 import { connectCache } from './utils/cache.js';
 import { warmupSeoAndSystemCache } from './db/queries.js';
 
 const PORT = 3000;
 const MAX_DB_ATTEMPTS = 3;
-const DB_RETRY_DELAY_MS = 4_000;
+const DB_RETRY_DELAY_MS = 3_000;
+
+let isMigrationsComplete = false;
+let migrationsPromise: Promise<boolean> | null = null;
+
+// Architectural Gateway: Blocks incoming API requests (except health check) until migrations complete
+app.use(async (req, res, next) => {
+  if (req.path.startsWith('/api') && req.path !== '/api/health' && !isMigrationsComplete && migrationsPromise) {
+    try {
+      await migrationsPromise;
+    } catch {}
+  }
+  next();
+});
 
 /**
- * Attempts to initialise all DB pools, run migrations, and warm caches.
- * Returns true on success; on exhaustion logs a warning and returns false
- * so the server can continue in Degraded Mode instead of crashing.
+ * Runs a seed/initialization task once across application restarts by persisting
+ * execution version tags into the seed_executions table.
  */
-async function initDatabase(): Promise<boolean> {
+async function runSeedOnce(seedKey: string, seedFn: () => Promise<void>): Promise<void> {
+  if (!isDatabaseConnected() || !pool) {
+    await seedFn().catch(() => {});
+    return;
+  }
+  try {
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS seed_executions (
+        id VARCHAR(100) PRIMARY KEY,
+        executed_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+      );
+    `);
+    const check = await pool.query('SELECT id FROM seed_executions WHERE id = $1', [seedKey]);
+    if (check.rows.length === 0) {
+      console.log(`[Seed] Executing seed task "${seedKey}"...`);
+      await seedFn();
+      await pool.query('INSERT INTO seed_executions (id) VALUES ($1) ON CONFLICT DO NOTHING', [seedKey]);
+    } else {
+      if (process.env.DEBUG_DB === 'true') {
+        console.log(`[Seed] Seed task "${seedKey}" already completed. Skipping.`);
+      }
+    }
+  } catch (err: any) {
+    console.warn(`[Seed] Notice during seed task "${seedKey}":`, err?.message || err);
+    await seedFn().catch(() => {});
+  }
+}
+
+/**
+ * Attempts to initialise DB pools, run migrations, and execute single-run seeds.
+ */
+async function initDatabaseAndMigrations(): Promise<boolean> {
   const coreUrl = process.env.DATABASE_URL?.trim();
   if (!coreUrl) {
     console.log('[Server] Operating in Degraded Mode (no DATABASE_URL configured). Safe in-memory fallbacks active.');
+    isMigrationsComplete = true;
     return false;
   }
 
@@ -66,17 +109,24 @@ async function initDatabase(): Promise<boolean> {
         throw new Error('Database connection could not be established.');
       }
       await synchronizePerplextaPoolsFromRegistry();
+
+      // 1. Run migrations before opening API requests to callers
+      console.log('[Server] Executing database migrations and schema checks...');
       await runDatabaseMigrations();
       await ensureDatabaseTables();
+
+      // 2. Execute seeds once via seed_executions tracking
+      await runSeedOnce('v1_email_templates_seed', syncSystemTemplates);
+      await runSeedOnce('v1_ads_seed', ensureAdsSeedData);
+      await runSeedOnce('v1_bulletin_seed', ensureBulletinSeedData);
+
       await Promise.allSettled([
-        syncSystemTemplates(),
         refreshCachedAppName(),
         initializeSystemAssetSuite(),
-        ensureAdsSeedData(),
-        ensureBulletinSeedData(),
         ensureApiPerfLogsTable(),
         warmupSeoAndSystemCache()
       ]);
+      isMigrationsComplete = true;
       return true;
     } catch (err) {
       const msg = err instanceof Error ? err.stack || err.message : String(err);
@@ -88,6 +138,7 @@ async function initDatabase(): Promise<boolean> {
       }
     }
   }
+  isMigrationsComplete = true;
   return false;
 }
 
@@ -95,9 +146,10 @@ async function startServer() {
   try {
     console.log('[Server] Initializing Perplexta Ecosystem...');
 
-    validateRequiredSecrets();
+    // 1. Connect cache
     await connectCache();
 
+    // 2. Integrate Vite Dev Middleware if in development
     if (process.env.NODE_ENV !== 'production') {
       const vite = await createViteServer({
         server: { middlewareMode: true },
@@ -108,8 +160,10 @@ async function startServer() {
       console.log('[Server] Vite Middleware integrated (Dev Mode)');
     }
 
+    // 3. Create HTTP Server & Socket.io
     const httpServer = createServer(app);
     const ioInstance = initSocket(httpServer);
+    setIo(ioInstance);
 
     const shutdown = (signal: string) => {
       console.log(`[Server] ${signal} received — shutting down gracefully...`);
@@ -122,16 +176,16 @@ async function startServer() {
     process.on('SIGTERM', () => shutdown('SIGTERM'));
     process.on('SIGINT',  () => shutdown('SIGINT'));
 
+    // 4. Start listening on port 3000 immediately so supervisor and healthchecks succeed instantly
     httpServer.listen(PORT, '0.0.0.0', () => {
       console.log(`[Server] 🚀 Perplexta Engine active on port ${PORT} [READY]`);
     });
 
-    // Run database initialization and secondary services asynchronously
-    // so port 3000 is available immediately for health checks and Vite traffic
-    initDatabase()
+    // 5. Kick off migrations & database preparation; incoming API requests await this via gateway middleware
+    migrationsPromise = initDatabaseAndMigrations();
+    migrationsPromise
       .then(async (dbReady) => {
         if (dbReady) {
-          setIo(ioInstance);
           initCronJobs();
           startConnectionHealthCheck();
           startPoolSaturationGuardian();
@@ -141,17 +195,18 @@ async function startServer() {
           } catch (gpuDiscErr: any) {
             console.warn('[Server] GPU Discovery initialization warning:', gpuDiscErr.message);
           }
-          console.log('[Server] Database initialization completed. Secondary databases synchronized & operational.');
+          console.log('[Server] Database initialization & migrations completed successfully.');
         } else {
           console.log('[Server] Loaded Engine in Degraded Mode (no persistent DB connectivity).');
         }
       })
       .catch((err) => {
-        console.error('[Server] Non-fatal error during background database init:', err);
+        console.error('[Server] Non-fatal error during database initialization:', err);
       })
       .finally(() => {
         initUploadsMonitor();
       });
+
   } catch (err) {
     console.error('[Server] FATAL: Unexpected Application Failure:', err);
     process.exit(1);
