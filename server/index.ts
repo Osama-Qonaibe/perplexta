@@ -66,7 +66,7 @@ app.use(async (req, res, next) => {
 async function runSeedOnce(seedKey: string, seedFn: () => Promise<void>): Promise<void> {
   if (!isDatabaseConnected() || !pool) {
     console.warn(`[Seed] Database is disconnected. Skipping seed task "${seedKey}". Zero fallback execution.`);
-    return; // Strict requirement: do not run seedFn as fallback
+    return;
   }
   try {
     await pool.query(`
@@ -77,16 +77,16 @@ async function runSeedOnce(seedKey: string, seedFn: () => Promise<void>): Promis
     `);
     const check = await pool.query('SELECT id FROM seed_executions WHERE id = $1', [seedKey]);
     if (check.rows.length === 0) {
-      console.log(`[Seed] Executing seed task "${seedKey}"...`);
+      console.log(`[Seed] Executing startup task "${seedKey}"...`);
       await seedFn();
       await pool.query('INSERT INTO seed_executions (id) VALUES ($1) ON CONFLICT DO NOTHING', [seedKey]);
     } else {
       if (process.env.DEBUG_DB === 'true') {
-        console.log(`[Seed] Seed task "${seedKey}" already completed. Skipping.`);
+        console.log(`[Seed] Startup task "${seedKey}" already completed. Skipping.`);
       }
     }
   } catch (err: any) {
-    console.warn(`[Seed] Notice during seed task "${seedKey}":`, err?.message || err);
+    console.warn(`[Seed] Notice during startup task "${seedKey}":`, err?.message || err);
   }
 }
 
@@ -124,17 +124,15 @@ async function initDatabaseAndMigrations(): Promise<boolean> {
       await runDatabaseMigrations();
       await ensureDatabaseTables();
 
-      // 2. Execute seeds once via seed_executions tracking (Strict: No fallback if DB disconnected)
+      // 2. Execute seeds and startup caches once via seed_executions tracking
       await runSeedOnce('v1_email_templates_seed', syncSystemTemplates);
       await runSeedOnce('v1_ads_seed', ensureAdsSeedData);
       await runSeedOnce('v1_bulletin_seed', ensureBulletinSeedData);
+      await runSeedOnce('v1_app_name_seed', refreshCachedAppName);
+      await runSeedOnce('v1_system_assets_seed', initializeSystemAssetSuite);
+      await runSeedOnce('v1_api_perf_logs_table', ensureApiPerfLogsTable);
+      await runSeedOnce('v1_seo_cache_warmup', warmupSeoAndSystemCache);
 
-      await Promise.allSettled([
-        refreshCachedAppName(),
-        initializeSystemAssetSuite(),
-        ensureApiPerfLogsTable(),
-        warmupSeoAndSystemCache()
-      ]);
       isMigrationsComplete = true;
       return true;
     } catch (err) {
@@ -199,16 +197,23 @@ async function startServer() {
     migrationsPromise
       .then(async (dbReady) => {
         if (dbReady) {
-          initCronJobs();
-          startConnectionHealthCheck();
-          startPoolSaturationGuardian();
-          try {
-            const { startAutomatedGpuDiscovery } = await import('./services/gpu/gpuDiscoveryService.js');
-            startAutomatedGpuDiscovery();
-          } catch (gpuDiscErr: any) {
-            console.warn('[Server] GPU Discovery initialization warning:', gpuDiscErr.message);
-          }
           console.log('[Server] Database initialization & migrations completed successfully.');
+
+          // Cooldown delay (15s) to eliminate startup CPU/DB saturation
+          const COOLDOWN_DELAY_MS = 15_000;
+          setTimeout(async () => {
+            console.log('[Server] Cooldown period ended. Activating background cron jobs, health checks, and guardians...');
+            initCronJobs();
+            startConnectionHealthCheck();
+            startPoolSaturationGuardian();
+            try {
+              const { startAutomatedGpuDiscovery } = await import('./services/gpu/gpuDiscoveryService.js');
+              startAutomatedGpuDiscovery();
+            } catch (gpuDiscErr: any) {
+              console.warn('[Server] GPU Discovery initialization warning:', gpuDiscErr.message);
+            }
+            console.log('[Server] Secondary background guardians & cron tasks initialized successfully.');
+          }, COOLDOWN_DELAY_MS);
         } else {
           console.log('[Server] Loaded Engine in Degraded Mode (no persistent DB connectivity).');
         }
