@@ -52,7 +52,24 @@ const disabledPool = (poolName: string) => ({
   options: { max: 0 }
 });
 
-const fallbackPool = {
+const productionFatalNoDbPool = (poolName: string) => ({
+  query: async () => {
+    console.error(`[FATAL] Database query executed on uninitialized "${poolName}" pool in production. Halting process.`);
+    throw new Error(`[FATAL DATABASE ERROR] Production database pool "${poolName}" is disconnected or uninitialized.`);
+  },
+  connect: async () => {
+    throw new Error(`[FATAL DATABASE ERROR] Production database pool "${poolName}" is disconnected or uninitialized.`);
+  },
+  end: async () => {},
+  on: () => {},
+  emit: () => {},
+  totalCount: 0,
+  idleCount: 0,
+  waitingCount: 0,
+  options: { max: 0 }
+});
+
+const developmentFallbackPool = {
   query: async (text: any, params?: any) => {
     const queryStr = typeof text === 'string' ? text.trim().toLowerCase() : (text?.text ? text.text.trim().toLowerCase() : '');
     if (queryStr.includes('select 1') || queryStr.includes('select version')) {
@@ -73,6 +90,13 @@ const fallbackPool = {
   options: { max: 20 }
 };
 
+function getEffectiveFallbackPool(poolName: string) {
+  if (process.env.NODE_ENV === 'production') {
+    return productionFatalNoDbPool(poolName);
+  }
+  return developmentFallbackPool;
+}
+
 let rawPool: any = null;
 let rawLedgerPool: any = null;
 let rawExternalPool: any = null;
@@ -86,7 +110,7 @@ function isStrictSegregationEnabled(): boolean {
 
 export const pool: any = new Proxy({}, {
   get(target, prop) {
-    const p = rawPool || fallbackPool;
+    const p = rawPool || getEffectiveFallbackPool('core');
     const val = (p as any)[prop];
     return typeof val === 'function' ? val.bind(p) : val;
   }
@@ -99,7 +123,7 @@ export const ledgerPool: any = new Proxy({}, {
       const val = (p as any)[prop];
       return typeof val === 'function' ? val.bind(p) : val;
     }
-    const p = rawLedgerPool || rawPool || fallbackPool;
+    const p = rawLedgerPool || (process.env.NODE_ENV === 'production' ? productionFatalNoDbPool('ledger') : rawPool || developmentFallbackPool);
     const val = (p as any)[prop];
     return typeof val === 'function' ? val.bind(p) : val;
   }
@@ -112,7 +136,7 @@ export const externalPool: any = new Proxy({}, {
       const val = (p as any)[prop];
       return typeof val === 'function' ? val.bind(p) : val;
     }
-    const p = rawExternalPool || rawPool || fallbackPool;
+    const p = rawExternalPool || (process.env.NODE_ENV === 'production' ? productionFatalNoDbPool('external') : rawPool || developmentFallbackPool);
     const val = (p as any)[prop];
     return typeof val === 'function' ? val.bind(p) : val;
   }
@@ -125,7 +149,7 @@ export const securityPool: any = new Proxy({}, {
       const val = (p as any)[prop];
       return typeof val === 'function' ? val.bind(p) : val;
     }
-    const p = rawSecurityPool || rawPool || fallbackPool;
+    const p = rawSecurityPool || (process.env.NODE_ENV === 'production' ? productionFatalNoDbPool('security') : rawPool || developmentFallbackPool);
     const val = (p as any)[prop];
     return typeof val === 'function' ? val.bind(p) : val;
   }
@@ -138,7 +162,7 @@ export const mediaPool: any = new Proxy({}, {
       const val = (p as any)[prop];
       return typeof val === 'function' ? val.bind(p) : val;
     }
-    const p = rawMediaPool || rawPool || fallbackPool;
+    const p = rawMediaPool || (process.env.NODE_ENV === 'production' ? productionFatalNoDbPool('media') : rawPool || developmentFallbackPool);
     const val = (p as any)[prop];
     return typeof val === 'function' ? val.bind(p) : val;
   }
@@ -146,11 +170,11 @@ export const mediaPool: any = new Proxy({}, {
 
 export function getDatabasePool(poolName: 'core' | 'ledger' | 'external' | 'security' | 'media' = 'core') {
   const strict = isStrictSegregationEnabled();
-  if (poolName === 'ledger') return rawLedgerPool || (strict ? disabledPool('ledger') : rawPool || fallbackPool);
-  if (poolName === 'external') return rawExternalPool || (strict ? disabledPool('external') : rawPool || fallbackPool);
-  if (poolName === 'security') return rawSecurityPool || (strict ? disabledPool('security') : rawPool || fallbackPool);
-  if (poolName === 'media') return rawMediaPool || (strict ? disabledPool('media') : rawPool || fallbackPool);
-  return rawPool || fallbackPool;
+  if (poolName === 'ledger') return rawLedgerPool || (strict ? disabledPool('ledger') : (process.env.NODE_ENV === 'production' ? productionFatalNoDbPool('ledger') : rawPool || developmentFallbackPool));
+  if (poolName === 'external') return rawExternalPool || (strict ? disabledPool('external') : (process.env.NODE_ENV === 'production' ? productionFatalNoDbPool('external') : rawPool || developmentFallbackPool));
+  if (poolName === 'security') return rawSecurityPool || (strict ? disabledPool('security') : (process.env.NODE_ENV === 'production' ? productionFatalNoDbPool('security') : rawPool || developmentFallbackPool));
+  if (poolName === 'media') return rawMediaPool || (strict ? disabledPool('media') : (process.env.NODE_ENV === 'production' ? productionFatalNoDbPool('media') : rawPool || developmentFallbackPool));
+  return rawPool || getEffectiveFallbackPool('core');
 }
 
 let currentCoreUrl     = '';
@@ -166,22 +190,22 @@ let currentMediaMax    = 0;
 let poolInitPromise: Promise<void> | null = null;
 let lastInitUrls = { core: '', ledger: '', external: '', security: '', media: '', coreMax: 0, ledgerMax: 0, externalMax: 0, securityMax: 0, mediaMax: 0 };
 
-/** Get SSL Configuration with full verification support */
+/** Get SSL Configuration with verify-full default in production */
 export function getSslConfig(urlStr?: string) {
   const finalUrl = urlStr || process.env.DATABASE_URL || '';
   if (!finalUrl) {
     return undefined;
   }
 
+  let isLocal = false;
   let isVerifyFull = false;
   try {
     const u = new URL(finalUrl);
-    if (u.searchParams.get('sslmode') === 'verify-full') {
-      isVerifyFull = true;
-    }
-    if (u.hostname === 'localhost' || u.hostname === '127.0.0.1') {
-      if (process.env.DB_SSL_REQUIRED === 'true' || isVerifyFull) {
-        return { rejectUnauthorized: isVerifyFull };
+    isLocal = u.hostname === 'localhost' || u.hostname === '127.0.0.1';
+    isVerifyFull = u.searchParams.get('sslmode') === 'verify-full' || (process.env.NODE_ENV === 'production' && !isLocal);
+    if (isLocal) {
+      if (process.env.DB_SSL_REQUIRED === 'true' || u.searchParams.get('sslmode') === 'verify-full') {
+        return { rejectUnauthorized: true };
       }
       return undefined; // SSL disabled for localhost
     }
@@ -199,26 +223,31 @@ export function getSslConfig(urlStr?: string) {
     } catch {}
   }
 
-  const rejectUnauthorized = isVerifyFull ||
-    process.env.DB_SSL_REJECT_UNAUTHORIZED === 'true' ||
-    Boolean(caCert);
+  if (process.env.NODE_ENV === 'production') {
+    if (!caCert && process.env.DB_SSL_REQUIRED !== 'false') {
+      console.warn('[DB SSL] Production verify-full active: ensure DB_SSL_CA or trusted CA certificate is provided.');
+    }
+    return {
+      rejectUnauthorized: true,
+      ca: caCert ? [caCert] : undefined
+    };
+  }
 
   return {
-    rejectUnauthorized,
+    rejectUnauthorized: isVerifyFull || process.env.DB_SSL_REJECT_UNAUTHORIZED === 'true' || Boolean(caCert),
     ca: caCert ? [caCert] : undefined
   };
 }
 
-/** Resolve pool-size defaults from environment variables — single source of truth. */
+/** Resolve pool sizes strictly from dedicated pool size environment variables */
 function getPoolSizesFromEnv(): { coreMax: number; ledgerMax: number; externalMax: number; securityMax: number; mediaMax: number } {
-  const defaultBase = process.env.NODE_ENV === 'production' ? 10 : 20;
-  const base = Number(process.env.DB_MAX_CONNECTIONS) || defaultBase;
+  const fallbackDefault = 20;
   return {
-    coreMax:     Number(process.env.DB_CORE_MAX_POOL_SIZE     || process.env.DB_CORE_MAX_CONNECTIONS)     || base,
-    ledgerMax:   Number(process.env.DB_LEDGER_MAX_POOL_SIZE   || process.env.DB_LEDGER_MAX_CONNECTIONS)   || base,
-    externalMax: Number(process.env.DB_EXTERNAL_MAX_POOL_SIZE || process.env.DB_EXTERNAL_MAX_CONNECTIONS) || base,
-    securityMax: Number(process.env.DB_SECURITY_MAX_POOL_SIZE || process.env.DB_SECURITY_MAX_CONNECTIONS) || base,
-    mediaMax:    Number(process.env.DB_MEDIA_MAX_POOL_SIZE    || process.env.DB_MEDIA_MAX_CONNECTIONS)    || base,
+    coreMax:     Number(process.env.DB_CORE_MAX_POOL_SIZE     || process.env.DB_MAX_CONNECTIONS) || fallbackDefault,
+    ledgerMax:   Number(process.env.DB_LEDGER_MAX_POOL_SIZE   || process.env.DB_MAX_CONNECTIONS) || fallbackDefault,
+    externalMax: Number(process.env.DB_EXTERNAL_MAX_POOL_SIZE || process.env.DB_MAX_CONNECTIONS) || fallbackDefault,
+    securityMax: Number(process.env.DB_SECURITY_MAX_POOL_SIZE || process.env.DB_MAX_CONNECTIONS) || fallbackDefault,
+    mediaMax:    Number(process.env.DB_MEDIA_MAX_POOL_SIZE    || process.env.DB_MAX_CONNECTIONS) || fallbackDefault,
   };
 }
 
@@ -270,14 +299,20 @@ export function isPlaceholderOrUnreachableUrl(urlStr?: string): boolean {
   }
 }
 
-/** Normalize database URL while preserving sslmode parameters */
+/** Normalize database URL with verify-full enforcement in production */
 export function normalizeDatabaseUrl(url: string): string {
   if (!url) return url;
   try {
     const u = new URL(url);
     if (u.hostname !== 'localhost' && u.hostname !== '127.0.0.1') {
-      if (process.env.DB_SSL_REQUIRED !== 'false' && !u.searchParams.has('sslmode')) {
-        u.searchParams.set('sslmode', 'require');
+      if (process.env.NODE_ENV === 'production') {
+        if (process.env.DB_SSL_REQUIRED !== 'false') {
+          u.searchParams.set('sslmode', 'verify-full');
+        }
+      } else {
+        if (process.env.DB_SSL_REQUIRED !== 'false' && !u.searchParams.has('sslmode')) {
+          u.searchParams.set('sslmode', 'require');
+        }
       }
     } else {
        if (process.env.DB_SSL_REQUIRED === 'true' && !u.searchParams.has('sslmode')) {
@@ -519,6 +554,10 @@ export async function initializePerplextaPools(
     if (effectiveCoreUrl) console.log(`[DB] Core Target: ${redactUrl(effectiveCoreUrl)}`);
 
     if (!effectiveCoreUrl) {
+      if (process.env.NODE_ENV === 'production') {
+        console.error('[DB FATAL] DATABASE_URL missing in production. Shutting down process.');
+        process.exit(1);
+      }
       console.warn('[DB] ⚠️ DATABASE_URL missing. Operating in Degraded Mode.');
       rawPool = rawLedgerPool = rawExternalPool = rawSecurityPool = rawMediaPool = null;
       return;
@@ -532,7 +571,9 @@ export async function initializePerplextaPools(
       if (finalMediaUrl) validateDatabaseUrl(finalMediaUrl, 'MEDIA_DATABASE_URL');
     } catch (err: any) {
       console.error(`[DB] Validation failed: ${err.message}`);
-      if (process.env.NODE_ENV === 'production' && effectiveCoreUrl) throw err;
+      if (process.env.NODE_ENV === 'production') {
+        process.exit(1);
+      }
       rawPool = rawLedgerPool = rawExternalPool = rawSecurityPool = rawMediaPool = null;
       return;
     }
@@ -690,8 +731,12 @@ export async function initializePerplextaPools(
 
         await ensureRegistryTable(rawPool);
       } else {
-        console.error('[DB] ❌ Core DB unreachable or data quota exceeded. Operating in Degraded Mode.');
+        console.error('[DB] ❌ Core DB unreachable or data quota exceeded.');
         resetPoolsToDegradedMode();
+        if (process.env.NODE_ENV === 'production') {
+          console.error('[DB FATAL] Production database failure. Process exiting.');
+          process.exit(1);
+        }
         throw new Error('Core DB is unreachable or data transfer quota exceeded.');
       }
 
@@ -736,6 +781,9 @@ export async function initializePerplextaPools(
     } catch (err: any) {
       console.error('[DB] Critical error during pool creation:', err.message);
       resetPoolsToDegradedMode();
+      if (process.env.NODE_ENV === 'production') {
+        process.exit(1);
+      }
     }
   })();
 

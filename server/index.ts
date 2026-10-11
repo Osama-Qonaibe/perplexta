@@ -43,9 +43,14 @@ const DB_RETRY_DELAY_MS = 3_000;
 let isMigrationsComplete = false;
 let migrationsPromise: Promise<boolean> | null = null;
 
-// Architectural Gateway: Blocks incoming API requests (except health check) until migrations complete
+// Complete Migration Readiness Gateway:
+// Blocks ALL incoming traffic (pages, static bundles, and APIs except /api/health)
+// until migrations and schema verifications are 100% completed.
 app.use(async (req, res, next) => {
-  if (req.path.startsWith('/api') && req.path !== '/api/health' && !isMigrationsComplete && migrationsPromise) {
+  if (req.path === '/api/health') {
+    return next();
+  }
+  if (!isMigrationsComplete && migrationsPromise) {
     try {
       await migrationsPromise;
     } catch {}
@@ -56,11 +61,12 @@ app.use(async (req, res, next) => {
 /**
  * Runs a seed/initialization task once across application restarts by persisting
  * execution version tags into the seed_executions table.
+ * Strictly prevents execution if database is disconnected (ZERO in-memory fallback).
  */
 async function runSeedOnce(seedKey: string, seedFn: () => Promise<void>): Promise<void> {
   if (!isDatabaseConnected() || !pool) {
-    await seedFn().catch(() => {});
-    return;
+    console.warn(`[Seed] Database is disconnected. Skipping seed task "${seedKey}". Zero fallback execution.`);
+    return; // Strict requirement: do not run seedFn as fallback
   }
   try {
     await pool.query(`
@@ -81,7 +87,6 @@ async function runSeedOnce(seedKey: string, seedFn: () => Promise<void>): Promis
     }
   } catch (err: any) {
     console.warn(`[Seed] Notice during seed task "${seedKey}":`, err?.message || err);
-    await seedFn().catch(() => {});
   }
 }
 
@@ -91,6 +96,10 @@ async function runSeedOnce(seedKey: string, seedFn: () => Promise<void>): Promis
 async function initDatabaseAndMigrations(): Promise<boolean> {
   const coreUrl = process.env.DATABASE_URL?.trim();
   if (!coreUrl) {
+    if (process.env.NODE_ENV === 'production') {
+      console.error('[FATAL] DATABASE_URL missing in production. Shutting down.');
+      process.exit(1);
+    }
     console.log('[Server] Operating in Degraded Mode (no DATABASE_URL configured). Safe in-memory fallbacks active.');
     isMigrationsComplete = true;
     return false;
@@ -110,12 +119,12 @@ async function initDatabaseAndMigrations(): Promise<boolean> {
       }
       await synchronizePerplextaPoolsFromRegistry();
 
-      // 1. Run migrations before opening API requests to callers
+      // 1. Run migrations before opening any traffic to callers
       console.log('[Server] Executing database migrations and schema checks...');
       await runDatabaseMigrations();
       await ensureDatabaseTables();
 
-      // 2. Execute seeds once via seed_executions tracking
+      // 2. Execute seeds once via seed_executions tracking (Strict: No fallback if DB disconnected)
       await runSeedOnce('v1_email_templates_seed', syncSystemTemplates);
       await runSeedOnce('v1_ads_seed', ensureAdsSeedData);
       await runSeedOnce('v1_bulletin_seed', ensureBulletinSeedData);
@@ -134,6 +143,10 @@ async function initDatabaseAndMigrations(): Promise<boolean> {
         console.warn(`[Server] DB connection attempt ${attempt}/${MAX_DB_ATTEMPTS}: ${msg}. Retrying in ${DB_RETRY_DELAY_MS / 1000}s...`);
         await new Promise(resolve => setTimeout(resolve, DB_RETRY_DELAY_MS));
       } else {
+        if (process.env.NODE_ENV === 'production') {
+          console.error(`[FATAL] Exhausted all DB connection attempts in production: ${msg}. Shutting down.`);
+          process.exit(1);
+        }
         console.warn(`[Server] All DB init attempts exhausted (${msg}). Continuing in Degraded Mode.`);
       }
     }
@@ -176,12 +189,12 @@ async function startServer() {
     process.on('SIGTERM', () => shutdown('SIGTERM'));
     process.on('SIGINT',  () => shutdown('SIGINT'));
 
-    // 4. Start listening on port 3000 immediately so supervisor and healthchecks succeed instantly
+    // 4. Start listening on port 3000 immediately so supervisor and health checks succeed
     httpServer.listen(PORT, '0.0.0.0', () => {
       console.log(`[Server] 🚀 Perplexta Engine active on port ${PORT} [READY]`);
     });
 
-    // 5. Kick off migrations & database preparation; incoming API requests await this via gateway middleware
+    // 5. Kick off migrations & database preparation; all incoming pages/static/APIs await this via gateway
     migrationsPromise = initDatabaseAndMigrations();
     migrationsPromise
       .then(async (dbReady) => {
