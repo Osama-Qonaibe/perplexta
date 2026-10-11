@@ -557,7 +557,6 @@ app.use(helmet({
 
 const allowedOrigins = [
   ...(process.env.CORS_ALLOWED_ORIGINS ? process.env.CORS_ALLOWED_ORIGINS.split(',').map(o => o.trim()) : []),
-  ...(process.env.ALLOWED_ORIGINS ? process.env.ALLOWED_ORIGINS.split(',').map(o => o.trim()) : []),
   ...(process.env.APP_URL ? [process.env.APP_URL.trim()] : []),
   'http://localhost:3000',
   'http://localhost:5173',

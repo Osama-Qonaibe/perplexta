@@ -52,26 +52,22 @@ const disabledPool = (poolName: string) => ({
   options: { max: 0 }
 });
 
-const fallbackPool = {
-  query: async (text: any, params?: any) => {
-    const queryStr = typeof text === 'string' ? text.trim().toLowerCase() : (text?.text ? text.text.trim().toLowerCase() : '');
-    if (queryStr.includes('select 1') || queryStr.includes('select version')) {
-      return { rows: [{ '?column?': 1 }], raw: [], rowCount: 1 };
-    }
-    return { rows: [], raw: [], rowCount: 0 };
+const disconnectedPool = (poolName: string) => ({
+  query: async () => {
+    console.error(`[FATAL DATABASE ERROR] Query attempted on uninitialized or disconnected "${poolName}" pool.`);
+    throw new Error(`[FATAL DATABASE ERROR] Database pool "${poolName}" is disconnected or uninitialized. Configure a valid database URL.`);
   },
-  connect: async () => ({
-    query: async () => ({ rows: [], raw: [], rowCount: 0 }),
-    release: () => {}
-  }),
+  connect: async () => {
+    throw new Error(`[FATAL DATABASE ERROR] Database pool "${poolName}" is disconnected or uninitialized. Configure a valid database URL.`);
+  },
   end: async () => {},
   on: () => {},
   emit: () => {},
   totalCount: 0,
   idleCount: 0,
   waitingCount: 0,
-  options: { max: 20 }
-};
+  options: { max: 0 }
+});
 
 let rawPool: any = null;
 let rawLedgerPool: any = null;
@@ -86,7 +82,7 @@ function isStrictSegregationEnabled(): boolean {
 
 export const pool: any = new Proxy({}, {
   get(target, prop) {
-    const p = rawPool || fallbackPool;
+    const p = rawPool || disconnectedPool('core');
     const val = (p as any)[prop];
     return typeof val === 'function' ? val.bind(p) : val;
   }
@@ -99,7 +95,7 @@ export const ledgerPool: any = new Proxy({}, {
       const val = (p as any)[prop];
       return typeof val === 'function' ? val.bind(p) : val;
     }
-    const p = rawLedgerPool || rawPool || fallbackPool;
+    const p = rawLedgerPool || disconnectedPool('ledger');
     const val = (p as any)[prop];
     return typeof val === 'function' ? val.bind(p) : val;
   }
@@ -112,7 +108,7 @@ export const externalPool: any = new Proxy({}, {
       const val = (p as any)[prop];
       return typeof val === 'function' ? val.bind(p) : val;
     }
-    const p = rawExternalPool || rawPool || fallbackPool;
+    const p = rawExternalPool || disconnectedPool('external');
     const val = (p as any)[prop];
     return typeof val === 'function' ? val.bind(p) : val;
   }
@@ -125,7 +121,7 @@ export const securityPool: any = new Proxy({}, {
       const val = (p as any)[prop];
       return typeof val === 'function' ? val.bind(p) : val;
     }
-    const p = rawSecurityPool || rawPool || fallbackPool;
+    const p = rawSecurityPool || disconnectedPool('security');
     const val = (p as any)[prop];
     return typeof val === 'function' ? val.bind(p) : val;
   }
@@ -138,7 +134,7 @@ export const mediaPool: any = new Proxy({}, {
       const val = (p as any)[prop];
       return typeof val === 'function' ? val.bind(p) : val;
     }
-    const p = rawMediaPool || rawPool || fallbackPool;
+    const p = rawMediaPool || disconnectedPool('media');
     const val = (p as any)[prop];
     return typeof val === 'function' ? val.bind(p) : val;
   }
@@ -146,11 +142,11 @@ export const mediaPool: any = new Proxy({}, {
 
 export function getDatabasePool(poolName: 'core' | 'ledger' | 'external' | 'security' | 'media' = 'core') {
   const strict = isStrictSegregationEnabled();
-  if (poolName === 'ledger') return rawLedgerPool || (strict ? disabledPool('ledger') : rawPool || fallbackPool);
-  if (poolName === 'external') return rawExternalPool || (strict ? disabledPool('external') : rawPool || fallbackPool);
-  if (poolName === 'security') return rawSecurityPool || (strict ? disabledPool('security') : rawPool || fallbackPool);
-  if (poolName === 'media') return rawMediaPool || (strict ? disabledPool('media') : rawPool || fallbackPool);
-  return rawPool || fallbackPool;
+  if (poolName === 'ledger') return rawLedgerPool || (strict ? disabledPool('ledger') : disconnectedPool('ledger'));
+  if (poolName === 'external') return rawExternalPool || (strict ? disabledPool('external') : disconnectedPool('external'));
+  if (poolName === 'security') return rawSecurityPool || (strict ? disabledPool('security') : disconnectedPool('security'));
+  if (poolName === 'media') return rawMediaPool || (strict ? disabledPool('media') : disconnectedPool('media'));
+  return rawPool || disconnectedPool('core');
 }
 
 let currentCoreUrl     = '';
@@ -279,18 +275,18 @@ export function isPlaceholderOrUnreachableUrl(urlStr?: string): boolean {
   }
 }
 
-/** Normalize database URL while preserving sslmode parameters */
+/** Normalize database URL and strictly enforce sslmode=verify-full across all remote environments */
 export function normalizeDatabaseUrl(url: string): string {
   if (!url) return url;
   try {
     const u = new URL(url);
     if (u.hostname !== 'localhost' && u.hostname !== '127.0.0.1') {
-      if (process.env.DB_SSL_REQUIRED !== 'false' && !u.searchParams.has('sslmode')) {
-        u.searchParams.set('sslmode', 'require');
+      if (process.env.DB_SSL_REQUIRED !== 'false') {
+        u.searchParams.set('sslmode', 'verify-full');
       }
     } else {
        if (process.env.DB_SSL_REQUIRED === 'true' && !u.searchParams.has('sslmode')) {
-         u.searchParams.set('sslmode', 'require');
+         u.searchParams.set('sslmode', 'verify-full');
        } else if (process.env.DB_SSL_REQUIRED !== 'true' && u.searchParams.get('sslmode') !== 'verify-full') {
          u.searchParams.delete('sslmode');
        }
