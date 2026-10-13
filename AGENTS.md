@@ -1,5 +1,7 @@
 # PERPLEXTA PLATFORM - Design System & Engineering Guidelines
 
+> **Architectural Documentation Hub**: The complete and consolidated system documentation resides in [`/docs/AGENTS.md`](./docs/AGENTS.md). Additional operational guides are located in [`/docs/DEPLOYMENT.md`](./docs/DEPLOYMENT.md), [`/docs/MONITORING.md`](./docs/MONITORING.md), and [`/docs/ROLLBACK.md`](./docs/ROLLBACK.md).
+
 ## ⚠️ SUPREME PERPLEXTA DECREE ⚠️ (المرسوم السامي الحاكم لـ بيربليكستا)
 **ATTENTION: ALL FUTURE DEVELOPERS, AI SYSTEMS, AND CODING ASSISTANTS**
 This project is governed by immutable architectural principles. Any developer, AI system, or coding assistant that breaks these foundational rules or attempts to rewrite the established codebase is performing systemic sabotage.

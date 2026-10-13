@@ -569,6 +569,11 @@ app.use(cors({
     if (!origin) return callback(null, true);
     if (allowedOrigins.includes(origin)) return callback(null, true);
 
+    // Allow official perplexta platform domain (perplexta.com)
+    if (/https?:\/\/(?:[a-z0-9-]+\.)*perplexta\.com(?::\d+)?$/i.test(origin)) {
+      return callback(null, true);
+    }
+
     // AI Studio official development/preview domains
     if (origin.endsWith('.aistudio.google')) return callback(null, true);
 
@@ -1543,16 +1548,62 @@ Verification: Do not include conversational text or markdown codeblocks before o
 app.use('/api', globalLimiter);
 app.use('/api', csrfProtection);
 
-app.get('/api/health', (req, res) => res.json({
-  status: 'ok',
-  pools: {
+app.get('/api/health', async (req, res) => {
+  let isCoreHealthy = false;
+  let isLedgerHealthy = false;
+  let dbLatencyMs = 0;
+
+  try {
+    const startPing = Date.now();
+    if (pool) {
+      await pool.query('SELECT 1');
+      isCoreHealthy = true;
+    }
+    if (ledgerPool) {
+      await ledgerPool.query('SELECT 1');
+      isLedgerHealthy = true;
+    } else {
+      isLedgerHealthy = isCoreHealthy;
+    }
+    dbLatencyMs = Date.now() - startPing;
+  } catch (pingErr) {
+    console.warn('[HealthCheck] DB Ping Notice:', pingErr);
+  }
+
+  const mem = process.memoryUsage();
+  const pools = {
     core: getPoolMetrics(pool, 'core'),
     ledger: getPoolMetrics(ledgerPool, 'ledger'),
     external: getPoolMetrics(externalPool, 'external'),
     security: getPoolMetrics(securityPool, 'security'),
     media: getPoolMetrics(mediaPool, 'media')
-  }
-}));
+  };
+  const isSaturated = Object.values(pools).some(p => p.saturated);
+  const isHealthy = isCoreHealthy && !isSaturated;
+
+  res.status(isHealthy ? 200 : 503).json({
+    status: isHealthy ? 'ok' : 'degraded',
+    timestamp: new Date().toISOString(),
+    database: {
+      coreConnected: isCoreHealthy,
+      ledgerConnected: isLedgerHealthy,
+      latencyMs: dbLatencyMs
+    },
+    system: {
+      uptimeSeconds: Math.round(process.uptime()),
+      memory: {
+        rssMb: Math.round(mem.rss / (1024 * 1024)),
+        heapUsedMb: Math.round(mem.heapUsed / (1024 * 1024)),
+        heapTotalMb: Math.round(mem.heapTotal / (1024 * 1024))
+      }
+    },
+    aiOrchestrator: {
+      serverSideGeminiReady: Boolean(process.env.GEMINI_API_KEY || process.env.GOOGLE_API_KEY),
+      capability: 'MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API'
+    },
+    pools
+  });
+});
 
 app.get(['/api/diagnostics/db', '/api/health/db', '/api/db-health'], (req, res) => {
   const pools = {

@@ -54,6 +54,10 @@ export function csrfProtection(req: Request, res: Response, next: NextFunction) 
       const originUrl = new URL(origin);
       const originStr = `${originUrl.protocol}//${originUrl.host}`;
 
+      if (/perplexta\.com$/i.test(originUrl.hostname)) {
+        return next();
+      }
+
       const isAllowed = allowed.some(domain => {
         if (!domain) return false;
         const cleanDomain = domain.endsWith('/') ? domain.slice(0, -1) : domain;

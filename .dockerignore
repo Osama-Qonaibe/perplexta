@@ -9,6 +9,9 @@ dist
 *.md
 !AGENTS.md
 !GEMINI.md
+docs/
+tests/
+server/tests/
 README.md
 CONTRIBUTING.md
 CLEANUP_MANIFEST.md

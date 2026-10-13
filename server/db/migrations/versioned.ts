@@ -2847,6 +2847,28 @@ export async function runVersionedMigrations(
           END;
       `);
     });
+
+    await runVersioned('v132_rinex_creators_user_id_and_ledger_integrity', 'Add user_id with index and foreign key to rinex_creators and backfill from users', async (tx) => {
+      await tx.query(`
+        ALTER TABLE rinex_creators ADD COLUMN IF NOT EXISTS user_id INTEGER;
+        
+        DO $$ 
+        BEGIN 
+          IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'fk_rinex_creators_user') THEN 
+            ALTER TABLE rinex_creators ADD CONSTRAINT fk_rinex_creators_user FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE SET NULL; 
+          END IF; 
+        END $$;
+
+        CREATE INDEX IF NOT EXISTS idx_rinex_creators_user_id ON rinex_creators (user_id);
+
+        UPDATE rinex_creators rc 
+        SET user_id = u.id 
+        FROM users u 
+        WHERE rc.email IS NOT NULL 
+          AND LOWER(rc.email) = LOWER(u.email) 
+          AND rc.user_id IS NULL;
+      `);
+    });
     
   console.log("[Migrations] All versioned migrations completed successfully.");
 }

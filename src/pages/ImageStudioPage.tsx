@@ -10,7 +10,7 @@ import {
   FileText, Sparkle, RefreshCw, Layers, Check, ExternalLink,
   Edit3, ArrowRight, UploadCloud, Award
 } from 'lucide-react';
-import { ArtifactImageEditor, CanvasElement, EditorFilters } from '../components/chat/artifacts/ArtifactImageEditor';
+import { ArtifactImageEditor, CanvasElement, EditorFilters, auditAndPreloadTemplateImages } from '../components/chat/artifacts/ArtifactImageEditor';
 import { ThemeToggleButton } from '../components/ThemeToggleButton';
 import { resolveImageUrl } from '../utils/imageResolver';
 import { toast } from '@/design-system';
@@ -40,6 +40,7 @@ import { CreatorRegistrationModal } from '../components/creators/CreatorRegistra
 import { TemplatePreviewModal } from '../components/creators/TemplatePreviewModal';
 import { getStoredCreators, getStoredMarketplaceTemplates, recordTemplateUse, MarketplaceTemplate } from '../data/rinexCreators';
 import { UNIFIED_PUBLIC_TEMPLATES, PublicTemplateItem } from '../data/publicTemplatesData';
+import { RATAQ_TEMPLATES } from '../data/rataqTemplates';
 
 interface CanvasPreset {
   id: string;
@@ -327,6 +328,16 @@ export const ImageStudioPage: React.FC = () => {
     return undefined;
   });
 
+  const [activeInitialStudioMode, setActiveInitialStudioMode] = useState<'image' | 'video' | undefined>(() => {
+    try {
+      if (typeof window !== 'undefined' && localStorage.getItem('rataq_studio_session_isVideo') === 'true') {
+        const cat = localStorage.getItem('rataq_studio_session_templateCategory') || '';
+        if (cat === 'reels' || cat === 'video') return 'video';
+      }
+    } catch {}
+    return 'image';
+  });
+
   const processedTemplateRef = useRef<string | null>(null);
   const isInitializingRef = useRef<boolean>(false);
 
@@ -342,30 +353,73 @@ export const ImageStudioPage: React.FC = () => {
         setActiveProjectId(newId);
 
         let loadedElements = tpl.elements || [];
-        let loadedBg = tpl.canvasBackground || tpl.thumbnail || tpl.src;
+        let loadedBg = tpl.backgroundColor || tpl.canvasBackground || '#ffffff';
         let loadedSize = ((tpl as any).width && (tpl as any).height) ? { width: (tpl as any).width, height: (tpl as any).height } : parseTemplateDimensions(tpl.dimensions);
 
         if (tpl.repoTemplate) {
           const converted = convertRataqTemplateToCanvasElements(tpl.repoTemplate);
           loadedElements = converted.elements;
-          loadedBg = converted.canvasBackground || converted.previewUrl || loadedBg;
+          loadedBg = converted.canvasBackground || converted.backgroundColor || '#ffffff';
           loadedSize = { width: converted.width, height: converted.height };
+        } else if (!loadedElements || loadedElements.length === 0) {
+          const cleanId = (tpl.id || '').replace(/_public$/, '').replace(/^repo-/, '');
+          const matchInRataq = RATAQ_TEMPLATES.find(r => r.id === tpl.id || r.id === cleanId);
+          if (matchInRataq) {
+            loadedElements = matchInRataq.elements || [];
+            loadedBg = matchInRataq.backgroundColor || '#ffffff';
+            if (matchInRataq.width && matchInRataq.height) loadedSize = { width: matchInRataq.width, height: matchInRataq.height };
+          } else {
+            loadedBg = tpl.canvasBackground || tpl.thumbnail || tpl.src || '#ffffff';
+          }
         }
 
         setActiveInitialElements(loadedElements);
         setActiveInitialFilters(undefined);
         if (loadedSize) setActiveInitialImageSize(loadedSize);
 
+        // Proactive diagnostic audit for template images during template initialization
+        auditAndPreloadTemplateImages({
+          id: tpl.id,
+          titleAr: tpl.titleAr || tpl.title,
+          titleEn: tpl.titleEn || tpl.title,
+          elements: loadedElements,
+          backgroundImage: loadedBg
+        }, 'template_initialization');
+
+        const rawVideo = tpl.videoUrl || (tpl as any).previewVideoUrl;
         const isVideoTpl = Boolean(
-          tpl.category === 'reels' || tpl.category === 'video' || tpl.category === 'story' || tpl.category === 'tiktok' ||
-          (loadedSize && loadedSize.width === 1080 && loadedSize.height === 1920) ||
-          (tpl.titleAr && (tpl.titleAr.includes('ريلز') || tpl.titleAr.includes('فيديو') || tpl.titleAr.includes('ستوري') || tpl.titleAr.includes('تيك توك'))) ||
-          (tpl.titleEn && (tpl.titleEn.toLowerCase().includes('reel') || tpl.titleEn.toLowerCase().includes('video') || tpl.titleEn.toLowerCase().includes('story') || tpl.titleEn.toLowerCase().includes('tiktok')))
+          (tpl as any).isVideo === true ||
+          tpl.category === 'reels' || tpl.category === 'video' ||
+          (rawVideo && typeof rawVideo === 'string' && !rawVideo.startsWith('/templates/previews/')) ||
+          (loadedElements && loadedElements.some((el: any) => el.type === 'video')) ||
+          location.state?.initialStudioMode === 'video'
         );
+        setActiveInitialStudioMode(isVideoTpl ? 'video' : 'image');
         try {
+          localStorage.setItem('rataq_studio_session_active', 'true');
+          localStorage.setItem('rataq_studio_session_timestamp', String(Date.now()));
+          localStorage.setItem('rataq_studio_session_projectId', newId);
+          localStorage.setItem('rataq_studio_session_artifact', JSON.stringify({
+            id: newId,
+            title: isAr ? (tpl.titleAr || tpl.title) : (tpl.titleEn || tpl.title),
+            content: loadedBg
+          }));
+          localStorage.setItem('rataq_studio_session_elements', JSON.stringify(loadedElements));
+          localStorage.setItem('rataq_studio_session_imageSize', JSON.stringify(loadedSize || { width: 1080, height: 1080 }));
+          localStorage.setItem('rataq_studio_session_designTitle', isAr ? (tpl.titleAr || tpl.title) : (tpl.titleEn || tpl.title));
+          localStorage.setItem('rataq_studio_session_pages', JSON.stringify([{
+            id: 'page-1',
+            title: isAr ? 'الصفحة 1' : 'Page 1',
+            elements: loadedElements,
+            bgImgSrc: (typeof loadedBg === 'string' && (loadedBg.startsWith('#') || loadedBg.startsWith('rgb') || loadedBg.startsWith('hsl'))) ? undefined : loadedBg,
+            locked: false
+          }]));
+          localStorage.setItem('rataq_studio_session_currentPageIndex', '0');
           localStorage.setItem('rataq_studio_session_isVideo', isVideoTpl ? 'true' : 'false');
           if (isVideoTpl) {
             localStorage.setItem('rataq_studio_session_templateCategory', tpl.category || 'reels');
+          } else {
+            localStorage.removeItem('rataq_studio_session_templateCategory');
           }
         } catch (e) {}
 
@@ -400,32 +454,74 @@ export const ImageStudioPage: React.FC = () => {
               setActiveProjectId(newId);
 
               let loadedElements = tpl.elements || [];
-              let loadedBg = tpl.canvasBackground || tpl.thumbnail || tpl.src;
+              let loadedBg = tpl.backgroundColor || tpl.canvasBackground || '#ffffff';
               let loadedSize = ((tpl as any).width && (tpl as any).height) ? { width: (tpl as any).width, height: (tpl as any).height } : parseTemplateDimensions(tpl.dimensions);
 
               if (tpl.repoTemplate) {
                 const converted = convertRataqTemplateToCanvasElements(tpl.repoTemplate);
                 loadedElements = converted.elements;
-                loadedBg = converted.canvasBackground || converted.previewUrl;
+                loadedBg = converted.canvasBackground || converted.backgroundColor || '#ffffff';
                 loadedSize = { width: converted.width, height: converted.height };
+              } else if (!loadedElements || loadedElements.length === 0) {
+                const cleanId = (tpl.id || '').replace(/_public$/, '').replace(/^repo-/, '');
+                const matchInRataq = RATAQ_TEMPLATES.find(r => r.id === tpl.id || r.id === cleanId);
+                if (matchInRataq) {
+                  loadedElements = matchInRataq.elements || [];
+                  loadedBg = matchInRataq.backgroundColor || '#ffffff';
+                  if (matchInRataq.width && matchInRataq.height) loadedSize = { width: matchInRataq.width, height: matchInRataq.height };
+                } else {
+                  loadedBg = tpl.canvasBackground || tpl.thumbnail || tpl.src || '#ffffff';
+                }
               }
 
+              const rawVideo = tpl.videoUrl || (tpl as any).previewVideoUrl;
               const isVideoTpl = Boolean(
-                tpl.category === 'reels' || tpl.category === 'video' || tpl.category === 'story' || tpl.category === 'tiktok' ||
-                (loadedSize && loadedSize.width === 1080 && loadedSize.height === 1920) ||
-                (tpl.titleAr && (tpl.titleAr.includes('ريلز') || tpl.titleAr.includes('فيديو') || tpl.titleAr.includes('ستوري') || tpl.titleAr.includes('تيك توك'))) ||
-                (tpl.titleEn && (tpl.titleEn.toLowerCase().includes('reel') || tpl.titleEn.toLowerCase().includes('video') || tpl.titleEn.toLowerCase().includes('story') || tpl.titleEn.toLowerCase().includes('tiktok')))
+                (tpl as any).isVideo === true ||
+                tpl.category === 'reels' || tpl.category === 'video' ||
+                (rawVideo && typeof rawVideo === 'string' && !rawVideo.startsWith('/templates/previews/')) ||
+                (loadedElements && loadedElements.some((el: any) => el.type === 'video'))
               );
+              setActiveInitialStudioMode(isVideoTpl ? 'video' : 'image');
               try {
+                localStorage.setItem('rataq_studio_session_active', 'true');
+                localStorage.setItem('rataq_studio_session_timestamp', String(Date.now()));
+                localStorage.setItem('rataq_studio_session_projectId', newId);
+                localStorage.setItem('rataq_studio_session_artifact', JSON.stringify({
+                  id: newId,
+                  title: isAr ? (tpl.titleAr || tpl.title) : (tpl.titleEn || tpl.title),
+                  content: loadedBg
+                }));
+                localStorage.setItem('rataq_studio_session_elements', JSON.stringify(loadedElements));
+                localStorage.setItem('rataq_studio_session_imageSize', JSON.stringify(loadedSize || { width: 1080, height: 1080 }));
+                localStorage.setItem('rataq_studio_session_designTitle', isAr ? (tpl.titleAr || tpl.title) : (tpl.titleEn || tpl.title));
+                localStorage.setItem('rataq_studio_session_pages', JSON.stringify([{
+                  id: 'page-1',
+                  title: isAr ? 'الصفحة 1' : 'Page 1',
+                  elements: loadedElements,
+                  bgImgSrc: (typeof loadedBg === 'string' && (loadedBg.startsWith('#') || loadedBg.startsWith('rgb') || loadedBg.startsWith('hsl'))) ? undefined : loadedBg,
+                  locked: false
+                }]));
+                localStorage.setItem('rataq_studio_session_currentPageIndex', '0');
                 localStorage.setItem('rataq_studio_session_isVideo', isVideoTpl ? 'true' : 'false');
                 if (isVideoTpl) {
                   localStorage.setItem('rataq_studio_session_templateCategory', tpl.category || 'reels');
+                } else {
+                  localStorage.removeItem('rataq_studio_session_templateCategory');
                 }
               } catch (e) {}
 
               setActiveInitialElements(loadedElements);
               setActiveInitialFilters(undefined);
               if (loadedSize) setActiveInitialImageSize(loadedSize);
+
+              // Proactive diagnostic audit for template images during template initialization
+              auditAndPreloadTemplateImages({
+                id: tpl.id,
+                titleAr: tpl.titleAr || tpl.title,
+                titleEn: tpl.titleEn || tpl.title,
+                elements: loadedElements,
+                backgroundImage: loadedBg
+              }, 'template_initialization');
               setActiveImageArtifact({
                 id: newId,
                 title: isAr ? (tpl.titleAr || tpl.title) : (tpl.titleEn || tpl.title),
@@ -457,24 +553,33 @@ export const ImageStudioPage: React.FC = () => {
     );
 
     if (user && !activeImageArtifact && !isInitializingRef.current && !hasPendingSession) {
+      const isVideoRequested = Boolean(
+        location.state?.initialStudioMode === 'video' ||
+        (typeof window !== 'undefined' && localStorage.getItem('rataq_studio_session_isVideo') === 'true')
+      );
       const defaultId = `project-default-${Date.now()}`;
-      const defaultWidth = 1080;
-      const defaultHeight = 1080;
+      const defaultWidth = isVideoRequested ? 1080 : 1080;
+      const defaultHeight = isVideoRequested ? 1920 : 1080;
 
-      // Create a default simple canvas image background
+      // Create a default eye-safe clean canvas background (never pitch-black for image designs)
       const canvas = document.createElement('canvas');
       canvas.width = defaultWidth;
       canvas.height = defaultHeight;
       const ctx = canvas.getContext('2d');
       if (ctx) {
-        const grad = ctx.createLinearGradient(0, 0, defaultWidth, defaultHeight);
-        grad.addColorStop(0, '#0f172a');
-        grad.addColorStop(1, '#1e293b');
-        ctx.fillStyle = grad;
-        ctx.fillRect(0, 0, defaultWidth, defaultHeight);
+        if (isVideoRequested) {
+          const grad = ctx.createLinearGradient(0, 0, defaultWidth, defaultHeight);
+          grad.addColorStop(0, '#090d16');
+          grad.addColorStop(1, '#1e293b');
+          ctx.fillStyle = grad;
+          ctx.fillRect(0, 0, defaultWidth, defaultHeight);
+        } else {
+          ctx.fillStyle = '#ffffff';
+          ctx.fillRect(0, 0, defaultWidth, defaultHeight);
+        }
 
-        ctx.strokeStyle = '#334155';
-        ctx.lineWidth = 4;
+        ctx.strokeStyle = isVideoRequested ? '#334155' : '#e2e8f0';
+        ctx.lineWidth = 2;
         ctx.strokeRect(0, 0, defaultWidth, defaultHeight);
       }
       const defaultBg = canvas.toDataURL('image/png');
@@ -483,9 +588,12 @@ export const ImageStudioPage: React.FC = () => {
       setActiveInitialElements([]);
       setActiveInitialFilters(undefined);
       setActiveInitialImageSize({ width: defaultWidth, height: defaultHeight });
+      setActiveInitialStudioMode(isVideoRequested ? 'video' : 'image');
       setActiveImageArtifact({
         id: defaultId,
-        title: isAr ? 'تصميم جديد' : 'New Design',
+        title: isVideoRequested 
+          ? (isAr ? 'فيديو ريلز وموشن جديد' : 'Untitled Motion Reel')
+          : (isAr ? 'تصميم جديد' : 'New Design'),
         content: defaultBg
       });
 
@@ -927,6 +1035,7 @@ export const ImageStudioPage: React.FC = () => {
           projectId={activeProjectId}
           initialPages={activeInitialPages}
           initialCurrentPageIndex={activeInitialCurrentPageIndex}
+          initialStudioMode={activeInitialStudioMode}
           onSaveProject={(savedProject) => {
             setProjects(getUserStudioProjects(user?.id));
           }}
@@ -952,6 +1061,7 @@ export const ImageStudioPage: React.FC = () => {
             setActiveInitialImageSize(undefined);
             setActiveInitialPages(undefined);
             setActiveInitialCurrentPageIndex(undefined);
+            setActiveInitialStudioMode(undefined);
             setProjects(getUserStudioProjects(user?.id));
             navigate('/studio');
           }}
@@ -1612,40 +1722,53 @@ export const ImageStudioPage: React.FC = () => {
                                 }
                                 const newId = `project-marketplace-${tpl.id}-${Date.now()}`;
                                 setActiveProjectId(newId);
-
-                                const isVideo = Boolean(
-                                  tpl.category === 'reels' ||
-                                  tpl.category === 'story' ||
-                                  tpl.videoUrl ||
-                                  tpl.previewVideoUrl ||
-                                  (tpl.dimensions && (tpl.dimensions.includes('9 : 16') || tpl.dimensions.includes('9:16')))
-                                );
-                                try {
-                                  localStorage.setItem('rataq_studio_session_isVideo', isVideo ? 'true' : 'false');
-                                  localStorage.setItem('rataq_studio_session_templateCategory', tpl.category || 'all');
-                                } catch (e) {}
+                                let loadedElements = tpl.elements || [];
+                                let loadedBg = tpl.backgroundColor || tpl.canvasBackground || '#ffffff';
+                                let loadedSize = ((tpl as any).width && (tpl as any).height) ? { width: (tpl as any).width, height: (tpl as any).height } : parseTemplateDimensions(tpl.dimensions);
 
                                 if (tpl.repoTemplate) {
                                   const converted = convertRataqTemplateToCanvasElements(tpl.repoTemplate);
-                                  setActiveInitialElements(converted.elements);
-                                  setActiveInitialFilters(undefined);
-                                  setActiveInitialImageSize({ width: converted.width, height: converted.height });
-                                  setActiveImageArtifact({
-                                    id: newId,
-                                    title: isAr ? tpl.titleAr : tpl.titleEn,
-                                    content: converted.canvasBackground || converted.previewUrl
-                                  });
-                                } else {
-                                  setActiveInitialElements(tpl.elements || []);
-                                  setActiveInitialFilters(undefined);
-                                  const templateSize = ((tpl as any).width && (tpl as any).height) ? { width: (tpl as any).width, height: (tpl as any).height } : parseTemplateDimensions(tpl.dimensions);
-                                  if (templateSize) setActiveInitialImageSize(templateSize);
-                                  setActiveImageArtifact({
-                                    id: newId,
-                                    title: isAr ? tpl.titleAr : tpl.titleEn,
-                                    content: tpl.canvasBackground || tpl.thumbnail
-                                  });
+                                  loadedElements = converted.elements;
+                                  loadedBg = converted.canvasBackground || converted.backgroundColor || '#ffffff';
+                                  loadedSize = { width: converted.width, height: converted.height };
+                                } else if (!loadedElements || loadedElements.length === 0) {
+                                  const cleanId = (tpl.id || '').replace(/_public$/, '').replace(/^repo-/, '');
+                                  const matchInRataq = RATAQ_TEMPLATES.find(r => r.id === tpl.id || r.id === cleanId);
+                                  if (matchInRataq) {
+                                    loadedElements = matchInRataq.elements || [];
+                                    loadedBg = matchInRataq.backgroundColor || '#ffffff';
+                                    if (matchInRataq.width && matchInRataq.height) loadedSize = { width: matchInRataq.width, height: matchInRataq.height };
+                                  } else {
+                                    loadedBg = tpl.canvasBackground || tpl.thumbnail || tpl.src || '#ffffff';
+                                  }
                                 }
+
+                                const rawVideo = tpl.videoUrl || (tpl as any).previewVideoUrl;
+                                const isVideo = Boolean(
+                                  (tpl as any).isVideo === true ||
+                                  tpl.category === 'reels' ||
+                                  tpl.category === 'video' ||
+                                  (rawVideo && typeof rawVideo === 'string' && !rawVideo.startsWith('/templates/previews/')) ||
+                                  (loadedElements && loadedElements.some((el: any) => el.type === 'video'))
+                                );
+                                try {
+                                  localStorage.setItem('rataq_studio_session_isVideo', isVideo ? 'true' : 'false');
+                                  if (isVideo) {
+                                    localStorage.setItem('rataq_studio_session_templateCategory', tpl.category || 'reels');
+                                  } else {
+                                    localStorage.removeItem('rataq_studio_session_templateCategory');
+                                  }
+                                } catch (e) {}
+
+                                setActiveInitialStudioMode(isVideo ? 'video' : 'image');
+                                setActiveInitialElements(loadedElements);
+                                setActiveInitialFilters(undefined);
+                                if (loadedSize) setActiveInitialImageSize(loadedSize);
+                                setActiveImageArtifact({
+                                  id: newId,
+                                  title: isAr ? tpl.titleAr : tpl.titleEn,
+                                  content: loadedBg
+                                });
 
                                 recordTemplateUse(tpl.id);
                                 toast.success(

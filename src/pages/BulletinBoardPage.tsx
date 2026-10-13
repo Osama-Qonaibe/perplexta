@@ -188,6 +188,49 @@ const FEELINGS = [
   { id: 'inspired', labelAr: 'ملهم', labelEn: 'Inspired', icon: '💡' },
 ];
 
+class FeedErrorBoundary extends React.Component<{ children: React.ReactNode; isRtl: boolean; onReset?: () => void }, { hasError: boolean }> {
+  constructor(props: any) {
+    super(props);
+    this.state = { hasError: false };
+  }
+  static getDerivedStateFromError() {
+    return { hasError: true };
+  }
+  componentDidCatch(error: any, errorInfo: any) {
+    console.error('[ViralBook Feed Error Boundary]', error, errorInfo);
+  }
+  render() {
+    if (this.state.hasError) {
+      return (
+        <div className="p-8 my-4 rounded-[var(--radius-lg)] bg-[var(--surface-card)] border border-[var(--border-default)] text-center space-y-4 shadow-sm">
+          <div className="w-12 h-12 rounded-full bg-accent/10 border border-accent/20 flex items-center justify-center text-accent mx-auto">
+            <RefreshCw size={22} className="animate-spin text-accent" />
+          </div>
+          <div className="space-y-1">
+            <h3 className="text-sm font-bold text-[var(--text-primary)]">
+              {this.props.isRtl ? 'حدث خطأ مؤقت في تحميل الخلاصة' : 'Temporary feed loading error'}
+            </h3>
+            <p className="text-xs text-[var(--text-muted)]">
+              {this.props.isRtl ? 'تم حماية الصفحة وتجاوز الخطأ بنجاح.' : 'Page was protected and recovered successfully.'}
+            </p>
+          </div>
+          <button
+            onClick={() => {
+              this.setState({ hasError: false });
+              if (this.props.onReset) this.props.onReset();
+            }}
+            className="px-5 py-2 rounded-shape-sm bg-accent text-[var(--text-primary)] hover:opacity-90 font-bold text-xs transition-all shadow-sm active:scale-95 cursor-pointer inline-flex items-center gap-2"
+          >
+            <RefreshCw size={14} />
+            <span>{this.props.isRtl ? 'إعادة تحميل الخلاصة' : 'Reload Feed'}</span>
+          </button>
+        </div>
+      );
+    }
+    return this.props.children;
+  }
+}
+
 export const BulletinBoardPage: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
@@ -5624,7 +5667,8 @@ export const BulletinBoardPage: React.FC = () => {
                 {}
                 {}
                 {activeTab === 'board' && (
-                  <BoardFeed
+                  <FeedErrorBoundary isRtl={isRtl} onReset={fetchAds}>
+                    <BoardFeed
                     isRtl={isRtl}
                     selectedCity={selectedCity}
                     selectedRadius={selectedRadius}
@@ -5711,10 +5755,10 @@ export const BulletinBoardPage: React.FC = () => {
                     handleEditAd={handleEditAd}
                     handleDeleteAd={handleDeleteAd}
                     handleToggleSave={handleToggleSave}
-                    setAds={setAds}
                     setSavedAds={setSavedAds}
                   />
-                )}
+                </FeedErrorBoundary>
+              )}
 
 
 

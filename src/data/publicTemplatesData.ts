@@ -2,6 +2,7 @@ import type { CanvasElement } from '../components/chat/artifacts/ArtifactImageEd
 import { RataqRepoTemplates, RataqRepoTemplate } from './templates';
 import { convertRataqTemplateToCanvasElements } from '../utils/rataqTemplateLoader';
 import { IMPORTED_TEMPLATES } from './importedTemplates';
+import { RATAQ_TEMPLATES } from './rataqTemplates';
 
 export interface PublicTemplateItem {
   id: string;
@@ -53,7 +54,8 @@ export const STUDIO_CATALOG_SQUARE_TEMPLATES: PublicTemplateItem[] = [
     tag: 'منشور 1:1',
     canvasBackground: '#ebb538',
     width: 1080,
-    height: 1080
+    height: 1080,
+    elements: RATAQ_TEMPLATES.find(r => r.id === 'vibes_glow')?.elements || []
   },
   {
     id: 'fashion_sale_public',
@@ -66,7 +68,8 @@ export const STUDIO_CATALOG_SQUARE_TEMPLATES: PublicTemplateItem[] = [
     tag: 'منشور 1:1',
     canvasBackground: '#0f172a',
     width: 1080,
-    height: 1080
+    height: 1080,
+    elements: RATAQ_TEMPLATES.find(r => r.id === 'fashion_sale')?.elements || []
   },
   {
     id: 'real_estate_public',
@@ -79,7 +82,8 @@ export const STUDIO_CATALOG_SQUARE_TEMPLATES: PublicTemplateItem[] = [
     tag: 'منشور 1:1',
     canvasBackground: '#0f172a',
     width: 1080,
-    height: 1080
+    height: 1080,
+    elements: RATAQ_TEMPLATES.find(r => r.id === 'real_estate_villa')?.elements || []
   },
   {
     id: 'organic_food_public',
@@ -92,7 +96,8 @@ export const STUDIO_CATALOG_SQUARE_TEMPLATES: PublicTemplateItem[] = [
     tag: 'منشور 1:1',
     canvasBackground: '#064e3b',
     width: 1080,
-    height: 1080
+    height: 1080,
+    elements: RATAQ_TEMPLATES.find(r => r.id === 'organic_food_bowl')?.elements || []
   },
   {
     id: 'medical_healthcare_public',
@@ -105,7 +110,8 @@ export const STUDIO_CATALOG_SQUARE_TEMPLATES: PublicTemplateItem[] = [
     tag: 'منشور 1:1',
     canvasBackground: '#0c4a6e',
     width: 1080,
-    height: 1080
+    height: 1080,
+    elements: RATAQ_TEMPLATES.find(r => r.id === 'medical_healthcare')?.elements || []
   },
   {
     id: 'ecommerce_flash_public',
@@ -118,7 +124,8 @@ export const STUDIO_CATALOG_SQUARE_TEMPLATES: PublicTemplateItem[] = [
     tag: 'منشور 1:1',
     canvasBackground: '#312e81',
     width: 1080,
-    height: 1080
+    height: 1080,
+    elements: RATAQ_TEMPLATES.find(r => r.id === 'ecommerce_flash_deal')?.elements || []
   },
   {
     id: 'education_course_public',
@@ -131,7 +138,8 @@ export const STUDIO_CATALOG_SQUARE_TEMPLATES: PublicTemplateItem[] = [
     tag: 'منشور 1:1',
     canvasBackground: '#022c22',
     width: 1080,
-    height: 1080
+    height: 1080,
+    elements: RATAQ_TEMPLATES.find(r => r.id === 'education_course_launch')?.elements || []
   },
   {
     id: 'cyber_tech_public',
@@ -144,7 +152,8 @@ export const STUDIO_CATALOG_SQUARE_TEMPLATES: PublicTemplateItem[] = [
     tag: 'منشور 1:1',
     canvasBackground: '#090d16',
     width: 1080,
-    height: 1080
+    height: 1080,
+    elements: RATAQ_TEMPLATES.find(r => r.id === 'cyber_tech')?.elements || []
   },
   {
     id: 'fitness_gym_public',
@@ -157,7 +166,8 @@ export const STUDIO_CATALOG_SQUARE_TEMPLATES: PublicTemplateItem[] = [
     tag: 'منشور 1:1',
     canvasBackground: '#0a0a0a',
     width: 1080,
-    height: 1080
+    height: 1080,
+    elements: RATAQ_TEMPLATES.find(r => r.id === 'fitness_gym')?.elements || []
   }
 ];
 

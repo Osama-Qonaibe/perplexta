@@ -768,20 +768,30 @@ router.post('/templates/:id/use', authenticateTokenOptional, async (req, res) =>
     // We log this as a 'rinex_template_royalty' transaction in the ledger pool
     try {
       if (ledgerPool) {
-        // Try to find creator's user_id
-        let creatorUserId = tpl.user_id;
-        if (!creatorUserId) {
+        // Try to find creator's user_id as a valid integer
+        let creatorUserId: number | null = null;
+        if (tpl.user_id && !isNaN(parseInt(tpl.user_id, 10))) {
+          creatorUserId = parseInt(tpl.user_id, 10);
+        }
+
+        if (!creatorUserId && tpl.creator_id) {
           const cRes = await pool.query('SELECT user_id, email FROM rinex_creators WHERE id = $1', [tpl.creator_id]);
-          creatorUserId = cRes.rows[0]?.user_id;
-          
-          // Fallback: search user by email if user_id is missing (legacy creators)
-          if (!creatorUserId && cRes.rows[0]?.email) {
-            const uRes = await pool.query('SELECT id FROM users WHERE email = $1', [cRes.rows[0].email]);
-            creatorUserId = uRes.rows[0]?.id;
+          const cRow = cRes.rows[0];
+          if (cRow?.user_id && !isNaN(parseInt(cRow.user_id, 10))) {
+            creatorUserId = parseInt(cRow.user_id, 10);
+          } else if (cRow?.email) {
+            const uRes = await pool.query('SELECT id FROM users WHERE LOWER(email) = LOWER($1)', [cRow.email]);
+            if (uRes.rows[0]?.id && !isNaN(parseInt(uRes.rows[0].id, 10))) {
+              creatorUserId = parseInt(uRes.rows[0].id, 10);
+              // Safe backfill of user_id in rinex_creators to prevent future lookups
+              try {
+                await pool.query('UPDATE rinex_creators SET user_id = $1 WHERE id = $2 AND user_id IS NULL', [creatorUserId, tpl.creator_id]);
+              } catch (_) {}
+            }
           }
         }
 
-        if (creatorUserId) {
+        if (creatorUserId && creatorUserId > 0) {
           const wallet = await getUserWallet(creatorUserId);
           if (wallet && wallet.id) {
             await ledgerPool.query(

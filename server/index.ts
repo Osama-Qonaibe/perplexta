@@ -3,9 +3,18 @@ import fs from 'fs';
 import './utils/validateSecrets.js'; // Auto-validates secrets on import
 import { createServer } from 'http';
 
+const TRANSIENT_NETWORK_ERRORS = ['EPIPE', 'ECONNRESET', 'ETIMEDOUT', 'ECONNABORTED', 'ECANCELED', 'ERR_STREAM_PREMATURE_CLOSE'];
+
+function isTransientNetworkError(err: any): boolean {
+  if (!err) return false;
+  const code = err.code || '';
+  const msg = err.message || '';
+  return TRANSIENT_NETWORK_ERRORS.some(k => code === k || msg.includes(k));
+}
+
 process.on('uncaughtException', (err: any) => {
-  if (err?.code === 'EPIPE' || err?.code === 'ECONNRESET' || err?.message?.includes('EPIPE') || err?.message?.includes('ECONNRESET')) {
-    console.info('[Process] Handled asynchronous network stream disconnection error gracefully:', err?.message || err);
+  if (isTransientNetworkError(err)) {
+    console.info('[Process] Handled transient network stream disconnection gracefully:', err?.message || err);
     return;
   }
   console.error('[Process] Uncaught Exception:', err?.message || err);
@@ -13,8 +22,8 @@ process.on('uncaughtException', (err: any) => {
 });
 
 process.on('unhandledRejection', (reason: any) => {
-  if (reason?.code === 'EPIPE' || reason?.code === 'ECONNRESET' || reason?.message?.includes('EPIPE') || reason?.message?.includes('ECONNRESET')) {
-    console.info('[Process] Handled unhandled rejection network disconnection error gracefully:', reason?.message || reason);
+  if (isTransientNetworkError(reason)) {
+    console.info('[Process] Handled transient unhandled rejection gracefully:', reason?.message || reason);
     return;
   }
   console.error('[Process] Unhandled Promise Rejection:', reason?.message || reason);

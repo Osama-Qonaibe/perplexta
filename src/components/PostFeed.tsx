@@ -64,8 +64,53 @@ const FB_REACTIONS = [
   { id: 'angry', emoji: '😡', labelAr: 'أغضبني', labelEn: 'Angry', color: 'text-[var(--fg-danger)]' },
 ];
 
-const renderRichPostText = (text: string | null | undefined, searchQuery?: string) => {
-  if (!text) return null;
+class SinglePostErrorBoundary extends React.Component<{ children: React.ReactNode; isRtl: boolean }, { hasError: boolean }> {
+  constructor(props: { children: React.ReactNode; isRtl: boolean }) {
+    super(props);
+    this.state = { hasError: false };
+  }
+  static getDerivedStateFromError() {
+    return { hasError: true };
+  }
+  componentDidCatch(error: any, errorInfo: any) {
+    console.error('[PostFeed] Error rendering individual post card:', error, errorInfo);
+  }
+  render() {
+    if (this.state.hasError) {
+      return (
+        <div className="p-3.5 rounded-[var(--radius-md)] bg-[var(--surface-subtle)] border border-[var(--border-default)] text-center text-xs text-[var(--text-muted)] my-2 shadow-2xs">
+          {this.props.isRtl ? 'تعذر عرض هذا المنشور مؤقتاً' : 'Could not display this post temporarily'}
+        </div>
+      );
+    }
+    return this.props.children;
+  }
+}
+
+const safeFormatDate = (dateVal?: any, isRtl: boolean = true): string => {
+  if (!dateVal) return '';
+  try {
+    const d = new Date(dateVal);
+    if (isNaN(d.getTime())) return '';
+    return d.toLocaleDateString(isRtl ? 'ar-EG' : 'en-US');
+  } catch {
+    return '';
+  }
+};
+
+const safeFormatTime = (dateVal?: any, isRtl: boolean = true): string => {
+  if (!dateVal) return '';
+  try {
+    const d = new Date(dateVal);
+    if (isNaN(d.getTime())) return '';
+    return d.toLocaleTimeString(isRtl ? 'ar-EG' : 'en-US', { hour: '2-digit', minute: '2-digit' });
+  } catch {
+    return '';
+  }
+};
+
+const renderRichPostText = (text: any, searchQuery?: string) => {
+  if (!text || typeof text !== 'string') return text ? String(text) : null;
 
   // Split text by whitespace boundaries
   const words = text.split(/(\s+)/);
@@ -639,9 +684,9 @@ export const PostFeed: React.FC<PostFeedProps> = ({
           const isLongText = ad.description && ad.description.length > 280;
 
           return (
-            <motion.div
-              key={(ad as any)._virtualId || `bulletin-ad-${ad.id}-${index}`}
-              initial={{ opacity: 0, y: 12 }}
+            <SinglePostErrorBoundary key={(ad as any)._virtualId || `bulletin-ad-${ad.id}-${index}`} isRtl={isRtl}>
+              <motion.div
+                initial={{ opacity: 0, y: 12 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, height: 0, marginBottom: 0, transition: { duration: 0.22 } }}
               className={`rounded-[var(--radius-md)] ${
@@ -701,7 +746,7 @@ export const PostFeed: React.FC<PostFeedProps> = ({
                     </span>
                     <span>•</span>
                     <span className="font-medium shrink-0">
-                      {new Date(ad.created_at).toLocaleDateString(isRtl ? 'ar-EG' : 'en-US')}
+                      {safeFormatDate(ad.created_at, isRtl)}
                     </span>
                     <span>•</span>
                     <span 
@@ -1530,10 +1575,7 @@ export const PostFeed: React.FC<PostFeedProps> = ({
                             </div>
                             <div className="flex items-center gap-3 px-2 mt-1 text-[10px] text-[var(--text-muted)] font-bold">
                               <span className="font-medium text-[var(--text-muted)]">
-                                {new Date(comment.created_at).toLocaleTimeString(
-                                  isRtl ? 'ar-EG' : 'en-US',
-                                  { hour: '2-digit', minute: '2-digit' }
-                                )}
+                                {safeFormatTime(comment.created_at, isRtl)}
                               </span>
                               <button
                                 onClick={() => onToggleCommentLike && onToggleCommentLike(ad.id, comment.id, 'like')}
@@ -1625,7 +1667,8 @@ export const PostFeed: React.FC<PostFeedProps> = ({
             </AnimatePresence>
               </article>
             </motion.div>
-          );
+          </SinglePostErrorBoundary>
+        );
         })}
       </AnimatePresence>
 

@@ -79,9 +79,11 @@ export function errorHandler(
   const safeMessageAr = (isProd && isInternal500) ? 'حدث خطأ داخلي في الخادم، يرجى المحاولة لاحقاً' : undefined;
 
   res.status(statusCode).json({
+    success: false,
     error: safeMessage,
     error_ar: safeMessageAr,
     code,
+    status: statusCode,
     ...(process.env.NODE_ENV !== 'production' && { stack: err.stack })
   });
 }

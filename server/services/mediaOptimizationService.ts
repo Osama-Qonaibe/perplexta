@@ -154,39 +154,65 @@ export async function optimizeUploadedImage(
       try {
         const optBuffer = await fs.readFile(optimizedFilePath).catch(() => null);
         const generatedAssetId = crypto.randomUUID();
-        const insertRes = await targetMediaDb.query(`
-          INSERT INTO media_assets (
-            id, stored_path, original_filename, context, format, width, height, size_bytes, sha256_hash, is_public,
-            user_id, metadata, file_data
-          ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)
-          ON CONFLICT (stored_path) DO UPDATE SET
-            context = EXCLUDED.context,
-            format = EXCLUDED.format,
-            width = EXCLUDED.width,
-            height = EXCLUDED.height,
-            size_bytes = EXCLUDED.size_bytes,
-            sha256_hash = EXCLUDED.sha256_hash,
-            user_id = COALESCE(EXCLUDED.user_id, media_assets.user_id),
-            file_data = COALESCE(EXCLUDED.file_data, media_assets.file_data),
-            updated_at = CURRENT_TIMESTAMP
-          RETURNING id
-        `, [
-          generatedAssetId,
-          storedPath,
-          originalFilename,
-          context,
-          targetFormat,
-          finalWidth,
-          finalHeight,
-          finalStats.size,
-          sha256Hash,
-          isPublic,
-          associations?.userId || null,
-          JSON.stringify({ originalWidth: origWidth, originalHeight: origHeight }),
-          optBuffer
-        ]);
-        if (insertRes.rows.length > 0) {
-          assetId = insertRes.rows[0].id;
+        
+        // Check if asset already exists by sha256_hash or stored_path
+        const existingAssetRes = await targetMediaDb.query(
+          'SELECT id FROM media_assets WHERE sha256_hash = $1 OR stored_path = $2 LIMIT 1',
+          [sha256Hash, storedPath]
+        ).catch(() => ({ rows: [] }));
+
+        if (existingAssetRes.rows.length > 0) {
+          assetId = existingAssetRes.rows[0].id;
+          await targetMediaDb.query(`
+            UPDATE media_assets SET
+              stored_path = $1,
+              context = $2,
+              format = $3,
+              width = $4,
+              height = $5,
+              size_bytes = $6,
+              user_id = COALESCE($7, user_id),
+              file_data = COALESCE($8, file_data),
+              updated_at = CURRENT_TIMESTAMP
+            WHERE id = $9
+          `, [
+            storedPath, context, targetFormat, finalWidth, finalHeight, finalStats.size,
+            associations?.userId || null, optBuffer, assetId
+          ]).catch(() => {});
+        } else {
+          const insertRes = await targetMediaDb.query(`
+            INSERT INTO media_assets (
+              id, stored_path, original_filename, context, format, width, height, size_bytes, sha256_hash, is_public,
+              user_id, metadata, file_data
+            ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)
+            ON CONFLICT (stored_path) DO UPDATE SET
+              context = EXCLUDED.context,
+              format = EXCLUDED.format,
+              width = EXCLUDED.width,
+              height = EXCLUDED.height,
+              size_bytes = EXCLUDED.size_bytes,
+              user_id = COALESCE(EXCLUDED.user_id, media_assets.user_id),
+              file_data = COALESCE(EXCLUDED.file_data, media_assets.file_data),
+              updated_at = CURRENT_TIMESTAMP
+            RETURNING id
+          `, [
+            generatedAssetId,
+            storedPath,
+            originalFilename,
+            context,
+            targetFormat,
+            finalWidth,
+            finalHeight,
+            finalStats.size,
+            sha256Hash,
+            isPublic,
+            associations?.userId || null,
+            JSON.stringify({ originalWidth: origWidth, originalHeight: origHeight }),
+            optBuffer
+          ]);
+          if (insertRes.rows.length > 0) {
+            assetId = insertRes.rows[0].id;
+          }
         }
       } catch (insertErr: any) {
         console.warn('[Media Optimization] media_assets insert warning:', insertErr.message);

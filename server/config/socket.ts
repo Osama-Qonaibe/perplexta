@@ -60,6 +60,11 @@ export function initSocket(httpServer: HttpServer): Server {
           const parsedUrl = new URL(origin);
           const hostname = parsedUrl.hostname;
 
+          // Allow official perplexta platform domains
+          if (/perplexta\.com$/i.test(hostname)) {
+            return callback(null, true);
+          }
+
           // Strict match to prevent localhost.attacker.com bypasses
           if (hostname === 'localhost' || hostname === '127.0.0.1') {
             return callback(null, true);

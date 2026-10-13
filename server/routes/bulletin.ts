@@ -5083,18 +5083,27 @@ router.post('/admin/:id/reject', authenticateAdmin, async (req, res) => {
       try {
         await client.query('BEGIN');
         const walletRes = await client.query('SELECT id FROM wallets WHERE user_id = $1 FOR UPDATE', [ad.user_id]);
+        let walletId: number;
         if (walletRes.rows.length > 0) {
-          await client.query('UPDATE wallets SET balance = balance + $1, usd_balance = balance + $1, updated_at = CURRENT_TIMESTAMP WHERE id = $2', [cost, walletRes.rows[0].id]);
-          await client.query(`
-            INSERT INTO ledger_transactions (wallet_id, user_id, amount, points, transaction_type, status, description)
-            VALUES ($1, $2, $3, 0, 'bulletin_ad_refund', 'success', $4)
-          `, [
-            walletRes.rows[0].id,
-            ad.user_id,
-            cost,
-            `استرداد رسوم الإعلان المرفوض: ${ad.title}`
-          ]);
+          walletId = walletRes.rows[0].id;
+          await client.query('UPDATE wallets SET balance = balance + $1, usd_balance = balance + $1, updated_at = CURRENT_TIMESTAMP WHERE id = $2', [cost, walletId]);
+        } else {
+          const newWallet = await client.query(
+            'INSERT INTO wallets (user_id, balance, usd_balance, points, total_deposited, total_withdrawn) VALUES ($1, $2, $2, 0, 0, 0) RETURNING id',
+            [ad.user_id, cost]
+          );
+          walletId = newWallet.rows[0].id;
         }
+
+        await client.query(`
+          INSERT INTO ledger_transactions (wallet_id, user_id, amount, points, transaction_type, status, description)
+          VALUES ($1, $2, $3, 0, 'bulletin_ad_refund', 'success', $4)
+        `, [
+          walletId,
+          ad.user_id,
+          cost,
+          `استرداد رسوم الإعلان المرفوض: ${ad.title}`
+        ]);
         await client.query('COMMIT');
       } catch (rErr) {
         await client.query('ROLLBACK');

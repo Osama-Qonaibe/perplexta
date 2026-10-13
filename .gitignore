@@ -62,15 +62,13 @@ GoogleService-Info.plist
 README.md
 CONTRIBUTING.md
 CLEANUP_MANIFEST.md
-/docs/
+!/docs/
+!/docs/*.md
 mockups/
 design/
 *.md
 !AGENTS.md
 !GEMINI.md
-!DEPLOYMENT.md
-!ROLLBACK.md
-!MONITORING.md
 
 # =============================================================================
 # LOGS, TEMPORARY & SYSTEM FILES

@@ -90,7 +90,6 @@ const AudioStudioPage = lazyRetry(() => import('./pages/AudioStudioPage'), 'Audi
 const AppStudioPage = lazyRetry(() => import('./pages/AppStudioPage'), 'AppStudioPage');
 const AppHubPage = lazyRetry(() => import('./pages/AppHubPage'), 'AppHubPage');
 const ImageStudioPage = lazyRetry(() => import('./pages/ImageStudioPage'), 'ImageStudioPage');
-const VideoStudioPage = lazyRetry(() => import('./pages/VideoStudioPage'), 'VideoStudioPage');
 const CreatorProfilePage = lazyRetry(() => import('./pages/CreatorProfilePage'), 'CreatorProfilePage');
 const CreatorDashboardPage = lazyRetry(() => import('./pages/CreatorDashboardPage'), 'CreatorDashboardPage');
 import { IncentiveCard } from './components/IncentiveCard';
@@ -469,8 +468,6 @@ export default function App() {
               <Route path="app/canvas" element={<AppStudioPage />} />
               <Route path="app/studio" element={<AppStudioPage />} />
               <Route path="audio-studio" element={<SectionRouteGuard pathKey="/audio-studio"><ProtectedRoute><AudioStudioPage /></ProtectedRoute></SectionRouteGuard>} />
-              <Route path="video-studio" element={<SectionRouteGuard pathKey="/video-studio"><VideoStudioPage /></SectionRouteGuard>} />
-              <Route path="studio/video" element={<VideoStudioPage />} />
               <Route path="creator/:username" element={<CreatorProfilePage />} />
               <Route path="creator" element={<CreatorProfilePage />} />
               <Route path="creator-dashboard" element={<ProtectedRoute><CreatorDashboardPage /></ProtectedRoute>} />

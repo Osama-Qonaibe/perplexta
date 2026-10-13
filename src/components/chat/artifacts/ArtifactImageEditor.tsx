@@ -71,6 +71,17 @@ import {
   deleteUserStudioProject,
   duplicateUserStudioProject
 } from '../../../data/rataqProjects';
+import {
+  logTemplateImageDiagnostic,
+  auditAndPreloadTemplateImages,
+  checkIndexHtmlCssVariables,
+  getTemplateDiagnosticLogs,
+  TemplateImageDiagnosticEntry,
+  isCanvasDomMounted,
+  waitForCanvasDomMount,
+  ensureFontsAndCssReady
+} from '../../../utils/rinexTemplateDiagnostics';
+import { TemplateCompositionLoadingState } from './TemplateCompositionLoadingState';
 
 interface ArtifactImageEditorProps {
   artifact: {
@@ -89,11 +100,12 @@ interface ArtifactImageEditorProps {
   initialPages?: StudioPageItem[];
   initialCurrentPageIndex?: number;
   isInChat?: boolean;
+  initialStudioMode?: 'image' | 'video';
 }
 
 export interface CanvasElement {
   id: string;
-  type: 'text' | 'rect' | 'circle' | 'arrow' | 'line' | 'star' | 'badge' | 'draw' | 'sticker' | 'svg' | 'frame' | 'image' | 'photo' | 'picture';
+  type: 'text' | 'rect' | 'circle' | 'arrow' | 'line' | 'star' | 'badge' | 'draw' | 'sticker' | 'svg' | 'frame' | 'image' | 'photo' | 'picture' | 'video';
   name?: string;
   x: number;
   y: number;
@@ -158,6 +170,13 @@ export interface CanvasElement {
   src?: string;
   url?: string;
   imgElement?: HTMLImageElement;
+
+  // Video specific
+  videoUrl?: string;
+  videoPoster?: string;
+  videoMuted?: boolean;
+  videoLoop?: boolean;
+  videoElement?: HTMLVideoElement;
 
   // Effects & Animations
   effect?: string;
@@ -278,12 +297,13 @@ export function computeTextMetrics(
   fontWeight: string = 'bold',
   fontStyle: string = 'normal',
   maxWidth?: number,
-  lineHeightMultiplier: number = 1.25,
+  lineHeightMultiplier: number = 1.35,
   uppercase: boolean = false
 ): { lines: string[]; width: number; height: number; lineHeight: number } {
   const displayText = uppercase ? text.toUpperCase() : text;
   const ctx = getMeasureCtx();
-  const lineHeight = Math.round(fontSize * lineHeightMultiplier);
+  const safeMultiplier = Math.max(1.35, lineHeightMultiplier || 1.35);
+  const lineHeight = Math.max(Math.round(fontSize * safeMultiplier), Math.round(fontSize + 10));
   
   if (!ctx || !displayText) {
     const rawLines = displayText ? displayText.split('\n') : [''];
@@ -566,6 +586,7 @@ export function safeSvgDataUrl(svgRawOrUrl: string): string {
 
 // Shared module-level cache for image elements to optimize canvas rendering & export
 export const previewImageCache = new Map<string, HTMLImageElement>();
+export const videoElementCache = new Map<string, HTMLVideoElement>();
 
 // Pure rendering function for drawing elements onto any canvas context
 export function renderElementsToCanvas(
@@ -578,7 +599,8 @@ export function renderElementsToCanvas(
   hoveredFrameId?: string | null,
   editingFrameId?: string | null,
   bgColor?: string,
-  onImageLoaded?: () => void
+  onImageLoaded?: () => void,
+  motionTimeSeconds?: number
 ) {
   if (!ctx || w === 0 || h === 0) return;
   ctx.clearRect(0, 0, w, h);
@@ -602,7 +624,7 @@ export function renderElementsToCanvas(
     ctx.drawImage(bgImg, 0, 0, w, h);
     ctx.filter = 'none';
   } else {
-    ctx.fillStyle = bgColor || '#0f172a';
+    ctx.fillStyle = bgColor || '#ffffff';
     ctx.fillRect(0, 0, w, h);
     
     // If bgImg is provided but not complete, it's still loading - we should request a redraw when it finishes
@@ -619,17 +641,53 @@ export function renderElementsToCanvas(
     
     let opacity = el.opacity !== undefined ? el.opacity : 1;
     let rotation = el.rotation || 0;
+    let animTranslateX = 0;
+    let animTranslateY = 0;
+    let animScale = 1;
 
-    ctx.globalAlpha = opacity;
-    
-    // Apply Rotation around element center
-    if (rotation !== 0) {
-      const cx = el.x + el.w / 2;
-      const cy = el.y + el.h / 2;
-      ctx.translate(cx, cy);
-      ctx.rotate((rotation * Math.PI) / 180);
-      ctx.translate(-cx, -cy);
+    // Professional Motion Animation Computations
+    if (motionTimeSeconds !== undefined && el.animation && el.animation !== 'none') {
+      const animSpeed = el.animationSpeed || 1.0;
+      const progress = Math.max(0, Math.min(1, motionTimeSeconds / animSpeed));
+
+      if (el.animation === 'fade') {
+        opacity = opacity * progress;
+      } else if (el.animation === 'bounce' || el.animation === 'pop') {
+        if (progress < 1) {
+          animScale = Math.sin(progress * Math.PI * 0.8) * 1.08;
+          if (animScale < 0) animScale = 0;
+        } else {
+          animScale = 1;
+        }
+      } else if (el.animation === 'zoom' || el.animation === 'scale') {
+        animScale = 0.3 + 0.7 * Math.min(1, progress * 1.2);
+      } else if (el.animation === 'slide') {
+        const dir = el.animationDirection || 'right';
+        const offset = (1 - progress) * (dir === 'left' || dir === 'right' ? w * 0.35 : h * 0.35);
+        if (dir === 'right') animTranslateX = -offset;
+        else if (dir === 'left') animTranslateX = offset;
+        else if (dir === 'bottom') animTranslateY = -offset;
+        else animTranslateY = offset;
+      } else if (el.animation === 'pulse') {
+        animScale = 1 + 0.04 * Math.sin(motionTimeSeconds * 4);
+      } else if (el.animation === 'spin') {
+        rotation = (rotation + (motionTimeSeconds * 120)) % 360;
+      }
     }
+
+    ctx.globalAlpha = Math.max(0, Math.min(1, opacity));
+    
+    // Apply Rotation, Translation & Scale around element center
+    const cx = el.x + el.w / 2;
+    const cy = el.y + el.h / 2;
+    ctx.translate(cx + animTranslateX, cy + animTranslateY);
+    if (rotation !== 0) {
+      ctx.rotate((rotation * Math.PI) / 180);
+    }
+    if (animScale !== 1) {
+      ctx.scale(animScale, animScale);
+    }
+    ctx.translate(-cx, -cy);
 
     if (el.type === 'draw' && el.points && el.points.length > 0) {
       const sw = el.strokeWidth || 4;
@@ -738,6 +796,51 @@ export function renderElementsToCanvas(
         } catch {}
         ctx.restore();
       }
+    } else if (el.type === 'video' || el.videoUrl) {
+      const vUrl = el.videoUrl || el.src || el.url;
+      if (vUrl) {
+        if (!videoElementCache.has(vUrl)) {
+          const v = document.createElement('video');
+          v.src = vUrl;
+          v.crossOrigin = 'anonymous';
+          v.muted = true;
+          v.loop = true;
+          v.playsInline = true;
+          v.onloadeddata = () => onImageLoaded?.();
+          v.play().catch(() => {});
+          videoElementCache.set(vUrl, v);
+        }
+        const v = videoElementCache.get(vUrl);
+        if (v && v.readyState >= 2) {
+          ctx.drawImage(v, el.x, el.y, el.w, el.h);
+        } else {
+          const poster = el.videoPoster || (el as any).thumbnailUrl || (el as any).thumbnail || (el as any).poster || (el.imgSrc && !el.imgSrc.endsWith('.mp4') ? el.imgSrc : undefined);
+          if (poster) {
+            let cached = previewImageCache.get(poster);
+            if (!cached) {
+              const img = new Image();
+              if (poster.startsWith('http')) img.crossOrigin = 'anonymous';
+              img.onload = () => {
+                previewImageCache.set(poster, img);
+                onImageLoaded?.();
+              };
+              img.onerror = (err) => {
+                logTemplateImageDiagnostic({
+                  lifecycleMoment: 'template_poster_init',
+                  imageSrc: poster,
+                  failureReason: 'Video poster image failed to load during render',
+                  elementId: el.id,
+                  elementType: el.type,
+                  error: err
+                });
+              };
+              img.src = poster;
+            } else if (cached.complete && cached.naturalWidth > 0) {
+              ctx.drawImage(cached, el.x, el.y, el.w, el.h);
+            }
+          }
+        }
+      }
     } else if ((el.type === 'sticker' || el.type === 'image' || el.type === 'photo' || el.type === 'picture' || el.imgSrc || el.src || el.url) && el.type !== 'frame') {
       const imgSrc = el.imgSrc || el.src || el.url || '';
       let stickerImg: any = el.imgElement;
@@ -760,6 +863,16 @@ export function renderElementsToCanvas(
           previewImageCache.set(imgSrc, img);
           el.imgElement = img;
           onImageLoaded?.();
+        };
+        img.onerror = (err) => {
+          logTemplateImageDiagnostic({
+            lifecycleMoment: 'template_element_image_init',
+            imageSrc: imgSrc,
+            failureReason: 'Canvas element image failed to load (network 404, CORS, or invalid source)',
+            elementId: el.id,
+            elementType: el.type,
+            error: err
+          });
         };
         img.src = imgSrc;
       }
@@ -838,6 +951,16 @@ export function renderElementsToCanvas(
           img.onload = () => {
             el.frameImgElement = img;
           };
+          img.onerror = (err) => {
+            logTemplateImageDiagnostic({
+              lifecycleMoment: 'template_frame_image_init',
+              imageSrc: el.frameImgSrc || '',
+              failureReason: 'Frame preview ghost image failed to load',
+              elementId: el.id,
+              elementType: el.type,
+              error: err
+            });
+          };
           previewImageCache.set(el.frameImgSrc, img);
           ghostFrameImg = img;
         }
@@ -907,6 +1030,16 @@ export function renderElementsToCanvas(
           img.onload = () => {
             el.frameImgElement = img;
             onImageLoaded?.();
+          };
+          img.onerror = (err) => {
+            logTemplateImageDiagnostic({
+              lifecycleMoment: 'template_frame_image_init',
+              imageSrc: el.frameImgSrc || '',
+              failureReason: 'Frame masked photo failed to load',
+              elementId: el.id,
+              elementType: el.type,
+              error: err
+            });
           };
           previewImageCache.set(el.frameImgSrc, img);
           frameImg = img;
@@ -1139,7 +1272,8 @@ export const ArtifactImageEditor: React.FC<ArtifactImageEditorProps> = ({
   onToggleFullscreen,
   initialPages,
   initialCurrentPageIndex,
-  isInChat = false
+  isInChat = false,
+  initialStudioMode
 }) => {
   const { language, setLanguage, dir, theme, siteSettings, user, setIsAuthModalOpen } = useAppContext();
   const navigate = useNavigate();
@@ -1255,6 +1389,7 @@ export const ArtifactImageEditor: React.FC<ArtifactImageEditorProps> = ({
 
   const containerRef = useRef<HTMLDivElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const fullscreenCanvasRef = useRef<HTMLCanvasElement>(null);
   const imageRef = useRef<HTMLImageElement | null>(null);
   const fileUploadInputRef = useRef<HTMLInputElement>(null);
   const brandLogoInputRef = useRef<HTMLInputElement>(null);
@@ -1374,6 +1509,53 @@ export const ArtifactImageEditor: React.FC<ArtifactImageEditorProps> = ({
     loadCommunityTemplates();
   }, []);
 
+  // Template Composition & DOM Mounting State Engine
+  const [isTemplateComposing, setIsTemplateComposing] = useState<boolean>(() => {
+    return Boolean((initialElements && initialElements.length > 0) || artifact?.content);
+  });
+  const [templateCompositionStep, setTemplateCompositionStep] = useState<'mounting' | 'fonts' | 'assets' | 'composing' | 'rendering'>('mounting');
+
+  // DOM Mounting Verification and Typography Readiness Cycle on Mount
+  useEffect(() => {
+    let isCancelled = false;
+
+    const performMountAudit = async () => {
+      setTemplateCompositionStep('mounting');
+      // 1. Verify canvas and container DOM nodes are attached to document body
+      await waitForCanvasDomMount(() => canvasRef.current, () => containerRef.current);
+      if (isCancelled) return;
+
+      // 2. Synchronize Typography & Fonts from index.html
+      setTemplateCompositionStep('fonts');
+      await ensureFontsAndCssReady(['Tajawal, sans-serif']);
+      if (isCancelled) return;
+
+      // 3. Preload & verify template image assets
+      setTemplateCompositionStep('assets');
+      if ((initialElements && initialElements.length > 0) || artifact?.content) {
+        auditAndPreloadTemplateImages({
+          id: artifact?.id,
+          titleAr: artifact?.title,
+          titleEn: artifact?.title,
+          elements: initialElements || [],
+          backgroundImage: artifact?.content
+        }, 'template_initial_mount');
+      }
+
+      // 4. Final layout composition & canvas scale fit
+      setTemplateCompositionStep('composing');
+      fitImageToContainer(imageSize.width || 1080, imageSize.height || 1080);
+      drawCanvasRef.current?.();
+
+      setTemplateCompositionStep('rendering');
+      setIsTemplateComposing(false);
+      setImageLoaded(true);
+    };
+
+    performMountAudit();
+    return () => { isCancelled = true; };
+  }, []);
+
   // Dedicated Drawers States
   const [fontSearchQuery, setFontSearchQuery] = useState<string>('');
   const [selectedFontCat, setSelectedFontCat] = useState<'all' | 'arabic' | 'english' | 'kufi' | 'naskh' | 'display' | 'brand'>('all');
@@ -1401,24 +1583,35 @@ export const ArtifactImageEditor: React.FC<ArtifactImageEditorProps> = ({
   // RINEX MOTION VIDEO STUDIO & SMART WORKSPACE ROUTER STATES
   // -------------------------------------------------------------
   const [studioMode, setStudioMode] = useState<'image' | 'video'>(() => {
+    if (initialStudioMode) return initialStudioMode;
     try {
-      const storedVideo = localStorage.getItem('rataq_studio_session_isVideo');
-      if (storedVideo === 'true') return 'video';
-      
-      const title = (artifact?.title || '').toLowerCase();
       const content = (artifact?.content || '').toLowerCase();
-      const cat = (localStorage.getItem('rataq_studio_session_templateCategory') || '').toLowerCase();
+      const title = (artifact?.title || '').toLowerCase();
       
-      if (
-        title.includes('reel') || title.includes(' video') || title.includes('فيديو') || title.includes('ريلز') ||
-        cat.includes('reels') || cat.includes('video') || cat.includes('story') ||
-        content.endsWith('.mp4') || content.includes('previews/')
-      ) {
+      // If content is an MP4 or initial elements contain video, boot into video mode
+      if (content.endsWith('.mp4') || (initialElements && initialElements.some(el => el.type === 'video'))) {
+        return 'video';
+      }
+
+      const storedVideo = localStorage.getItem('rataq_studio_session_isVideo');
+      const cat = (localStorage.getItem('rataq_studio_session_templateCategory') || '').toLowerCase();
+      if (storedVideo === 'true' && (cat === 'reels' || cat === 'video' || title.includes('ريلز') || title.includes('reel'))) {
         return 'video';
       }
     } catch (e) {}
     return 'image';
   });
+
+  // Sync studioMode with initialStudioMode prop
+  useEffect(() => {
+    if (initialStudioMode && initialStudioMode !== studioMode) {
+      setStudioMode(initialStudioMode);
+    }
+  }, [initialStudioMode]);
+
+  // Video Export Execution State
+  const [isExportingVideo, setIsExportingVideo] = useState<boolean>(false);
+  const [videoExportProgress, setVideoExportProgress] = useState<number>(0);
 
   // Video Scenes & Multi-Track Timeline State
   const [videoScenes, setVideoScenes] = useState<Array<{
@@ -1429,15 +1622,18 @@ export const ArtifactImageEditor: React.FC<ArtifactImageEditorProps> = ({
     bgImgSrc?: string;
     elements: CanvasElement[];
     transitionToNext?: {
-      type: 'none' | 'dissolve' | 'slide' | 'wipe' | 'flow' | 'circle' | 'split';
+      type: 'none' | 'dissolve' | 'fade' | 'fadeWhite' | 'slide' | 'wipe' | 'zoom' | 'flip' | 'circle' | 'split' | 'bounce' | 'glitch' | 'flow';
       durationSeconds: number;
       direction?: 'left' | 'right' | 'top' | 'bottom';
     };
-  }>>(() => [
+  }>>(() => {
+    const bgUrl = artifact?.content && !artifact.content.startsWith('#') && !artifact.content.startsWith('rgb') ? artifact.content : undefined;
+    return [
     {
       id: 'scene-1',
       durationSeconds: 5.0,
       backgroundColor: '#090d16',
+      bgImgSrc: bgUrl,
       elements: initialElements && initialElements.length > 0 ? initialElements : [
         {
           id: 'sc1-txt-1',
@@ -1530,7 +1726,8 @@ export const ArtifactImageEditor: React.FC<ArtifactImageEditorProps> = ({
       ],
       transitionToNext: { type: 'flow', durationSeconds: 0.5, direction: 'right' }
     }
-  ]);
+  ];
+});
 
   const [activeSceneIndex, setActiveSceneIndex] = useState<number>(0);
   const [isPlayingVideoTimeline, setIsPlayingVideoTimeline] = useState<boolean>(false);
@@ -1610,6 +1807,7 @@ export const ArtifactImageEditor: React.FC<ArtifactImageEditorProps> = ({
           return nextTime;
         });
 
+        drawCanvasRef.current?.();
         animationFrameId = requestAnimationFrame(updateTick);
       };
 
@@ -1628,10 +1826,18 @@ export const ArtifactImageEditor: React.FC<ArtifactImageEditorProps> = ({
   // Switch Active Video Scene (Restores Scene Elements & Scene Background)
   const drawCanvasRef = useRef<(() => void) | null>(null);
 
-  const switchActiveScene = useCallback((targetIdx: number, scenesList = videoScenes) => {
+  const switchActiveScene = useCallback((targetIdx: number, scenesList = videoScenes, syncTimecode = true) => {
     if (targetIdx < 0 || targetIdx >= scenesList.length) return;
     const sc = scenesList[targetIdx];
     if (!sc) return;
+
+    if (syncTimecode) {
+      let targetTime = 0;
+      for (let i = 0; i < targetIdx; i++) {
+        targetTime += (scenesList[i]?.durationSeconds || 5);
+      }
+      setVideoCurrentTime(targetTime);
+    }
 
     setActiveSceneIndex(targetIdx);
 
@@ -1662,21 +1868,22 @@ export const ArtifactImageEditor: React.FC<ArtifactImageEditorProps> = ({
     }
   }, [videoScenes]);
 
-  // Sync Active Scene Index with videoCurrentTime
+  // Sync Active Scene Index with videoCurrentTime (Works in playback and on manual timeline seek)
   useEffect(() => {
-    if (!isPlayingVideoTimeline) return;
-
     let accumulatedTime = 0;
     for (let i = 0; i < videoScenes.length; i++) {
       const sc = videoScenes[i];
       const scDuration = sc.durationSeconds || 5;
       if (videoCurrentTime >= accumulatedTime && videoCurrentTime < accumulatedTime + scDuration) {
         if (activeSceneIndex !== i) {
-          switchActiveScene(i);
+          switchActiveScene(i, videoScenes, false);
         }
         break;
       }
       accumulatedTime += scDuration;
+    }
+    if (!isPlayingVideoTimeline) {
+      drawCanvasRef.current?.();
     }
   }, [videoCurrentTime, videoScenes, isPlayingVideoTimeline, activeSceneIndex, switchActiveScene]);
 
@@ -1861,6 +2068,17 @@ export const ArtifactImageEditor: React.FC<ArtifactImageEditorProps> = ({
   // Multi-Page Canvas State (Canva-Standard Multi-Page System)
   const [pages, setPages] = useState<StudioPageItem[]>(() => {
     if (initialPages && initialPages.length > 0) return initialPages;
+    if (initialElements && initialElements.length > 0) {
+      return [
+        {
+          id: `page-1`,
+          title: isAr ? 'الصفحة 1' : 'Page 1',
+          elements: initialElements,
+          bgImgSrc: artifact?.content && !artifact.content.startsWith('#') ? artifact.content : undefined,
+          locked: false
+        }
+      ];
+    }
     try {
       const backupRaw = localStorage.getItem('perplexta_image_editor_session_backup');
       if (backupRaw) {
@@ -1875,12 +2093,12 @@ export const ArtifactImageEditor: React.FC<ArtifactImageEditorProps> = ({
         if (Array.isArray(parsed) && parsed.length > 0) return parsed;
       }
     } catch {}
-    return initialPages || [
+    return [
       {
         id: `page-1`,
         title: isAr ? 'الصفحة 1' : 'Page 1',
         elements: initialElements || [],
-        bgImgSrc: artifact.content,
+        bgImgSrc: artifact?.content && !artifact.content.startsWith('#') ? artifact.content : undefined,
         locked: false
       }
     ];
@@ -1965,12 +2183,26 @@ export const ArtifactImageEditor: React.FC<ArtifactImageEditorProps> = ({
     });
   }, [initialImageSize, initialElements]);
 
-  // Synchronize state when initial props update explicitly (only if not yet hydrated or if initialElements is provided on fresh new design)
+  // Synchronize state when initial props update explicitly
+  const lastArtifactIdRef = useRef<string | null>(artifact?.id || null);
   useEffect(() => {
-    if (!isHydratedRef.current && initialElements && initialElements.length > 0) {
+    if (artifact?.id && artifact.id !== lastArtifactIdRef.current) {
+      lastArtifactIdRef.current = artifact.id;
+      if (initialElements) {
+        setElements(initialElements);
+      }
+      if (initialImageSize) {
+        setImageSize(initialImageSize);
+        setCustomWidth(initialImageSize.width);
+        setCustomHeight(initialImageSize.height);
+      }
+      if (initialPages && initialPages.length > 0) {
+        setPages(initialPages);
+      }
+    } else if (!isHydratedRef.current && initialElements && initialElements.length > 0) {
       setElements(initialElements);
     }
-  }, [initialElements]);
+  }, [artifact?.id, initialElements, initialImageSize, initialPages]);
 
   useEffect(() => {
     if (!isHydratedRef.current && initialPages && initialPages.length > 0) {
@@ -2449,144 +2681,169 @@ export const ArtifactImageEditor: React.FC<ArtifactImageEditorProps> = ({
     }
   }, [user, isDesignPublic, onSaveProject, isAr]);
 
-  // Load & Apply Full Template (Replace Current Page or Add as New Page)
+  // Load & Apply Full Template (Replace Current Page)
   const executeApplyTemplateReplace = useCallback((tpl: StudioTemplate) => {
     recordHistory();
-    setImageLoaded(true);
-    if (tpl.id && (tpl.id.startsWith('m-tpl-') || tpl.category === 'community')) {
+    if (!isInChat && tpl.id && (tpl.id.startsWith('m-tpl-') || tpl.category === 'community')) {
       try {
         recordTemplateUse(tpl.id);
       } catch (e) {}
     }
 
+    // Proactive forensic audit of template images during template initialization
+    auditAndPreloadTemplateImages(tpl, 'template_replace');
+
     const targetWidth = tpl.width || 1080;
     const targetHeight = tpl.height || 1080;
     
-    // Clean background resolution (ensuring template background photos/images load correctly and are editable)
-    let templateBgUrl = '';
-    if ((tpl as any).filename) {
-      templateBgUrl = `/templates/data/${(tpl as any).filename}`;
+    const newElements = JSON.parse(JSON.stringify(tpl.elements || []));
+    
+    // Clean background resolution (ensuring colors stay pure and avoiding duplicate text from thumbnail)
+    let templateBg = '#ffffff';
+    if (tpl.backgroundColor && typeof tpl.backgroundColor === 'string' && (tpl.backgroundColor.startsWith('#') || tpl.backgroundColor.startsWith('rgb') || tpl.backgroundColor.startsWith('hsl'))) {
+      templateBg = tpl.backgroundColor;
     } else if ((tpl as any).canvasBackground && typeof (tpl as any).canvasBackground === 'string') {
-      templateBgUrl = safeSvgDataUrl((tpl as any).canvasBackground);
-    } else if (tpl.thumbnailUrl && tpl.thumbnailUrl.startsWith('/templates/')) {
-      templateBgUrl = tpl.thumbnailUrl;
-    } else if (tpl.backgroundColor && typeof tpl.backgroundColor === 'string' && (tpl.backgroundColor.startsWith('#') || tpl.backgroundColor.startsWith('rgb') || tpl.backgroundColor.startsWith('hsl'))) {
-      templateBgUrl = `data:image/svg+xml;charset=utf-8,${encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" width="${targetWidth}" height="${targetHeight}" viewBox="0 0 ${targetWidth} ${targetHeight}"><rect width="${targetWidth}" height="${targetHeight}" fill="${tpl.backgroundColor}"/></svg>`)}`;
-    } else if (tpl.thumbnailUrl) {
-      templateBgUrl = tpl.thumbnailUrl;
-    } else if ((tpl as any).backgroundUrl || (tpl as any).bgImage) {
-      templateBgUrl = safeSvgDataUrl((tpl as any).backgroundUrl || (tpl as any).bgImage);
+      templateBg = safeSvgDataUrl((tpl as any).canvasBackground);
+    } else if ((tpl as any).backgroundImage) {
+      templateBg = (tpl as any).backgroundImage;
+    } else if (newElements.length === 0 && tpl.thumbnailUrl && !tpl.thumbnailUrl.startsWith('/templates/previews/')) {
+      // Only set canvas background to thumbnail if there are no separate elements to render
+      templateBg = tpl.thumbnailUrl;
     } else {
-      templateBgUrl = `data:image/svg+xml;charset=utf-8,${encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" width="${targetWidth}" height="${targetHeight}" viewBox="0 0 ${targetWidth} ${targetHeight}"><rect width="${targetWidth}" height="${targetHeight}" fill="#0f172a"/></svg>`)}`;
+      templateBg = '#ffffff';
     }
 
-    setElements(JSON.parse(JSON.stringify(tpl.elements || [])));
-    imageRef.current = null;
-    setImageLoaded(false); // Clear main canvas loader to fix persistence
+    setElements(newElements);
     setSelectedId(null);
     setPendingTemplatePrompt(null);
-    
-    // Clear canvas immediately to fix persistence and show loading state
-    if (canvasRef.current) {
-      const ctx = canvasRef.current.getContext('2d');
-      if (ctx) {
-        ctx.clearRect(0, 0, canvasRef.current.width, canvasRef.current.height);
-        ctx.fillStyle = (tpl as any).backgroundColor || '#0f172a';
-        ctx.fillRect(0, 0, canvasRef.current.width, canvasRef.current.height);
-      }
-    }
+    setImageLoaded(true);
 
-    if (templateBgUrl && !templateBgUrl.startsWith('#') && !templateBgUrl.startsWith('rgb')) {
-      if (previewImageCache.has(templateBgUrl)) {
-        imageRef.current = previewImageCache.get(templateBgUrl)!;
-        if (canvasRef.current) {
-          const ctx = canvasRef.current.getContext('2d');
-          if (ctx) {
-            ctx.drawImage(imageRef.current, 0, 0, canvasRef.current.width, canvasRef.current.height);
-          }
-        }
-      } else {
-        const img = new Image();
-        if (templateBgUrl.startsWith('http')) {
-          img.crossOrigin = 'anonymous';
-        }
-        img.onload = () => {
-          previewImageCache.set(templateBgUrl, img);
-          imageRef.current = img;
-          if (canvasRef.current) {
-            const ctx = canvasRef.current.getContext('2d');
-            if (ctx) {
-              ctx.drawImage(img, 0, 0, canvasRef.current.width, canvasRef.current.height);
-            }
-          }
+    const rawVideo = (tpl as any).videoUrl || (tpl as any).previewVideoUrl;
+    const isVideoTemplate = Boolean(
+      (tpl as any).isVideo === true ||
+      (tpl as any).category === 'reels' ||
+      (tpl as any).category === 'video' ||
+      (rawVideo && typeof rawVideo === 'string' && !rawVideo.startsWith('/templates/previews/')) ||
+      (newElements && Array.isArray(newElements) && newElements.some((el: any) => el.type === 'video'))
+    );
+
+    if (isVideoTemplate) {
+      setStudioMode('video');
+      setVideoCurrentTime(0);
+      try {
+        localStorage.setItem('rataq_studio_session_isVideo', 'true');
+        localStorage.setItem('rataq_studio_session_templateCategory', tpl.category || 'reels');
+      } catch (e) {}
+
+      setVideoScenes(prev => {
+        const updated = [...prev];
+        updated[0] = {
+          id: 'scene-1',
+          durationSeconds: 5.0,
+          backgroundColor: (tpl as any).backgroundColor || (templateBg.startsWith('#') ? templateBg : '#090d16'),
+          bgImgSrc: templateBg.startsWith('#') ? undefined : templateBg,
+          elements: newElements,
+          transitionToNext: updated[0]?.transitionToNext || { type: 'dissolve', durationSeconds: 0.5, direction: 'right' }
         };
-        img.onerror = () => {
-          imageRef.current = null;
-        };
-        img.src = templateBgUrl;
-      }
+        return updated;
+      });
+      setActiveSceneIndex(0);
     } else {
-      imageRef.current = null;
+      setStudioMode('image');
+      try {
+        localStorage.setItem('rataq_studio_session_isVideo', 'false');
+        localStorage.removeItem('rataq_studio_session_templateCategory');
+      } catch (e) {}
     }
 
+    // Update active page
     setPages(prev => {
       const updated = [...prev];
       if (updated[currentPageIndex]) {
         updated[currentPageIndex] = {
           ...updated[currentPageIndex],
           title: isAr ? `${tpl.titleAr}` : `${tpl.titleEn}`,
-          elements: JSON.parse(JSON.stringify(tpl.elements || [])),
-          bgImgSrc: templateBgUrl || updated[currentPageIndex].bgImgSrc
+          elements: newElements,
+          bgImgSrc: templateBg
         };
       }
       return updated;
     });
 
-    if (tpl.width && tpl.height) {
-      const isDimensionChanged = imageSize.width !== tpl.width || imageSize.height !== tpl.height;
-      const targetSize = { width: tpl.width, height: tpl.height };
-      setImageSize(targetSize);
-      setCustomWidth(tpl.width);
-      setCustomHeight(tpl.height);
-      imageSizeRef.current = targetSize;
-      try {
-        localStorage.setItem('rataq_studio_session_imageSize', JSON.stringify(targetSize));
-      } catch {}
+    // Update dimensions
+    const isDimensionChanged = imageSize.width !== targetWidth || imageSize.height !== targetHeight;
+    const targetSize = { width: targetWidth, height: targetHeight };
+    setImageSize(targetSize);
+    setCustomWidth(targetWidth);
+    setCustomHeight(targetHeight);
+    imageSizeRef.current = targetSize;
+    try {
+      localStorage.setItem('rataq_studio_session_imageSize', JSON.stringify(targetSize));
+    } catch {}
 
-      setTimeout(() => {
-        fitImageToContainer(tpl.width, tpl.height);
-      }, 50);
-      
-      flushSaveSession({
-        customElements: JSON.parse(JSON.stringify(tpl.elements || []))
-      });
-      
-      if (isDimensionChanged) {
-        toast.success(isAr 
-          ? `✨ تم استبدال التصميم الحالي بقالب "${tpl.titleAr}" وتعديل الساحة (${tpl.width} × ${tpl.height})` 
-          : `✨ Replaced design with "${tpl.titleEn}" (${tpl.width} × ${tpl.height})`);
+    // Load background image or clear if solid color
+    if (templateBg && !templateBg.startsWith('#') && !templateBg.startsWith('rgb') && !templateBg.startsWith('hsl')) {
+      if (previewImageCache.has(templateBg)) {
+        imageRef.current = previewImageCache.get(templateBg)!;
+        drawCanvasRef.current?.();
       } else {
-        toast.success(isAr ? `✨ تم استبدال التصميم الحالي بقالب "${tpl.titleAr}" بنجاح!` : `✨ Replaced design with "${tpl.titleEn}"!`);
+        const img = new Image();
+        if (templateBg.startsWith('http')) img.crossOrigin = 'anonymous';
+        img.onload = () => {
+          previewImageCache.set(templateBg, img);
+          imageRef.current = img;
+          drawCanvasRef.current?.();
+        };
+        img.onerror = (err) => {
+          logTemplateImageDiagnostic({
+            lifecycleMoment: 'template_replace',
+            imageSrc: templateBg,
+            failureReason: 'Template background image failed to load during template replacement',
+            templateId: tpl.id,
+            templateTitle: tpl.titleAr || tpl.titleEn,
+            error: err
+          });
+          imageRef.current = null;
+          drawCanvasRef.current?.();
+        };
+        img.src = templateBg;
       }
     } else {
-      setTimeout(() => {
-        fitImageToContainer(imageSize.width || 1080, imageSize.height || 1080);
-      }, 50);
-      flushSaveSession({
-        customElements: JSON.parse(JSON.stringify(tpl.elements || []))
+      imageRef.current = null;
+      requestAnimationFrame(() => {
+        drawCanvasRef.current?.();
       });
-      toast.success(isAr ? `✨ تم استبدال التصميم بالقالب بنجاح!` : `✨ Replaced design with template!`);
     }
-  }, [currentPageIndex, imageSize, isAr, recordHistory, fitImageToContainer, flushSaveSession]);
+
+    setTimeout(() => {
+      fitImageToContainer(targetWidth, targetHeight);
+      drawCanvasRef.current?.();
+    }, 50);
+
+    flushSaveSession({
+      customElements: newElements
+    });
+
+    if (isDimensionChanged) {
+      toast.success(isAr 
+        ? `✨ تم تطبيق قالب "${tpl.titleAr}" وتعديل الساحة (${targetWidth} × ${targetHeight})` 
+        : `✨ Applied "${tpl.titleEn}" (${targetWidth} × ${targetHeight})`);
+    } else {
+      toast.success(isAr ? `✨ تم تطبيق قالب "${tpl.titleAr}" بنجاح!` : `✨ Applied "${tpl.titleEn}"!`);
+    }
+  }, [currentPageIndex, imageSize, isAr, isInChat, recordHistory, fitImageToContainer, flushSaveSession]);
 
   const executeApplyTemplateNewPage = useCallback((tpl: StudioTemplate) => {
     recordHistory();
     setImageLoaded(true);
-    if (tpl.id && (tpl.id.startsWith('m-tpl-') || tpl.category === 'community')) {
+    if (!isInChat && tpl.id && (tpl.id.startsWith('m-tpl-') || tpl.category === 'community')) {
       try {
         recordTemplateUse(tpl.id);
       } catch (e) {}
     }
+
+    // Proactive forensic audit of template images during template initialization
+    auditAndPreloadTemplateImages(tpl, 'template_initialization');
 
     const targetWidth = tpl.width || 1080;
     const targetHeight = tpl.height || 1080;
@@ -2605,7 +2862,7 @@ export const ArtifactImageEditor: React.FC<ArtifactImageEditorProps> = ({
     } else if ((tpl as any).backgroundUrl || (tpl as any).bgImage) {
       templateBgUrl = safeSvgDataUrl((tpl as any).backgroundUrl || (tpl as any).bgImage);
     } else {
-      templateBgUrl = `data:image/svg+xml;charset=utf-8,${encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" width="${targetWidth}" height="${targetHeight}" viewBox="0 0 ${targetWidth} ${targetHeight}"><rect width="${targetWidth}" height="${targetHeight}" fill="#0f172a"/></svg>`)}`;
+      templateBgUrl = `data:image/svg+xml;charset=utf-8,${encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" width="${targetWidth}" height="${targetHeight}" viewBox="0 0 ${targetWidth} ${targetHeight}"><rect width="${targetWidth}" height="${targetHeight}" fill="#ffffff"/></svg>`)}`;
     }
 
     const newPageNum = pages.length + 1;
@@ -2661,6 +2918,16 @@ export const ArtifactImageEditor: React.FC<ArtifactImageEditorProps> = ({
               ctx.drawImage(img, 0, 0, canvasRef.current.width, canvasRef.current.height);
             }
           }
+        };
+        img.onerror = (err) => {
+          logTemplateImageDiagnostic({
+            lifecycleMoment: 'template_initialization',
+            imageSrc: templateBgUrl,
+            failureReason: 'Template background image failed to load for new page',
+            templateId: tpl.id,
+            templateTitle: tpl.titleAr || tpl.titleEn,
+            error: err
+          });
         };
         img.src = templateBgUrl;
       }
@@ -3009,6 +3276,14 @@ export const ArtifactImageEditor: React.FC<ArtifactImageEditorProps> = ({
           }
         }
       } else if (e.key === 'Escape') {
+        if (isFullscreenVideoPreview) {
+          setIsFullscreenVideoPreview(false);
+          return;
+        }
+        if (isExportVideoModalOpen) {
+          setIsExportVideoModalOpen(false);
+          return;
+        }
         setSelectedId(null);
         setEditingTextId(null);
         setActiveTool('select');
@@ -3017,7 +3292,7 @@ export const ArtifactImageEditor: React.FC<ArtifactImageEditorProps> = ({
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [handleUndo, handleRedo, selectedId, elements, isAr, recordHistory]);
+  }, [handleUndo, handleRedo, selectedId, elements, isAr, recordHistory, isFullscreenVideoPreview, isExportVideoModalOpen]);
 
   // Resize Canvas to New Dimensions
   const handleApplyResize = useCallback((newW: number, newH: number) => {
@@ -3071,6 +3346,259 @@ export const ArtifactImageEditor: React.FC<ArtifactImageEditorProps> = ({
     return () => window.removeEventListener('resize', handleWindowResize);
   }, [imageSize.width, imageSize.height, fitImageToContainer]);
 
+  // Draw Video Frame with Multi-Scene Playback, Transitions & Animations
+  const drawVideoFrame = useCallback((targetCtx: CanvasRenderingContext2D, w: number, h: number, timecode: number) => {
+    let accumulated = 0;
+    let currentIdx = 0;
+    let elapsedInScene = 0;
+
+    for (let i = 0; i < videoScenes.length; i++) {
+      const sc = videoScenes[i];
+      const dur = sc.durationSeconds || 5;
+      if (timecode >= accumulated && timecode < accumulated + dur) {
+        currentIdx = i;
+        elapsedInScene = timecode - accumulated;
+        break;
+      }
+      accumulated += dur;
+    }
+
+    const currentScene = videoScenes[currentIdx] || videoScenes[0];
+    if (!currentScene) return;
+
+    const nextIdx = currentIdx + 1;
+    const nextScene = nextIdx < videoScenes.length ? videoScenes[nextIdx] : null;
+    const trans = currentScene.transitionToNext;
+    const transDur = trans?.durationSeconds || 0.5;
+    const currentDur = currentScene.durationSeconds || 5;
+    const timeUntilEnd = currentDur - elapsedInScene;
+
+    const isTransitioning = Boolean(nextScene && trans && trans.type !== 'none' && timeUntilEnd < transDur && timeUntilEnd >= 0);
+    const transProgress = isTransitioning ? Math.max(0, Math.min(1, (transDur - timeUntilEnd) / transDur)) : 0;
+
+    const renderSingleScene = (ctxToDraw: CanvasRenderingContext2D, sc: typeof currentScene, sceneElapsed: number) => {
+      const bgImg = sc.backgroundImage || sc.bgImgSrc;
+      let targetBgImg: HTMLImageElement | HTMLCanvasElement | null = null;
+      if (bgImg && previewImageCache.has(bgImg)) {
+        targetBgImg = previewImageCache.get(bgImg)!;
+      } else if (bgImg && imageRef.current && (imageRef.current.src === bgImg || imageRef.current.src.endsWith(bgImg))) {
+        targetBgImg = imageRef.current;
+      }
+
+      renderElementsToCanvas(
+        ctxToDraw,
+        sc.elements || [],
+        targetBgImg,
+        w,
+        h,
+        filters,
+        hoveredFrameId,
+        editingFrameId,
+        sc.backgroundColor || '#090d16',
+        () => drawCanvasRef.current?.(),
+        sceneElapsed
+      );
+    };
+
+    if (!isTransitioning || !nextScene || !trans) {
+      renderSingleScene(targetCtx, currentScene, elapsedInScene);
+    } else {
+      const transType = trans.type;
+      if (transType === 'dissolve') {
+        renderSingleScene(targetCtx, currentScene, elapsedInScene);
+        targetCtx.save();
+        targetCtx.globalAlpha = transProgress;
+        const offCanvas = document.createElement('canvas');
+        offCanvas.width = w;
+        offCanvas.height = h;
+        const offCtx = offCanvas.getContext('2d');
+        if (offCtx) {
+          renderSingleScene(offCtx, nextScene, transProgress * transDur);
+          targetCtx.drawImage(offCanvas, 0, 0);
+        }
+        targetCtx.restore();
+      } else if (transType === 'fade') {
+        // Cinematic Fade to Black
+        if (transProgress < 0.5) {
+          renderSingleScene(targetCtx, currentScene, elapsedInScene);
+          targetCtx.save();
+          targetCtx.fillStyle = '#000000';
+          targetCtx.globalAlpha = transProgress * 2;
+          targetCtx.fillRect(0, 0, w, h);
+          targetCtx.restore();
+        } else {
+          renderSingleScene(targetCtx, nextScene, transProgress * transDur);
+          targetCtx.save();
+          targetCtx.fillStyle = '#000000';
+          targetCtx.globalAlpha = (1 - transProgress) * 2;
+          targetCtx.fillRect(0, 0, w, h);
+          targetCtx.restore();
+        }
+      } else if (transType === 'fadeWhite') {
+        // Soft Glow Fade to White
+        if (transProgress < 0.5) {
+          renderSingleScene(targetCtx, currentScene, elapsedInScene);
+          targetCtx.save();
+          targetCtx.fillStyle = '#ffffff';
+          targetCtx.globalAlpha = transProgress * 2;
+          targetCtx.fillRect(0, 0, w, h);
+          targetCtx.restore();
+        } else {
+          renderSingleScene(targetCtx, nextScene, transProgress * transDur);
+          targetCtx.save();
+          targetCtx.fillStyle = '#ffffff';
+          targetCtx.globalAlpha = (1 - transProgress) * 2;
+          targetCtx.fillRect(0, 0, w, h);
+          targetCtx.restore();
+        }
+      } else if (transType === 'slide') {
+        const dir = trans.direction || 'right';
+        targetCtx.save();
+        const offCurrent = document.createElement('canvas');
+        offCurrent.width = w; offCurrent.height = h;
+        const curCtx = offCurrent.getContext('2d');
+        if (curCtx) renderSingleScene(curCtx, currentScene, elapsedInScene);
+
+        const offNext = document.createElement('canvas');
+        offNext.width = w; offNext.height = h;
+        const nextCtx = offNext.getContext('2d');
+        if (nextCtx) renderSingleScene(nextCtx, nextScene, transProgress * transDur);
+
+        let curDx = 0, curDy = 0, nextDx = 0, nextDy = 0;
+        if (dir === 'left') {
+          curDx = -transProgress * w;
+          nextDx = (1 - transProgress) * w;
+        } else if (dir === 'right') {
+          curDx = transProgress * w;
+          nextDx = -(1 - transProgress) * w;
+        } else if (dir === 'top') {
+          curDy = -transProgress * h;
+          nextDy = (1 - transProgress) * h;
+        } else {
+          curDy = transProgress * h;
+          nextDy = -(1 - transProgress) * h;
+        }
+        targetCtx.drawImage(offCurrent, curDx, curDy);
+        targetCtx.drawImage(offNext, nextDx, nextDy);
+        targetCtx.restore();
+      } else if (transType === 'wipe') {
+        renderSingleScene(targetCtx, currentScene, elapsedInScene);
+        targetCtx.save();
+        targetCtx.beginPath();
+        const dir = trans.direction || 'right';
+        if (dir === 'right') {
+          targetCtx.rect(0, 0, w * transProgress, h);
+        } else if (dir === 'left') {
+          targetCtx.rect(w * (1 - transProgress), 0, w * transProgress, h);
+        } else if (dir === 'bottom') {
+          targetCtx.rect(0, 0, w, h * transProgress);
+        } else {
+          targetCtx.rect(0, h * (1 - transProgress), w, h * transProgress);
+        }
+        targetCtx.clip();
+        renderSingleScene(targetCtx, nextScene, transProgress * transDur);
+        targetCtx.restore();
+      } else if (transType === 'circle') {
+        renderSingleScene(targetCtx, currentScene, elapsedInScene);
+        targetCtx.save();
+        targetCtx.beginPath();
+        const maxRadius = Math.hypot(w, h) / 2;
+        targetCtx.arc(w / 2, h / 2, maxRadius * transProgress, 0, Math.PI * 2);
+        targetCtx.clip();
+        renderSingleScene(targetCtx, nextScene, transProgress * transDur);
+        targetCtx.restore();
+      } else if (transType === 'split') {
+        renderSingleScene(targetCtx, currentScene, elapsedInScene);
+        targetCtx.save();
+        targetCtx.beginPath();
+        const halfW = (w / 2) * transProgress;
+        targetCtx.rect(w / 2 - halfW, 0, halfW * 2, h);
+        targetCtx.clip();
+        renderSingleScene(targetCtx, nextScene, transProgress * transDur);
+        targetCtx.restore();
+      } else if (transType === 'zoom' || transType === 'flow') {
+        targetCtx.save();
+        const offCur = document.createElement('canvas');
+        offCur.width = w; offCur.height = h;
+        const curCtx = offCur.getContext('2d');
+        if (curCtx) renderSingleScene(curCtx, currentScene, elapsedInScene);
+
+        const offNext = document.createElement('canvas');
+        offNext.width = w; offNext.height = h;
+        const nextCtx = offNext.getContext('2d');
+        if (nextCtx) renderSingleScene(nextCtx, nextScene, transProgress * transDur);
+
+        const curScale = 1 + transProgress * 0.15;
+        targetCtx.save();
+        targetCtx.globalAlpha = Math.max(0, 1 - transProgress);
+        targetCtx.translate(w / 2, h / 2);
+        targetCtx.scale(curScale, curScale);
+        targetCtx.translate(-w / 2, -h / 2);
+        targetCtx.drawImage(offCur, 0, 0);
+        targetCtx.restore();
+
+        const nextScale = 0.85 + transProgress * 0.15;
+        targetCtx.save();
+        targetCtx.globalAlpha = transProgress;
+        targetCtx.translate(w / 2, h / 2);
+        targetCtx.scale(nextScale, nextScale);
+        targetCtx.translate(-w / 2, -h / 2);
+        targetCtx.drawImage(offNext, 0, 0);
+        targetCtx.restore();
+
+        targetCtx.restore();
+      } else if (transType === 'flip') {
+        targetCtx.save();
+        if (transProgress < 0.5) {
+          const scaleX = Math.max(0.01, 1 - transProgress * 2);
+          targetCtx.translate(w / 2, 0);
+          targetCtx.scale(scaleX, 1);
+          targetCtx.translate(-w / 2, 0);
+          renderSingleScene(targetCtx, currentScene, elapsedInScene);
+        } else {
+          const scaleX = Math.max(0.01, (transProgress - 0.5) * 2);
+          targetCtx.translate(w / 2, 0);
+          targetCtx.scale(scaleX, 1);
+          targetCtx.translate(-w / 2, 0);
+          renderSingleScene(targetCtx, nextScene, transProgress * transDur);
+        }
+        targetCtx.restore();
+      } else if (transType === 'bounce') {
+        renderSingleScene(targetCtx, currentScene, elapsedInScene);
+        targetCtx.save();
+        const ease = Math.sin(transProgress * Math.PI / 2);
+        const nextX = (1 - ease) * w;
+        const offCanvas = document.createElement('canvas');
+        offCanvas.width = w; offCanvas.height = h;
+        const offCtx = offCanvas.getContext('2d');
+        if (offCtx) {
+          renderSingleScene(offCtx, nextScene, transProgress * transDur);
+          targetCtx.drawImage(offCanvas, nextX, 0);
+        }
+        targetCtx.restore();
+      } else if (transType === 'glitch') {
+        renderSingleScene(targetCtx, currentScene, elapsedInScene);
+        targetCtx.save();
+        targetCtx.globalAlpha = transProgress;
+        const offCanvas = document.createElement('canvas');
+        offCanvas.width = w; offCanvas.height = h;
+        const offCtx = offCanvas.getContext('2d');
+        if (offCtx) {
+          renderSingleScene(offCtx, nextScene, transProgress * transDur);
+          const sliceCount = 6;
+          const sliceH = h / sliceCount;
+          for (let s = 0; s < sliceCount; s++) {
+            const shift = (Math.sin(s * 3 + transProgress * 10)) * 20 * (1 - transProgress);
+            targetCtx.drawImage(offCanvas, 0, s * sliceH, w, sliceH, shift, s * sliceH, w, sliceH);
+          }
+        }
+        targetCtx.restore();
+      } else {
+        renderSingleScene(targetCtx, currentScene, elapsedInScene);
+      }
+    }
+  }, [videoScenes, filters, hoveredFrameId, editingFrameId]);
+
   // Render Canvas Elements & Photo Filters
   const drawCanvas = useCallback(() => {
     const canvas = canvasRef.current;
@@ -3079,6 +3607,11 @@ export const ArtifactImageEditor: React.FC<ArtifactImageEditorProps> = ({
 
     canvas.width = imageSize.width;
     canvas.height = imageSize.height;
+
+    if (studioMode === 'video') {
+      drawVideoFrame(ctx, imageSize.width, imageSize.height, videoCurrentTime);
+      return;
+    }
 
     const currentBgImg: any = imageRef.current;
     const activePage = pages[currentPageIndex];
@@ -3092,17 +3625,29 @@ export const ArtifactImageEditor: React.FC<ArtifactImageEditorProps> = ({
       imageSize.width,
       imageSize.height,
       filters,
-      selectedId,
       hoveredFrameId,
+      editingFrameId,
       targetBgColor,
       drawCanvas
     );
-  }, [elements, imageSize, filters, selectedId, hoveredFrameId, currentPageIndex, pages, editingFrameId]);
+  }, [elements, imageSize, filters, selectedId, hoveredFrameId, currentPageIndex, pages, editingFrameId, studioMode, videoCurrentTime, drawVideoFrame]);
 
   useEffect(() => {
     drawCanvasRef.current = drawCanvas;
     drawCanvas();
   }, [drawCanvas]);
+
+  // Fullscreen Cinematic Live Video Canvas Sync
+  useEffect(() => {
+    if (!isFullscreenVideoPreview) return;
+    const canvas = fullscreenCanvasRef.current;
+    if (!canvas || imageSize.width === 0 || imageSize.height === 0) return;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+    canvas.width = imageSize.width;
+    canvas.height = imageSize.height;
+    drawVideoFrame(ctx, imageSize.width, imageSize.height, videoCurrentTime);
+  }, [isFullscreenVideoPreview, videoCurrentTime, imageSize, drawVideoFrame]);
 
   // Load and Sync Current Page Background Image (Fully isolated between pages - passive fit to prevent scroll locking)
   useEffect(() => {
@@ -3144,7 +3689,15 @@ export const ArtifactImageEditor: React.FC<ArtifactImageEditorProps> = ({
         drawCanvas();
       }
     };
-    img.onerror = () => {
+    img.onerror = (err) => {
+      logTemplateImageDiagnostic({
+        lifecycleMoment: 'template_background_init',
+        imageSrc: bgSrc,
+        failureReason: 'Active page background image failed to load or render',
+        templateId: artifact?.id,
+        templateTitle: artifact?.title,
+        error: err
+      });
       imageRef.current = null;
       setImageLoaded(true);
       drawCanvas();
@@ -5067,7 +5620,7 @@ export const ArtifactImageEditor: React.FC<ArtifactImageEditorProps> = ({
         titleEn: c.titleEn,
         category: (c.category === 'reels' || c.category === 'story' ? 'story' : 'marketing') as any,
         thumbnailUrl: c.src,
-        backgroundColor: c.canvasBackground || '#090d16',
+        backgroundColor: c.canvasBackground || '#ffffff',
         width,
         height,
         aspectRatio,
@@ -5131,6 +5684,143 @@ export const ArtifactImageEditor: React.FC<ArtifactImageEditorProps> = ({
   }, [elements, selectedId]);
 
   const presetColors = ['#ef4444', '#10b981', '#3b82f6', '#f59e0b', '#8b5cf6', '#ec4899', '#ffffff', '#000000'];
+
+  // Professional Full Video MP4/WebM Export Engine
+  const exportVideoAsFile = useCallback(async () => {
+    if (isExportingVideo) return;
+    setIsExportingVideo(true);
+    setVideoExportProgress(1);
+
+    const isVertical = imageSize.height > imageSize.width;
+    let exportW = 1080;
+    let exportH = 1080;
+
+    if (videoExportQuality === '4k') {
+      exportW = isVertical ? 2160 : 3840;
+      exportH = isVertical ? 3840 : 2160;
+    } else if (videoExportQuality === '720p') {
+      exportW = isVertical ? 720 : 1280;
+      exportH = isVertical ? 1280 : 720;
+    } else {
+      exportW = isVertical ? 1080 : 1920;
+      exportH = isVertical ? 1920 : 1080;
+    }
+
+    if (imageSize.width === imageSize.height) {
+      exportW = videoExportQuality === '4k' ? 2160 : (videoExportQuality === '720p' ? 720 : 1080);
+      exportH = exportW;
+    }
+
+    const exportCanvas = document.createElement('canvas');
+    exportCanvas.width = exportW;
+    exportCanvas.height = exportH;
+    const exportCtx = exportCanvas.getContext('2d');
+    if (!exportCtx) {
+      setIsExportingVideo(false);
+      toast.error(isAr ? 'فشل تهيئة محرك الفيديو' : 'Failed to initialize video engine');
+      return;
+    }
+
+    const totalDuration = videoScenes.reduce((acc, sc) => acc + (sc.durationSeconds || 5), 0);
+    const fps = videoExportFPS || 30;
+
+    try {
+      const stream = exportCanvas.captureStream(fps);
+      let audioCtx: AudioContext | null = null;
+      let exportAudioEl: HTMLAudioElement | null = null;
+
+      if (activeAudioTrack && !activeAudioTrack.isMuted && activeAudioTrack.url) {
+        try {
+          const AudioContextClass = window.AudioContext || (window as any).webkitAudioContext;
+          if (AudioContextClass) {
+            audioCtx = new AudioContextClass();
+            exportAudioEl = new Audio(activeAudioTrack.url);
+            exportAudioEl.crossOrigin = 'anonymous';
+            exportAudioEl.volume = activeAudioTrack.volume;
+            const audioSourceNode = audioCtx.createMediaElementSource(exportAudioEl);
+            const audioDestinationNode = audioCtx.createMediaStreamDestination();
+            audioSourceNode.connect(audioDestinationNode);
+            audioDestinationNode.stream.getAudioTracks().forEach(track => stream.addTrack(track));
+          }
+        } catch (audioErr) {
+          console.warn('Audio attach error during export:', audioErr);
+        }
+      }
+
+      let mimeType = 'video/webm;codecs=vp9';
+      if (typeof MediaRecorder !== 'undefined') {
+        if (MediaRecorder.isTypeSupported('video/mp4;codecs=h264')) {
+          mimeType = 'video/mp4;codecs=h264';
+        } else if (MediaRecorder.isTypeSupported('video/mp4')) {
+          mimeType = 'video/mp4';
+        } else if (MediaRecorder.isTypeSupported('video/webm;codecs=vp9')) {
+          mimeType = 'video/webm;codecs=vp9';
+        } else if (MediaRecorder.isTypeSupported('video/webm')) {
+          mimeType = 'video/webm';
+        }
+      }
+
+      const recorder = new MediaRecorder(stream, {
+        mimeType,
+        videoBitsPerSecond: videoExportQuality === '4k' ? 14000000 : 7000000
+      });
+
+      const chunks: Blob[] = [];
+      recorder.ondataavailable = (e) => {
+        if (e.data && e.data.size > 0) chunks.push(e.data);
+      };
+
+      recorder.start(100);
+      if (exportAudioEl) {
+        exportAudioEl.currentTime = 0;
+        exportAudioEl.play().catch(() => {});
+      }
+
+      const intervalMs = 1000 / fps;
+      let currentSec = 0;
+
+      const recordStep = () => {
+        if (currentSec >= totalDuration) {
+          if (exportAudioEl) exportAudioEl.pause();
+          if (audioCtx && audioCtx.state !== 'closed') audioCtx.close().catch(() => {});
+          recorder.stop();
+          return;
+        }
+
+        drawVideoFrame(exportCtx, exportW, exportH, currentSec);
+        currentSec += 1 / fps;
+        const pct = Math.min(99, Math.round((currentSec / totalDuration) * 100));
+        setVideoExportProgress(pct);
+
+        setTimeout(recordStep, intervalMs);
+      };
+
+      recorder.onstop = () => {
+        const outputBlob = new Blob(chunks, { type: mimeType });
+        const downloadUrl = URL.createObjectURL(outputBlob);
+        const fileName = `${(artifact?.title || 'rinex_video').replace(/\s+/g, '_')}_${videoExportQuality}.mp4`;
+
+        const a = document.createElement('a');
+        a.href = downloadUrl;
+        a.download = fileName;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(downloadUrl);
+
+        setIsExportingVideo(false);
+        setIsExportVideoModalOpen(false);
+        setVideoExportProgress(100);
+        toast.success(isAr ? 'تم تصدير وتحميل الفيديو بنجاح! 🎬' : 'Video exported and downloaded successfully! 🎬');
+      };
+
+      recordStep();
+    } catch (err) {
+      console.error('Error during video export:', err);
+      setIsExportingVideo(false);
+      toast.error(isAr ? 'حدث خطأ أثناء تصدير الفيديو' : 'Export failed');
+    }
+  }, [isExportingVideo, imageSize, videoExportQuality, videoExportFPS, videoScenes, activeAudioTrack, drawVideoFrame, artifact?.title, isAr]);
 
   return (
     <div className="flex-1 flex flex-col h-full bg-[var(--surface-page)] text-[var(--text-primary)] relative select-none min-h-0 overflow-hidden font-sans">
@@ -5206,6 +5896,9 @@ export const ArtifactImageEditor: React.FC<ArtifactImageEditorProps> = ({
                 onClick={() => {
                   setStudioMode('image');
                   try { localStorage.setItem('rataq_studio_session_isVideo', 'false'); } catch (e) {}
+                  if (videoScenes[activeSceneIndex]?.elements) {
+                    setElements(JSON.parse(JSON.stringify(videoScenes[activeSceneIndex].elements)));
+                  }
                   toast.info(isAr ? 'تم فتح محرر الصور والبوسترات الثابتة' : 'Switched to Image Studio');
                 }}
                 className={`h-7 px-2.5 rounded-shape-xs text-[11px] font-bold transition-all cursor-pointer flex items-center gap-1.5 ${
@@ -5224,6 +5917,17 @@ export const ArtifactImageEditor: React.FC<ArtifactImageEditorProps> = ({
                 onClick={() => {
                   setStudioMode('video');
                   try { localStorage.setItem('rataq_studio_session_isVideo', 'true'); } catch (e) {}
+                  setVideoScenes(prev => {
+                    const updated = [...prev];
+                    if (updated[activeSceneIndex]) {
+                      updated[activeSceneIndex] = {
+                        ...updated[activeSceneIndex],
+                        elements: elements && elements.length > 0 ? elements : updated[activeSceneIndex].elements,
+                        bgImgSrc: pages[currentPageIndex]?.bgImgSrc || artifact?.content || updated[activeSceneIndex].bgImgSrc
+                      };
+                    }
+                    return updated;
+                  });
                   toast.success(isAr ? 'تم فتح محرر الفيديو والمونتاج (Rinex Video Studio)' : 'Switched to Video Studio');
                 }}
                 className={`h-7 px-2.5 rounded-shape-xs text-[11px] font-bold transition-all cursor-pointer flex items-center gap-1.5 ${
@@ -9629,11 +10333,18 @@ export const ArtifactImageEditor: React.FC<ArtifactImageEditorProps> = ({
             className="flex-1 relative bg-[var(--surface-inset)] overflow-auto min-w-0 custom-scrollbar p-4 md:p-12 flex flex-col items-stretch justify-start select-none"
             style={{ scrollBehavior: 'smooth', minHeight: 0 }}
           >
-            {!imageLoaded && (
-              <div className="flex flex-col items-center gap-3 text-[var(--text-muted)] animate-pulse m-auto sticky top-1/2 -translate-y-1/2">
-                <RefreshCw className="animate-spin text-[var(--fg-accent)]" size={26} />
-                <span className="text-xs font-bold">{isAr ? 'جاري تحميل لوحة التصميم...' : 'Loading Visual Design Stage...'}</span>
-              </div>
+            {(!imageLoaded || isTemplateComposing) && (
+              <TemplateCompositionLoadingState
+                isAr={isAr}
+                templateTitle={artifact?.title}
+                templateDimensions={{ width: imageSize.width || 1080, height: imageSize.height || 1080 }}
+                aspectRatio={artifact?.aspectRatio || '1:1'}
+                currentStep={templateCompositionStep}
+                onForceLaunch={() => {
+                  setIsTemplateComposing(false);
+                  setImageLoaded(true);
+                }}
+              />
             )}
 
             {imageLoaded && (
@@ -10531,7 +11242,7 @@ export const ArtifactImageEditor: React.FC<ArtifactImageEditorProps> = ({
                   </button>
 
                   {/* Timecode Scrubber Display */}
-                  <div className="h-8 px-3 rounded-shape-xs bg-slate-900 border border-slate-800 text-[11px] font-mono font-bold text-slate-200 flex items-center gap-1.5 shadow-2xs">
+                  <div className="h-8 px-2.5 rounded-shape-xs bg-slate-900 border border-slate-800 text-[11px] font-mono font-bold text-slate-200 flex items-center gap-1.5 shadow-2xs shrink-0">
                     <Clock size={12} className="text-[var(--accent)]" />
                     <span>
                       00:{Math.floor(videoCurrentTime).toString().padStart(2, '0')} / 00:
@@ -10539,6 +11250,24 @@ export const ArtifactImageEditor: React.FC<ArtifactImageEditorProps> = ({
                         videoScenes.reduce((acc, sc) => acc + (sc.durationSeconds || 5), 0)
                       ).toString().padStart(2, '0')}
                     </span>
+                  </div>
+
+                  {/* Interactive Timeline Scrubber Slider */}
+                  <div className="hidden sm:flex items-center gap-2 w-32 md:w-48 lg:w-64 px-2 py-1 bg-slate-900/90 rounded-shape-xs border border-slate-800 shrink-0">
+                    <input
+                      type="range"
+                      min="0"
+                      max={Math.max(1, videoScenes.reduce((acc, sc) => acc + (sc.durationSeconds || 5), 0))}
+                      step="0.05"
+                      value={videoCurrentTime}
+                      onChange={(e) => {
+                        const newTime = parseFloat(e.target.value);
+                        setVideoCurrentTime(newTime);
+                        drawCanvasRef.current?.();
+                      }}
+                      className="w-full accent-[var(--accent)] cursor-pointer h-1.5 bg-slate-800 rounded-lg appearance-none"
+                      title={isAr ? 'شريط التمرير الزمني المباشر (Scrubber)' : 'Timeline Scrubber'}
+                    />
                   </div>
                 </div>
 
@@ -10906,30 +11635,46 @@ export const ArtifactImageEditor: React.FC<ArtifactImageEditorProps> = ({
                     backgroundColor: videoScenes[activeSceneIndex]?.backgroundColor || '#090d16'
                   }}
                 >
-                  <PageCanvasPreview
-                    elements={videoScenes[activeSceneIndex]?.elements || elements}
-                    imageSize={imageSize}
-                    filters={filters}
+                  <canvas
+                    ref={fullscreenCanvasRef}
+                    className="w-full h-full object-contain pointer-events-none"
                   />
                 </div>
               </div>
 
               {/* Fullscreen Player Control Bar */}
-              <div className="w-full max-w-3xl rounded-shape-md bg-slate-900/90 border border-white/15 p-3 flex items-center justify-between gap-4 text-white shadow-2xl">
+              <div className="w-full max-w-3xl rounded-shape-md bg-slate-900/90 border border-white/15 p-3 flex items-center justify-between gap-3 text-white shadow-2xl">
                 <button
                   type="button"
                   onClick={() => setIsPlayingVideoTimeline(!isPlayingVideoTimeline)}
-                  className="h-9 px-4 rounded-shape-xs bg-[var(--accent)] text-slate-950 font-black text-xs flex items-center gap-2 hover:brightness-110 transition-all cursor-pointer"
+                  className="h-9 px-4 rounded-shape-xs bg-[var(--accent)] text-slate-950 font-black text-xs flex items-center gap-2 hover:brightness-110 transition-all cursor-pointer shrink-0"
                 >
                   {isPlayingVideoTimeline ? <Pause size={14} className="fill-current text-slate-950" /> : <Play size={14} className="fill-current text-slate-950" />}
                   <span>{isPlayingVideoTimeline ? (isAr ? 'إيقاف مؤقت' : 'Pause') : (isAr ? 'تشغيل' : 'Play')}</span>
                 </button>
 
-                <div className="font-mono text-xs font-bold text-slate-300">
+                <div className="font-mono text-xs font-bold text-slate-300 shrink-0">
                   00:{Math.floor(videoCurrentTime).toString().padStart(2, '0')} / 00:
                   {Math.floor(
                     videoScenes.reduce((acc, sc) => acc + (sc.durationSeconds || 5), 0)
                   ).toString().padStart(2, '0')}
+                </div>
+
+                {/* Live Timeline Scrubber in Fullscreen */}
+                <div className="flex-1 flex items-center gap-2 px-2.5 py-1.5 bg-slate-950/80 rounded-shape-xs border border-white/10 min-w-0">
+                  <input
+                    type="range"
+                    min="0"
+                    max={Math.max(1, videoScenes.reduce((acc, sc) => acc + (sc.durationSeconds || 5), 0))}
+                    step="0.05"
+                    value={videoCurrentTime}
+                    onChange={(e) => {
+                      const newTime = parseFloat(e.target.value);
+                      setVideoCurrentTime(newTime);
+                    }}
+                    className="w-full accent-[var(--accent)] cursor-pointer h-1.5 bg-slate-800 rounded-lg appearance-none"
+                    title={isAr ? 'شريط التمرير الزمني المباشر' : 'Timeline Scrubber'}
+                  />
                 </div>
 
                 {activeAudioTrack && (
@@ -10941,7 +11686,7 @@ export const ArtifactImageEditor: React.FC<ArtifactImageEditorProps> = ({
                         isMuted: !activeAudioTrack.isMuted
                       });
                     }}
-                    className="h-9 px-3 rounded-shape-xs bg-white/10 hover:bg-white/20 text-xs font-bold transition-colors cursor-pointer flex items-center gap-1.5"
+                    className="h-9 px-3 rounded-shape-xs bg-white/10 hover:bg-white/20 text-xs font-bold transition-colors cursor-pointer flex items-center gap-1.5 shrink-0"
                     title={activeAudioTrack.isMuted ? (isAr ? 'تفعيل الصوت' : 'Unmute') : (isAr ? 'كتم الصوت' : 'Mute')}
                   >
                     {activeAudioTrack.isMuted ? <VolumeX size={14} className="text-rose-400" /> : <Volume2 size={14} className="text-[var(--sys-color-success)]" />}
@@ -10952,7 +11697,7 @@ export const ArtifactImageEditor: React.FC<ArtifactImageEditorProps> = ({
                 <button
                   type="button"
                   onClick={() => setIsFullscreenVideoPreview(false)}
-                  className="h-9 px-4 rounded-shape-xs bg-white/10 hover:bg-white/20 text-xs font-bold transition-colors cursor-pointer"
+                  className="h-9 px-4 rounded-shape-xs bg-white/10 hover:bg-white/20 text-xs font-bold transition-colors cursor-pointer shrink-0"
                 >
                   {isAr ? 'خروج (Esc)' : 'Exit (Esc)'}
                 </button>
@@ -12132,3 +12877,13 @@ export const ArtifactImageEditor: React.FC<ArtifactImageEditorProps> = ({
     </div>
   );
 };
+
+// Re-export Rinex editor diagnostic tools for testing and external observability
+export {
+  logTemplateImageDiagnostic,
+  auditAndPreloadTemplateImages,
+  checkIndexHtmlCssVariables,
+  getTemplateDiagnosticLogs
+};
+export type { TemplateImageDiagnosticEntry };
+

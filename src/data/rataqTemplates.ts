@@ -46,17 +46,19 @@ export function convertMarketplaceToStudioTemplate(tpl: any): StudioTemplate {
     aspectRatio = '1.91:1';
   }
 
-  const cleanId = (tpl.id || 'tpl').replace(/^(remotion_|repo-)/, '');
-  const localThumb = `/templates/thumbnails/${cleanId}.png`;
-  const localVideo = `/templates/previews/${cleanId}.mp4`;
+  const fallbackThumb = 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=600&q=80';
+  const resolvedThumb = tpl.thumbnail || tpl.thumbnailUrl || fallbackThumb;
+  const resolvedVideo = (tpl.videoUrl && !tpl.videoUrl.startsWith('/templates/previews/')) 
+    ? tpl.videoUrl 
+    : ((tpl.previewVideoUrl && !tpl.previewVideoUrl.startsWith('/templates/previews/')) ? tpl.previewVideoUrl : undefined);
 
   return {
     id: tpl.id,
     titleAr: tpl.titleAr,
     titleEn: tpl.titleEn,
     category: tpl.category || 'community',
-    thumbnailUrl: tpl.thumbnail || tpl.thumbnailUrl || localThumb,
-    previewVideoUrl: tpl.previewVideoUrl || tpl.videoUrl || localVideo,
+    thumbnailUrl: resolvedThumb,
+    previewVideoUrl: resolvedVideo,
     backgroundColor: tpl.canvasBackground || '#090d16',
     width,
     height,

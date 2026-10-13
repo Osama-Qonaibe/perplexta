@@ -105,7 +105,7 @@ export function convertRataqTemplateToCanvasElements(template: RataqRepoTemplate
   const previewUrl = template.filename ? `/templates/data/${template.filename}` : '';
   const canvasBackground = template.backgroundImage 
     ? template.backgroundImage 
-    : (template.filename ? `/templates/data/${template.filename}` : createSolidColorBackground(template.backgroundColor, width, height));
+    : (template.backgroundColor || '#ffffff');
 
   const elements: CanvasElement[] = (template.objects || []).map((obj: TemplateObject, idx: number) => {
     const id = `el-${template.id}-${idx}-${Date.now()}`;
@@ -123,9 +123,11 @@ export function convertRataqTemplateToCanvasElements(template: RataqRepoTemplate
       const textVal = obj.text || '';
       const lines = textVal.split('\n');
       const maxLineLen = Math.max(...lines.map(l => l.length), 1);
-      // Generous width to prevent awkward word wrapping
-      const calcW = Math.ceil(maxLineLen * fontSize * 0.85 * (obj.scaleX || 1)) + 80;
-      const calcH = Math.ceil(lines.length * fontSize * 1.35) + 20;
+      const hasArabic = /[\u0600-\u06FF]/.test(textVal);
+      // Generous width & height to prevent awkward word wrapping and text intertwining
+      const calcW = Math.ceil(maxLineLen * fontSize * 0.9 * (obj.scaleX || 1)) + 90;
+      const calcH = Math.ceil(lines.length * fontSize * (hasArabic ? 1.45 : 1.35)) + 28;
+      const resolvedAlign = obj.textAlign || (hasArabic ? 'center' : 'left');
 
       return {
         id,
@@ -138,9 +140,10 @@ export function convertRataqTemplateToCanvasElements(template: RataqRepoTemplate
         text: textVal,
         color: obj.fill || '#ffffff',
         fontSize,
-        fontFamily: obj.fontFamily || 'Tajawal, sans-serif',
+        fontFamily: obj.fontFamily || (hasArabic ? 'Tajawal, sans-serif' : 'sans-serif'),
         fontWeight: 'bold',
-        textAlign: obj.textAlign || 'left',
+        textAlign: resolvedAlign,
+        textLineHeight: hasArabic ? 1.45 : 1.35,
         rotation: angle,
         opacity,
         strokeColor: obj.stroke || undefined,

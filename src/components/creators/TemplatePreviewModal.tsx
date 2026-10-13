@@ -19,6 +19,11 @@ export const TemplatePreviewModal: React.FC<TemplatePreviewModalProps> = ({ temp
   const { language, dir, user, setIsAuthModalOpen } = useAppContext();
   const navigate = useNavigate();
   const isAr = language === 'ar' || dir === 'rtl';
+  const [videoError, setVideoError] = React.useState<boolean>(false);
+
+  React.useEffect(() => {
+    setVideoError(false);
+  }, [template?.id]);
 
   const handleUseTemplate = () => {
     if (!template) return;
@@ -58,20 +63,36 @@ export const TemplatePreviewModal: React.FC<TemplatePreviewModalProps> = ({ temp
 
     onClose();
     
-    // Smart Workspace Router: Detect if template is video/motion oriented
+    // Smart Workspace Router: Detect if template is truly video/motion oriented
+    const rawVideo = template.videoUrl || (template as any).previewVideoUrl;
     const isVideo = Boolean(
+      (template as any).isVideo === true ||
       template.category === 'reels' || 
-      template.category === 'video' || 
-      template.category === 'story' || 
-      template.category === 'tiktok' ||
-      (template.videoUrl || (template as any).previewVideoUrl) ||
-      (template.dimensions && (template.dimensions.includes('1080x1920') || template.dimensions.includes('1920x1080')))
+      template.category === 'video' ||
+      (rawVideo && typeof rawVideo === 'string' && !rawVideo.startsWith('/templates/previews/')) ||
+      (template.elements && Array.isArray(template.elements) && template.elements.some((el: any) => el.type === 'video'))
     );
 
-    const targetPath = isVideo ? '/video-studio' : '/image-studio';
-    
+    // Store video session flag if template is video/motion oriented
+    if (isVideo) {
+      try {
+        localStorage.setItem('rataq_studio_session_isVideo', 'true');
+        localStorage.setItem('rataq_studio_session_templateCategory', template.category || 'reels');
+      } catch (e) {}
+    } else {
+      try {
+        localStorage.setItem('rataq_studio_session_isVideo', 'false');
+        localStorage.removeItem('rataq_studio_session_templateCategory');
+      } catch (e) {}
+    }
+
     setTimeout(() => {
-      navigate(targetPath, { state: { loadMarketplaceTemplate: template } });
+      navigate('/image-studio', { 
+        state: { 
+          loadMarketplaceTemplate: template,
+          initialStudioMode: isVideo ? 'video' : 'image'
+        } 
+      });
     }, 400);
   };
 
@@ -128,25 +149,43 @@ export const TemplatePreviewModal: React.FC<TemplatePreviewModalProps> = ({ temp
                 
                 {/* Left Column: High-Res Image / Video Preview (6 cols) */}
                 <div className="md:col-span-6 rounded-shape-lg overflow-hidden border border-[var(--border-default)] bg-slate-950/40 relative shadow-inner group flex items-center justify-center min-h-[220px]">
-                  {(template.videoUrl || (template as any).previewVideoUrl) ? (
-                    <video
-                      src={template.videoUrl || (template as any).previewVideoUrl}
-                      poster={template.thumbnail}
-                      autoPlay
-                      loop
-                      muted
-                      playsInline
-                      controls
-                      className="w-full h-auto max-h-[340px] object-contain mx-auto"
-                    />
-                  ) : (
-                    <img
-                      src={template.thumbnail}
-                      alt={template.titleAr}
-                      className="w-full h-auto max-h-[340px] object-contain mx-auto"
-                      referrerPolicy="no-referrer"
-                    />
-                  )}
+                  {(() => {
+                    const rawVideoUrl = template.videoUrl || (template as any).previewVideoUrl;
+                    const isValidVideo = Boolean(rawVideoUrl && !videoError && !rawVideoUrl.startsWith('/templates/previews/'));
+                    const fallbackThumb = 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=600&q=80';
+                    const thumbnailSrc = template.thumbnail || (template as any).thumbnailUrl || (template as any).previewUrl || fallbackThumb;
+
+                    if (isValidVideo) {
+                      return (
+                        <video
+                          src={rawVideoUrl}
+                          poster={thumbnailSrc}
+                          autoPlay
+                          loop
+                          muted
+                          playsInline
+                          controls
+                          onError={() => setVideoError(true)}
+                          className="w-full h-auto max-h-[340px] object-contain mx-auto"
+                        />
+                      );
+                    }
+
+                    return (
+                      <img
+                        src={thumbnailSrc}
+                        alt={isAr ? template.titleAr : template.titleEn}
+                        className="w-full h-auto max-h-[340px] object-contain mx-auto"
+                        referrerPolicy="no-referrer"
+                        onError={(e) => {
+                          const target = e.currentTarget as HTMLImageElement;
+                          if (target.src !== fallbackThumb) {
+                            target.src = fallbackThumb;
+                          }
+                        }}
+                      />
+                    );
+                  })()}
                   <span className="absolute bottom-2.5 end-2.5 px-2.5 py-1 rounded-shape-xs bg-slate-950/80 text-white font-mono text-[10px] font-bold border border-white/10 backdrop-blur-sm">
                     {template.dimensions}
                   </span>

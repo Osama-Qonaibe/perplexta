@@ -18,6 +18,8 @@ README.md
 CONTRIBUTING.md
 CLEANUP_MANIFEST.md
 docs/
+tests/
+server/tests/
 mockups/
 
 # Environment Files & Secrets

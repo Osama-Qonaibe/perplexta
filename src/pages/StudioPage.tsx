@@ -47,8 +47,8 @@ export const StudioPage: React.FC = () => {
         ) : (
           <Palette className="w-5 h-5 text-[var(--accent)]" />
         ),
-        title: language === 'ar' ? 'استوديو رينكس' : 'Rinex Studio',
-        desc: language === 'ar' ? 'تصميم جرافيكي، قوالب سوشيال ميديا، نصوص احترافية، وفلاتر سينمائية.' : 'Graphic design suite, social media presets, curved typography, and high-res exporting.',
+        title: language === 'ar' ? 'استوديو رينكس الشامل' : 'Rinex Creative Studio',
+        desc: language === 'ar' ? 'تصميم جرافيكي متكامل، مونتاج فيديو وموشن جرافيك، قوالب سوشيال ميديا وريلز، وتصدير فائق الدقة.' : 'All-in-one graphic design, video motion editor, social reels, typography, and 4K exporting.',
         action: () => navigate('/image-studio'),
         badge: language === 'ar' ? 'احترافي' : 'Pro'
       },
@@ -83,14 +83,6 @@ export const StudioPage: React.FC = () => {
         desc: language === 'ar' ? 'محركات تأليف النطق، تحويل الصوت، والموسيقى الأوركسترالية المتطورة.' : 'State-of-the-art TTS vocal synthesis, speech transcribing, and orchestral music composition.',
         action: () => navigate('/audio-studio'),
         badge: language === 'ar' ? 'جديد' : 'New'
-      },
-      {
-        id: 'video_studio',
-        icon: <Film className="w-5 h-5 text-[var(--accent)]" />,
-        title: language === 'ar' ? 'رينكس موشن فيديو' : 'Rinex Motion Video',
-        desc: language === 'ar' ? 'محرر فيديو احترافي، موشن جرافيك، خط زمني متعدد المشاهد، وانتقالات سينمائية.' : 'Professional video editor, motion graphics, multi-scene timeline, and cinematic transitions.',
-        action: () => navigate('/video-studio'),
-        badge: language === 'ar' ? 'حصري' : 'Elite'
       }
     ];
 
