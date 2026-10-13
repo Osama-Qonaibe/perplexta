@@ -676,11 +676,29 @@ export async function initializePerplextaPools(
 
       if (coreOk) {
         console.log('[DB] Core DB connection verified.');
+        const oldPool = rawPool;
+        const oldLedger = rawLedgerPool;
+        const oldExternal = rawExternalPool;
+        const oldSecurity = rawSecurityPool;
+        const oldMedia = rawMediaPool;
+
         rawPool = newPool;
         rawLedgerPool = newLedgerPool;
         rawExternalPool = newExternalPool;
         rawSecurityPool = newSecurityPool;
         rawMediaPool = newMediaPool;
+
+        // Safely end previous pools if they are different from the new ones
+        const poolsToClose = new Set<any>();
+        if (oldPool && oldPool !== newPool) poolsToClose.add(oldPool);
+        if (oldLedger && oldLedger !== newLedgerPool && oldLedger !== newPool) poolsToClose.add(oldLedger);
+        if (oldExternal && oldExternal !== newExternalPool && oldExternal !== newPool) poolsToClose.add(oldExternal);
+        if (oldSecurity && oldSecurity !== newSecurityPool && oldSecurity !== newPool) poolsToClose.add(oldSecurity);
+        if (oldMedia && oldMedia !== newMediaPool && oldMedia !== newPool) poolsToClose.add(oldMedia);
+
+        for (const p of poolsToClose) {
+          p.end().catch(() => {});
+        }
 
         currentCoreUrl = effectiveCoreUrl;
         currentLedgerUrl = finalLedgerUrl;

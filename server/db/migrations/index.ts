@@ -117,13 +117,13 @@ export async function initDb(
     }
   }
 
-  await Promise.all(
-    dependentTables.map(table =>
-      targetPool.query(table.query).catch((tblErr: any) => {
-        console.warn(`[initDb Core Table ${table.name}] Notice:`, tblErr?.message || tblErr);
-      })
-    )
-  );
+  for (const table of dependentTables) {
+    try {
+      await targetPool.query(table.query);
+    } catch (tblErr: any) {
+      console.warn(`[initDb Core Table ${table.name}] Notice:`, tblErr?.message || tblErr);
+    }
+  }
 
   // 2. Ledger Schema Tables
   const ledgerBaseTableNames = new Set(['wallets', 'economy_settings']);
@@ -138,40 +138,40 @@ export async function initDb(
     }
   }
 
-  await Promise.all(
-    ledgerDependentTables.map(table =>
-      targetLedgerPool.query(table.query).catch((tblErr: any) => {
-        console.warn(`[initDb Ledger Table ${table.name}] Notice:`, tblErr?.message || tblErr);
-      })
-    )
-  );
+  for (const table of ledgerDependentTables) {
+    try {
+      await targetLedgerPool.query(table.query);
+    } catch (tblErr: any) {
+      console.warn(`[initDb Ledger Table ${table.name}] Notice:`, tblErr?.message || tblErr);
+    }
+  }
 
   // 3. External Schema Tables
-  await Promise.all(
-    EXTERNAL_SCHEMA_TABLES.map(table =>
-      targetExternalPool.query(table.query).catch((tblErr: any) => {
-        console.warn(`[initDb External Table ${table.name}] Notice:`, tblErr?.message || tblErr);
-      })
-    )
-  );
+  for (const table of EXTERNAL_SCHEMA_TABLES) {
+    try {
+      await targetExternalPool.query(table.query);
+    } catch (tblErr: any) {
+      console.warn(`[initDb External Table ${table.name}] Notice:`, tblErr?.message || tblErr);
+    }
+  }
 
   // 4. Security Schema Tables
-  await Promise.all(
-    SECURITY_SCHEMA_TABLES.map(table =>
-      targetSecurityPool.query(table.query).catch((tblErr: any) => {
-        console.warn(`[initDb Security Table ${table.name}] Notice:`, tblErr?.message || tblErr);
-      })
-    )
-  );
+  for (const table of SECURITY_SCHEMA_TABLES) {
+    try {
+      await targetSecurityPool.query(table.query);
+    } catch (tblErr: any) {
+      console.warn(`[initDb Security Table ${table.name}] Notice:`, tblErr?.message || tblErr);
+    }
+  }
 
   // 4b. Media Schema Tables
-  await Promise.all(
-    MEDIA_SCHEMA_TABLES.map(table =>
-      targetMediaPool.query(table.query).catch((tblErr: any) => {
-        console.warn(`[initDb Media Table ${table.name}] Notice:`, tblErr?.message || tblErr);
-      })
-    )
-  );
+  for (const table of MEDIA_SCHEMA_TABLES) {
+    try {
+      await targetMediaPool.query(table.query);
+    } catch (tblErr: any) {
+      console.warn(`[initDb Media Table ${table.name}] Notice:`, tblErr?.message || tblErr);
+    }
+  }
 
   // 5. Apply Column Enforcements across all pools (skip in scratch mode as tables were freshly created with complete schema)
   if (mode !== 'scratch') {

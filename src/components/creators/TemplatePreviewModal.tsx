@@ -65,12 +65,11 @@ export const TemplatePreviewModal: React.FC<TemplatePreviewModalProps> = ({ temp
     
     // Smart Workspace Router: Detect if template is truly video/motion oriented
     const rawVideo = template.videoUrl || (template as any).previewVideoUrl;
+    const hasVideoElement = Boolean(template.elements && Array.isArray(template.elements) && template.elements.some((el: any) => el.type === 'video' || el.videoUrl));
     const isVideo = Boolean(
       (template as any).isVideo === true ||
-      template.category === 'reels' || 
-      template.category === 'video' ||
-      (rawVideo && typeof rawVideo === 'string' && !rawVideo.startsWith('/templates/previews/')) ||
-      (template.elements && Array.isArray(template.elements) && template.elements.some((el: any) => el.type === 'video'))
+      hasVideoElement ||
+      (rawVideo && typeof rawVideo === 'string' && (rawVideo.endsWith('.mp4') || rawVideo.endsWith('.webm') || rawVideo.endsWith('.mov')) && template.category === 'video')
     );
 
     // Store video session flag if template is video/motion oriented

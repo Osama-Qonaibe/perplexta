@@ -852,7 +852,7 @@ app.use(express.static('public', {
 
 import jwt from 'jsonwebtoken';
 import { getSystemSettings, resolvePersistentSystemAssetUrl } from './services/system.js';
-import { filePermissionCache, fileVersionCache, missingFileCache, FILE_CACHE_TTL_MS, MISSING_FILE_TTL_MS, invalidateFilePermissionCache, invalidateFileVersionCache } from './services/filePermissionCache.js';
+import { filePermissionCache, fileVersionCache, missingFileCache, FILE_CACHE_TTL_MS, MISSING_FILE_TTL_MS, invalidateFilePermissionCache, invalidateFileVersionCache, setBoundedCache } from './services/filePermissionCache.js';
 export { filePermissionCache, fileVersionCache, missingFileCache, invalidateFilePermissionCache, invalidateFileVersionCache };
 
 if (!fs.existsSync(uploadsPath)) {
@@ -1017,11 +1017,11 @@ async function checkIsPublicFile(filename: string): Promise<boolean> {
       }
     }
 
-    filePermissionCache.set(cacheKey, { authorized: isPublic, expiresAt: now + FILE_CACHE_TTL_MS });
+    setBoundedCache(filePermissionCache, cacheKey, { authorized: isPublic, expiresAt: now + FILE_CACHE_TTL_MS });
     return isPublic;
   } catch (dbErr) {
     console.error('[Upload Secure Handler] checkIsPublicFile error:', dbErr);
-    filePermissionCache.set(cacheKey, { authorized: false, expiresAt: now + FILE_CACHE_TTL_MS });
+    setBoundedCache(filePermissionCache, cacheKey, { authorized: false, expiresAt: now + FILE_CACHE_TTL_MS });
     return false;
   }
 }
@@ -1186,7 +1186,7 @@ app.use('/uploads', async (req: express.Request, res: express.Response, next: ex
         }
         
         if (!foundFile) {
-          missingFileCache.set(filename, nowMs + MISSING_FILE_TTL_MS);
+          setBoundedCache(missingFileCache, filename, nowMs + MISSING_FILE_TTL_MS);
           res.setHeader('Cache-Control', 'public, max-age=60');
           return res.status(404).json({ error: 'File not found' });
         }
@@ -1231,7 +1231,7 @@ app.use('/uploads', async (req: express.Request, res: express.Response, next: ex
             // ignore
           }
         }
-        fileVersionCache.set(baseName, { version: fileVersion, expiresAt: now + FILE_CACHE_TTL_MS });
+        setBoundedCache(fileVersionCache, baseName, { version: fileVersion, expiresAt: now + FILE_CACHE_TTL_MS });
       }
 
       const etag = `"${fileSize}-${stat.mtimeMs}-v${fileVersion}"`;
@@ -1420,7 +1420,7 @@ app.use('/uploads', async (req: express.Request, res: express.Response, next: ex
         const [isUserFileRes, isProofRes, isPublic] = await Promise.all([filePromise, proofPromise, publicPromise]);
         
         const authorized = isUserFileRes.rows.length > 0 || isProofRes.rows.length > 0 || isPublic;
-        filePermissionCache.set(cacheKey, { authorized, expiresAt: now + FILE_CACHE_TTL_MS });
+        setBoundedCache(filePermissionCache, cacheKey, { authorized, expiresAt: now + FILE_CACHE_TTL_MS });
         if (!authorized) {
           res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
           return res.status(403).json({ error: 'Unauthorized: Access to this private document is denied.' });

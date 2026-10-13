@@ -59,7 +59,7 @@ export interface BoardFeedProps {
   handleEditAd: (ad: BulletinAd) => void;
   handleDeleteAd: (ad: BulletinAd) => void | Promise<void>;
   handleToggleSave: (ad: BulletinAd) => void;
-  setAds: React.Dispatch<React.SetStateAction<BulletinAd[]>>;
+  setAds?: React.Dispatch<React.SetStateAction<BulletinAd[]>>;
   setSavedAds: React.Dispatch<React.SetStateAction<BulletinAd[]>>;
 }
 
@@ -175,15 +175,15 @@ export const BoardFeed: React.FC<BoardFeedProps> = ({
         onDeleteAd={handleDeleteAd}
         onToggleSave={handleToggleSave}
         onArchiveAd={(archivedAd) => {
-          setAds((prev) => prev.filter((a) => a.id !== archivedAd.id));
+          setAds?.((prev) => prev.filter((a) => a.id !== archivedAd.id));
           setSavedAds((prev) => prev.filter((a) => a.id !== archivedAd.id));
         }}
         onTrashAd={(trashedAd) => {
-          setAds((prev) => prev.filter((a) => a.id !== trashedAd.id));
+          setAds?.((prev) => prev.filter((a) => a.id !== trashedAd.id));
           setSavedAds((prev) => prev.filter((a) => a.id !== trashedAd.id));
         }}
         onUpdateAd={(updatedAd) => {
-          setAds((prev) => prev.map((a) => (a.id === updatedAd.id ? { ...a, ...updatedAd } : a)));
+          setAds?.((prev) => prev.map((a) => (a.id === updatedAd.id ? { ...a, ...updatedAd } : a)));
           setSavedAds((prev) => prev.map((a) => (a.id === updatedAd.id ? { ...a, ...updatedAd } : a)));
         }}
       />

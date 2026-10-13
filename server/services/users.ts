@@ -286,24 +286,34 @@ export async function getUserUsage(userId: string | number) {
 }
 
 let columnsEnsured = false;
+let ensurePromise: Promise<void> | null = null;
+
 export async function ensureUserProfileColumns() {
   if (columnsEnsured || !pool) return;
-  try {
-    await pool.query(`
-      ALTER TABLE users ADD COLUMN IF NOT EXISTS cover_image TEXT;
-      ALTER TABLE users ADD COLUMN IF NOT EXISTS bio TEXT;
-      ALTER TABLE users ADD COLUMN IF NOT EXISTS occupation TEXT;
-      ALTER TABLE users ADD COLUMN IF NOT EXISTS location TEXT;
-      ALTER TABLE users ADD COLUMN IF NOT EXISTS website_url TEXT;
-      ALTER TABLE users ADD COLUMN IF NOT EXISTS custom_domain TEXT;
-      ALTER TABLE users ADD COLUMN IF NOT EXISTS is_domain_verified BOOLEAN DEFAULT FALSE;
-      ALTER TABLE users ADD COLUMN IF NOT EXISTS social_links JSONB DEFAULT '{}';
-      ALTER TABLE users ADD COLUMN IF NOT EXISTS verified_links JSONB DEFAULT '[]';
-    `);
-    columnsEnsured = true;
-  } catch (err: any) {
-    console.warn('[ensureUserProfileColumns] Notice/Warning while ensuring user profile columns:', err.message);
-  }
+  if (ensurePromise) return ensurePromise;
+
+  ensurePromise = (async () => {
+    try {
+      await pool.query(`
+        ALTER TABLE users ADD COLUMN IF NOT EXISTS cover_image TEXT;
+        ALTER TABLE users ADD COLUMN IF NOT EXISTS bio TEXT;
+        ALTER TABLE users ADD COLUMN IF NOT EXISTS occupation TEXT;
+        ALTER TABLE users ADD COLUMN IF NOT EXISTS location TEXT;
+        ALTER TABLE users ADD COLUMN IF NOT EXISTS website_url TEXT;
+        ALTER TABLE users ADD COLUMN IF NOT EXISTS custom_domain TEXT;
+        ALTER TABLE users ADD COLUMN IF NOT EXISTS is_domain_verified BOOLEAN DEFAULT FALSE;
+        ALTER TABLE users ADD COLUMN IF NOT EXISTS social_links JSONB DEFAULT '{}';
+        ALTER TABLE users ADD COLUMN IF NOT EXISTS verified_links JSONB DEFAULT '[]';
+      `);
+      columnsEnsured = true;
+    } catch (err: any) {
+      console.warn('[ensureUserProfileColumns] Notice/Warning while ensuring user profile columns:', err.message);
+    } finally {
+      ensurePromise = null;
+    }
+  })();
+
+  return ensurePromise;
 }
 
 export async function getUserProfile(userId: string) {

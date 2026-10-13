@@ -2773,7 +2773,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       return;
     }
 
-    secureStorage.set('perplexta_last_activity', Date.now().toString());
+    let lastActivityInMemory = Date.now();
+    secureStorage.set('perplexta_last_activity', lastActivityInMemory.toString());
 
     let lastWriteTime = Date.now();
     const INACTIVITY_LIMIT = 2 * 60 * 60 * 1000;
@@ -2782,6 +2783,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
     const updateLastActivity = () => {
       const now = Date.now();
+      lastActivityInMemory = now;
       
       if (showWarningRef.current) {
         secureStorage.set('perplexta_last_activity', now.toString());
@@ -2790,7 +2792,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         return;
       }
 
-      if (now - lastWriteTime > 15000) {
+      if (now - lastWriteTime > 60000) {
         secureStorage.set('perplexta_last_activity', now.toString());
         lastWriteTime = now;
       }
@@ -2802,34 +2804,25 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     });
 
     const interval = setInterval(() => {
-      const lastActivityStr = secureStorage.getSync('perplexta_last_activity');
-      if (!lastActivityStr) {
-        secureStorage.set('perplexta_last_activity', Date.now().toString());
-        return;
-      }
-
-      const lastActivity = parseInt(lastActivityStr, 10);
       const now = Date.now();
-      const diff = now - lastActivity;
+      const diff = now - lastActivityInMemory;
 
-      if (!isNaN(lastActivity)) {
-        if (diff >= INACTIVITY_LIMIT) {
-          clearInterval(interval);
+      if (diff >= INACTIVITY_LIMIT) {
+        clearInterval(interval);
+        setShowInactivityWarning(false);
+        toast.warning(
+          language === 'ar'
+            ? 'تم تسجيل الخروج تلقائياً بسبب عدم النشاط لمدة ساعتين لحماية حسابك.'
+            : 'Session expired due to 2 hours of inactivity.'
+        );
+        logout(true);
+      } else if (diff >= WARNING_THRESHOLD) {
+        setShowInactivityWarning(true);
+        const remainingSeconds = Math.max(0, Math.ceil((INACTIVITY_LIMIT - diff) / 1000));
+        setInactivityCountdown(remainingSeconds);
+      } else {
+        if (showWarningRef.current) {
           setShowInactivityWarning(false);
-          toast.warning(
-            language === 'ar'
-              ? 'تم تسجيل الخروج تلقائياً بسبب عدم النشاط لمدة ساعتين لحماية حسابك.'
-              : 'Session expired due to 2 hours of inactivity.'
-          );
-          logout(true);
-        } else if (diff >= WARNING_THRESHOLD) {
-          setShowInactivityWarning(true);
-          const remainingSeconds = Math.max(0, Math.ceil((INACTIVITY_LIMIT - diff) / 1000));
-          setInactivityCountdown(remainingSeconds);
-        } else {
-          if (showWarningRef.current) {
-            setShowInactivityWarning(false);
-          }
         }
       }
     }, 2500);

@@ -12,6 +12,7 @@ interface SseSession {
   created: number;
 }
 
+const MAX_SSE_SESSIONS = 200;
 const sessions = new Map<string, SseSession>();
 
 /**
@@ -19,6 +20,10 @@ const sessions = new Map<string, SseSession>();
  * Initializes the Server-Sent Events stream and registers the client session.
  */
 router.get('/sse', (req, res) => {
+  if (sessions.size >= MAX_SSE_SESSIONS) {
+    return res.status(429).json({ error: 'Maximum SSE active sessions limit reached' });
+  }
+
   const protocol = req.secure || req.headers['x-forwarded-proto'] === 'https' ? 'https' : 'http';
   const host = req.headers.host || 'perplexta.com';
   const baseUrl = `${protocol}://${host}`;

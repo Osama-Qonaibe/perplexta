@@ -83,24 +83,26 @@ export async function runSystemMaintenance() {
       }
     }
 
-    const results = await Promise.allSettled(
-      maintenanceTasks.map(async (task) => {
-        const targetPool = task.pool || pool;
-        if (!targetPool) return { task: task.name, status: 'skipped', reason: 'No pool' };
-        try {
-          await targetPool.query(task.query);
-          return { task: task.name, status: 'success' };
-        } catch (error) {
-          return {
-            task: task.name,
-            status: 'failed',
-            error: error instanceof Error ? error.message : 'Unknown error'
-          };
-        }
-      })
-    );
+    const results: Array<{ task: string; status: string; error?: string }> = [];
+    for (const task of maintenanceTasks) {
+      const targetPool = task.pool || pool;
+      if (!targetPool) {
+        results.push({ task: task.name, status: 'skipped' });
+        continue;
+      }
+      try {
+        await targetPool.query(task.query);
+        results.push({ task: task.name, status: 'success' });
+      } catch (error) {
+        results.push({
+          task: task.name,
+          status: 'failed',
+          error: error instanceof Error ? error.message : 'Unknown error'
+        });
+      }
+    }
 
-    const failed = results.filter(r => r.status === 'rejected' || (r.status === 'fulfilled' && r.value.status === 'failed'));
+    const failed = results.filter(r => r.status === 'failed');
     if (failed.length > 0) {
       console.warn(`[Maintenance] ${failed.length} tasks failed`);
     } else {

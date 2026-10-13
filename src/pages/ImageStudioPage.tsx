@@ -387,12 +387,12 @@ export const ImageStudioPage: React.FC = () => {
         }, 'template_initialization');
 
         const rawVideo = tpl.videoUrl || (tpl as any).previewVideoUrl;
+        const hasVideoElement = Boolean(loadedElements && loadedElements.some((el: any) => el.type === 'video' || el.videoUrl));
         const isVideoTpl = Boolean(
           (tpl as any).isVideo === true ||
-          tpl.category === 'reels' || tpl.category === 'video' ||
-          (rawVideo && typeof rawVideo === 'string' && !rawVideo.startsWith('/templates/previews/')) ||
-          (loadedElements && loadedElements.some((el: any) => el.type === 'video')) ||
-          location.state?.initialStudioMode === 'video'
+          hasVideoElement ||
+          (rawVideo && typeof rawVideo === 'string' && (rawVideo.endsWith('.mp4') || rawVideo.endsWith('.webm') || rawVideo.endsWith('.mov')) && tpl.category === 'video') ||
+          (location.state?.initialStudioMode === 'video' && hasVideoElement)
         );
         setActiveInitialStudioMode(isVideoTpl ? 'video' : 'image');
         try {
@@ -475,11 +475,11 @@ export const ImageStudioPage: React.FC = () => {
               }
 
               const rawVideo = tpl.videoUrl || (tpl as any).previewVideoUrl;
+              const hasVideoElement = Boolean(loadedElements && loadedElements.some((el: any) => el.type === 'video' || el.videoUrl));
               const isVideoTpl = Boolean(
                 (tpl as any).isVideo === true ||
-                tpl.category === 'reels' || tpl.category === 'video' ||
-                (rawVideo && typeof rawVideo === 'string' && !rawVideo.startsWith('/templates/previews/')) ||
-                (loadedElements && loadedElements.some((el: any) => el.type === 'video'))
+                hasVideoElement ||
+                (rawVideo && typeof rawVideo === 'string' && (rawVideo.endsWith('.mp4') || rawVideo.endsWith('.webm') || rawVideo.endsWith('.mov')) && tpl.category === 'video')
               );
               setActiveInitialStudioMode(isVideoTpl ? 'video' : 'image');
               try {

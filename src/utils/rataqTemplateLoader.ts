@@ -75,6 +75,7 @@ const ASSET_NATURAL_DIMS: Record<string, { w: number; h: number }> = {
   "/templates/waffler_table.jpg": { w: 1000, h: 1400 },
   "/templates/control.jpg": { w: 1200, h: 800 },
   "/templates/united_state.jpg": { w: 1062, h: 708 },
+  "/templates/united_state.svg": { w: 1062, h: 708 },
   "/templates/bussola.png": { w: 512, h: 512 },
   "/templates/binoculars.png": { w: 698, h: 543 },
   "/templates/flower-material.png": { w: 1980, h: 1837 },
@@ -85,6 +86,21 @@ const ASSET_NATURAL_DIMS: Record<string, { w: number; h: number }> = {
 export function createSolidColorBackground(color?: string | null, width = 1080, height = 1080): string {
   const safeColor = color || '#1e293b';
   return `data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}" viewBox="0 0 ${width} ${height}"><rect width="${width}" height="${height}" fill="${encodeURIComponent(safeColor)}"/></svg>`;
+}
+
+export function normalizeTemplateImageSrc(src?: string): string {
+  if (!src || typeof src !== 'string') return '';
+  const trimmed = src.trim();
+  if (trimmed.startsWith('http://') || trimmed.startsWith('https://') || trimmed.startsWith('data:') || trimmed.startsWith('blob:')) {
+    return trimmed;
+  }
+  if (trimmed.startsWith('/')) {
+    return trimmed;
+  }
+  if (trimmed.startsWith('templates/')) {
+    return '/' + trimmed;
+  }
+  return '/templates/' + trimmed;
 }
 
 /**
@@ -103,9 +119,12 @@ export function convertRataqTemplateToCanvasElements(template: RataqRepoTemplate
   const height = template.height || 1080;
   const backgroundColor = template.backgroundColor || '#ffffff';
   const previewUrl = template.filename ? `/templates/data/${template.filename}` : '';
-  const canvasBackground = template.backgroundImage 
+  const rawBg = template.backgroundImage 
     ? template.backgroundImage 
     : (template.backgroundColor || '#ffffff');
+  const canvasBackground = (typeof rawBg === 'string' && !rawBg.startsWith('#') && !rawBg.startsWith('rgb') && !rawBg.startsWith('hsl'))
+    ? normalizeTemplateImageSrc(rawBg)
+    : rawBg;
 
   const elements: CanvasElement[] = (template.objects || []).map((obj: TemplateObject, idx: number) => {
     const id = `el-${template.id}-${idx}-${Date.now()}`;
@@ -124,10 +143,11 @@ export function convertRataqTemplateToCanvasElements(template: RataqRepoTemplate
       const lines = textVal.split('\n');
       const maxLineLen = Math.max(...lines.map(l => l.length), 1);
       const hasArabic = /[\u0600-\u06FF]/.test(textVal);
-      // Generous width & height to prevent awkward word wrapping and text intertwining
-      const calcW = Math.ceil(maxLineLen * fontSize * 0.9 * (obj.scaleX || 1)) + 90;
-      const calcH = Math.ceil(lines.length * fontSize * (hasArabic ? 1.45 : 1.35)) + 28;
+      
+      const calcW = (obj as any).width ? Math.round((obj as any).width * (obj.scaleX || 1)) : (Math.ceil(maxLineLen * fontSize * 0.85) + 60);
+      const calcH = (obj as any).height ? Math.round((obj as any).height * (obj.scaleY || 1)) : (Math.ceil(lines.length * fontSize * (hasArabic ? 1.4 : 1.3)) + 20);
       const resolvedAlign = obj.textAlign || (hasArabic ? 'center' : 'left');
+      const resolvedWeight = obj.fontWeight || 'bold';
 
       return {
         id,
@@ -135,15 +155,15 @@ export function convertRataqTemplateToCanvasElements(template: RataqRepoTemplate
         name,
         x,
         y,
-        w: Math.max(300, calcW),
-        h: Math.max(50, calcH),
+        w: Math.max(120, calcW),
+        h: Math.max(36, calcH),
         text: textVal,
         color: obj.fill || '#ffffff',
         fontSize,
         fontFamily: obj.fontFamily || (hasArabic ? 'Tajawal, sans-serif' : 'sans-serif'),
-        fontWeight: 'bold',
+        fontWeight: resolvedWeight,
         textAlign: resolvedAlign,
-        textLineHeight: hasArabic ? 1.45 : 1.35,
+        textLineHeight: hasArabic ? 1.4 : 1.3,
         rotation: angle,
         opacity,
         strokeColor: obj.stroke || undefined,
@@ -151,30 +171,44 @@ export function convertRataqTemplateToCanvasElements(template: RataqRepoTemplate
         textShadow: false
       };
     } else if (obj.type === 'image') {
-      const cleanSrc = (obj.src || '').split('?')[0];
-      const baseDims = ASSET_NATURAL_DIMS[cleanSrc] || { w: 800, h: 800 };
-      const w = Math.round(baseDims.w * (obj.scaleX || 1));
-      const h = Math.round(baseDims.h * (obj.scaleY || 1));
-      const imagePath = obj.src || '';
+      const normalizedPath = normalizeTemplateImageSrc(obj.src);
+      const cleanSrc = normalizedPath.split('?')[0];
+      const baseDims = ASSET_NATURAL_DIMS[cleanSrc] || ASSET_NATURAL_DIMS['/' + cleanSrc];
+      const jsonW = (obj as any).width || (obj as any).w;
+      const jsonH = (obj as any).height || (obj as any).h;
+
+      let baseW = 800;
+      let baseH = 800;
+      if (baseDims) {
+        baseW = baseDims.w;
+        baseH = baseDims.h;
+      } else if (jsonW && jsonH) {
+        baseW = jsonW;
+        baseH = jsonH;
+      }
+
+      const w = Math.round(baseW * (obj.scaleX || 1));
+      const h = Math.round(baseH * (obj.scaleY || 1));
       return {
         id,
         type: 'sticker',
         name: name || 'صورة القالب',
         x,
         y,
-        w,
-        h,
-        src: imagePath,
-        imgSrc: imagePath,
+        w: Math.max(40, w),
+        h: Math.max(40, h),
+        src: normalizedPath,
+        imgSrc: normalizedPath,
         rotation: angle,
         opacity,
         color: obj.fill || '#ffffff',
         strokeWidth: obj.strokeWidth || 0
       };
     } else if (obj.type === 'svg') {
-      const baseSize = 24;
-      const w = Math.round(baseSize * (obj.scaleX || 1));
-      const h = Math.round(baseSize * (obj.scaleY || 1));
+      const baseW = (obj as any).width || (obj as any).w || 64;
+      const baseH = (obj as any).height || (obj as any).h || 64;
+      const w = Math.round(baseW * (obj.scaleX || 1));
+      const h = Math.round(baseH * (obj.scaleY || 1));
       return {
         id,
         type: 'svg',
@@ -183,6 +217,7 @@ export function convertRataqTemplateToCanvasElements(template: RataqRepoTemplate
         y,
         w: Math.max(16, w),
         h: Math.max(16, h),
+        svgPath: (obj as any).path || (obj as any).svgPath || undefined,
         src: obj.src || '',
         imgSrc: obj.src || '',
         color: obj.fill || '#38bdf8',

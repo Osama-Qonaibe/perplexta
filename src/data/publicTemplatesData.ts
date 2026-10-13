@@ -25,13 +25,32 @@ export interface PublicTemplateItem {
 export const REPO_PUBLIC_TEMPLATES: PublicTemplateItem[] = RataqRepoTemplates.map((tpl) => {
   const titleFormatted = tpl.id.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
   const converted = convertRataqTemplateToCanvasElements(tpl);
+  const ratio = converted.width / converted.height;
+  
+  let category: 'all' | 'reels' | 'story' | 'marketing' | 'social' | 'youtube' | 'cards' | 'posts' = 'marketing';
+  let categoryLabelAr = 'قوالب تسويقية';
+  
+  if (converted.width === converted.height) {
+    category = 'posts';
+    categoryLabelAr = 'منشورات عادية';
+  } else if (Math.abs(ratio - 9/16) < 0.1 || converted.height > converted.width * 1.4) {
+    category = 'story';
+    categoryLabelAr = 'قصص وستوري';
+  } else if (Math.abs(ratio - 16/9) < 0.1 || converted.width > converted.height * 1.4) {
+    category = 'youtube';
+    categoryLabelAr = 'غلاف وبانر عريض';
+  } else {
+    category = 'marketing';
+    categoryLabelAr = 'قوالب تسويقية';
+  }
+
   return {
     id: `repo-${tpl.id}`,
     titleAr: `قالب ${titleFormatted}`,
     titleEn: `Template ${titleFormatted}`,
     src: `/templates/data/${tpl.filename}`,
-    category: (converted.width === converted.height) ? 'posts' : 'marketing',
-    categoryLabelAr: (converted.width === converted.height) ? 'منشورات عادية' : 'قوالب بيربليكستا',
+    category,
+    categoryLabelAr,
     dimensions: `${converted.width} × ${converted.height}`,
     tag: 'مستودع بيربليكستا',
     repoTemplate: tpl,

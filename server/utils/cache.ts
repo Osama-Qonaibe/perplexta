@@ -3,7 +3,9 @@ type CacheEntry<T> = {
   expiry: number;
 };
 
+const MAX_CACHE_SIZE = 5000;
 const cache = new Map<string, CacheEntry<any>>();
+const inflightPromises = new Map<string, Promise<any>>();
 
 export function getCache<T>(key: string): T | null {
   const entry = cache.get(key);
@@ -21,6 +23,10 @@ export function setCache<T>(
   value: T,
   ttlSeconds: number = 300 // 5 minutes default
 ) {
+  if (cache.size >= MAX_CACHE_SIZE) {
+    const oldestKey = cache.keys().next().value;
+    if (oldestKey) cache.delete(oldestKey);
+  }
   cache.set(key, {
     value,
     expiry: Date.now() + (ttlSeconds * 1000)
@@ -68,6 +74,7 @@ class PureMemoryCache {
 
   clear(): void {
     cache.clear();
+    inflightPromises.clear();
   }
 
   async getOrSet<T>(key: string, fetchFn: () => Promise<T>, ttlMs: number): Promise<T> {
@@ -75,9 +82,24 @@ class PureMemoryCache {
     if (cached !== null) {
       return cached;
     }
-    const fresh = await fetchFn();
-    this.set(key, fresh, ttlMs);
-    return fresh;
+
+    // Deduplicate in-flight fetches for the same missing key (thundering herd protection)
+    if (inflightPromises.has(key)) {
+      return inflightPromises.get(key) as Promise<T>;
+    }
+
+    const promise = (async () => {
+      try {
+        const fresh = await fetchFn();
+        this.set(key, fresh, ttlMs);
+        return fresh;
+      } finally {
+        inflightPromises.delete(key);
+      }
+    })();
+
+    inflightPromises.set(key, promise);
+    return promise;
   }
 }
 
