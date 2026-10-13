@@ -5,6 +5,9 @@ import { existsSync, mkdirSync } from 'fs';
 import crypto from 'crypto';
 import { mediaPool, pool } from '../db/index.js';
 
+// Limit Sharp threadpool to 2 threads to prevent CPU starvation on heavy concurrent uploads
+try { sharp.concurrency(2); } catch {}
+
 export interface ImageOptimizationResult {
   assetId?: string;
   filename: string;

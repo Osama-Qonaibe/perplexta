@@ -41,15 +41,18 @@ export async function connectCache(): Promise<void> {
   console.log('[Cache] Fast in-memory RAM cache initialized (Zero external dependencies)');
 }
 
-// Cleanup expired entries every 5 minutes
+// Incremental chunked cleanup of expired entries (max 200 items per tick to prevent event loop lag)
 setInterval(() => {
   const now = Date.now();
+  let processed = 0;
   for (const [key, entry] of cache.entries()) {
     if (now > entry.expiry) {
       cache.delete(key);
     }
+    processed++;
+    if (processed >= 200) break;
   }
-}, 5 * 60 * 1000);
+}, 60 * 1000);
 
 class PureMemoryCache {
   get<T>(key: string): T | null {

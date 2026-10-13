@@ -14,6 +14,30 @@ interface SseSession {
 
 const MAX_SSE_SESSIONS = 200;
 const sessions = new Map<string, SseSession>();
+let globalHeartbeatTimer: NodeJS.Timeout | null = null;
+
+function ensureGlobalHeartbeat() {
+  if (globalHeartbeatTimer) return;
+  globalHeartbeatTimer = setInterval(() => {
+    const now = Date.now();
+    for (const [id, session] of sessions.entries()) {
+      if (session.res.writableEnded || now - session.created > 30 * 60 * 1000) {
+        try { session.res.end(); } catch {}
+        sessions.delete(id);
+        continue;
+      }
+      try {
+        session.res.write(': heartbeat\n\n');
+      } catch (_) {
+        sessions.delete(id);
+      }
+    }
+    if (sessions.size === 0 && globalHeartbeatTimer) {
+      clearInterval(globalHeartbeatTimer);
+      globalHeartbeatTimer = null;
+    }
+  }, 15000);
+}
 
 /**
  * SSE Endpoint
@@ -47,35 +71,13 @@ router.get('/sse', (req, res) => {
     created: Date.now()
   });
 
+  ensureGlobalHeartbeat();
+
   const messageUrl = `${baseUrl}/api/mcp/message?id=${sessionId}`;
   
   res.write(`event: endpoint\ndata: ${messageUrl}\n\n`);
 
-  const heartbeatInterval = setInterval(() => {
-    if (res.writableEnded) {
-      clearInterval(heartbeatInterval);
-      sessions.delete(sessionId);
-      return;
-    }
-    try {
-      res.write(': heartbeat\n\n');
-    } catch (_) {
-      clearInterval(heartbeatInterval);
-      sessions.delete(sessionId);
-    }
-  }, 15000);
-
-  const sessionTimeout = setTimeout(() => {
-    sessions.delete(sessionId);
-    clearInterval(heartbeatInterval);
-    try {
-      res.end();
-    } catch (_) {}
-  }, 30 * 60 * 1000);
-
   req.on('close', () => {
-    clearInterval(heartbeatInterval);
-    clearTimeout(sessionTimeout);
     sessions.delete(sessionId);
   });
 });
