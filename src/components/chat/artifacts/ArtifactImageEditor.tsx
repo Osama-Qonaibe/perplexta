@@ -2751,7 +2751,7 @@ export const ArtifactImageEditor: React.FC<ArtifactImageEditorProps> = ({
       templateBg = safeSvgDataUrl((tpl as any).canvasBackground);
     } else if ((tpl as any).backgroundImage) {
       templateBg = (tpl as any).backgroundImage;
-    } else if (newElements.length === 0 && tpl.thumbnailUrl && !tpl.thumbnailUrl.startsWith('/templates/previews/')) {
+    } else if (newElements.length === 0 && tpl.thumbnailUrl) {
       // Only set canvas background to thumbnail if there are no separate elements to render
       templateBg = tpl.thumbnailUrl;
     } else {
@@ -2764,11 +2764,10 @@ export const ArtifactImageEditor: React.FC<ArtifactImageEditorProps> = ({
     setImageLoaded(true);
 
     const rawVideo = (tpl as any).videoUrl || (tpl as any).previewVideoUrl;
+    const hasVideoExt = typeof rawVideo === 'string' && (rawVideo.endsWith('.mp4') || rawVideo.endsWith('.webm') || rawVideo.endsWith('.mov') || !rawVideo.match(/\.(png|jpg|jpeg|webp|gif|svg)$/i));
     const isVideoTemplate = Boolean(
       (tpl as any).isVideo === true ||
-      (tpl as any).category === 'reels' ||
-      (tpl as any).category === 'video' ||
-      (rawVideo && typeof rawVideo === 'string' && !rawVideo.startsWith('/templates/previews/')) ||
+      (rawVideo && hasVideoExt) ||
       (newElements && Array.isArray(newElements) && newElements.some((el: any) => el.type === 'video'))
     );
 

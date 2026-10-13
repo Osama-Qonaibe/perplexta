@@ -48,9 +48,7 @@ export function convertMarketplaceToStudioTemplate(tpl: any): StudioTemplate {
 
   const fallbackThumb = 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=600&q=80';
   const resolvedThumb = tpl.thumbnail || tpl.thumbnailUrl || fallbackThumb;
-  const resolvedVideo = (tpl.videoUrl && !tpl.videoUrl.startsWith('/templates/previews/')) 
-    ? tpl.videoUrl 
-    : ((tpl.previewVideoUrl && !tpl.previewVideoUrl.startsWith('/templates/previews/')) ? tpl.previewVideoUrl : undefined);
+  const resolvedVideo = tpl.videoUrl || tpl.previewVideoUrl || undefined;
 
   return {
     id: tpl.id,

@@ -1744,11 +1744,10 @@ export const ImageStudioPage: React.FC = () => {
                                 }
 
                                 const rawVideo = tpl.videoUrl || (tpl as any).previewVideoUrl;
+                                const isVideoExt = typeof rawVideo === 'string' && (rawVideo.endsWith('.mp4') || rawVideo.endsWith('.webm') || rawVideo.endsWith('.mov') || !rawVideo.match(/\.(png|jpg|jpeg|webp|gif|svg)$/i));
                                 const isVideo = Boolean(
                                   (tpl as any).isVideo === true ||
-                                  tpl.category === 'reels' ||
-                                  tpl.category === 'video' ||
-                                  (rawVideo && typeof rawVideo === 'string' && !rawVideo.startsWith('/templates/previews/')) ||
+                                  (rawVideo && isVideoExt) ||
                                   (loadedElements && loadedElements.some((el: any) => el.type === 'video'))
                                 );
                                 try {

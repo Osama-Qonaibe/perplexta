@@ -292,7 +292,7 @@ export function auditAndPreloadTemplateImages(
   // 1. Background image candidates
   const bgCandidate = template.backgroundImage || 
     (template.canvasBackground && !template.canvasBackground.startsWith('data:image/svg+xml') && !template.canvasBackground.startsWith('<svg') ? template.canvasBackground : null) ||
-    (template.thumbnailUrl && !template.thumbnailUrl.startsWith('/templates/previews/') ? template.thumbnailUrl : null);
+    template.thumbnailUrl || null;
 
   if (bgCandidate && typeof bgCandidate === 'string' && !bgCandidate.startsWith('#') && !bgCandidate.startsWith('rgb')) {
     urlsToCheck.push({ src: bgCandidate, type: 'background' });

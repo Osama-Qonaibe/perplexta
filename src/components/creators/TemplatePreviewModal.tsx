@@ -150,7 +150,8 @@ export const TemplatePreviewModal: React.FC<TemplatePreviewModalProps> = ({ temp
                 <div className="md:col-span-6 rounded-shape-lg overflow-hidden border border-[var(--border-default)] bg-slate-950/40 relative shadow-inner group flex items-center justify-center min-h-[220px]">
                   {(() => {
                     const rawVideoUrl = template.videoUrl || (template as any).previewVideoUrl;
-                    const isValidVideo = Boolean(rawVideoUrl && !videoError && !rawVideoUrl.startsWith('/templates/previews/'));
+                    const isVideoExt = typeof rawVideoUrl === 'string' && (rawVideoUrl.endsWith('.mp4') || rawVideoUrl.endsWith('.webm') || rawVideoUrl.endsWith('.mov') || !rawVideoUrl.match(/\.(png|jpg|jpeg|webp|gif|svg)$/i));
+                    const isValidVideo = Boolean(rawVideoUrl && !videoError && isVideoExt);
                     const fallbackThumb = 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=600&q=80';
                     const thumbnailSrc = template.thumbnail || (template as any).thumbnailUrl || (template as any).previewUrl || fallbackThumb;
 

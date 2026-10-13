@@ -104,7 +104,7 @@ export async function runSystemMaintenance() {
 
     const failed = results.filter(r => r.status === 'failed');
     if (failed.length > 0) {
-      console.warn(`[Maintenance] ${failed.length} tasks failed`);
+      for (const f of failed) console.warn(`[Maintenance] Task "${f.task}" failed: ${f.error}`);
     } else {
       console.log('[Maintenance] All maintenance tasks completed successfully.');
     }

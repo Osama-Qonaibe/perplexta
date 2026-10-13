@@ -274,8 +274,8 @@ export async function loadTemplate(canvas: any, template: RataqRepoTemplate) {
   if (template.backgroundImage && (window as any).fabric) {
     const fabric = (window as any).fabric;
     fabric.Image.fromURL(template.backgroundImage, (img: any) => {
-      canvas.setBackgroundImage(img, canvas.renderAll.bind(canvas));
-    });
+      if (img) canvas.setBackgroundImage(img, canvas.renderAll.bind(canvas));
+    }, { crossOrigin: 'anonymous' });
   }
 
   // 3. Read each element and add it to canvas
@@ -318,7 +318,7 @@ export async function loadTemplate(canvas: any, template: RataqRepoTemplate) {
               canvas.add(img);
             }
             resolve();
-          });
+          }, { crossOrigin: 'anonymous' });
         });
       }
       // c) Vector (SVG)
