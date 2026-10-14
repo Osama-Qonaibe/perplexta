@@ -427,29 +427,27 @@ export const BulletinBoardPage: React.FC = () => {
     if (raw) {
       try {
         const parsed = JSON.parse(raw);
-        if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+        if (Array.isArray(parsed)) return parsed;
       } catch (e) {
         if (typeof raw === 'string' && raw.trim() && raw !== 'all') return raw.split(',').map(s => s.trim()).filter(Boolean);
       }
     }
-    const single = secureStorage.getSync('perplexta_user_country');
-    return single && single !== 'all' ? [single] : [];
+    return [];
   });
   const [selectedCities, setSelectedCities] = useState<string[]>(() => {
     const raw = secureStorage.getSync('perplexta_user_cities');
     if (raw) {
       try {
         const parsed = JSON.parse(raw);
-        if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+        if (Array.isArray(parsed)) return parsed;
       } catch (e) {
         if (typeof raw === 'string' && raw.trim() && raw !== 'all') return raw.split(',').map(s => s.trim()).filter(Boolean);
       }
     }
-    const single = secureStorage.getSync('perplexta_user_city');
-    return single && single !== 'all' ? [single] : [];
+    return [];
   });
   const [selectedRadius, setSelectedRadius] = useState<string>(() => {
-    return secureStorage.getSync('perplexta_user_radius') || '10';
+    return secureStorage.getSync('perplexta_user_radius') || 'all';
   });
 
   // Backward compatibility strings
@@ -1877,27 +1875,9 @@ export const BulletinBoardPage: React.FC = () => {
     } catch (e) {}
   };
 
-  // Silent background geolocation & recommendation matching
+  // Silent background geolocation & recommendation matching (preserves All Regions by default)
   useEffect(() => {
-    const detectBackgroundLocation = async () => {
-      try {
-        const stored = secureStorage.getSync('perplexta_user_countries');
-        if (!stored) {
-          const res = await fetch('https://ipapi.co/json/').catch(() => null);
-          if (res && res.ok) {
-            const data = await res.json();
-            if (data && data.country_name) {
-              const country = data.country_name;
-              setSelectedCountries([country]);
-              secureStorage.set('perplexta_user_countries', JSON.stringify([country]));
-            }
-          }
-        }
-      } catch (e) {
-        // Fallback silently
-      }
-    };
-    detectBackgroundLocation();
+    // Keep default as All Regions unless user explicitly chooses a location
   }, []);
 
   useEffect(() => {

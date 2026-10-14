@@ -1744,11 +1744,12 @@ export const ImageStudioPage: React.FC = () => {
                                 }
 
                                 const rawVideo = tpl.videoUrl || (tpl as any).previewVideoUrl;
-                                const isVideoExt = typeof rawVideo === 'string' && (rawVideo.endsWith('.mp4') || rawVideo.endsWith('.webm') || rawVideo.endsWith('.mov') || !rawVideo.match(/\.(png|jpg|jpeg|webp|gif|svg)$/i));
+                                const isVideoExt = typeof rawVideo === 'string' && Boolean(rawVideo.match(/\.(mp4|webm|mov|m4v|mkv)(\?.*)?$/i));
+                                const hasVideoElement = Boolean(loadedElements && loadedElements.some((el: any) => el.type === 'video' || el.videoUrl));
                                 const isVideo = Boolean(
                                   (tpl as any).isVideo === true ||
-                                  (rawVideo && isVideoExt) ||
-                                  (loadedElements && loadedElements.some((el: any) => el.type === 'video'))
+                                  hasVideoElement ||
+                                  (rawVideo && isVideoExt && tpl.category === 'video')
                                 );
                                 try {
                                   localStorage.setItem('rataq_studio_session_isVideo', isVideo ? 'true' : 'false');

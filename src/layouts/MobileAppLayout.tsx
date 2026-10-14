@@ -45,7 +45,7 @@ export const MobileAppLayout: React.FC = () => {
       <main className={`flex-1 flex flex-col overflow-hidden relative ${
         (isIsolatedMobileView || isFullscreen)
           ? 'pt-0 pb-0'
-          : 'pt-[calc(52px+env(safe-area-inset-top,0px))] pb-[calc(56px+env(safe-area-inset-bottom,0px))]'
+          : 'pt-[calc(48px+env(safe-area-inset-top,0px))] pb-[calc(56px+env(safe-area-inset-bottom,0px))]'
       } bg-[var(--surface-page)] transition-theme`}>
         <div
           className={`flex-1 h-full relative min-w-0 main-scroll-container ${

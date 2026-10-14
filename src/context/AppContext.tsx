@@ -3278,10 +3278,18 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     };
     document.addEventListener('visibilitychange', handleVisibilityChange);
 
+    const handleRefreshUserEvent = () => {
+      refreshUser();
+    };
+    window.addEventListener('perplexta:refresh_user', handleRefreshUserEvent);
+    window.addEventListener('perplexta:user_credits_updated', handleRefreshUserEvent);
+
     return () => {
       isMounted = false;
       if (timeoutId) clearTimeout(timeoutId);
       document.removeEventListener('visibilitychange', handleVisibilityChange);
+      window.removeEventListener('perplexta:refresh_user', handleRefreshUserEvent);
+      window.removeEventListener('perplexta:user_credits_updated', handleRefreshUserEvent);
     };
   }, [token]);
 

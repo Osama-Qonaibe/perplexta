@@ -413,12 +413,12 @@ export const UniversalLocationModal: React.FC<UniversalLocationModalProps> = ({
       onSelectGlobal();
     } else {
       onSelectLocation({
-        title: isRtl ? 'كافة المواقع' : 'All Locations',
+        title: isRtl ? 'كل المناطق' : 'All Regions',
         city: '',
       });
     }
     if (showToastOnSelect) {
-      toast.success(isRtl ? 'تم تفعيل التغطية العامة لكافة المواقع' : 'Global coverage activated');
+      toast.success(isRtl ? 'تم تفعيل التغطية العامة لكل المناطق' : 'All regions coverage activated');
     }
     onClose();
   };
@@ -680,7 +680,7 @@ export const UniversalLocationModal: React.FC<UniversalLocationModalProps> = ({
                         <Globe size={15} />
                       </div>
                       <span className="text-xs sm:text-sm font-bold truncate">
-                        {isRtl ? 'كافة المواقع' : 'All Locations'}
+                        {isRtl ? 'كل المناطق' : 'All Regions'}
                       </span>
                     </div>
                     {(!currentValue || currentValue === 'all') && (
@@ -961,7 +961,7 @@ export const UniversalLocationModal: React.FC<UniversalLocationModalProps> = ({
                       <Globe size={15} />
                     </div>
                     <span className="text-xs sm:text-sm font-bold truncate">
-                      {isRtl ? 'كافة المواقع' : 'All Locations'}
+                      {isRtl ? 'كل المناطق' : 'All Regions'}
                     </span>
                   </div>
                   {(!currentValue || currentValue === 'all') && (

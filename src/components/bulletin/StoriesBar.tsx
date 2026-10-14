@@ -57,8 +57,8 @@ export const StoriesBar: React.FC<StoriesBarProps> = ({
     ? `${selectedCountries.length} ${isRtl ? 'دول' : 'countries'} (${selectedCountries.slice(0, 2).join('، ')}${selectedCountries.length > 2 ? '...' : ''})`
     : selectedCity === 'all' || !selectedCity
     ? isRtl
-      ? 'كافة المدن'
-      : 'All Cities'
+      ? 'كل المناطق'
+      : 'All Regions'
     : `${selectedCity}${selectedRadius && selectedRadius !== 'all' ? ` (+${selectedRadius}كم)` : ''}`;
 
   return (

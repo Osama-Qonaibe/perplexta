@@ -88,7 +88,7 @@ export const DesktopLayout: React.FC = () => {
         }}
       >
         <main className={`flex-1 min-h-full relative ${
-          isFullSovereignView ? 'pt-0' : 'pt-[calc(56px+env(safe-area-inset-top,0px))]'
+          isFullSovereignView ? 'pt-0' : 'pt-[calc(48px+env(safe-area-inset-top,0px))]'
         } pb-0 bg-[var(--surface-page)] transition-theme flex flex-col`}>
           <div
             className="flex-1 w-full relative min-w-0 flex flex-col min-h-full"
