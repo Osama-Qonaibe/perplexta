@@ -1,4 +1,5 @@
 import { getAssetUrl, BUILD_VERSION } from './assetManager';
+import { lookupStaticAsset } from './staticAssetMap';
 
 export interface VideoInfo {
   type: 'youtube' | 'vimeo' | 'tiktok' | 'direct' | 'unknown';
@@ -356,6 +357,14 @@ export function getMediaUrl(url?: string | null): string {
     clean = clean.split(',')[0].trim();
   }
 
+  // Check static asset mapping registry first (templates, shapes, texts, brand, etc.)
+  const staticMapped = lookupStaticAsset(clean);
+  if (staticMapped) {
+    if (mediaUrlCache.size > 2000) mediaUrlCache.clear();
+    mediaUrlCache.set(trimmed, staticMapped);
+    return staticMapped;
+  }
+
   // Check if it belongs to local /uploads/ directory (whether full domain, IP, or relative)
   const uploadsMatch = clean.match(/(?:https?:\/\/[^\/]+)?\/?(?:uploads\/)+(.+)$/i);
   if (uploadsMatch && uploadsMatch[1]) {
@@ -363,6 +372,23 @@ export function getMediaUrl(url?: string | null): string {
     const cleanFileName = rawFileWithParams.split('?')[0];
     
     const normalized = `/uploads/${cleanFileName}?t=${BUILD_VERSION}`;
+    if (mediaUrlCache.size > 2000) mediaUrlCache.clear();
+    mediaUrlCache.set(trimmed, normalized);
+    return normalized;
+  }
+
+  // Preserve static relative application asset paths (templates, shapes, brand, vectors, images, assets)
+  if (
+    clean.startsWith('templates/') || 
+    clean.startsWith('brand/') || 
+    clean.startsWith('assets/') || 
+    clean.startsWith('images/') || 
+    clean.startsWith('shapes/') ||
+    clean.startsWith('vectors/') ||
+    clean.startsWith('fonts/') ||
+    clean.startsWith('public/')
+  ) {
+    const normalized = `/${clean}`;
     if (mediaUrlCache.size > 2000) mediaUrlCache.clear();
     mediaUrlCache.set(trimmed, normalized);
     return normalized;

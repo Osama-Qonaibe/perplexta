@@ -1,5 +1,6 @@
 import { CanvasElement } from '../components/chat/artifacts/ArtifactImageEditor';
 import { RataqRepoTemplate, TemplateObject } from '../data/templates';
+import { lookupStaticAsset } from './staticAssetMap';
 
 const loadedFontsCache = new Set<string>();
 
@@ -94,6 +95,9 @@ export function normalizeTemplateImageSrc(src?: string): string {
   if (trimmed.startsWith('http://') || trimmed.startsWith('https://') || trimmed.startsWith('data:') || trimmed.startsWith('blob:')) {
     return trimmed;
   }
+  const mapped = lookupStaticAsset(trimmed);
+  if (mapped) return mapped;
+
   if (trimmed.startsWith('/')) {
     return trimmed;
   }
@@ -118,7 +122,7 @@ export function convertRataqTemplateToCanvasElements(template: RataqRepoTemplate
   const width = template.width || 1080;
   const height = template.height || 1080;
   const backgroundColor = template.backgroundColor || '#ffffff';
-  const previewUrl = template.filename ? `/templates/data/${template.filename}` : '';
+  const previewUrl = template.filename ? (lookupStaticAsset(template.filename) || `/templates/data/${template.filename}`) : '';
   const rawBg = template.backgroundImage 
     ? template.backgroundImage 
     : (template.backgroundColor || '#ffffff');
@@ -273,7 +277,8 @@ export async function loadTemplate(canvas: any, template: RataqRepoTemplate) {
   
   if (template.backgroundImage && (window as any).fabric) {
     const fabric = (window as any).fabric;
-    fabric.Image.fromURL(template.backgroundImage, (img: any) => {
+    const resolvedBg = normalizeTemplateImageSrc(template.backgroundImage);
+    fabric.Image.fromURL(resolvedBg, (img: any) => {
       if (img) canvas.setBackgroundImage(img, canvas.renderAll.bind(canvas));
     }, { crossOrigin: 'anonymous' });
   }
@@ -305,7 +310,8 @@ export async function loadTemplate(canvas: any, template: RataqRepoTemplate) {
       // b) Image
       else if (obj.type === 'image' && obj.src) {
         await new Promise<void>((resolve) => {
-          fabric.Image.fromURL(obj.src, (img: any) => {
+          const resolvedSrc = normalizeTemplateImageSrc(obj.src);
+          fabric.Image.fromURL(resolvedSrc, (img: any) => {
             if (img) {
               img.set({
                 left: obj.left,

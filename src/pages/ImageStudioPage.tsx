@@ -10,7 +10,7 @@ import {
   FileText, Sparkle, RefreshCw, Layers, Check, ExternalLink,
   Edit3, ArrowRight, UploadCloud, Award
 } from 'lucide-react';
-import { ArtifactImageEditor, CanvasElement, EditorFilters, auditAndPreloadTemplateImages } from '../components/chat/artifacts/ArtifactImageEditor';
+import { ArtifactImageEditor, CanvasElement, EditorFilters, auditAndPreloadTemplateImages, safeSvgDataUrl } from '../components/chat/artifacts/ArtifactImageEditor';
 import { ThemeToggleButton } from '../components/ThemeToggleButton';
 import { resolveImageUrl } from '../utils/imageResolver';
 import { toast } from '@/design-system';
@@ -263,10 +263,18 @@ export const ImageStudioPage: React.FC = () => {
     try {
       if (typeof window !== 'undefined' && localStorage.getItem('rataq_studio_session_active') === 'true') {
         const stored = localStorage.getItem('rataq_studio_session_artifact');
-        if (stored) return JSON.parse(stored);
+        if (stored) {
+          const parsed = JSON.parse(stored);
+          if (parsed && parsed.id && parsed.content) return parsed;
+        }
       }
     } catch {}
-    return null;
+    const defaultId = `project-blank-${Date.now()}`;
+    return {
+      id: defaultId,
+      title: 'تصميم جديد',
+      content: '#ffffff'
+    };
   });
 
   const [activeInitialElements, setActiveInitialElements] = useState<CanvasElement[] | undefined>(() => {
@@ -276,7 +284,7 @@ export const ImageStudioPage: React.FC = () => {
         if (stored) return JSON.parse(stored);
       }
     } catch {}
-    return undefined;
+    return [];
   });
 
   const [activeInitialFilters, setActiveInitialFilters] = useState<EditorFilters | undefined>(() => {
@@ -302,21 +310,19 @@ export const ImageStudioPage: React.FC = () => {
     try {
       if (typeof window !== 'undefined' && localStorage.getItem('rataq_studio_session_active') === 'true') {
         const stored = localStorage.getItem('rataq_studio_session_pages');
-        if (stored) return JSON.parse(stored);
+        if (stored) {
+          const parsed = JSON.parse(stored);
+          if (Array.isArray(parsed) && parsed.length > 0) {
+            const curIdx = parseInt(localStorage.getItem('rataq_studio_session_currentPageIndex') || '0', 10);
+            return [parsed[curIdx] || parsed[0]];
+          }
+        }
       }
     } catch {}
-    return undefined;
+    return [{ id: 'page-1', title: 'الصفحة 1', elements: [], bgImgSrc: '#ffffff', locked: false }];
   });
 
-  const [activeInitialCurrentPageIndex, setActiveInitialCurrentPageIndex] = useState<number | undefined>(() => {
-    try {
-      if (typeof window !== 'undefined' && localStorage.getItem('rataq_studio_session_active') === 'true') {
-        const stored = localStorage.getItem('rataq_studio_session_currentPageIndex');
-        if (stored) return parseInt(stored, 10);
-      }
-    } catch {}
-    return undefined;
-  });
+  const [activeInitialCurrentPageIndex, setActiveInitialCurrentPageIndex] = useState<number | undefined>(() => 0);
 
   const [activeInitialImageSize, setActiveInitialImageSize] = useState<{ width: number; height: number } | undefined>(() => {
     try {
@@ -325,7 +331,7 @@ export const ImageStudioPage: React.FC = () => {
         if (stored) return JSON.parse(stored);
       }
     } catch {}
-    return undefined;
+    return { width: 1080, height: 1080 };
   });
 
   const [activeInitialStudioMode, setActiveInitialStudioMode] = useState<'image' | 'video' | undefined>(() => {
@@ -343,8 +349,98 @@ export const ImageStudioPage: React.FC = () => {
 
   useEffect(() => {
     async function loadPending() {
-      if (location.state && location.state.loadMarketplaceTemplate) {
-        const tpl = location.state.loadMarketplaceTemplate;
+      const searchParams = new URLSearchParams(location.search);
+      const urlImg = searchParams.get('image') || searchParams.get('edit') || searchParams.get('src');
+      const urlProj = searchParams.get('project');
+      const locState = location.state || {};
+      const rawPassedImage = locState.initialImage || locState.imageUrl || locState.editImage || locState.artifact?.content || locState.artifact?.src || urlImg;
+
+      // 1. Direct Image Edit Request from Chat or Image Generator Tool
+      if (rawPassedImage && typeof rawPassedImage === 'string') {
+        const imgKey = `passed-img-${rawPassedImage.slice(-20)}`;
+        if (processedTemplateRef.current === imgKey) return;
+        processedTemplateRef.current = imgKey;
+        isInitializingRef.current = true;
+
+        const newId = `project-img-${Date.now()}`;
+        const designTitle = locState.title || locState.artifact?.title || (isAr ? 'تصميم جديد' : 'New Design');
+
+        setActiveProjectId(newId);
+        setActiveInitialElements([]);
+        setActiveInitialFilters(undefined);
+        setActiveInitialImageSize({ width: 1080, height: 1080 });
+        setActiveInitialStudioMode('image');
+
+        const initialPage = {
+          id: 'page-1',
+          title: isAr ? 'الصفحة 1' : 'Page 1',
+          elements: [],
+          bgImgSrc: rawPassedImage,
+          locked: false
+        };
+
+        setActiveInitialPages([initialPage]);
+        setActiveInitialCurrentPageIndex(0);
+
+        const artifactObj = {
+          id: newId,
+          title: designTitle,
+          content: rawPassedImage
+        };
+
+        setActiveImageArtifact(artifactObj);
+
+        try {
+          localStorage.setItem('rataq_studio_session_active', 'true');
+          localStorage.setItem('rataq_studio_session_timestamp', String(Date.now()));
+          localStorage.setItem('rataq_studio_session_projectId', newId);
+          localStorage.setItem('rataq_studio_session_artifact', JSON.stringify(artifactObj));
+          localStorage.setItem('rataq_studio_session_elements', '[]');
+          localStorage.setItem('rataq_studio_session_imageSize', JSON.stringify({ width: 1080, height: 1080 }));
+          localStorage.setItem('rataq_studio_session_designTitle', designTitle);
+          localStorage.setItem('rataq_studio_session_pages', JSON.stringify([initialPage]));
+          localStorage.setItem('rataq_studio_session_currentPageIndex', '0');
+          localStorage.setItem('rataq_studio_session_isVideo', 'false');
+          localStorage.removeItem('rataq_studio_session_templateCategory');
+        } catch (e) {}
+
+        window.history.replaceState({ resumeSession: true }, document.title);
+        navigate(location.pathname, { replace: true, state: { resumeSession: true } });
+        isInitializingRef.current = false;
+        return;
+      }
+
+      // 2. Specific Saved Project Load Request
+      if (locState.loadProject || (urlProj && urlProj !== 'new')) {
+        const proj = locState.loadProject;
+        if (proj) {
+          const projKey = `proj-${proj.id}`;
+          if (processedTemplateRef.current === projKey) return;
+          processedTemplateRef.current = projKey;
+          isInitializingRef.current = true;
+
+          setActiveProjectId(proj.id);
+          setActiveInitialElements(proj.elements || []);
+          setActiveInitialFilters(proj.filters);
+          setActiveInitialImageSize({ width: proj.width || 1080, height: proj.height || 1080 });
+          setActiveInitialPages(proj.pages || [{ id: 'page-1', title: isAr ? 'الصفحة 1' : 'Page 1', elements: proj.elements || [], bgImgSrc: proj.canvasBackground, locked: false }]);
+          setActiveInitialCurrentPageIndex(0);
+          setActiveImageArtifact({
+            id: proj.id,
+            title: proj.title,
+            content: proj.canvasBackground || '#ffffff'
+          });
+
+          window.history.replaceState({ resumeSession: true }, document.title);
+          navigate(location.pathname, { replace: true, state: { resumeSession: true } });
+          isInitializingRef.current = false;
+          return;
+        }
+      }
+
+      // 3. Marketplace / Catalog Template Open Request
+      if (locState.loadMarketplaceTemplate) {
+        const tpl = locState.loadMarketplaceTemplate;
         if (processedTemplateRef.current === tpl.id) return;
         processedTemplateRef.current = tpl.id;
         isInitializingRef.current = true;
@@ -353,7 +449,10 @@ export const ImageStudioPage: React.FC = () => {
         setActiveProjectId(newId);
 
         let loadedElements = tpl.elements || [];
-        let loadedBg = tpl.backgroundColor || tpl.canvasBackground || '#ffffff';
+        let loadedBg = tpl.backgroundImage || tpl.src || tpl.canvasBackground || tpl.thumbnailUrl || tpl.thumbnail || tpl.backgroundColor || '#ffffff';
+        if (typeof loadedBg === 'string' && loadedBg.startsWith('data:image/svg')) {
+          loadedBg = safeSvgDataUrl(loadedBg);
+        }
         let loadedSize = ((tpl as any).width && (tpl as any).height) ? { width: (tpl as any).width, height: (tpl as any).height } : parseTemplateDimensions(tpl.dimensions);
 
         if (tpl.repoTemplate) {
@@ -366,18 +465,27 @@ export const ImageStudioPage: React.FC = () => {
           const matchInRataq = RATAQ_TEMPLATES.find(r => r.id === tpl.id || r.id === cleanId);
           if (matchInRataq) {
             loadedElements = matchInRataq.elements || [];
-            loadedBg = matchInRataq.backgroundColor || '#ffffff';
+            loadedBg = matchInRataq.backgroundImage || matchInRataq.canvasBackground || matchInRataq.thumbnailUrl || matchInRataq.backgroundColor || '#ffffff';
             if (matchInRataq.width && matchInRataq.height) loadedSize = { width: matchInRataq.width, height: matchInRataq.height };
           } else {
             loadedBg = tpl.canvasBackground || tpl.thumbnail || tpl.src || '#ffffff';
           }
         }
 
+        const templatePageItem = {
+          id: 'page-1',
+          title: isAr ? (tpl.titleAr || tpl.title) : (tpl.titleEn || tpl.title),
+          elements: loadedElements,
+          bgImgSrc: loadedBg,
+          locked: false
+        };
+
         setActiveInitialElements(loadedElements);
         setActiveInitialFilters(undefined);
         if (loadedSize) setActiveInitialImageSize(loadedSize);
+        setActiveInitialPages([templatePageItem]);
+        setActiveInitialCurrentPageIndex(0);
 
-        // Proactive diagnostic audit for template images during template initialization
         auditAndPreloadTemplateImages({
           id: tpl.id,
           titleAr: tpl.titleAr || tpl.title,
@@ -407,13 +515,7 @@ export const ImageStudioPage: React.FC = () => {
           localStorage.setItem('rataq_studio_session_elements', JSON.stringify(loadedElements));
           localStorage.setItem('rataq_studio_session_imageSize', JSON.stringify(loadedSize || { width: 1080, height: 1080 }));
           localStorage.setItem('rataq_studio_session_designTitle', isAr ? (tpl.titleAr || tpl.title) : (tpl.titleEn || tpl.title));
-          localStorage.setItem('rataq_studio_session_pages', JSON.stringify([{
-            id: 'page-1',
-            title: isAr ? 'الصفحة 1' : 'Page 1',
-            elements: loadedElements,
-            bgImgSrc: (typeof loadedBg === 'string' && (loadedBg.startsWith('#') || loadedBg.startsWith('rgb') || loadedBg.startsWith('hsl'))) ? undefined : loadedBg,
-            locked: false
-          }]));
+          localStorage.setItem('rataq_studio_session_pages', JSON.stringify([templatePageItem]));
           localStorage.setItem('rataq_studio_session_currentPageIndex', '0');
           localStorage.setItem('rataq_studio_session_isVideo', isVideoTpl ? 'true' : 'false');
           if (isVideoTpl) {
@@ -429,184 +531,57 @@ export const ImageStudioPage: React.FC = () => {
           content: loadedBg
         });
         
-        // Clear React Router location state and browser history
-        window.history.replaceState({}, document.title);
-        navigate(location.pathname, { replace: true, state: {} });
+        window.history.replaceState({ resumeSession: true }, document.title);
+        navigate(location.pathname, { replace: true, state: { resumeSession: true } });
         isInitializingRef.current = false;
-      } else if (user) {
-        try {
-          const pendingTplId = sessionStorage.getItem('pending_studio_template');
-          const pendingTplPayload = sessionStorage.getItem('pending_studio_template_payload');
-          if (pendingTplPayload || pendingTplId) {
-            isInitializingRef.current = true;
-            sessionStorage.removeItem('pending_studio_template');
-            sessionStorage.removeItem('pending_studio_template_payload');
-
-            const allTpls = await getStoredMarketplaceTemplates();
-            let tpl = pendingTplPayload ? JSON.parse(pendingTplPayload) : null;
-            if (!tpl && pendingTplId) {
-              tpl = allTpls.find(t => t.id === pendingTplId) || (PUBLIC_TEMPLATES.find(t => t.id === pendingTplId) as any);
-            }
-            if (tpl && processedTemplateRef.current !== tpl.id) {
-              processedTemplateRef.current = tpl.id;
-              await recordTemplateUse(tpl.id);
-              const newId = `project-pending-${tpl.id}-${Date.now()}`;
-              setActiveProjectId(newId);
-
-              let loadedElements = tpl.elements || [];
-              let loadedBg = tpl.backgroundColor || tpl.canvasBackground || '#ffffff';
-              let loadedSize = ((tpl as any).width && (tpl as any).height) ? { width: (tpl as any).width, height: (tpl as any).height } : parseTemplateDimensions(tpl.dimensions);
-
-              if (tpl.repoTemplate) {
-                const converted = convertRataqTemplateToCanvasElements(tpl.repoTemplate);
-                loadedElements = converted.elements;
-                loadedBg = converted.canvasBackground || converted.backgroundColor || '#ffffff';
-                loadedSize = { width: converted.width, height: converted.height };
-              } else if (!loadedElements || loadedElements.length === 0) {
-                const cleanId = (tpl.id || '').replace(/_public$/, '').replace(/^repo-/, '');
-                const matchInRataq = RATAQ_TEMPLATES.find(r => r.id === tpl.id || r.id === cleanId);
-                if (matchInRataq) {
-                  loadedElements = matchInRataq.elements || [];
-                  loadedBg = matchInRataq.backgroundColor || '#ffffff';
-                  if (matchInRataq.width && matchInRataq.height) loadedSize = { width: matchInRataq.width, height: matchInRataq.height };
-                } else {
-                  loadedBg = tpl.canvasBackground || tpl.thumbnail || tpl.src || '#ffffff';
-                }
-              }
-
-              const rawVideo = tpl.videoUrl || (tpl as any).previewVideoUrl;
-              const hasVideoElement = Boolean(loadedElements && loadedElements.some((el: any) => el.type === 'video' || el.videoUrl));
-              const isVideoTpl = Boolean(
-                (tpl as any).isVideo === true ||
-                hasVideoElement ||
-                (rawVideo && typeof rawVideo === 'string' && (rawVideo.endsWith('.mp4') || rawVideo.endsWith('.webm') || rawVideo.endsWith('.mov')) && tpl.category === 'video')
-              );
-              setActiveInitialStudioMode(isVideoTpl ? 'video' : 'image');
-              try {
-                localStorage.setItem('rataq_studio_session_active', 'true');
-                localStorage.setItem('rataq_studio_session_timestamp', String(Date.now()));
-                localStorage.setItem('rataq_studio_session_projectId', newId);
-                localStorage.setItem('rataq_studio_session_artifact', JSON.stringify({
-                  id: newId,
-                  title: isAr ? (tpl.titleAr || tpl.title) : (tpl.titleEn || tpl.title),
-                  content: loadedBg
-                }));
-                localStorage.setItem('rataq_studio_session_elements', JSON.stringify(loadedElements));
-                localStorage.setItem('rataq_studio_session_imageSize', JSON.stringify(loadedSize || { width: 1080, height: 1080 }));
-                localStorage.setItem('rataq_studio_session_designTitle', isAr ? (tpl.titleAr || tpl.title) : (tpl.titleEn || tpl.title));
-                localStorage.setItem('rataq_studio_session_pages', JSON.stringify([{
-                  id: 'page-1',
-                  title: isAr ? 'الصفحة 1' : 'Page 1',
-                  elements: loadedElements,
-                  bgImgSrc: (typeof loadedBg === 'string' && (loadedBg.startsWith('#') || loadedBg.startsWith('rgb') || loadedBg.startsWith('hsl'))) ? undefined : loadedBg,
-                  locked: false
-                }]));
-                localStorage.setItem('rataq_studio_session_currentPageIndex', '0');
-                localStorage.setItem('rataq_studio_session_isVideo', isVideoTpl ? 'true' : 'false');
-                if (isVideoTpl) {
-                  localStorage.setItem('rataq_studio_session_templateCategory', tpl.category || 'reels');
-                } else {
-                  localStorage.removeItem('rataq_studio_session_templateCategory');
-                }
-              } catch (e) {}
-
-              setActiveInitialElements(loadedElements);
-              setActiveInitialFilters(undefined);
-              if (loadedSize) setActiveInitialImageSize(loadedSize);
-
-              // Proactive diagnostic audit for template images during template initialization
-              auditAndPreloadTemplateImages({
-                id: tpl.id,
-                titleAr: tpl.titleAr || tpl.title,
-                titleEn: tpl.titleEn || tpl.title,
-                elements: loadedElements,
-                backgroundImage: loadedBg
-              }, 'template_initialization');
-              setActiveImageArtifact({
-                id: newId,
-                title: isAr ? (tpl.titleAr || tpl.title) : (tpl.titleEn || tpl.title),
-                content: loadedBg
-              });
-              toast.success(
-                isAr 
-                  ? 'تم فتح القالب المطلوب في مساحتك الإبداعية المحمية بنجاح!' 
-                  : 'Requested template initialized in your protected workspace!'
-              );
-            }
-            isInitializingRef.current = false;
-          }
-        } catch (e) {
-          isInitializingRef.current = false;
-        }
+        return;
       }
-    }
-    loadPending();
-  }, [location.state, user, isAr, navigate, location.pathname]);
 
-  // Auto-initialize a blank design for logged-in users if there is no active session/artifact,
-  // taking them directly to the workspace/canvas without any intermediate dashboard.
-  useEffect(() => {
-    const hasPendingSession = typeof window !== 'undefined' && Boolean(
-      sessionStorage.getItem('pending_studio_template') || 
-      sessionStorage.getItem('pending_studio_template_payload') ||
-      location.state?.loadMarketplaceTemplate
-    );
-
-    if (user && !activeImageArtifact && !isInitializingRef.current && !hasPendingSession) {
-      const isVideoRequested = Boolean(
-        location.state?.initialStudioMode === 'video' ||
-        (typeof window !== 'undefined' && localStorage.getItem('rataq_studio_session_isVideo') === 'true')
-      );
-      const defaultId = `project-default-${Date.now()}`;
-      const defaultWidth = isVideoRequested ? 1080 : 1080;
-      const defaultHeight = isVideoRequested ? 1920 : 1080;
-
-      // Create a default eye-safe clean canvas background (never pitch-black for image designs)
-      const canvas = document.createElement('canvas');
-      canvas.width = defaultWidth;
-      canvas.height = defaultHeight;
-      const ctx = canvas.getContext('2d');
-      if (ctx) {
-        if (isVideoRequested) {
-          const grad = ctx.createLinearGradient(0, 0, defaultWidth, defaultHeight);
-          grad.addColorStop(0, '#090d16');
-          grad.addColorStop(1, '#1e293b');
-          ctx.fillStyle = grad;
-          ctx.fillRect(0, 0, defaultWidth, defaultHeight);
-        } else {
-          ctx.fillStyle = '#ffffff';
-          ctx.fillRect(0, 0, defaultWidth, defaultHeight);
-        }
-
-        ctx.strokeStyle = isVideoRequested ? '#334155' : '#e2e8f0';
-        ctx.lineWidth = 2;
-        ctx.strokeRect(0, 0, defaultWidth, defaultHeight);
+      // 4. Default Entry when clicking Image Studio from menu/nav:
+      // If an active session is currently running in localStorage (e.g. browser refresh), seamlessly preserve it
+      if (typeof window !== 'undefined' && localStorage.getItem('rataq_studio_session_active') === 'true') {
+        isInitializingRef.current = false;
+        return;
       }
-      const defaultBg = canvas.toDataURL('image/png');
+
+      // Otherwise, start a fresh clean blank design
+      const defaultId = `project-blank-${Date.now()}`;
+      const defaultWidth = 1080;
+      const defaultHeight = 1080;
 
       setActiveProjectId(defaultId);
       setActiveInitialElements([]);
       setActiveInitialFilters(undefined);
       setActiveInitialImageSize({ width: defaultWidth, height: defaultHeight });
-      setActiveInitialStudioMode(isVideoRequested ? 'video' : 'image');
-      setActiveImageArtifact({
-        id: defaultId,
-        title: isVideoRequested 
-          ? (isAr ? 'فيديو ريلز وموشن جديد' : 'Untitled Motion Reel')
-          : (isAr ? 'تصميم جديد' : 'New Design'),
-        content: defaultBg
-      });
+      setActiveInitialStudioMode('image');
+      setActiveInitialPages([{ id: 'page-1', title: isAr ? 'الصفحة 1' : 'Page 1', elements: [], bgImgSrc: '#ffffff', locked: false }]);
+      setActiveInitialCurrentPageIndex(0);
 
-      // Save session so it's instantly active and bypasses any intermediate state on page refresh
+      const blankArtifact = {
+        id: defaultId,
+        title: isAr ? 'تصميم جديد' : 'New Design',
+        content: '#ffffff'
+      };
+
+      setActiveImageArtifact(blankArtifact);
+
       try {
         localStorage.setItem('rataq_studio_session_active', 'true');
         localStorage.setItem('rataq_studio_session_projectId', defaultId);
         localStorage.setItem('rataq_studio_session_designTitle', isAr ? 'تصميم جديد' : 'New Design');
         localStorage.setItem('rataq_studio_session_elements', '[]');
         localStorage.setItem('rataq_studio_session_imageSize', JSON.stringify({ width: defaultWidth, height: defaultHeight }));
-      } catch (e) {}
+        localStorage.setItem('rataq_studio_session_pages', JSON.stringify([{ id: 'page-1', title: isAr ? 'الصفحة 1' : 'Page 1', elements: [], bgImgSrc: '#ffffff', locked: false }]));
+        localStorage.setItem('rataq_studio_session_currentPageIndex', '0');
+        localStorage.setItem('rataq_studio_session_isVideo', 'false');
+        window.history.replaceState({ resumeSession: true }, document.title);
+      } finally {
+        isInitializingRef.current = false;
+      }
     }
-  }, [user, activeImageArtifact, isAr]);
+
+    loadPending();
+  }, [location.state, location.search, isAr]);
 
   const [isRegistrationModalOpen, setIsRegistrationModalOpen] = useState<boolean>(false);
   const [previewTemplate, setPreviewTemplate] = useState<MarketplaceTemplate | null>(null);
@@ -795,72 +770,6 @@ export const ImageStudioPage: React.FC = () => {
   const [customH, setCustomH] = useState<number>(1080);
   const [isCustomModalOpen, setIsCustomModalOpen] = useState<boolean>(false);
 
-  // Restore previous active canvas session on refresh / reload
-  useEffect(() => {
-    const restoreSession = async () => {
-      try {
-        // 1. Try restoring from unlimited IndexedDB first (bypasses localStorage limits completely)
-        const dbSession = await getStudioSessionFromDB();
-        if (dbSession && dbSession.artifact && dbSession.elements) {
-          setActiveProjectId(dbSession.projectId);
-          setActiveImageArtifact(dbSession.artifact);
-          setActiveInitialElements(dbSession.elements);
-          if (dbSession.filters) setActiveInitialFilters(dbSession.filters);
-          if (dbSession.imageSize) setActiveInitialImageSize(dbSession.imageSize);
-          if (dbSession.pages) setActiveInitialPages(dbSession.pages);
-          if (dbSession.currentPageIndex !== undefined) {
-            setActiveInitialCurrentPageIndex(dbSession.currentPageIndex);
-          }
-          toast.success(
-            isAr 
-              ? 'تم استعادة جلستك التصميمية السابقة تلقائياً بنجاح! 🔄' 
-              : 'Your previous canvas design session was successfully restored! 🔄'
-          );
-          return;
-        }
-
-        // 2. Fallback to localStorage if no IndexedDB session exists
-        const sessionActive = localStorage.getItem('rataq_studio_session_active');
-        if (sessionActive === 'true') {
-          const storedProjId = localStorage.getItem('rataq_studio_session_projectId') || undefined;
-          const storedArtifact = localStorage.getItem('rataq_studio_session_artifact');
-          const storedElements = localStorage.getItem('rataq_studio_session_elements');
-          const storedFilters = localStorage.getItem('rataq_studio_session_filters');
-          const storedImageSize = localStorage.getItem('rataq_studio_session_imageSize');
-          const storedPages = localStorage.getItem('rataq_studio_session_pages');
-          const storedCurrentPageIndex = localStorage.getItem('rataq_studio_session_currentPageIndex');
-
-          if (storedArtifact && storedElements) {
-            setActiveProjectId(storedProjId);
-            setActiveImageArtifact(JSON.parse(storedArtifact));
-            setActiveInitialElements(JSON.parse(storedElements));
-            if (storedFilters) {
-              setActiveInitialFilters(JSON.parse(storedFilters));
-            }
-            if (storedImageSize) {
-              setActiveInitialImageSize(JSON.parse(storedImageSize));
-            }
-            if (storedPages) {
-              setActiveInitialPages(JSON.parse(storedPages));
-            }
-            if (storedCurrentPageIndex) {
-              setActiveInitialCurrentPageIndex(parseInt(storedCurrentPageIndex) || 0);
-            }
-            toast.success(
-              isAr 
-                ? 'تم استعادة جلستك التصميمية السابقة تلقائياً بنجاح! 🔄' 
-                : 'Your previous canvas design session was successfully restored! 🔄'
-            );
-          }
-        }
-      } catch (err) {
-        console.warn('Failed to restore active canvas session:', err);
-      }
-    };
-
-    restoreSession();
-  }, []);
-
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Filtered Projects for Current User
@@ -894,11 +803,6 @@ export const ImageStudioPage: React.FC = () => {
 
   // Helper to create blank solid canvas image
   const handleCreateBlankCanvas = (width: number, height: number, title: string) => {
-    if (!user) {
-      toast.error(isAr ? 'حفاظاً على أمان بياناتك، يرجى تسجيل الدخول أو إنشاء حساب جديد لتحديد مالك لمشروعك' : 'For security, please log in to set a project owner');
-      setIsAuthModalOpen(true);
-      return;
-    }
     const canvas = document.createElement('canvas');
     canvas.width = width;
     canvas.height = height;
@@ -938,15 +842,35 @@ export const ImageStudioPage: React.FC = () => {
       }
     } catch (e) {}
 
+    const newPage = {
+      id: `page-${Date.now()}`,
+      title: isAr ? 'الصفحة 1' : 'Page 1',
+      elements: [],
+      bgImgSrc: dataUrl,
+      locked: false
+    };
+
     setActiveProjectId(newId);
     setActiveInitialElements([]);
     setActiveInitialFilters(undefined);
     setActiveInitialImageSize({ width, height });
+    setActiveInitialPages([newPage]);
+    setActiveInitialCurrentPageIndex(0);
     setActiveImageArtifact({
       id: newId,
       title,
       content: dataUrl
     });
+
+    try {
+      localStorage.setItem('rataq_studio_session_active', 'true');
+      localStorage.setItem('rataq_studio_session_projectId', newId);
+      localStorage.setItem('rataq_studio_session_designTitle', title);
+      localStorage.setItem('rataq_studio_session_elements', '[]');
+      localStorage.setItem('rataq_studio_session_imageSize', JSON.stringify({ width, height }));
+      localStorage.setItem('rataq_studio_session_pages', JSON.stringify([newPage]));
+      localStorage.setItem('rataq_studio_session_currentPageIndex', '0');
+    } catch (e) {}
 
     toast.success(
       isAr 
@@ -1054,16 +978,21 @@ export const ImageStudioPage: React.FC = () => {
               localStorage.removeItem('rataq_studio_session_templateCategory');
               clearStudioSessionFromDB();
             } catch (e) {}
-            setActiveImageArtifact(null);
-            setActiveProjectId(undefined);
-            setActiveInitialElements(undefined);
+            const nextBlankId = `project-blank-${Date.now()}`;
+            setActiveImageArtifact({
+              id: nextBlankId,
+              title: isAr ? 'تصميم جديد' : 'New Design',
+              content: '#ffffff'
+            });
+            setActiveProjectId(nextBlankId);
+            setActiveInitialElements([]);
             setActiveInitialFilters(undefined);
-            setActiveInitialImageSize(undefined);
-            setActiveInitialPages(undefined);
-            setActiveInitialCurrentPageIndex(undefined);
-            setActiveInitialStudioMode(undefined);
+            setActiveInitialImageSize({ width: 1080, height: 1080 });
+            setActiveInitialPages([{ id: 'page-1', title: isAr ? 'الصفحة 1' : 'Page 1', elements: [], bgImgSrc: '#ffffff', locked: false }]);
+            setActiveInitialCurrentPageIndex(0);
+            setActiveInitialStudioMode('image');
             setProjects(getUserStudioProjects(user?.id));
-            navigate('/studio');
+            navigate('/studio', { replace: true });
           }}
           isFullscreen={true}
         />
@@ -1671,8 +1600,8 @@ export const ImageStudioPage: React.FC = () => {
                         {/* Image Thumbnail Container (Hover-Only Video Playback to prevent DOM freeze) */}
                         <div className="h-44 w-full bg-slate-950/40 overflow-hidden relative group/thumb flex items-center justify-center">
                           <img
-                            src={tpl.thumbnail}
-                            alt={tpl.titleEn}
+                            src={resolveImageUrl(tpl.thumbnail)}
+                            alt={tpl.titleEn || tpl.titleAr || 'Template Thumbnail'}
                             className={`w-full h-full object-cover transition-transform duration-300 ${
                               isHovered ? 'scale-105' : ''
                             }`}
@@ -1682,8 +1611,8 @@ export const ImageStudioPage: React.FC = () => {
                           {/* Lazy-mount video ONLY on cursor hover */}
                           {isHovered && hasVideo && (
                             <video
-                              src={tpl.videoUrl || tpl.previewVideoUrl}
-                              poster={tpl.thumbnail}
+                              src={resolveImageUrl(tpl.videoUrl || tpl.previewVideoUrl)}
+                              poster={resolveImageUrl(tpl.thumbnail)}
                               autoPlay
                               loop
                               muted

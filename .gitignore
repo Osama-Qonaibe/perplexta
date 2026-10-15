@@ -5,6 +5,8 @@ node_modules/
 .pnpm-store/
 bun.lock
 bun.lockb
+bun.lock*
+*.lockb
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*

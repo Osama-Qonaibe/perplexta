@@ -841,13 +841,47 @@ app.get('/version.json', (req, res) => {
 
 app.use(wellKnownRouter);
 
-// ===== PERFORMANCE: Static caching =====
+// ===== PERFORMANCE: Static caching & Resilient Asset Fallbacks =====
 app.use(express.static('public', {
   etag: true,
   lastModified: true,
   maxAge: '7d', // browser cache for 7 days
   immutable: false
 }));
+
+// Universal Static Asset Fallback Middleware for templates, shapes, texts, brand, uploads
+app.use((req: express.Request, res: express.Response, next: express.NextFunction) => {
+  if (req.method !== 'GET' && req.method !== 'HEAD') return next();
+  const urlPath = req.path || '';
+  if (
+    urlPath.startsWith('/templates/') ||
+    urlPath.startsWith('/shapes/') ||
+    urlPath.startsWith('/texts/') ||
+    urlPath.startsWith('/brand/') ||
+    urlPath.startsWith('/uploads/')
+  ) {
+    const cleanName = path.basename(urlPath);
+    const candidatePaths = [
+      path.join(process.cwd(), 'public', urlPath),
+      path.join(process.cwd(), 'public', 'templates', 'data', cleanName),
+      path.join(process.cwd(), 'public', 'templates', cleanName),
+      path.join(process.cwd(), 'public', 'shapes', cleanName),
+      path.join(process.cwd(), 'public', 'texts', cleanName),
+      path.join(process.cwd(), 'public', 'brand', cleanName),
+      path.join(process.cwd(), 'public', 'uploads', cleanName),
+    ];
+    for (const cand of candidatePaths) {
+      if (fs.existsSync(cand) && fs.statSync(cand).isFile()) {
+        const ext = path.extname(cand).toLowerCase();
+        const mime = mediaMimeTypes[ext] || 'application/octet-stream';
+        res.type(mime);
+        res.setHeader('Cache-Control', 'public, max-age=604800');
+        return res.sendFile(cand);
+      }
+    }
+  }
+  next();
+});
 // =======================================
 
 import jwt from 'jsonwebtoken';

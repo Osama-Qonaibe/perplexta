@@ -1,4 +1,6 @@
 # Source & Development Files
+bun.lock
+bun.lockb
 src/
 server/
 scripts/

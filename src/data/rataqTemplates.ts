@@ -8,6 +8,8 @@ export interface StudioTemplate {
   category: 'social' | 'marketing' | 'quotes' | 'fitness' | 'fashion' | 'tech' | 'story' | 'banner' | 'real_estate' | 'menu' | 'community' | 'posts';
   thumbnailUrl: string;
   backgroundColor: string;
+  backgroundImage?: string;
+  canvasBackground?: string;
   width: number;
   height: number;
   aspectRatio: '1:1' | '9:16' | '16:9' | '1.91:1' | '4:5';
@@ -58,6 +60,8 @@ export function convertMarketplaceToStudioTemplate(tpl: any): StudioTemplate {
     thumbnailUrl: resolvedThumb,
     previewVideoUrl: resolvedVideo,
     backgroundColor: tpl.canvasBackground || '#090d16',
+    backgroundImage: resolvedThumb,
+    canvasBackground: tpl.canvasBackground,
     width,
     height,
     aspectRatio,

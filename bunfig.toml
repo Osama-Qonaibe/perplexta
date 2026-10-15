@@ -1,0 +1,6 @@
+# =============================================================================
+# Bun Configuration - Strict Sovereign Rule: No Lockfile Generation
+# =============================================================================
+[install]
+# Strictly forbid creating or saving bun.lock / bun.lockb
+lockfile = { save = false }

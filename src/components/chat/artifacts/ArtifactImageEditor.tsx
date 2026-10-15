@@ -57,7 +57,8 @@ import {
   registerDynamicCustomFont,
   getUploadsFromDB,
   saveStudioSessionToDB,
-  getStudioSessionFromDB
+  getStudioSessionFromDB,
+  clearStudioSessionFromDB
 } from '../../../data/rataqUploads';
 import { 
   StudioBrandKit, 
@@ -582,7 +583,10 @@ export function safeSvgDataUrl(svgRawOrUrl: string): string {
   if (svgRawOrUrl.startsWith('<svg') || svgRawOrUrl.startsWith('<?xml')) {
     return `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svgRawOrUrl)}`;
   }
-  return svgRawOrUrl;
+  if (svgRawOrUrl.startsWith('data:') || svgRawOrUrl.startsWith('blob:')) {
+    return svgRawOrUrl;
+  }
+  return resolveImageUrl(normalizeTemplateImageSrc(svgRawOrUrl));
 }
 
 // Shared module-level cache for image elements to optimize canvas rendering & export
@@ -608,6 +612,9 @@ export function renderElementsToCanvas(
   ctx.clearRect(0, 0, w, h);
 
   // 1. Render Background with Filters
+  ctx.fillStyle = bgColor || '#ffffff';
+  ctx.fillRect(0, 0, w, h);
+
   if (
     bgImg &&
     ((bgImg instanceof HTMLImageElement && bgImg.complete && bgImg.naturalWidth > 0) ||
@@ -625,14 +632,9 @@ export function renderElementsToCanvas(
     `.trim();
     ctx.drawImage(bgImg, 0, 0, w, h);
     ctx.filter = 'none';
-  } else {
-    ctx.fillStyle = bgColor || '#ffffff';
-    ctx.fillRect(0, 0, w, h);
-    
-    // If bgImg is provided but not complete, it's still loading - we should request a redraw when it finishes
-    if (bgImg instanceof HTMLImageElement && !bgImg.complete) {
-      bgImg.onload = () => onImageLoaded?.();
-    }
+  } else if (bgImg instanceof HTMLImageElement && !bgImg.complete) {
+    // If bgImg is provided but not complete, it's still loading - redraw canvas when complete
+    bgImg.onload = () => onImageLoaded?.();
   }
 
   // 2. Render Page Elements
@@ -867,7 +869,7 @@ export function renderElementsToCanvas(
       }
     } else if ((el.type === 'sticker' || el.type === 'image' || el.type === 'photo' || el.type === 'picture' || el.imgSrc || el.src || el.url) && el.type !== 'frame') {
       const rawImgSrc = el.imgSrc || el.src || el.url || '';
-      const imgSrc = normalizeTemplateImageSrc(resolveImageUrl(rawImgSrc));
+      const imgSrc = resolveImageUrl(normalizeTemplateImageSrc(rawImgSrc));
       let stickerImg: any = el.imgElement;
       if (!stickerImg && imgSrc && previewImageCache.has(imgSrc)) {
         stickerImg = previewImageCache.get(imgSrc);
@@ -1487,14 +1489,36 @@ export const ArtifactImageEditor: React.FC<ArtifactImageEditorProps> = ({
     };
 
     setElements([]);
+    setSelectedId(null);
+    setStudioMode('image');
     if (newProj.filters) setFilters(newProj.filters);
-    setImageSize({ width, height });
+    const targetSize = { width, height };
+    setImageSize(targetSize);
     setCustomWidth(width);
     setCustomHeight(height);
+    imageSizeRef.current = targetSize;
     setDesignTitle(title);
-    setPages([{ id: `page-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`, title: isAr ? 'الصفحة الأولى' : 'Page 1', elements: [] }]);
+
+    const newPage: StudioPageItem = {
+      id: `page-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+      title: isAr ? 'الصفحة الأولى' : 'Page 1',
+      elements: [],
+      bgImgSrc: defaultBg,
+      locked: false
+    };
+    setPages([newPage]);
     setCurrentPageIndex(0);
     setCurrentProjId(defaultId);
+
+    // Preload default blank background into imageRef so canvas draws immediately
+    const img = new Image();
+    img.onload = () => {
+      previewImageCache.set(defaultBg, img);
+      imageRef.current = img;
+      setImageLoaded(true);
+      drawCanvasRef.current?.();
+    };
+    img.src = defaultBg;
 
     // Save to active session storage immediately
     try {
@@ -1503,6 +1527,15 @@ export const ArtifactImageEditor: React.FC<ArtifactImageEditorProps> = ({
       localStorage.setItem('rataq_studio_session_designTitle', title);
       localStorage.setItem('rataq_studio_session_elements', '[]');
       localStorage.setItem('rataq_studio_session_imageSize', JSON.stringify({ width, height }));
+      localStorage.setItem('rataq_studio_session_pages', JSON.stringify([newPage]));
+      localStorage.setItem('rataq_studio_session_currentPageIndex', '0');
+      localStorage.setItem('rataq_studio_session_artifact', JSON.stringify({
+        id: defaultId,
+        title,
+        content: defaultBg
+      }));
+      localStorage.setItem('rataq_studio_session_isVideo', 'false');
+      localStorage.removeItem('rataq_studio_session_templateCategory');
     } catch (e) {}
 
     // Save project so it displays in My Projects
@@ -1513,9 +1546,10 @@ export const ArtifactImageEditor: React.FC<ArtifactImageEditorProps> = ({
 
     setTimeout(() => {
       fitImageToContainer(width, height);
+      drawCanvasRef.current?.();
     }, 60);
 
-    toast.success(isAr ? `تم إنشاء تصميم جديد بمقاس ${width} × ${height} بكسل` : `Created a new design at ${width} × ${height} px`);
+    toast.success(isAr ? `تم إنشاء مساحة عمل جديدة (${width} × ${height}) بكسل ✨` : `Created a new canvas (${width} × ${height}) px ✨`);
     setIsSidebarOpen(false); // Close sidebar so they can start editing!
   };
 
@@ -1554,9 +1588,14 @@ export const ArtifactImageEditor: React.FC<ArtifactImageEditorProps> = ({
     loadCommunityTemplates();
   }, []);
 
-  // Template Composition & DOM Mounting State Engine
+  // Template Composition & DOM Mounting State Engine (Only active for real templates with elements)
   const [isTemplateComposing, setIsTemplateComposing] = useState<boolean>(() => {
-    return Boolean((initialElements && initialElements.length > 0) || artifact?.content);
+    const isRealTemplate = Boolean(
+      (initialElements && initialElements.length > 0) ||
+      artifact?.id?.startsWith('project-marketplace-') ||
+      artifact?.id?.startsWith('project-pending-')
+    );
+    return isRealTemplate;
   });
   const [templateCompositionStep, setTemplateCompositionStep] = useState<'mounting' | 'fonts' | 'assets' | 'composing' | 'rendering'>('mounting');
 
@@ -1565,6 +1604,14 @@ export const ArtifactImageEditor: React.FC<ArtifactImageEditorProps> = ({
     let isCancelled = false;
 
     const performMountAudit = async () => {
+      // For blank designs, perform instant scale fit without showing template composition steps
+      if (!isTemplateComposing) {
+        fitImageToContainer(imageSize.width || 1080, imageSize.height || 1080);
+        drawCanvasRef.current?.();
+        setImageLoaded(true);
+        return;
+      }
+
       setTemplateCompositionStep('mounting');
       // 1. Verify canvas and container DOM nodes are attached to document body
       await waitForCanvasDomMount(() => canvasRef.current, () => containerRef.current);
@@ -1599,7 +1646,7 @@ export const ArtifactImageEditor: React.FC<ArtifactImageEditorProps> = ({
 
     performMountAudit();
     return () => { isCancelled = true; };
-  }, []);
+  }, [isTemplateComposing]);
 
   // Dedicated Drawers States
   const [fontSearchQuery, setFontSearchQuery] = useState<string>('');
@@ -2110,9 +2157,12 @@ export const ArtifactImageEditor: React.FC<ArtifactImageEditorProps> = ({
   // Dynamic Alignment Snap Guides State
   const [snapGuides, setSnapGuides] = useState<SnapGuidesState>({});
 
-  // Multi-Page Canvas State (Canva-Standard Multi-Page System)
+  // Multi-Page Canvas State (Clean Single-Canvas Focus - strictly eliminates multi-background requests on refresh)
   const [pages, setPages] = useState<StudioPageItem[]>(() => {
-    if (initialPages && initialPages.length > 0) return initialPages;
+    if (initialPages && initialPages.length > 0) {
+      const activeIdx = initialCurrentPageIndex && initialCurrentPageIndex < initialPages.length ? initialCurrentPageIndex : 0;
+      return [initialPages[activeIdx] || initialPages[0]];
+    }
     if (initialElements && initialElements.length > 0) {
       return [
         {
@@ -2125,17 +2175,13 @@ export const ArtifactImageEditor: React.FC<ArtifactImageEditorProps> = ({
       ];
     }
     try {
-      const backupRaw = localStorage.getItem('perplexta_image_editor_session_backup');
-      if (backupRaw) {
-        const parsed = JSON.parse(backupRaw);
-        if (parsed.pages && Array.isArray(parsed.pages) && parsed.pages.length > 0) {
-          return parsed.pages;
-        }
-      }
       const storedPg = localStorage.getItem('rataq_studio_session_pages');
       if (storedPg) {
         const parsed = JSON.parse(storedPg);
-        if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          const curIdx = parseInt(localStorage.getItem('rataq_studio_session_currentPageIndex') || '0', 10);
+          return [parsed[curIdx] || parsed[0]];
+        }
       }
     } catch {}
     return [
@@ -2148,7 +2194,7 @@ export const ArtifactImageEditor: React.FC<ArtifactImageEditorProps> = ({
       }
     ];
   });
-  const [currentPageIndex, setCurrentPageIndex] = useState<number>(() => initialCurrentPageIndex || 0);
+  const [currentPageIndex, setCurrentPageIndex] = useState<number>(0);
 
   const [isPagesOverviewOpen, setIsPagesOverviewOpen] = useState<boolean>(false);
 
@@ -2344,16 +2390,18 @@ export const ArtifactImageEditor: React.FC<ArtifactImageEditorProps> = ({
       id: `page-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`,
       title: isAr ? `الصفحة ${newPageNum}` : `Page ${newPageNum}`,
       elements: [],
-      bgImgSrc: artifact.content,
+      bgImgSrc: '#ffffff',
       locked: false
     };
 
     setPages(prev => {
       const updated = [...prev];
-      updated[currentPageIndex] = {
-        ...updated[currentPageIndex],
-        elements: JSON.parse(JSON.stringify(elements))
-      };
+      if (updated[currentPageIndex]) {
+        updated[currentPageIndex] = {
+          ...updated[currentPageIndex],
+          elements: JSON.parse(JSON.stringify(elements))
+        };
+      }
       return [...updated, newPage];
     });
 
@@ -2362,38 +2410,58 @@ export const ArtifactImageEditor: React.FC<ArtifactImageEditorProps> = ({
     setElements([]);
     setSelectedId(null);
     setFilters({ ...DEFAULT_FILTERS });
-    scrollToPageCard(newIdx);
-    toast.success(isAr ? `✨ تم إضافة صفحة جديدة (${newPageNum})` : `Added Page ${newPageNum}`);
-  }, [pages, currentPageIndex, elements, artifact.content, isAr, recordHistory, scrollToPageCard]);
+
+    setTimeout(() => {
+      scrollToPageCard(newIdx);
+      drawCanvasRef.current?.();
+    }, 60);
+
+    toast.success(isAr ? `✨ تم إضافة صفحة جديدة بيضاء (${newPageNum})` : `Added Blank Page ${newPageNum}`);
+  }, [pages, currentPageIndex, elements, isAr, recordHistory, scrollToPageCard]);
 
   const handleDuplicatePage = useCallback((idxToDuplicate = currentPageIndex) => {
     recordHistory();
     const target = pages[idxToDuplicate] || pages[currentPageIndex];
-    const curElements = idxToDuplicate === currentPageIndex ? elements : target.elements;
+    const curElements = idxToDuplicate === currentPageIndex ? elements : (target?.elements || []);
+
+    const timestamp = Date.now();
+    const clonedElements: CanvasElement[] = (curElements || []).map((el, index) => {
+      const cloned = JSON.parse(JSON.stringify(el));
+      cloned.id = `${el.id || 'el'}_copy_${timestamp}_${index}_${Math.random().toString(36).substring(2, 6)}`;
+      return cloned;
+    });
 
     const newPage: StudioPageItem = {
-      id: `page-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`,
-      title: isAr ? `${target.title || 'صفحة'} (نسخة)` : `${target.title || 'Page'} (Copy)`,
-      elements: JSON.parse(JSON.stringify(curElements)),
-      bgImgSrc: target.bgImgSrc || artifact.content,
+      id: `page-${timestamp}-${Math.random().toString(36).substring(2, 9)}`,
+      title: isAr ? `${target?.title || 'صفحة'} (نسخة)` : `${target?.title || 'Page'} (Copy)`,
+      elements: clonedElements,
+      bgImgSrc: target?.bgImgSrc || artifact.content,
       locked: false
     };
 
+    const newIdx = idxToDuplicate + 1;
+
     setPages(prev => {
       const updated = [...prev];
-      updated[currentPageIndex] = {
-        ...updated[currentPageIndex],
-        elements: JSON.parse(JSON.stringify(elements))
-      };
-      updated.splice(idxToDuplicate + 1, 0, newPage);
+      if (updated[currentPageIndex]) {
+        updated[currentPageIndex] = {
+          ...updated[currentPageIndex],
+          elements: JSON.parse(JSON.stringify(elements))
+        };
+      }
+      updated.splice(newIdx, 0, newPage);
       return updated;
     });
 
-    const newIdx = idxToDuplicate + 1;
     setCurrentPageIndex(newIdx);
-    setElements(JSON.parse(JSON.stringify(newPage.elements)));
+    setElements(clonedElements);
     setSelectedId(null);
-    scrollToPageCard(newIdx);
+
+    setTimeout(() => {
+      scrollToPageCard(newIdx);
+      drawCanvasRef.current?.();
+    }, 60);
+
     toast.success(isAr ? 'تم تكرار الصفحة بنجاح مع كافة عناصرها' : 'Page duplicated successfully');
   }, [pages, currentPageIndex, elements, artifact.content, isAr, recordHistory, scrollToPageCard]);
 
@@ -2738,30 +2806,69 @@ export const ArtifactImageEditor: React.FC<ArtifactImageEditorProps> = ({
     // Proactive forensic audit of template images during template initialization
     auditAndPreloadTemplateImages(tpl, 'template_replace');
 
+    // 1. Immediately purge old canvas background state and canvas frame to prevent holding default or old background
+    imageRef.current = null;
+    if (canvasRef.current) {
+      const ctx = canvasRef.current.getContext('2d');
+      if (ctx) ctx.clearRect(0, 0, canvasRef.current.width, canvasRef.current.height);
+    }
+
     const targetWidth = tpl.width || 1080;
     const targetHeight = tpl.height || 1080;
     
     const newElements = JSON.parse(JSON.stringify(tpl.elements || []));
+    const templateTitle = isAr ? (tpl.titleAr || (tpl as any).title || 'قالب رينكس') : (tpl.titleEn || (tpl as any).title || 'Rinex Template');
     
-    // Clean background resolution (ensuring colors stay pure and avoiding duplicate text from thumbnail)
+    // High-fidelity background resolution: prioritize real background image assets, thumbnails, or custom canvas backgrounds
     let templateBg = '#ffffff';
-    if (tpl.backgroundColor && typeof tpl.backgroundColor === 'string' && (tpl.backgroundColor.startsWith('#') || tpl.backgroundColor.startsWith('rgb') || tpl.backgroundColor.startsWith('hsl'))) {
-      templateBg = tpl.backgroundColor;
-    } else if ((tpl as any).canvasBackground && typeof (tpl as any).canvasBackground === 'string') {
-      templateBg = safeSvgDataUrl((tpl as any).canvasBackground);
-    } else if ((tpl as any).backgroundImage) {
-      templateBg = (tpl as any).backgroundImage;
-    } else if (newElements.length === 0 && tpl.thumbnailUrl) {
-      // Only set canvas background to thumbnail if there are no separate elements to render
-      templateBg = tpl.thumbnailUrl;
+    const explicitBg = (tpl as any).backgroundImage || (tpl as any).src || (tpl as any).previewUrl;
+    const canvasBg = (tpl as any).canvasBackground;
+    const thumbUrl = tpl.thumbnailUrl || (tpl as any).thumbnail;
+    const bgColor = tpl.backgroundColor;
+
+    if (explicitBg && typeof explicitBg === 'string' && explicitBg.trim() !== '' && !explicitBg.startsWith('#') && !explicitBg.startsWith('rgb')) {
+      templateBg = explicitBg;
+    } else if (canvasBg && typeof canvasBg === 'string' && canvasBg.trim() !== '') {
+      templateBg = safeSvgDataUrl(canvasBg);
+    } else if (thumbUrl && typeof thumbUrl === 'string' && thumbUrl.trim() !== '' && !thumbUrl.startsWith('#') && !thumbUrl.startsWith('rgb')) {
+      templateBg = thumbUrl;
+    } else if (bgColor && typeof bgColor === 'string' && (bgColor.startsWith('#') || bgColor.startsWith('rgb') || bgColor.startsWith('hsl') || bgColor.startsWith('linear-gradient'))) {
+      templateBg = bgColor;
+    } else if (canvasBg && typeof canvasBg === 'string') {
+      templateBg = safeSvgDataUrl(canvasBg);
     } else {
       templateBg = '#ffffff';
     }
 
+    // 2. Synchronously update design title & artifact ref to overwrite the default background in storage
+    setDesignTitle(templateTitle);
+    designTitleRef.current = templateTitle;
+    const currentTplId = tpl.id || currentProjId || artifactRef.current?.id || `project-${Date.now()}`;
+    artifactRef.current = {
+      id: currentTplId,
+      title: templateTitle,
+      content: templateBg
+    };
+
+    // 3. Clean single-canvas focus: purge all old accumulated pages and multiple backgrounds
+    const singlePage: StudioPageItem = {
+      id: `page-1`,
+      title: templateTitle,
+      elements: newElements,
+      bgImgSrc: templateBg,
+      backgroundColor: (tpl as any).backgroundColor || (templateBg.startsWith('#') ? templateBg : '#ffffff'),
+      locked: false
+    };
+    const updatedPages = [singlePage];
+    setPages(updatedPages);
+    pagesRef.current = updatedPages;
+    setCurrentPageIndex(0);
+    currentPageIndexRef.current = 0;
+
     setElements(newElements);
+    elementsRef.current = newElements;
     setSelectedId(null);
     setPendingTemplatePrompt(null);
-    setImageLoaded(true);
 
     const rawVideo = (tpl as any).videoUrl || (tpl as any).previewVideoUrl;
     const hasVideoExt = typeof rawVideo === 'string' && (rawVideo.endsWith('.mp4') || rawVideo.endsWith('.webm') || rawVideo.endsWith('.mov') || !rawVideo.match(/\.(png|jpg|jpeg|webp|gif|svg)$/i));
@@ -2800,21 +2907,7 @@ export const ArtifactImageEditor: React.FC<ArtifactImageEditorProps> = ({
       } catch (e) {}
     }
 
-    // Update active page
-    setPages(prev => {
-      const updated = [...prev];
-      if (updated[currentPageIndex]) {
-        updated[currentPageIndex] = {
-          ...updated[currentPageIndex],
-          title: isAr ? `${tpl.titleAr}` : `${tpl.titleEn}`,
-          elements: newElements,
-          bgImgSrc: templateBg
-        };
-      }
-      return updated;
-    });
-
-    // Update dimensions
+    // 4. Update dimensions
     const isDimensionChanged = imageSize.width !== targetWidth || imageSize.height !== targetHeight;
     const targetSize = { width: targetWidth, height: targetHeight };
     setImageSize(targetSize);
@@ -2825,17 +2918,21 @@ export const ArtifactImageEditor: React.FC<ArtifactImageEditorProps> = ({
       localStorage.setItem('rataq_studio_session_imageSize', JSON.stringify(targetSize));
     } catch {}
 
-    // Load background image or clear if solid color
-    if (templateBg && !templateBg.startsWith('#') && !templateBg.startsWith('rgb') && !templateBg.startsWith('hsl')) {
+    // 5. Load background image with robust caching or clear if solid color
+    const isImageBg = templateBg && !templateBg.startsWith('#') && !templateBg.startsWith('rgb') && !templateBg.startsWith('hsl');
+    if (isImageBg) {
       if (previewImageCache.has(templateBg)) {
         imageRef.current = previewImageCache.get(templateBg)!;
+        setImageLoaded(true);
         drawCanvasRef.current?.();
       } else {
+        setImageLoaded(false);
         const img = new Image();
         if (templateBg.startsWith('http')) img.crossOrigin = 'anonymous';
         img.onload = () => {
           previewImageCache.set(templateBg, img);
           imageRef.current = img;
+          setImageLoaded(true);
           drawCanvasRef.current?.();
         };
         img.onerror = (err) => {
@@ -2844,16 +2941,18 @@ export const ArtifactImageEditor: React.FC<ArtifactImageEditorProps> = ({
             imageSrc: templateBg,
             failureReason: 'Template background image failed to load during template replacement',
             templateId: tpl.id,
-            templateTitle: tpl.titleAr || tpl.titleEn,
+            templateTitle: templateTitle,
             error: err
           });
           imageRef.current = null;
+          setImageLoaded(true);
           drawCanvasRef.current?.();
         };
         img.src = templateBg;
       }
     } else {
       imageRef.current = null;
+      setImageLoaded(true);
       requestAnimationFrame(() => {
         drawCanvasRef.current?.();
       });
@@ -2864,9 +2963,27 @@ export const ArtifactImageEditor: React.FC<ArtifactImageEditorProps> = ({
       drawCanvasRef.current?.();
     }, 50);
 
+    // 6. Explicitly pass customPages to flushSaveSession so the new template background is preserved, NOT overwritten with old default
     flushSaveSession({
-      customElements: newElements
+      customElements: newElements,
+      customPages: updatedPages,
+      customPageIndex: currentPageIndex
     });
+
+    // 7. Synchronously overwrite localStorage to eliminate the default background permanently
+    try {
+      localStorage.setItem('rataq_studio_session_active', 'true');
+      localStorage.setItem('rataq_studio_session_timestamp', String(Date.now()));
+      localStorage.setItem('rataq_studio_session_artifact', JSON.stringify({
+        id: currentTplId,
+        title: templateTitle,
+        content: templateBg
+      }));
+      localStorage.setItem('rataq_studio_session_pages', JSON.stringify(sanitizePagesForStorage(updatedPages)));
+      localStorage.setItem('rataq_studio_session_elements', JSON.stringify(sanitizeElementsForStorage(newElements)));
+      localStorage.setItem('rataq_studio_session_designTitle', templateTitle);
+      localStorage.setItem('rataq_studio_session_imageSize', JSON.stringify(targetSize));
+    } catch (e) {}
 
     if (isDimensionChanged) {
       toast.success(isAr 
@@ -2875,7 +2992,7 @@ export const ArtifactImageEditor: React.FC<ArtifactImageEditorProps> = ({
     } else {
       toast.success(isAr ? `✨ تم تطبيق قالب "${tpl.titleAr}" بنجاح!` : `✨ Applied "${tpl.titleEn}"!`);
     }
-  }, [currentPageIndex, imageSize, isAr, isInChat, recordHistory, fitImageToContainer, flushSaveSession]);
+  }, [currentPageIndex, imageSize, isAr, isInChat, recordHistory, fitImageToContainer, flushSaveSession, currentProjId, pages]);
 
   const executeApplyTemplateNewPage = useCallback((tpl: StudioTemplate) => {
     recordHistory();
@@ -3035,12 +3152,8 @@ export const ArtifactImageEditor: React.FC<ArtifactImageEditorProps> = ({
   }, [pages, currentPageIndex, elements, recordHistory, scrollToPageCard]);
 
   const handleLoadTemplate = useCallback((tpl: StudioTemplate) => {
-    if (elements && elements.length > 0) {
-      setPendingTemplatePrompt(tpl);
-    } else {
-      executeApplyTemplateReplace(tpl);
-    }
-  }, [elements, executeApplyTemplateReplace]);
+    executeApplyTemplateReplace(tpl);
+  }, [executeApplyTemplateReplace]);
 
   // Add SVG Shape to Canvas
   const handleAddSvgShape = useCallback((shape: ShapeItem) => {
@@ -3660,7 +3773,9 @@ export const ArtifactImageEditor: React.FC<ArtifactImageEditorProps> = ({
     const currentBgImg: any = imageRef.current;
     const activePage = pages[currentPageIndex];
     const pageBg = activePage?.bgImgSrc;
-    const targetBgColor = (pageBg && typeof pageBg === 'string' && (pageBg.startsWith('#') || pageBg.startsWith('rgb') || pageBg.startsWith('hsl'))) ? pageBg : '#ffffff';
+    const targetBgColor = (pageBg && typeof pageBg === 'string' && (pageBg.startsWith('#') || pageBg.startsWith('rgb') || pageBg.startsWith('hsl'))) 
+      ? pageBg 
+      : (activePage?.backgroundColor || '#ffffff');
 
     renderElementsToCanvas(
       ctx,
@@ -3682,6 +3797,16 @@ export const ArtifactImageEditor: React.FC<ArtifactImageEditorProps> = ({
     drawCanvasRef.current = drawCanvas;
     drawCanvas();
   }, [drawCanvas]);
+
+  // Trigger instant canvas draw as soon as image or template composition finishes
+  useEffect(() => {
+    if (imageLoaded && !isTemplateComposing) {
+      const timer = setTimeout(() => {
+        drawCanvasRef.current?.();
+      }, 10);
+      return () => clearTimeout(timer);
+    }
+  }, [imageLoaded, isTemplateComposing]);
 
   // Fullscreen Cinematic Live Video Canvas Sync
   useEffect(() => {
@@ -3707,7 +3832,7 @@ export const ArtifactImageEditor: React.FC<ArtifactImageEditorProps> = ({
       return;
     }
 
-    const bgSrc = normalizeTemplateImageSrc(resolveImageUrl(rawBgSrc));
+    const bgSrc = resolveImageUrl(normalizeTemplateImageSrc(rawBgSrc));
 
     // Use cache if available for instant page switching
     if (previewImageCache.has(bgSrc)) {
@@ -3722,7 +3847,9 @@ export const ArtifactImageEditor: React.FC<ArtifactImageEditorProps> = ({
     setImageLoaded(false); // Trigger loading state
 
     const img = new Image();
-    img.crossOrigin = 'anonymous';
+    if (bgSrc.startsWith('http')) {
+      img.crossOrigin = 'anonymous';
+    }
     img.onload = () => {
       previewImageCache.set(bgSrc, img);
       imageRef.current = img;
@@ -5239,6 +5366,79 @@ export const ArtifactImageEditor: React.FC<ArtifactImageEditorProps> = ({
     }
   };
 
+  // Handle Exit: Automatically save the active project into user's projects, wipe working session, and exit cleanly
+  const handleExitAndSaveProject = useCallback(() => {
+    try {
+      let previewUrl = artifact?.content || '';
+      if (canvasRef.current && imageSize.width > 0 && imageSize.height > 0) {
+        try {
+          previewUrl = canvasRef.current.toDataURL('image/png', 0.85);
+        } catch {}
+      }
+
+      // Synchronize active page elements into pages array
+      const updatedPages = [...pages];
+      if (updatedPages[currentPageIndex]) {
+        updatedPages[currentPageIndex] = {
+          ...updatedPages[currentPageIndex],
+          elements: JSON.parse(JSON.stringify(elements))
+        };
+      }
+
+      const projIdToSave = currentProjId || projectId || artifact.id || `project-${Date.now()}`;
+      const projectTitleToSave = designTitle || artifact.title || (isAr ? 'تصميم بدون عنوان' : 'Untitled Design');
+
+      const projectToSave: StudioProject = {
+        id: projIdToSave,
+        userId: user ? String(user.id) : 'guest',
+        title: projectTitleToSave,
+        previewUrl,
+        width: imageSize.width || 1080,
+        height: imageSize.height || 1080,
+        canvasBackground: updatedPages[currentPageIndex]?.bgImgSrc || artifact.content,
+        elements: JSON.parse(JSON.stringify(elements)),
+        pages: sanitizePagesForStorage(updatedPages),
+        filters,
+        createdAt: Date.now(),
+        updatedAt: Date.now(),
+        tags: [isAr ? 'استوديو رينكس' : 'Rinex Studio'],
+        isPublic: isDesignPublic
+      };
+
+      saveUserStudioProject(user?.id, projectToSave);
+      if (onSaveProject) {
+        onSaveProject(projectToSave);
+      }
+      refreshUserProjects();
+    } catch (err) {
+      console.warn('Auto-save on exit error:', err);
+    }
+
+    // Clear active working session from storage so the return to the studio always starts fresh on a new design
+    try {
+      localStorage.removeItem('rataq_studio_session_active');
+      localStorage.removeItem('rataq_studio_session_projectId');
+      localStorage.removeItem('rataq_studio_session_artifact');
+      localStorage.removeItem('rataq_studio_session_elements');
+      localStorage.removeItem('rataq_studio_session_filters');
+      localStorage.removeItem('rataq_studio_session_imageSize');
+      localStorage.removeItem('rataq_studio_session_designTitle');
+      localStorage.removeItem('rataq_studio_session_pages');
+      localStorage.removeItem('rataq_studio_session_currentPageIndex');
+      localStorage.removeItem('rataq_studio_session_isVideo');
+      localStorage.removeItem('rataq_studio_session_templateCategory');
+      clearStudioSessionFromDB();
+    } catch (e) {}
+
+    toast.success(isAr ? 'تم حفظ المشروع ضمن مشاريعك بنجاح 📁' : 'Project saved to your projects 📁');
+
+    if (onClose) {
+      onClose();
+    } else {
+      navigate('/studio');
+    }
+  }, [artifact, imageSize, pages, currentPageIndex, elements, currentProjId, projectId, designTitle, isAr, filters, isDesignPublic, user, onSaveProject, refreshUserProjects, onClose, navigate]);
+
   // Apply Brand Color to Active Element or Canvas
   const handleApplyBrandColor = (color: string) => {
     if (selectedId) {
@@ -5680,6 +5880,8 @@ export const ArtifactImageEditor: React.FC<ArtifactImageEditorProps> = ({
         titleEn: c.titleEn,
         category: (c.category === 'reels' || c.category === 'story' ? 'story' : 'marketing') as any,
         thumbnailUrl: c.src,
+        backgroundImage: c.src,
+        canvasBackground: c.canvasBackground,
         backgroundColor: c.canvasBackground || '#ffffff',
         width,
         height,
@@ -5891,35 +6093,15 @@ export const ArtifactImageEditor: React.FC<ArtifactImageEditorProps> = ({
         {/* Start Anchor: Exactly 64px wide slot matching the refined sidebar rail underneath */}
         <div className="flex items-center h-full">
           <div className="w-[64px] min-w-[64px] max-w-[64px] h-full flex items-center justify-center border-e border-[var(--border-main)] shrink-0">
-            {onClose ? (
-              <button
-                type="button"
-                onClick={onClose}
-                className="group/exit-btn relative h-8.5 w-8.5 rounded-shape-sm overflow-hidden border border-[var(--border-default)] hover:border-[var(--accent-foreground)]/60 bg-transparent hover:bg-[var(--surface-subtle)] transition-all duration-fast flex items-center justify-center flex-shrink-0 cursor-pointer active:scale-95 shadow-2xs before:absolute before:-inset-1.5 before:content-['']"
-                title={isAr ? 'الخروج والعودة' : 'Exit / Back'}
-                aria-label={isAr ? 'الخروج والعودة' : 'Exit / Back'}
-              >
-                {/* Normal Logo (Brand visual identity) */}
-                <div className="w-full h-full p-1 flex items-center justify-center transition-all duration-base group-hover/exit-btn:opacity-0 group-hover/exit-btn:scale-75">
-                  <img 
-                    src={siteLogoUrl} 
-                    alt={isAr ? "شعار رينكس" : "Rinex"} 
-                    className="w-full h-full object-contain rounded-xs"
-                    onError={(e) => {
-                      (e.currentTarget as HTMLImageElement).src = '/brand/default-logo.svg';
-                    }}
-                  />
-                </div>
-
-                {/* Glassy Outward Exit Arrow on Hover (matching main page sidebar toggle pattern) */}
-                <div className="absolute inset-0 flex items-center justify-center opacity-0 scale-75 group-hover/exit-btn:opacity-100 group-hover/exit-btn:scale-100 transition-all duration-fast pointer-events-none bg-[var(--surface-subtle)]">
-                  <div className="w-6 h-6 rounded-shape-xs bg-[var(--surface-card)] border border-[var(--border-default)] text-[var(--text-primary)] hover:text-rose-500 flex items-center justify-center shadow-2xs">
-                    {dir === 'rtl' ? <ChevronRight size={14} className="stroke-[2.5]" /> : <ChevronLeft size={14} className="stroke-[2.5]" />}
-                  </div>
-                </div>
-              </button>
-            ) : (
-              <div className="h-8.5 w-8.5 rounded-shape-sm overflow-hidden border border-[var(--border-default)] bg-[var(--surface-card)] flex items-center justify-center p-1 shadow-2xs shrink-0">
+            <button
+              type="button"
+              onClick={handleExitAndSaveProject}
+              className="group/exit-btn relative h-8.5 w-8.5 rounded-shape-sm overflow-hidden border border-[var(--border-default)] hover:border-[var(--accent-foreground)]/60 bg-transparent hover:bg-[var(--surface-subtle)] transition-all duration-fast flex items-center justify-center flex-shrink-0 cursor-pointer active:scale-95 shadow-2xs before:absolute before:-inset-1.5 before:content-['']"
+              title={isAr ? 'حفظ المشروع والخروج' : 'Save Project & Exit'}
+              aria-label={isAr ? 'حفظ المشروع والخروج' : 'Save Project & Exit'}
+            >
+              {/* Normal Logo (Brand visual identity) */}
+              <div className="w-full h-full p-1 flex items-center justify-center transition-all duration-base group-hover/exit-btn:opacity-0 group-hover/exit-btn:scale-75">
                 <img 
                   src={siteLogoUrl} 
                   alt={isAr ? "شعار رينكس" : "Rinex"} 
@@ -5929,7 +6111,14 @@ export const ArtifactImageEditor: React.FC<ArtifactImageEditorProps> = ({
                   }}
                 />
               </div>
-            )}
+
+              {/* Glassy Outward Exit Arrow on Hover (matching main page sidebar toggle pattern) */}
+              <div className="absolute inset-0 flex items-center justify-center opacity-0 scale-75 group-hover/exit-btn:opacity-100 group-hover/exit-btn:scale-100 transition-all duration-fast pointer-events-none bg-[var(--surface-subtle)]">
+                <div className="w-6 h-6 rounded-shape-xs bg-[var(--surface-card)] border border-[var(--border-default)] text-[var(--text-primary)] hover:text-rose-500 flex items-center justify-center shadow-2xs">
+                  {dir === 'rtl' ? <ChevronRight size={14} className="stroke-[2.5]" /> : <ChevronLeft size={14} className="stroke-[2.5]" />}
+                </div>
+              </div>
+            </button>
           </div>
 
           {/* Section: Title 'رينكس' + Dimensions Badge positioned on the right above the sidebar */}
@@ -7113,19 +7302,26 @@ export const ArtifactImageEditor: React.FC<ArtifactImageEditorProps> = ({
                                 onClick={() => handleLoadTemplate(tpl)}
                               >
                                 {/* Full Cover Thumbnail Image */}
-                                <img
-                                  src={safeSvgDataUrl(tpl.thumbnailUrl)}
-                                  alt={tpl.titleAr}
-                                  loading="lazy"
-                                  className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                                  onError={(e) => {
-                                    const target = e.currentTarget as HTMLImageElement;
-                                    target.style.display = 'none';
-                                    if (target.parentElement) {
-                                      target.parentElement.style.background = tpl.backgroundColor || 'linear-gradient(135deg, #1e293b 0%, #0f172a 100%)';
-                                    }
-                                  }}
-                                />
+                                {(() => {
+                                  const rawThumb = tpl.thumbnailUrl || (tpl as any).thumbnail || (tpl as any).src || (tpl as any).canvasBackground;
+                                  const fallbackUnsplash = 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=600&q=80';
+                                  const resolvedThumb = rawThumb ? safeSvgDataUrl(rawThumb) : fallbackUnsplash;
+
+                                  return (
+                                    <img
+                                      src={resolvedThumb}
+                                      alt={tpl.titleAr}
+                                      loading="lazy"
+                                      className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                                      onError={(e) => {
+                                        const target = e.currentTarget as HTMLImageElement;
+                                        if (!target.src.includes('unsplash.com')) {
+                                          target.src = fallbackUnsplash;
+                                        }
+                                      }}
+                                    />
+                                  );
+                                })()}
 
                                 {/* Balanced Vignette / Gradient Overlay */}
                                 <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-black/30 pointer-events-none group-hover:from-black/95 transition-colors" />
@@ -10394,21 +10590,22 @@ export const ArtifactImageEditor: React.FC<ArtifactImageEditorProps> = ({
             style={{ scrollBehavior: 'smooth', minHeight: 0 }}
           >
             {(!imageLoaded || isTemplateComposing) && (
-              <TemplateCompositionLoadingState
-                isAr={isAr}
-                templateTitle={artifact?.title}
-                templateDimensions={{ width: imageSize.width || 1080, height: imageSize.height || 1080 }}
-                aspectRatio={(artifact as any)?.aspectRatio || '1:1'}
-                currentStep={templateCompositionStep}
-                onForceLaunch={() => {
-                  setIsTemplateComposing(false);
-                  setImageLoaded(true);
-                }}
-              />
+              <div className="absolute inset-0 z-50 flex items-center justify-center bg-[var(--surface-inset)]/90 backdrop-blur-xs">
+                <TemplateCompositionLoadingState
+                  isAr={isAr}
+                  templateTitle={artifact?.title}
+                  templateDimensions={{ width: imageSize.width || 1080, height: imageSize.height || 1080 }}
+                  aspectRatio={(artifact as any)?.aspectRatio || '1:1'}
+                  currentStep={templateCompositionStep}
+                  onForceLaunch={() => {
+                    setIsTemplateComposing(false);
+                    setImageLoaded(true);
+                  }}
+                />
+              </div>
             )}
 
-            {imageLoaded && (
-              <div className="w-fit min-w-full min-h-full flex flex-col items-center justify-start gap-16 py-12 px-4 mx-auto">
+            <div className="w-fit min-w-full min-h-full flex flex-col items-center justify-start gap-16 py-12 px-4 mx-auto">
                 {pages.map((pageItem, pageIdx) => {
                   const isActive = pageIdx === currentPageIndex;
 
@@ -11311,7 +11508,6 @@ export const ArtifactImageEditor: React.FC<ArtifactImageEditorProps> = ({
                   );
                 })}
               </div>
-            )}
           </div>
 
           {/* RINEX MOTION VIDEO STUDIO - MULTI-SCENE TIMELINE ENGINE */}
