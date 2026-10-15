@@ -2332,6 +2332,81 @@ export const ArtifactImageEditor: React.FC<ArtifactImageEditorProps> = ({
     }, 50);
   }, []);
 
+  // Listen for custom studio events dispatched from chat image renderer
+  useEffect(() => {
+    const handleResetEvent = (e: CustomEvent<{ artifact: { id: string; title: string; content: string } }>) => {
+      if (e.detail && e.detail.artifact) {
+        const art = e.detail.artifact;
+        imageRef.current = null;
+        setCurrentProjId(art.id);
+        setDesignTitle(art.title || (isAr ? 'تصميم جديد' : 'New Design'));
+        setElements([]);
+        setSelectedId(null);
+        setFilters({ ...DEFAULT_FILTERS });
+        const newInitialPage: StudioPageItem = {
+          id: 'page-1',
+          title: isAr ? 'الصفحة 1' : 'Page 1',
+          elements: [],
+          bgImgSrc: art.content,
+          locked: false
+        };
+        setPages([newInitialPage]);
+        setCurrentPageIndex(0);
+        setUndoStack([]);
+        setRedoStack([]);
+        setTimeout(() => {
+          scrollToPageCard(0);
+          if (drawCanvasRef.current) drawCanvasRef.current();
+        }, 50);
+      }
+    };
+
+    const handleAppendEvent = (e: CustomEvent<{ bgImgSrc: string; title?: string }>) => {
+      if (e.detail && e.detail.bgImgSrc) {
+        const bgImgSrc = e.detail.bgImgSrc;
+        recordHistory();
+        const newPageNum = pagesRef.current.length + 1;
+        const newPage: StudioPageItem = {
+          id: `page-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`,
+          title: isAr ? `الصفحة ${newPageNum}` : `Page ${newPageNum}`,
+          elements: [],
+          bgImgSrc: bgImgSrc,
+          locked: false
+        };
+
+        setPages(prev => {
+          const updated = [...prev];
+          if (updated[currentPageIndexRef.current]) {
+            updated[currentPageIndexRef.current] = {
+              ...updated[currentPageIndexRef.current],
+              elements: JSON.parse(JSON.stringify(elementsRef.current))
+            };
+          }
+          return [...updated, newPage];
+        });
+
+        const newIdx = pagesRef.current.length;
+        setCurrentPageIndex(newIdx);
+        setElements([]);
+        setSelectedId(null);
+        setFilters({ ...DEFAULT_FILTERS });
+
+        setTimeout(() => {
+          scrollToPageCard(newIdx);
+          if (drawCanvasRef.current) drawCanvasRef.current();
+        }, 60);
+      }
+    };
+
+    window.addEventListener('rataq_studio_workspace_reset' as any, handleResetEvent as any);
+    window.addEventListener('rataq_studio_append_page' as any, handleAppendEvent as any);
+
+    return () => {
+      window.removeEventListener('rataq_studio_workspace_reset' as any, handleResetEvent as any);
+      window.removeEventListener('rataq_studio_append_page' as any, handleAppendEvent as any);
+    };
+  }, [isAr, recordHistory, scrollToPageCard]);
+
   // Center and fit image smoothly to viewport
   const fitImageToContainer = useCallback((imgW: number, imgH: number) => {
     if (!containerRef.current || imgW === 0 || imgH === 0) return;

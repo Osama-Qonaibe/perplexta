@@ -6,12 +6,16 @@ import {
   RefreshCw, 
   Maximize2, 
   Download, 
-  Palette
+  Palette,
+  Sparkles,
+  Layers,
+  X
 } from 'lucide-react';
 import { toast } from '@/design-system';
 import { useAppContext } from '../../../../context/AppContext';
 import { ArtifactContext } from '../../../../context/ArtifactContext';
 import { ASPECT_RATIO_CLASSES } from '../../../../constants/chat';
+import { saveUserStudioProject } from '../../../../data/rataqProjects';
 
 export const SimpleImageLoadingPlaceholder = ({ dir, aspectRatio = '1:1' }: { dir: 'ltr' | 'rtl'; aspectRatio?: string }) => {
   const containerAspectClass = ASPECT_RATIO_CLASSES[aspectRatio] || ASPECT_RATIO_CLASSES['1:1'];
@@ -85,7 +89,7 @@ const loadedImageCache = new Set<string>();
 loadedImageCache.clear();
 
 export const ShareableImageOutput = ({ src, dir: propDir, alt }: { src?: string; dir?: string; alt?: string; [key: string]: any }) => {
-  const { dir: contextDir } = useAppContext();
+  const { dir: contextDir, user } = useAppContext();
   const artifactContext = useContext(ArtifactContext);
   const dir = propDir || contextDir || (document.documentElement.dir === 'rtl' ? 'rtl' : 'ltr');
   
@@ -105,6 +109,7 @@ export const ShareableImageOutput = ({ src, dir: propDir, alt }: { src?: string;
   const [imageError, setImageError] = useState(false);
   const [retryCount, setRetryCount] = useState(0);
   const [isPreviewOpen, setIsPreviewOpen] = useState(false);
+  const [isOptionModalOpen, setIsOptionModalOpen] = useState(false);
   const imgRef = useRef<HTMLImageElement>(null);
 
   useEffect(() => {
@@ -139,25 +144,133 @@ export const ShareableImageOutput = ({ src, dir: propDir, alt }: { src?: string;
     }
   };
 
+  // Helper 1: Execute creating a brand new workspace (Auto-saves current workspace to projects, wipes working session, opens clean workspace)
+  const executeCreateNewWorkspace = (imgUrl: string) => {
+    const newId = `project-img-${Date.now()}`;
+    const newTitle = dir === 'rtl' ? 'تصميم جديد' : 'New Design';
+
+    // Auto-save existing session if present
+    try {
+      const sessionActive = typeof window !== 'undefined' && localStorage.getItem('rataq_studio_session_active') === 'true';
+      if (sessionActive && user?.id) {
+        const storedPages = localStorage.getItem('rataq_studio_session_pages');
+        const storedProjId = localStorage.getItem('rataq_studio_session_projectId');
+        const storedTitle = localStorage.getItem('rataq_studio_session_designTitle');
+        if (storedPages) {
+          const parsedPages = JSON.parse(storedPages);
+          if (Array.isArray(parsedPages) && parsedPages.length > 0) {
+            const projectToSave = {
+              id: storedProjId || `project-${Date.now()}`,
+              userId: String(user.id),
+              title: storedTitle || (dir === 'rtl' ? 'مشروع سابق' : 'Previous Project'),
+              previewUrl: parsedPages[0]?.bgImgSrc || imgUrl,
+              width: 1080,
+              height: 1080,
+              canvasBackground: parsedPages[0]?.bgImgSrc || '#ffffff',
+              elements: [],
+              pages: parsedPages,
+              createdAt: Date.now(),
+              updatedAt: Date.now(),
+              tags: [dir === 'rtl' ? 'استوديو رينكس' : 'Rinex Studio']
+            };
+            saveUserStudioProject(user.id, projectToSave as any);
+          }
+        }
+      }
+    } catch (err) {
+      console.warn('Auto-save existing studio project error:', err);
+    }
+
+    // Clear old working session storage
+    try {
+      localStorage.removeItem('rataq_studio_session_active');
+      localStorage.removeItem('rataq_studio_session_projectId');
+      localStorage.removeItem('rataq_studio_session_artifact');
+      localStorage.removeItem('rataq_studio_session_elements');
+      localStorage.removeItem('rataq_studio_session_pages');
+      localStorage.removeItem('rataq_studio_session_designTitle');
+    } catch {}
+
+    const initialPage = {
+      id: 'page-1',
+      title: dir === 'rtl' ? 'الصفحة 1' : 'Page 1',
+      elements: [],
+      bgImgSrc: imgUrl,
+      locked: false
+    };
+
+    const artifactObj = {
+      id: newId,
+      title: newTitle,
+      type: 'image' as const,
+      content: imgUrl,
+      version: 1,
+      files: {}
+    };
+
+    try {
+      localStorage.setItem('rataq_studio_session_active', 'true');
+      localStorage.setItem('rataq_studio_session_projectId', newId);
+      localStorage.setItem('rataq_studio_session_artifact', JSON.stringify(artifactObj));
+      localStorage.setItem('rataq_studio_session_elements', '[]');
+      localStorage.setItem('rataq_studio_session_pages', JSON.stringify([initialPage]));
+      localStorage.setItem('rataq_studio_session_designTitle', newTitle);
+    } catch {}
+
+    if (artifactContext) {
+      artifactContext.setActiveArtifact(artifactObj);
+      artifactContext.setIsArtifactOpen(true);
+      artifactContext.setActiveTab('preview');
+    }
+
+    window.dispatchEvent(new CustomEvent('rataq_studio_workspace_reset', {
+      detail: { artifact: artifactObj }
+    }));
+
+    toast.success(dir === 'rtl' ? 'تم إنشاء ساحة عمل جديدة وحفظ المشروع السابق في مشاريعك ☁️' : 'Created new workspace & saved previous project ☁️');
+  };
+
+  // Helper 2: Append as a new page to active workspace
+  const executeAppendAsNewPage = (imgUrl: string) => {
+    if (artifactContext) {
+      artifactContext.setIsArtifactOpen(true);
+      artifactContext.setActiveTab('preview');
+    }
+
+    window.dispatchEvent(new CustomEvent('rataq_studio_append_page', {
+      detail: { bgImgSrc: imgUrl }
+    }));
+
+    toast.success(dir === 'rtl' ? 'تمت إضافة الصورة كصفحة جديدة في الساحة الحالية 📄✨' : 'Added image as a new page in active workspace 📄✨');
+  };
+
   const handleEditImage = () => {
     if (!cleanUrl) return;
     if (!artifactContext) {
       toast.error(dir === 'rtl' ? 'محرر رينكس غير متوفر حالياً' : 'Rinex editor is not available');
       return;
     }
-    
-    // Open the image editor in the canvas layout
-    artifactContext.setActiveArtifact({
-      id: cleanUrl,
-      title: dir === 'rtl' ? 'استوديو رينكس' : 'Rinex Studio',
-      type: 'image',
-      content: cleanUrl,
-      version: 1,
-      files: {}
-    });
-    artifactContext.setIsArtifactOpen(true);
-    artifactContext.setActiveTab('preview');
-    toast.success(dir === 'rtl' ? 'تم فتح الصورة في استوديو رينكس' : 'Image opened in Rinex Studio');
+
+    const activeArt = artifactContext.activeArtifact;
+    const isSessionActive = typeof window !== 'undefined' && (
+      localStorage.getItem('rataq_studio_session_active') === 'true' ||
+      Boolean(artifactContext.isArtifactOpen && activeArt)
+    );
+
+    // If exact same image is already open in active artifact, just focus
+    if (activeArt && (activeArt.content === cleanUrl || activeArt.id === cleanUrl)) {
+      artifactContext.setIsArtifactOpen(true);
+      artifactContext.setActiveTab('preview');
+      return;
+    }
+
+    // If an active session exists with different content/image, show choice modal (Replace vs Add Page)
+    if (isSessionActive) {
+      setIsOptionModalOpen(true);
+    } else {
+      // Immediate fresh workspace
+      executeCreateNewWorkspace(cleanUrl);
+    }
   };
 
   const handleDownload = async () => {
@@ -313,6 +426,92 @@ export const ShareableImageOutput = ({ src, dir: propDir, alt }: { src?: string;
                 className="px-4 py-2 rounded-shape-sm bg-[var(--surface-subtle)] hover:bg-[var(--surface-inset)] text-[var(--text-primary)] text-xs font-bold transition-colors cursor-pointer"
               >
                 {dir === 'rtl' ? 'إغلاق' : 'Close'}
+              </button>
+            </div>
+          </div>
+        </div>,
+        document.body
+      )}
+
+      {/* Choice Modal: Replace Current Workspace vs Add as New Page */}
+      {isOptionModalOpen && createPortal(
+        <div 
+          className="fixed inset-0 bg-black/80 backdrop-blur-md z-[999999] flex items-center justify-center p-4 animate-in fade-in duration-150"
+          onClick={() => setIsOptionModalOpen(false)}
+        >
+          <div 
+            className="bg-[var(--surface-card)] border border-[var(--border-default)] rounded-shape-lg shadow-2xl max-w-md w-full p-6 space-y-5 relative text-[var(--text-primary)]"
+            onClick={e => e.stopPropagation()}
+          >
+            <div className="flex items-start gap-3.5">
+              <div className="w-10 h-10 rounded-shape-md bg-indigo-500/10 border border-indigo-500/30 text-indigo-500 flex items-center justify-center shrink-0">
+                <Palette size={20} />
+              </div>
+              <div className="space-y-1">
+                <h3 className="text-sm font-bold leading-tight">
+                  {dir === 'rtl' ? 'فتح الصورة في استوديو رينكس' : 'Open Image in Rinex Studio'}
+                </h3>
+                <p className="text-xs text-[var(--text-muted)] leading-relaxed">
+                  {dir === 'rtl' 
+                    ? 'توجد لديك ساحة عمل نشطة حالياً. كيف ترغب في فتح هذه الصورة؟' 
+                    : 'You have an active studio workspace. How would you like to open this image?'}
+                </p>
+              </div>
+            </div>
+
+            <div className="space-y-2.5 pt-1">
+              {/* Option 1: Replace & Start Fresh Workspace */}
+              <button
+                type="button"
+                onClick={() => {
+                  setIsOptionModalOpen(false);
+                  executeCreateNewWorkspace(cleanUrl);
+                }}
+                className="w-full p-3.5 rounded-shape-md bg-[var(--surface-subtle)] hover:bg-[var(--surface-inset)] border border-[var(--border-default)] hover:border-indigo-500/50 flex items-center gap-3 transition-all cursor-pointer group text-start active:scale-[0.99]"
+              >
+                <div className="w-8 h-8 rounded-shape-xs bg-indigo-600 text-white flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform shadow-xs">
+                  <Sparkles size={16} />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <div className="text-xs font-bold text-[var(--text-primary)] group-hover:text-indigo-500 transition-colors">
+                    {dir === 'rtl' ? 'إنشاء ساحة عمل جديدة (حفظ واستبدال)' : 'New Workspace (Save & Replace)'}
+                  </div>
+                  <div className="text-[10px] text-[var(--text-muted)] truncate mt-0.5">
+                    {dir === 'rtl' ? 'حفظ المشروع السابق تلقائياً والبدء بساحة نظيفة للصورة' : 'Auto-save active project and start a clean workspace'}
+                  </div>
+                </div>
+              </button>
+
+              {/* Option 2: Add as New Page */}
+              <button
+                type="button"
+                onClick={() => {
+                  setIsOptionModalOpen(false);
+                  executeAppendAsNewPage(cleanUrl);
+                }}
+                className="w-full p-3.5 rounded-shape-md bg-[var(--surface-subtle)] hover:bg-[var(--surface-inset)] border border-[var(--border-default)] hover:border-emerald-500/50 flex items-center gap-3 transition-all cursor-pointer group text-start active:scale-[0.99]"
+              >
+                <div className="w-8 h-8 rounded-shape-xs bg-emerald-600 text-white flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform shadow-xs">
+                  <Layers size={16} />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <div className="text-xs font-bold text-[var(--text-primary)] group-hover:text-emerald-500 transition-colors">
+                    {dir === 'rtl' ? 'إضافة كصفحة جديدة في الساحة الحالية' : 'Add as New Page in Active Workspace'}
+                  </div>
+                  <div className="text-[10px] text-[var(--text-muted)] truncate mt-0.5">
+                    {dir === 'rtl' ? 'إدراج الصورة كصفحة إضافية دون مسح تصميمك الحالي' : 'Append image as a new page without clearing current edits'}
+                  </div>
+                </div>
+              </button>
+            </div>
+
+            <div className="pt-2 flex justify-end">
+              <button
+                type="button"
+                onClick={() => setIsOptionModalOpen(false)}
+                className="px-4 py-2 rounded-shape-sm bg-[var(--surface-subtle)] hover:bg-[var(--surface-inset)] text-[var(--text-muted)] hover:text-[var(--text-primary)] text-xs font-bold transition-colors cursor-pointer"
+              >
+                {dir === 'rtl' ? 'إلغاء' : 'Cancel'}
               </button>
             </div>
           </div>
