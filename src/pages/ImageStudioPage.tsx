@@ -313,8 +313,7 @@ export const ImageStudioPage: React.FC = () => {
         if (stored) {
           const parsed = JSON.parse(stored);
           if (Array.isArray(parsed) && parsed.length > 0) {
-            const curIdx = parseInt(localStorage.getItem('rataq_studio_session_currentPageIndex') || '0', 10);
-            return [parsed[curIdx] || parsed[0]];
+            return parsed;
           }
         }
       }
@@ -322,7 +321,14 @@ export const ImageStudioPage: React.FC = () => {
     return [{ id: 'page-1', title: 'الصفحة 1', elements: [], bgImgSrc: '#ffffff', locked: false }];
   });
 
-  const [activeInitialCurrentPageIndex, setActiveInitialCurrentPageIndex] = useState<number | undefined>(() => 0);
+  const [activeInitialCurrentPageIndex, setActiveInitialCurrentPageIndex] = useState<number>(() => {
+    try {
+      if (typeof window !== 'undefined' && localStorage.getItem('rataq_studio_session_active') === 'true') {
+        return parseInt(localStorage.getItem('rataq_studio_session_currentPageIndex') || '0', 10);
+      }
+    } catch {}
+    return 0;
+  });
 
   const [activeInitialImageSize, setActiveInitialImageSize] = useState<{ width: number; height: number } | undefined>(() => {
     try {

@@ -304,15 +304,15 @@ export function computeTextMetrics(
 ): { lines: string[]; width: number; height: number; lineHeight: number } {
   const displayText = uppercase ? text.toUpperCase() : text;
   const ctx = getMeasureCtx();
-  const safeMultiplier = Math.max(1.35, lineHeightMultiplier || 1.35);
-  const lineHeight = Math.max(Math.round(fontSize * safeMultiplier), Math.round(fontSize + 10));
+  const safeMultiplier = Math.max(1.2, lineHeightMultiplier || 1.35);
+  const lineHeight = Math.max(Math.round(fontSize * safeMultiplier), Math.round(fontSize + 8));
   
   if (!ctx || !displayText) {
     const rawLines = displayText ? displayText.split('\n') : [''];
     return {
       lines: rawLines,
-      width: Math.max(60, (displayText ? displayText.length : 1) * fontSize * 0.6),
-      height: Math.max(30, rawLines.length * lineHeight),
+      width: Math.max(40, (displayText ? displayText.length : 1) * fontSize * 0.6),
+      height: Math.max(24, rawLines.length * lineHeight),
       lineHeight
     };
   }
@@ -356,8 +356,8 @@ export function computeTextMetrics(
     return w > max ? w : max;
   }, 0);
 
-  const calculatedWidth = Math.max(60, Math.ceil(maxWidth && maxWidth > maxLineWidth ? maxWidth : maxLineWidth));
-  const calculatedHeight = Math.max(30, Math.ceil(wrappedLines.length * lineHeight));
+  const calculatedWidth = Math.max(40, Math.ceil(maxLineWidth));
+  const calculatedHeight = Math.max(24, Math.ceil(wrappedLines.length * lineHeight));
 
   return {
     lines: wrappedLines,
@@ -719,17 +719,14 @@ export function renderElementsToCanvas(
       const fontFamily = el.fontFamily || 'Tajawal, sans-serif';
       const fontWeight = el.fontWeight || 'bold';
       const fontStyle = el.fontStyle || 'normal';
-      const maxWidth = el.w && el.w > 30 ? el.w - 12 : undefined;
-
+      const maxWidth = el.w && el.w > 30 ? el.w : undefined;
       const hasArabic = /[\u0600-\u06FF]/.test(displayText);
-      ctx.font = `${fontStyle} ${fontWeight} ${fontSize}px ${fontFamily}`;
-      ctx.textAlign = el.textAlign || (hasArabic ? 'center' : 'left');
-      ctx.textBaseline = 'top';
-      ctx.direction = hasArabic ? 'rtl' : 'ltr';
+      const safeMultiplier = el.textLineHeight || (hasArabic ? 1.35 : 1.3);
+      const lineHeight = Math.max(Math.round(fontSize * safeMultiplier), Math.round(fontSize + 8));
+      const topLeading = (lineHeight - fontSize) / 2;
 
-      const metrics = computeTextMetrics(displayText, fontFamily, fontSize, fontWeight, fontStyle, maxWidth, el.textLineHeight || (hasArabic ? 1.4 : 1.3), false);
+      const metrics = computeTextMetrics(displayText, fontFamily, fontSize, fontWeight, fontStyle, maxWidth, safeMultiplier, false);
       const lines = metrics.lines;
-      const lineHeight = metrics.lineHeight;
       const pad = el.textBgPadding !== undefined ? el.textBgPadding : 6;
       const rad = el.textBgCornerRadius !== undefined ? el.textBgCornerRadius : 6;
 
@@ -742,6 +739,7 @@ export function renderElementsToCanvas(
         ctx.fill();
       }
 
+      ctx.save();
       if (el.textShadow) {
         ctx.shadowColor = el.shadowColor || 'rgba(0,0,0,0.6)';
         ctx.shadowBlur = el.shadowBlur || 8;
@@ -749,17 +747,32 @@ export function renderElementsToCanvas(
         ctx.shadowOffsetY = el.shadowOffsetY || 2;
       }
 
+      ctx.font = `${fontStyle} ${fontWeight} ${fontSize}px ${fontFamily}`;
+      const resolvedAlign = el.textAlign || (hasArabic ? 'center' : 'left');
+      ctx.textAlign = resolvedAlign;
+      ctx.textBaseline = 'top';
+      ctx.direction = hasArabic ? 'rtl' : 'ltr';
+      if (el.textLetterSpacing) {
+        try {
+          (ctx as any).letterSpacing = `${el.textLetterSpacing}px`;
+        } catch {}
+      }
+
       ctx.fillStyle = el.color;
 
-      const topOffset = (el.textBgColor && el.textBgColor !== 'transparent') ? pad / 2 : 2;
+      const totalW = el.w || metrics.width;
 
       lines.forEach((line, idx) => {
         let drawX = el.x;
-        const totalW = el.w || metrics.width;
-        if (el.textAlign === 'center') drawX = el.x + totalW / 2;
-        else if (el.textAlign === 'right') drawX = el.x + totalW;
+        if (resolvedAlign === 'center') {
+          drawX = el.x + totalW / 2;
+        } else if (resolvedAlign === 'right') {
+          drawX = el.x + totalW;
+        } else {
+          drawX = el.x;
+        }
 
-        const drawY = el.y + idx * lineHeight + topOffset;
+        const drawY = el.y + topLeading + idx * lineHeight;
 
         if (el.textStrokeColor && el.textStrokeWidth) {
           ctx.strokeStyle = el.textStrokeColor;
@@ -767,7 +780,24 @@ export function renderElementsToCanvas(
           ctx.strokeText(line, drawX, drawY);
         }
         ctx.fillText(line, drawX, drawY);
+
+        if (el.textUnderline) {
+          ctx.save();
+          const lineW = ctx.measureText(line).width;
+          let ulX = drawX;
+          if (resolvedAlign === 'center') ulX = drawX - lineW / 2;
+          else if (resolvedAlign === 'right') ulX = drawX - lineW;
+          const ulY = drawY + fontSize + 2;
+          ctx.beginPath();
+          ctx.moveTo(ulX, ulY);
+          ctx.lineTo(ulX + lineW, ulY);
+          ctx.lineWidth = Math.max(1, fontSize / 16);
+          ctx.strokeStyle = el.color;
+          ctx.stroke();
+          ctx.restore();
+        }
       });
+      ctx.restore();
     } else if (el.type === 'rect') {
       const sw = el.strokeWidth || 0;
       ctx.fillStyle = el.fillColor || el.color;
@@ -2002,13 +2032,6 @@ export const ArtifactImageEditor: React.FC<ArtifactImageEditorProps> = ({
   const [elements, setElements] = useState<CanvasElement[]>(() => {
     if (initialElements && initialElements.length > 0) return initialElements;
     try {
-      const backupRaw = localStorage.getItem('perplexta_image_editor_session_backup');
-      if (backupRaw) {
-        const parsed = JSON.parse(backupRaw);
-        if (parsed.elements && Array.isArray(parsed.elements) && parsed.elements.length > 0) {
-          return parsed.elements;
-        }
-      }
       const storedEl = localStorage.getItem('rataq_studio_session_elements');
       if (storedEl) {
         const parsed = JSON.parse(storedEl);
@@ -2038,6 +2061,42 @@ export const ArtifactImageEditor: React.FC<ArtifactImageEditorProps> = ({
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [editingTextId, setEditingTextId] = useState<string | null>(null);
   const [editingTextValue, setEditingTextValue] = useState<string>('');
+  const editingTextareaRef = useRef<HTMLTextAreaElement | null>(null);
+  const textEditActivationTimeRef = useRef<number>(0);
+
+  const startTextEditing = useCallback((id: string, initialValue?: string) => {
+    textEditActivationTimeRef.current = Date.now();
+    setEditingTextId(id);
+    if (initialValue !== undefined) {
+      setEditingTextValue(initialValue);
+    } else {
+      const targetEl = elementsRef.current.find(e => e.id === id);
+      if (targetEl && targetEl.text !== undefined) {
+        setEditingTextValue(targetEl.text);
+      }
+    }
+    setTimeout(() => {
+      if (editingTextareaRef.current) {
+        const node = editingTextareaRef.current;
+        node.focus();
+        try {
+          const len = node.value.length;
+          node.setSelectionRange(len, len);
+        } catch (e) {}
+      }
+    }, 20);
+  }, []);
+
+  useEffect(() => {
+    if (editingTextId && editingTextareaRef.current) {
+      const node = editingTextareaRef.current;
+      node.focus();
+      try {
+        const len = node.value.length;
+        node.setSelectionRange(len, len);
+      } catch (e) {}
+    }
+  }, [editingTextId]);
 
   // Global Brush / Styling State
   const [activeColor, setActiveColor] = useState<string>('#ef4444');
@@ -2049,11 +2108,6 @@ export const ArtifactImageEditor: React.FC<ArtifactImageEditorProps> = ({
   const [filters, setFilters] = useState<EditorFilters>(() => {
     if (initialFilters) return initialFilters;
     try {
-      const backupRaw = localStorage.getItem('perplexta_image_editor_session_backup');
-      if (backupRaw) {
-        const parsed = JSON.parse(backupRaw);
-        if (parsed.filters) return parsed.filters;
-      }
       const storedF = localStorage.getItem('rataq_studio_session_filters');
       if (storedF) {
         const parsed = JSON.parse(storedF);
@@ -2245,12 +2299,6 @@ export const ArtifactImageEditor: React.FC<ArtifactImageEditorProps> = ({
 
     getStudioSessionFromDB().then((savedSession) => {
       let restoredData = savedSession;
-      if (!restoredData) {
-        try {
-          const backupRaw = localStorage.getItem('perplexta_image_editor_session_backup');
-          if (backupRaw) restoredData = JSON.parse(backupRaw);
-        } catch {}
-      }
       if (restoredData) {
         if (restoredData.elements && Array.isArray(restoredData.elements) && restoredData.elements.length > 0) {
           setElements(restoredData.elements);
@@ -2657,6 +2705,8 @@ export const ArtifactImageEditor: React.FC<ArtifactImageEditorProps> = ({
 
     setElements(prev => [...prev, newEl]);
     setSelectedId(newId);
+    setEditingTextId(newId);
+    setEditingTextValue(text);
     setActiveTool('select');
   }, [activeColor, imageSize.height, imageSize.width, isAr, recordHistory]);
 
@@ -2693,7 +2743,17 @@ export const ArtifactImageEditor: React.FC<ArtifactImageEditorProps> = ({
 
   const handleToggleLock = useCallback((id: string) => {
     recordHistory();
-    setElements(prev => prev.map(el => el.id === id ? { ...el, locked: !el.locked } : el));
+    setElements(prev => prev.map(el => {
+      if (el.id === id) {
+        const nextLocked = !el.locked;
+        if (!nextLocked && el.type === 'text') {
+          setEditingTextId(el.id);
+          setEditingTextValue(el.text || '');
+        }
+        return { ...el, locked: nextLocked };
+      }
+      return el;
+    }));
   }, [recordHistory]);
 
   const handleDeleteElement = useCallback((id: string) => {
@@ -2808,8 +2868,7 @@ export const ArtifactImageEditor: React.FC<ArtifactImageEditorProps> = ({
       // 1. Instant save to IndexedDB (asynchronous unlimited persistent store)
       saveStudioSessionToDB(sessionPayload).catch(() => {});
 
-      // 2. Immediate synchronous save to localStorage as instant fallback
-      localStorage.setItem('perplexta_image_editor_session_backup', JSON.stringify(sessionPayload));
+      // 2. Immediate synchronous save to localStorage using canonical rataq_studio_session keys
       try {
         localStorage.setItem('rataq_studio_session_active', 'true');
         localStorage.setItem('rataq_studio_session_timestamp', String(Date.now()));
@@ -3290,6 +3349,8 @@ export const ArtifactImageEditor: React.FC<ArtifactImageEditorProps> = ({
     setElements(prev => [...prev, ...newElements]);
     if (newElements.length > 0) {
       setSelectedId(newElements[0].id);
+      setEditingTextId(newElements[0].id);
+      setEditingTextValue(newElements[0].text || '');
     }
     setActiveTool('select');
     toast.success(isAr ? `تمت إضافة حزمة خط "${preset.titleAr}" بنجاح!` : `Added "${preset.titleEn}" typography pack!`);
@@ -4026,14 +4087,24 @@ export const ArtifactImageEditor: React.FC<ArtifactImageEditorProps> = ({
 
     // 2. Select & Move Existing Element
     if (activeTool === 'select') {
-      // Find clicked element in reverse order (top to bottom)
+      // Find clicked element in reverse order (top to bottom) with rotation-aware coordinates
       const clicked = [...elements].reverse().find(el => {
-        if (el.hidden || el.locked) return false;
+        if (el.hidden) return false;
         const boxX = el.x - 8;
         const boxY = el.y - 8;
         const boxW = (el.w || 80) + 16;
         const boxH = (el.h || 40) + 16;
-        return x >= boxX && x <= boxX + boxW && y >= boxY && y <= boxY + boxH;
+        if (!el.rotation) {
+          return x >= boxX && x <= boxX + boxW && y >= boxY && y <= boxY + boxH;
+        }
+        const cx = el.x + (el.w || 80) / 2;
+        const cy = el.y + (el.h || 40) / 2;
+        const rad = (-el.rotation * Math.PI) / 180;
+        const cos = Math.cos(rad);
+        const sin = Math.sin(rad);
+        const rx = cos * (x - cx) - sin * (y - cy) + cx;
+        const ry = sin * (x - cx) + cos * (y - cy) + cy;
+        return rx >= boxX && rx <= boxX + boxW && ry >= boxY && ry <= boxY + boxH;
       });
 
       if (clicked) {
@@ -4059,18 +4130,20 @@ export const ArtifactImageEditor: React.FC<ArtifactImageEditorProps> = ({
         recordHistory();
         setSelectedId(clicked.id);
         setActiveResizeHandle(null);
-        setDragStart({ x, y });
-        setElementStartPos({
-          x: clicked.x,
-          y: clicked.y,
-          w: clicked.w,
-          h: clicked.h,
-          fontSize: clicked.fontSize || 32,
-          rotation: clicked.rotation || 0
-        });
 
-        if (clicked.type !== 'text' || (editingTextId && editingTextId !== clicked.id)) {
-          setEditingTextId(null);
+        setEditingTextId(null);
+        if (!clicked.locked) {
+          setDragStart({ x, y });
+          setElementStartPos({
+            x: clicked.x,
+            y: clicked.y,
+            w: clicked.w,
+            h: clicked.h,
+            fontSize: clicked.fontSize || 32,
+            rotation: clicked.rotation || 0
+          });
+        } else {
+          toast.info(isAr ? 'العنصر مقفل 🔒 - اضغط على زر إلغاء القفل في الشريط العائم لتعديله' : 'Element is locked 🔒 - Click unlock on floating toolbar');
         }
       } else {
         setSelectedId(null);
@@ -4671,20 +4744,33 @@ export const ArtifactImageEditor: React.FC<ArtifactImageEditorProps> = ({
   const handleDoubleClick = (e: React.MouseEvent) => {
     const { x, y } = getCanvasCoords(e.clientX, e.clientY);
     const hitEl = [...elements].reverse().find(el => {
-      if (el.hidden || el.locked) return false;
+      if (el.hidden) return false;
       const boxX = el.x - 8;
       const boxY = el.y - 8;
       const boxW = (el.w || 100) + 16;
       const boxH = (el.h || 40) + 16;
-      return x >= boxX && x <= boxX + boxW && y >= boxY && y <= boxY + boxH;
+      if (!el.rotation) {
+        return x >= boxX && x <= boxX + boxW && y >= boxY && y <= boxY + boxH;
+      }
+      const cx = el.x + (el.w || 100) / 2;
+      const cy = el.y + (el.h || 40) / 2;
+      const rad = (-el.rotation * Math.PI) / 180;
+      const cos = Math.cos(rad);
+      const sin = Math.sin(rad);
+      const rx = cos * (x - cx) - sin * (y - cy) + cx;
+      const ry = sin * (x - cx) + cos * (y - cy) + cy;
+      return rx >= boxX && rx <= boxX + boxW && ry >= boxY && ry <= boxY + boxH;
     });
 
     if (hitEl) {
+      if (hitEl.locked) {
+        setElements(prev => prev.map(item => item.id === hitEl.id ? { ...item, locked: false } : item));
+        toast.success(isAr ? 'تم إلغاء قفل العنصر بالنقر المزدوج للتحرير ✨' : 'Element unlocked by double-click');
+      }
       if (hitEl.type === 'text') {
         recordHistory();
         setSelectedId(hitEl.id);
-        setEditingTextId(hitEl.id);
-        setEditingTextValue(hitEl.text || '');
+        startTextEditing(hitEl.id, hitEl.text || '');
       } else if (hitEl.type === 'frame' || hitEl.frameShape) {
         recordHistory();
         setSelectedId(hitEl.id);
@@ -5560,6 +5646,8 @@ export const ArtifactImageEditor: React.FC<ArtifactImageEditorProps> = ({
     };
     setElements(prev => [...prev, newEl]);
     setSelectedId(newId);
+    setEditingTextId(newId);
+    setEditingTextValue(textSample);
     setActiveTool('select');
   };
 
@@ -5591,6 +5679,8 @@ export const ArtifactImageEditor: React.FC<ArtifactImageEditorProps> = ({
       };
       setElements(prev => [...prev, newEl]);
       setSelectedId(newId);
+      setEditingTextId(newId);
+      setEditingTextValue(newEl.text || '');
       setActiveTool('select');
     }
   };
@@ -8596,6 +8686,8 @@ export const ArtifactImageEditor: React.FC<ArtifactImageEditorProps> = ({
                                           };
                                           setElements(prev => [...prev, newEl]);
                                           setSelectedId(newId);
+                                          setEditingTextId(newId);
+                                          setEditingTextValue(newEl.text || '');
                                           setActiveTool('select');
                                         }}
                                         className="px-2 py-0.5 text-[9.5px] font-bold rounded-shape-xs bg-[var(--surface-card)] hover:bg-[var(--surface-subtle)] border border-[var(--border-default)] text-[var(--text-primary)] cursor-pointer"
@@ -10997,6 +11089,7 @@ export const ArtifactImageEditor: React.FC<ArtifactImageEditorProps> = ({
                               return (
                                 <textarea
                                   key={`edit-${el.id}`}
+                                  ref={editingTextareaRef}
                                   value={editingTextValue}
                                   onChange={(e) => {
                                     const val = e.target.value;
@@ -11017,10 +11110,15 @@ export const ArtifactImageEditor: React.FC<ArtifactImageEditorProps> = ({
                                     const newH = Math.max(oldH, metrics.height + 16);
 
                                     let newX = el.x;
-                                    if (el.textAlign === 'center') {
-                                      newX = el.x + (oldW - newW) / 2;
-                                    } else if (el.textAlign === 'right') {
-                                      newX = el.x + (oldW - newW);
+                                    const align = el.textAlign || (/[\u0600-\u06FF]/.test(val) ? 'center' : 'left');
+                                    if (align === 'center') {
+                                      const centerX = el.x + oldW / 2;
+                                      newX = centerX - newW / 2;
+                                    } else if (align === 'right') {
+                                      const rightEdge = el.x + oldW;
+                                      newX = rightEdge - newW;
+                                    } else {
+                                      newX = el.x;
                                     }
 
                                     setElements(prev => prev.map(item => item.id === el.id ? {
@@ -11040,7 +11138,19 @@ export const ArtifactImageEditor: React.FC<ArtifactImageEditorProps> = ({
                                       e.currentTarget.blur();
                                     }
                                   }}
-                                  onBlur={() => {
+                                  onMouseDown={(e) => e.stopPropagation()}
+                                  onMouseMove={(e) => e.stopPropagation()}
+                                  onMouseUp={(e) => e.stopPropagation()}
+                                  onClick={(e) => e.stopPropagation()}
+                                  onDoubleClick={(e) => e.stopPropagation()}
+                                  onBlur={(e) => {
+                                    if (Date.now() - textEditActivationTimeRef.current < 250) {
+                                      return;
+                                    }
+                                    const related = e.relatedTarget as HTMLElement | null;
+                                    if (related && related.closest('.floating-toolbar')) {
+                                      return;
+                                    }
                                     setEditingTextId(null);
                                     flushSaveSession();
                                   }}
@@ -11066,10 +11176,11 @@ export const ArtifactImageEditor: React.FC<ArtifactImageEditorProps> = ({
                                     textAlign: el.textAlign || 'center',
                                     letterSpacing: el.textLetterSpacing ? `${el.textLetterSpacing}px` : undefined,
                                     direction: isArabicText ? 'rtl' : 'ltr',
-                                    zIndex: 42,
+                                    zIndex: 55,
                                     borderRadius: '4px',
                                     boxShadow: '0 0 12px rgba(56, 189, 248, 0.25)',
-                                    caretColor: 'var(--fg-accent, #38bdf8)'
+                                    caretColor: 'var(--fg-accent, #38bdf8)',
+                                    pointerEvents: 'auto'
                                   }}
                                   className="custom-scrollbar select-text"
                                   placeholder=""
@@ -11091,27 +11202,9 @@ export const ArtifactImageEditor: React.FC<ArtifactImageEditorProps> = ({
                                 }}
                                 onMouseDown={(e) => e.stopPropagation()}
                                 onClick={(e) => e.stopPropagation()}
-                                className="flex items-center gap-1.5 p-1.5 bg-[var(--surface-card)] border border-[var(--border-accent)]/60 rounded-shape-full shadow-2xl backdrop-blur-md animate-in fade-in zoom-in-95 duration-100 select-none text-[var(--text-primary)] pointer-events-auto"
+                                className="floating-toolbar flex items-center gap-1.5 p-1.5 bg-[var(--surface-card)] border border-[var(--border-accent)]/60 rounded-shape-full shadow-2xl backdrop-blur-md animate-in fade-in zoom-in-95 duration-100 select-none text-[var(--text-primary)] pointer-events-auto"
                               >
-                                {selectedElement.type === 'text' && (
-                                  <button
-                                    type="button"
-                                    onMouseDown={(e) => e.stopPropagation()}
-                                    onClick={(e) => {
-                                      e.stopPropagation();
-                                      setEditingTextId(selectedElement.id);
-                                      setEditingTextValue(selectedElement.text || '');
-                                    }}
-                                    className={`w-8 h-8 rounded-shape-full flex items-center justify-center transition-all cursor-pointer shadow-2xs ${
-                                      editingTextId === selectedElement.id 
-                                        ? 'bg-[var(--comp-button-primary-bg)] text-[var(--comp-button-primary-fg)]' 
-                                        : 'bg-[var(--bg-accent-muted)] hover:bg-[var(--fg-accent)] text-[var(--fg-accent)] hover:text-white'
-                                    }`}
-                                    title={isAr ? 'تحرير المادة النصية مباشرة ✨' : 'Edit Text In-Place ✨'}
-                                  >
-                                    <Edit3 size={15} />
-                                  </button>
-                                )}
+
 
                                 {/* Duplicate */}
                                 <button
@@ -11175,27 +11268,7 @@ export const ArtifactImageEditor: React.FC<ArtifactImageEditorProps> = ({
                                   </>
                                 )}
 
-                                {/* Text Specific Fast Controls */}
-                                {selectedElement.type === 'text' && (
-                                  <>
-                                    <button
-                                      type="button"
-                                      onMouseDown={(e) => e.stopPropagation()}
-                                      onClick={(e) => {
-                                        e.stopPropagation();
-                                        recordHistory();
-                                        setEditingTextId(selectedElement.id);
-                                        setEditingTextValue(selectedElement.text || '');
-                                      }}
-                                      className="w-8 h-8 rounded-shape-full hover:bg-[var(--surface-subtle)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] flex items-center justify-center transition-all cursor-pointer shadow-2xs"
-                                      title={isAr ? 'تعديل هذا النص مباشرة' : 'Edit Text'}
-                                    >
-                                      <Edit3 size={15} />
-                                    </button>
 
-                                    <div className="w-px h-4 bg-[var(--border-default)] mx-0.5" />
-                                  </>
-                                )}
 
 
                                 {/* Layer Order Popover */}
@@ -11394,11 +11467,15 @@ export const ArtifactImageEditor: React.FC<ArtifactImageEditorProps> = ({
                                         if ((selectedElement.type === 'frame' || selectedElement.frameShape) && selectedElement.frameImgSrc) {
                                           setEditingFrameId(selectedElement.id);
                                           toast.info(isAr ? '✨ نمط تحريك الصورة: اسحب الصورة داخل الإطار لتعديل موضعها' : '✨ Photo move mode: Drag photo inside frame to position it');
+                                        } else if (selectedElement.type === 'text' && !selectedElement.locked) {
+                                          startTextEditing(selectedElement.id, selectedElement.text || '');
                                         }
                                       }}
-                                      className="absolute inset-0 pointer-events-auto cursor-move"
+                                      className={`absolute inset-0 pointer-events-auto ${selectedElement.type === 'text' ? 'cursor-text' : 'cursor-move'}`}
                                       title={
-                                        (selectedElement.type === 'frame' || selectedElement.frameShape) && selectedElement.frameImgSrc
+                                        selectedElement.type === 'text'
+                                          ? (isAr ? 'انقر أو المس للنص مباشرة للكتابة والتعديل' : 'Click to edit text')
+                                          : (selectedElement.type === 'frame' || selectedElement.frameShape) && selectedElement.frameImgSrc
                                           ? (editingFrameId === selectedElement.id
                                               ? (isAr ? 'اسحب الصورة داخل الإطار لتعديل موضعها' : 'Drag photo inside frame')
                                               : (isAr ? 'انقر مرتين لقص وتحريك الصورة داخل الإطار، أو اسحب لنقل الإطار' : 'Double click to move photo inside frame, or drag to move frame'))
@@ -11438,6 +11515,38 @@ export const ArtifactImageEditor: React.FC<ArtifactImageEditorProps> = ({
                                             <RotateCw size={13} className="transition-transform group-hover:rotate-45" />
                                           </div>
                                           <div className="w-0.5 h-3 bg-[var(--fg-accent,#38bdf8)]" />
+                                        </div>
+                                      );
+                                    })()}
+
+                                    {/* Dedicated Move Handle for Text Elements (Canva Standard) */}
+                                    {selectedElement.type === 'text' && (() => {
+                                      const isToolbarOnTop = (selectedElement.y || 0) >= 65;
+                                      const isMoveAtBottom = isToolbarOnTop;
+
+                                      return (
+                                        <div 
+                                          className={`absolute ${isMoveAtBottom ? '-bottom-17' : '-top-17'} start-1/2 -translate-x-1/2 flex items-center justify-center pointer-events-auto cursor-move z-50 group`}
+                                          onMouseDown={(e) => {
+                                            e.stopPropagation();
+                                            recordHistory();
+                                            setActiveResizeHandle(null);
+                                            const coords = getCanvasCoords(e.clientX, e.clientY);
+                                            setDragStart(coords);
+                                            setElementStartPos({
+                                              x: selectedElement.x,
+                                              y: selectedElement.y,
+                                              w: selectedElement.w || 100,
+                                              h: selectedElement.h || 40,
+                                              fontSize: selectedElement.fontSize || 32,
+                                              rotation: selectedElement.rotation || 0
+                                            });
+                                          }}
+                                          title={isAr ? 'اسحب لنقل موضع النص بحرية' : 'Drag to move text'}
+                                        >
+                                          <div className="w-6 h-6 rounded-full bg-white dark:bg-slate-800 border-2 border-[var(--fg-accent,#38bdf8)] shadow-lg flex items-center justify-center text-[var(--fg-accent,#38bdf8)] group-hover:scale-115 transition-transform">
+                                            <Move size={12} />
+                                          </div>
                                         </div>
                                       );
                                     })()}
