@@ -1,0 +1,50 @@
+{
+  "compilerOptions": {
+    "strict": true,
+    "esModuleInterop": true,
+    "target": "ES2022",
+    "experimentalDecorators": true,
+    "useDefineForClassFields": false,
+    "module": "ESNext",
+    "lib": [
+      "ES2022",
+      "DOM",
+      "DOM.Iterable"
+    ],
+    "skipLibCheck": true,
+    "moduleResolution": "bundler",
+    "isolatedModules": true,
+    "moduleDetection": "force",
+    "allowJs": false,
+    "jsx": "react-jsx",
+    "types": ["vite/client", "node"],
+    "paths": {
+      "@/data/importedTemplates": [
+        "./src/types/importedTemplates.d.ts"
+      ],
+      "@/*": [
+        "./src/*"
+      ]
+    },
+    "allowImportingTsExtensions": true,
+    "noEmit": true
+  },
+  "include": [
+    "src/**/*"
+  ],
+  "exclude": [
+    "node_modules",
+    "dist",
+    "dist-app",
+    "android",
+    "ios",
+    "public",
+    "uploads",
+    "scripts",
+    "server",
+    "src/data/importedTemplates.ts",
+    "src/data/rinexTemplates.ts",
+    "src/data/templates.ts",
+    "src/data/publicTemplatesData.ts"
+  ]
+}

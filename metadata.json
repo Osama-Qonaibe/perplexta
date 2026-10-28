@@ -1,0 +1,11 @@
+{
+  "name": "perplexta",
+  "description": "PERPLEXTA is the sovereign enterprise AI & technical analysis platform featuring Rinex 4K visual & video studio, ViralBook interactive advertising ecosystem, and Viral TopUp financial services.",
+  "requestFramePermissions": [
+    "camera",
+    "microphone"
+  ],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}

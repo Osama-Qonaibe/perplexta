@@ -1,0 +1,70 @@
+{
+  "name": "PERPLEXTA – AI, ViralBook & Rinex Studio",
+  "short_name": "PERPLEXTA",
+  "description": "PERPLEXTA sovereign multimodal AI platform featuring ViralBook interactive advertising ecosystem, Viral TopUp financial services, and Rinex visual & video studio.",
+  "id": "/",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "display_override": ["standalone", "minimal-ui"],
+  "background_color": "#0d1117",
+  "theme_color": "#0d1117",
+  "orientation": "any",
+  "categories": ["productivity", "utilities", "artificial intelligence", "finance", "business"],
+  "icons": [
+    {
+      "src": "/uploads/brand/pwa-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/uploads/brand/pwa-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/uploads/brand/pwa-maskable-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    },
+    {
+      "src": "/uploads/brand/apple-touch-icon.png",
+      "sizes": "180x180",
+      "type": "image/png",
+      "purpose": "any"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "PERPLEXTA Chat",
+      "short_name": "Chat",
+      "description": "Start a fresh AI session",
+      "url": "/chat",
+      "icons": [{ "src": "/uploads/brand/pwa-192x192.png", "sizes": "192x192", "type": "image/png" }]
+    },
+    {
+      "name": "ViralBook",
+      "short_name": "ViralBook",
+      "description": "Explore ViralBook ads, reels & community posts",
+      "url": "/viralbook",
+      "icons": [{ "src": "/uploads/brand/pwa-192x192.png", "sizes": "192x192", "type": "image/png" }]
+    },
+    {
+      "name": "Rinex Studio",
+      "short_name": "Rinex",
+      "description": "Open Rinex 4K visual & motion design studio",
+      "url": "/image-studio",
+      "icons": [{ "src": "/uploads/brand/pwa-192x192.png", "sizes": "192x192", "type": "image/png" }]
+    },
+    {
+      "name": "Viral TopUp",
+      "short_name": "Viral TopUp",
+      "description": "Manage wallet balance & Viral TopUp financial services",
+      "url": "/settings/wallet",
+      "icons": [{ "src": "/uploads/brand/pwa-192x192.png", "sizes": "192x192", "type": "image/png" }]
+    }
+  ]
+}

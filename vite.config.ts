@@ -1,0 +1,245 @@
+import { createRequire } from 'module';
+import tailwindcss from '@tailwindcss/vite';
+import react from '@vitejs/plugin-react';
+import fs from 'fs';
+import path from 'path';
+import { fileURLToPath } from 'url';
+import { defineConfig, loadEnv } from 'vite';
+
+// Polyfill brace-expansion for modern minimatch/glob compatibility in build environments
+const __nodeRequire = createRequire(import.meta.url);
+try {
+  const be = __nodeRequire('brace-expansion');
+  if (be && typeof be === 'function' && !be.expand) {
+    be.expand = be;
+    be.default = be;
+  }
+} catch (_) {}
+
+const rootDir = path.dirname(fileURLToPath(import.meta.url));
+
+function collectUsedLucideIcons(dir: string, out = new Set<string>()): Set<string> {
+  try {
+    const entries = fs.readdirSync(dir, { withFileTypes: true });
+    for (const entry of entries) {
+      const fullPath = path.join(dir, entry.name);
+      if (entry.isDirectory()) {
+        collectUsedLucideIcons(fullPath, out);
+      } else if (entry.isFile() && /\.(tsx?|jsx?)$/.test(entry.name)) {
+        if (entry.name === 'importedTemplates.ts') continue;
+        const content = fs.readFileSync(fullPath, 'utf8');
+        if (!content.includes('lucide-react')) continue;
+        const importRegex = /import\s+(?:type\s+)?\{([^{}]*)\}\s+from\s+['"]lucide-react['"]/g;
+        let match: RegExpExecArray | null;
+        while ((match = importRegex.exec(content)) !== null) {
+          const block = match[1]
+            .replace(/\/\*[\s\S]*?\*\//g, '')
+            .replace(/\/\/.*$/gm, '');
+          const specifiers = block.split(',');
+          for (const raw of specifiers) {
+            const cleaned = raw.replace(/\btype\b/g, '').trim();
+            if (!cleaned) continue;
+            const importedName = cleaned.split(/\s+as\s+/)[0].trim();
+            if (importedName) out.add(importedName);
+          }
+        }
+      }
+    }
+  } catch (_) {}
+  return out;
+}
+
+export const lucideBarrelOptimizerPlugin = () => {
+  let usedIcons: Set<string> | null = null;
+  return {
+    name: 'lucide-barrel-optimizer',
+    enforce: 'pre' as const,
+    load(id: string) {
+      const cleanId = id.split('?')[0];
+      if (!cleanId.endsWith('lucide-react/dist/esm/lucide-react.js')) return null;
+      if (!usedIcons) {
+        usedIcons = collectUsedLucideIcons(path.resolve(rootDir, 'src'));
+      }
+      if (usedIcons.size === 0 || usedIcons.has('icons')) return null;
+      const source = fs.readFileSync(cleanId, 'utf8');
+      const lines = source.split('\n');
+      const filtered = lines.filter((line) => {
+        if (line.includes('./icons/index.js') || line.includes('export { index as icons }')) {
+          return false;
+        }
+        if (line.includes("from './icons/")) {
+          const aliasMatches = line.matchAll(/\bas\s+([A-Za-z0-9_]+)/g);
+          for (const m of aliasMatches) {
+            if (usedIcons!.has(m[1])) return true;
+          }
+          return false;
+        }
+        return true;
+      });
+      return filtered.join('\n');
+    },
+  };
+};
+
+export default defineConfig(({ mode }) => {
+  const env = loadEnv(mode, rootDir, 'VITE_');
+  return {
+    root: rootDir,
+    base: '/',
+    publicDir: path.resolve(rootDir, 'public'),
+    plugins: [
+      lucideBarrelOptimizerPlugin(),
+      react(),
+      tailwindcss(),
+    ],
+    define: {},
+    build: {
+      outDir: path.resolve(rootDir, 'dist'),
+      emptyOutDir: true,
+      copyPublicDir: false,
+      sourcemap: false,
+      minify: 'esbuild',
+      cssMinify: 'esbuild',
+      cssCodeSplit: true,
+      target: 'esnext',
+      reportCompressedSize: false,
+      chunkSizeWarningLimit: 3000,
+      rollupOptions: {
+        input: 'index.html',
+        treeshake: {
+          moduleSideEffects: 'no-external',
+          propertyReadSideEffects: false,
+          tryCatchDeoptimization: false,
+        },
+        output: {
+          manualChunks(id) {
+            if (id.includes('node_modules')) {
+              // React Core & Base UI
+              if (id.includes('/react/') || id.includes('/react-dom/') || id.includes('/scheduler/') || id.includes('@base-ui')) {
+                return 'vendor-react';
+              }
+              // Router
+              if (id.includes('/react-router/') || id.includes('/react-router-dom/')) {
+                return 'vendor-router';
+              }
+              // Motion & Animations
+              if (id.includes('framer-motion') || id.includes('/motion/')) {
+                return 'vendor-motion';
+              }
+              // Icons
+              if (id.includes('lucide-react')) {
+                return 'vendor-icons';
+              }
+              // Data Visualization & Charts
+              if (id.includes('recharts') || id.includes('d3-') || id.includes('/d3/')) {
+                return 'vendor-charts';
+              }
+              // State & Network Queries
+              if (id.includes('@tanstack/react-query')) {
+                return 'vendor-query';
+              }
+              // Heavy Document & Export Tools (PDF, Excel, Word, Image Export)
+              if (
+                id.includes('jspdf') ||
+                id.includes('exceljs') ||
+                id.includes('mammoth') ||
+                id.includes('pdf-parse') ||
+                id.includes('jszip') ||
+                id.includes('file-saver') ||
+                id.includes('html-to-image') ||
+                id.includes('html-to-text')
+              ) {
+                return 'vendor-docs';
+              }
+              // Heavy Media & Video / Audio / Cropping Tools
+              if (
+                id.includes('@ffmpeg') ||
+                id.includes('react-player') ||
+                id.includes('react-easy-crop') ||
+                id.includes('browser-image-compression') ||
+                id.includes('canvas-confetti')
+              ) {
+                return 'vendor-media';
+              }
+              // Code Highlight, Markdown & SQL Tools
+              if (
+                id.includes('prismjs') ||
+                id.includes('sql.js') ||
+                id.includes('react-markdown') ||
+                id.includes('remark-gfm') ||
+                id.includes('rehype-raw')
+              ) {
+                return 'vendor-editor';
+              }
+              // Utilities & Networking
+              if (
+                id.includes('axios') ||
+                id.includes('socket.io-client') ||
+                id.includes('dompurify')
+              ) {
+                return 'vendor-network';
+              }
+            }
+
+            // High-precision data segregation: keep massive design catalogs isolated in their own cacheable chunks
+            if (id.includes('importedTemplates')) {
+              return 'data-imported-templates';
+            }
+            if (
+              id.includes('/data/templates') ||
+              id.includes('/data/rinexTemplates') ||
+              id.includes('/data/rinexStudioCatalog')
+            ) {
+              return 'data-studio-templates';
+            }
+            if (id.includes('/data/publicTemplatesData')) {
+              return 'data-public-templates';
+            }
+          },
+        },
+      }
+    },
+    resolve: {
+      dedupe: ['react', 'react-dom', 'react-router-dom'],
+      alias: {
+        '@': path.resolve(rootDir, 'src'),
+        '/src': path.resolve(rootDir, 'src'),
+      },
+    },
+    optimizeDeps: {
+      exclude: ['lucide-react'],
+      include: [
+        'react',
+        'react-dom',
+        'react-router-dom',
+        'motion',
+        '@tanstack/react-query',
+        'recharts',
+        'd3',
+      ],
+    },
+    server: {
+      host: '0.0.0.0',
+      allowedHosts: true,
+      headers: {
+        'Content-Security-Policy': "default-src * 'self' 'unsafe-inline' 'unsafe-eval' data: blob:; script-src * 'self' 'unsafe-inline' 'unsafe-eval' blob:; style-src * 'self' 'unsafe-inline'; img-src * 'self' data: blob:; connect-src * 'self' 'unsafe-inline' 'unsafe-eval' blob:; frame-ancestors * 'self';"
+      },
+      hmr: false,
+      watch: {
+        ignored: [
+          '**/node_modules/**',
+          '**/dist/**',
+          '**/android/**',
+          '**/ios/**',
+          '**/uploads/**',
+          '**/.git/**',
+          '**/.github/**',
+        ],
+      },
+    },
+    preview: {
+      host: '0.0.0.0',
+      allowedHosts: true,
+    },
+  };
+});
