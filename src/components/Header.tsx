@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect, useMemo } from 'react';
 import { useLocation, useNavigate, NavLink } from 'react-router-dom';
-import { Bell, Languages, Check, CheckCheck, Trash2, Clock, ShieldCheck, Landmark, MessageSquare, MessagesSquare, WifiOff, Megaphone, Cpu, Pin, MoreHorizontal, Bookmark, FolderPlus, FileText, FileCode, FileType, Pencil, Globe, Image as ImageIcon, Share2, ChevronLeft, ChevronRight, Palette, Music } from 'lucide-react';
+import { Bell, Languages, Check, CheckCheck, Trash2, Clock, ShieldCheck, Landmark, MessageSquare, MessagesSquare, WifiOff, Megaphone, Cpu, Pin, MoreHorizontal, Bookmark, FolderPlus, FileText, FileCode, FileType, Pencil, Globe, Image as ImageIcon, Share2, ChevronLeft, ChevronRight, Palette, Music, Menu, Plus } from 'lucide-react';
 import { useAppContext } from '../context/AppContext';
 import { useWorkspace } from '../context/WorkspaceContext';
 import { isPathBlocked } from '../utils/sectionVisibility';
@@ -358,6 +358,19 @@ export const Header: React.FC<{ activeLanguage?: string }> = ({ activeLanguage }
 
   const brandName = (dir === 'rtl' ? siteSettings?.siteNameAr : siteSettings?.siteName) || siteSettings?.siteName || t('appName') || 'Perplexta';
 
+  const mobileSectionTitle = useMemo(() => {
+    const path = location.pathname.toLowerCase();
+    const isAr = globalLang === 'ar';
+    if (path.startsWith('/discover')) return isAr ? 'استكشاف التوصيات' : 'Recommendations';
+    if (path.startsWith('/rewards')) return isAr ? 'المكافآت والأرباح' : 'Rewards';
+    if (path.startsWith('/subscription')) return isAr ? 'باقات الاشتراك' : 'Subscription';
+    if (path.startsWith('/settings/wallet')) return isAr ? 'المحفظة والرصيد' : 'Wallet';
+    if (path.startsWith('/settings')) return isAr ? 'الإعدادات' : 'Settings';
+    if (path.startsWith('/viralbook/saved')) return isAr ? 'العناصر المحفوظة' : 'Saved Bookmarks';
+    if (path.startsWith('/viralbook')) return isAr ? 'فيرال بوك' : 'ViralBook';
+    return brandName || (isAr ? 'بيربليكستا' : 'Perplexta');
+  }, [location.pathname, globalLang, brandName]);
+
   const renderLogo = (
     <div className="flex items-center h-full w-full overflow-hidden select-none">
       {/* 
@@ -368,7 +381,21 @@ export const Header: React.FC<{ activeLanguage?: string }> = ({ activeLanguage }
         whether the sidebar is open, closed, animating, or on page refresh.
       */}
       <div className={`${!isMobileView ? 'w-[50px] min-w-[50px] max-w-[50px]' : 'w-auto'} h-full flex items-center justify-center shrink-0`}>
-        {canToggleSidebarFromLogo && !isSidebarOpen ? (
+        {isMobileView ? (
+          <button
+            type="button"
+            onClick={(e) => {
+              e.stopPropagation();
+              triggerHaptic('medium');
+              setIsSidebarOpen(!isSidebarOpen);
+            }}
+            className="relative w-8 h-8 rounded-shape-sm border border-[var(--border-default)] hover:border-[var(--border-accent)]/60 bg-transparent hover:bg-[var(--surface-subtle)] text-[var(--text-primary)] transition-all duration-fast flex items-center justify-center flex-shrink-0 cursor-pointer active:scale-95 before:absolute before:-inset-1.5 before:content-['']"
+            title={language === 'ar' ? 'القائمة الجانبية' : 'Open Sidebar Menu'}
+            aria-label="Open Sidebar"
+          >
+            <Menu size={16} className="text-[var(--text-primary)]" />
+          </button>
+        ) : canToggleSidebarFromLogo && !isSidebarOpen ? (
           <button
             type="button"
             onClick={(e) => {
@@ -613,9 +640,7 @@ export const Header: React.FC<{ activeLanguage?: string }> = ({ activeLanguage }
           triggerHaptic('light');
           toggleLanguage();
         }}
-        className={`items-center justify-center w-8 h-8 rounded-shape-sm bg-transparent border border-[var(--border-default)] hover:border-[var(--border-accent)]/60 hover:bg-[var(--surface-subtle)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-all duration-fast active:scale-95 group shrink-0 cursor-pointer relative before:absolute before:-inset-1.5 before:content-[''] ${
-          isChatPage && chatHeaderData && chatHeaderData.hasMessages ? 'hidden sm:flex' : 'flex'
-        }`}
+        className="hidden lg:flex items-center justify-center w-8 h-8 rounded-shape-sm bg-transparent border border-[var(--border-default)] hover:border-[var(--border-accent)]/60 hover:bg-[var(--surface-subtle)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-all duration-fast active:scale-95 group shrink-0 cursor-pointer relative before:absolute before:-inset-1.5 before:content-['']"
         title={language === 'ar' ? 'تغيير اللغة (English)' : 'Change Language (العربية)'}
         aria-label={language === 'ar' ? 'تغيير اللغة' : 'Change Language'}
       >
@@ -625,10 +650,20 @@ export const Header: React.FC<{ activeLanguage?: string }> = ({ activeLanguage }
       <ThemeToggleButton 
         variant="icon-button" 
         size="sm" 
-        className={`rounded-shape-sm relative before:absolute before:-inset-1.5 before:content-[''] ${
-          isChatPage && chatHeaderData && chatHeaderData.hasMessages ? 'hidden sm:flex' : 'flex'
-        }`} 
+        className="hidden lg:flex rounded-shape-sm relative before:absolute before:-inset-1.5 before:content-['']" 
       />
+
+      {isMobileView && isChatPage && chatHeaderData && chatHeaderData.hasMessages && (
+        <button
+          type="button"
+          onClick={handleNewChat}
+          className="flex items-center justify-center w-8 h-8 rounded-shape-sm bg-transparent border border-[var(--border-default)] hover:border-[var(--border-accent)]/60 hover:bg-[var(--surface-subtle)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-all duration-fast active:scale-95 shrink-0 cursor-pointer relative before:absolute before:-inset-1.5 before:content-['']"
+          title={language === 'ar' ? 'محادثة جديدة' : 'New Chat'}
+          aria-label={language === 'ar' ? 'محادثة جديدة' : 'New Chat'}
+        >
+          <Plus size={15} className="text-[var(--text-primary)]" />
+        </button>
+      )}
 
 
     
@@ -871,18 +906,20 @@ export const Header: React.FC<{ activeLanguage?: string }> = ({ activeLanguage }
           : 'opacity-100 pointer-events-auto translate-y-0 scale-100'
       }`}
     >
-      {/* Full-height vertical divider line matching sidebar width starting from top-0 to 100dvh */}
-      <motion.div
-        initial={false}
-        animate={{
-          width: !isMobileView ? (isSidebarOpen ? 180 : 50) : 0
-        }}
-        transition={SIDEBAR_TRANSITION}
-        className={`absolute top-0 bottom-0 pointer-events-none z-[1] ${
-          dir === 'rtl' ? 'right-0 border-l' : 'left-0 border-r'
-        } border-[var(--border-default)]`}
-        style={{ height: '100dvh', willChange: 'width' }}
-      />
+      {/* Full-height vertical divider line matching sidebar width starting from top-0 to 100dvh (Desktop Only) */}
+      {!isMobileView && (
+        <motion.div
+          initial={false}
+          animate={{
+            width: isSidebarOpen ? 180 : 50
+          }}
+          transition={SIDEBAR_TRANSITION}
+          className={`hidden lg:block absolute top-0 bottom-0 pointer-events-none z-[1] ${
+            dir === 'rtl' ? 'right-0 border-l' : 'left-0 border-r'
+          } border-[var(--border-default)]`}
+          style={{ height: '100dvh', willChange: 'width' }}
+        />
+      )}
       
       <div className={`w-full flex justify-between items-center h-[50px] gap-1 sm:gap-3 relative ${isMobileView ? 'px-2.5' : 'ps-0 pe-4 md:pe-6'}`}>
         {/* Logo container matching sidebar width on desktop */}
@@ -898,6 +935,18 @@ export const Header: React.FC<{ activeLanguage?: string }> = ({ activeLanguage }
             {renderLogo}
           </div>
         </motion.div>
+
+        {/* Mobile Viewport Contextual Title (shown when not viewing message action tabs) */}
+        {isMobileView && (!isChatPage || !chatHeaderData || !chatHeaderData.hasMessages) && (
+          <div 
+            className="flex-1 min-w-0 flex items-center justify-start px-2 z-10 select-none overflow-hidden"
+            dir={globalLang === 'ar' ? 'rtl' : 'ltr'}
+          >
+            <span className="font-bold text-xs text-[var(--text-primary)] tracking-tight truncate">
+              {mobileSectionTitle}
+            </span>
+          </div>
+        )}
 
         {/* Chat Interaction Toolbar: Exactly aligned with chat container boundaries (max-w-3xl) */}
         {isChatPage && chatHeaderData && chatHeaderData.hasMessages && (!isArtifactOpen || !isFullscreen) && (
@@ -1149,35 +1198,6 @@ export const Header: React.FC<{ activeLanguage?: string }> = ({ activeLanguage }
                     <Pin size={12} className="fill-amber-500 shrink-0" />
                     <span className="text-[10px] font-mono font-bold">
                       {chatHeaderData.pinnedCount}
-                    </span>
-                  </button>
-                )}
-
-                {/* Real-time Conditional Credit Counter beside options button on Mobile */}
-                {user && (
-                  <button
-                    type="button"
-                    onClick={() => {
-                      triggerHaptic('light');
-                      navigate('/subscription');
-                    }}
-                    className={`h-7 px-1.5 rounded-shape-sm border flex items-center justify-center gap-1 transition-all duration-fast cursor-pointer shrink-0 relative active:scale-95 group before:absolute before:-inset-2 before:content-[''] ${
-                      creditFlash 
-                        ? 'bg-[var(--bg-accent-subtle)] border-[var(--border-accent)] text-[var(--fg-accent)] scale-105' 
-                        : 'bg-transparent border-[var(--border-default)] hover:border-[var(--border-accent)]/60 hover:bg-[var(--surface-subtle)] text-[var(--text-primary)]'
-                    }`}
-                    title={language === 'ar' ? `رصيد الكريديت: ${userCredits.toLocaleString()}` : `Credits: ${userCredits.toLocaleString()}`}
-                  >
-                    <AssistantIcon 
-                      size={11} 
-                      shape="circle" 
-                      isSpinning={creditFlash || (chatHeaderData && chatHeaderData.isGenerating)} 
-                      spinDirection="reverse"
-                      dir={globalLang === 'ar' ? 'rtl' : 'ltr'} 
-                      className="shrink-0"
-                    />
-                    <span className="text-[10px] font-mono font-bold">
-                      {Number(userCredits).toLocaleString()}
                     </span>
                   </button>
                 )}

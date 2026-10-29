@@ -167,8 +167,8 @@ export const CreatorDashboardPage: React.FC = () => {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen flex flex-col items-center justify-center p-6 bg-[var(--surface-page)] text-[var(--text-primary)]">
-        <RefreshCw className="w-10 h-10 text-[var(--accent)] animate-spin mb-4" />
+      <div className="py-16 flex flex-col items-center justify-center p-6 rounded-shape-md border border-[var(--border-default)] bg-[var(--surface-card)] text-[var(--text-primary)] max-w-4xl mx-auto">
+        <RefreshCw className="w-7 h-7 text-[var(--fg-accent)] animate-spin mb-3" />
         <p className="text-xs text-[var(--text-muted)] font-bold">{isAr ? 'جاري التحقق من هوية المبدع...' : 'Verifying creator profile...'}</p>
       </div>
     );
@@ -176,52 +176,60 @@ export const CreatorDashboardPage: React.FC = () => {
 
   if (!creator) {
     return (
-      <div className="min-h-screen bg-[var(--surface-page)] text-[var(--text-primary)] font-sans flex flex-col items-center justify-center p-6">
-        <div className="max-w-md w-full p-8 rounded-shape-lg bg-[var(--surface-card)] border border-[var(--border-main)] shadow-xl text-center space-y-6">
-          <div className="w-16 h-16 rounded-shape-lg bg-gradient-to-tr from-[var(--accent)] to-purple-600 text-slate-950 flex items-center justify-center mx-auto shadow-md">
-            <Award size={32} />
+      <div className="w-full max-w-4xl mx-auto pb-12">
+        <div className="ide-card p-4 sm:p-8 rounded-shape-md bg-[var(--surface-card)] border border-[var(--border-default)] shadow-xs space-y-5">
+          <div className="flex items-center gap-3 pb-3 border-b border-[var(--border-default)]">
+            <div className="w-8 h-8 rounded-shape-sm bg-[var(--bg-accent-muted)] border border-[var(--border-accent)]/20 text-[var(--fg-accent)] flex items-center justify-center shrink-0">
+              <Award size={16} />
+            </div>
+            <div>
+              <h2 className="text-xs sm:text-sm font-black uppercase tracking-wider text-[var(--text-primary)]">
+                {isAr ? 'برنامج صناع المحتوى والمبدعين في بيربليكستا' : 'Perplexta Creators Program'}
+              </h2>
+              <p className="text-[10px] font-bold text-[var(--text-muted)]">
+                {isAr ? 'انضم لشبكة المبدعين المعتمدة وابدأ بتحقيق العوائد' : 'Join the certified creator network and monetize your work'}
+              </p>
+            </div>
           </div>
 
-          <div className="space-y-2">
-            <h2 className="text-xl font-black text-[var(--text-primary)]">
-              {isAr ? 'انضم لبرنامج صناع المحتوى في رينكس' : 'Join Rinex Creators Network'}
-            </h2>
-            <p className="text-xs text-[var(--text-secondary)] leading-relaxed">
-              {isAr
-                ? 'حسابك الحالي غير مسجل كصانع قوالب بعد. انضم لشبكتنا المعتمدة لتبدأ في كسب العوائد والعمولات مع مكافأة ترحيبية بقيمة $50 دولار تُحجز لحسابك وتُصرف فور نشر أول 10 قوالب احترافية!'
-                : 'Your account is not registered as a creator yet. Join our network to publish templates and earn a $50 welcome bonus unlocked upon publishing your first 10 pro templates!'}
-            </p>
-          </div>
+          <p className="text-xs text-[var(--text-secondary)] leading-relaxed">
+            {isAr
+              ? 'حسابك الحالي غير مسجل كصانع قوالب بعد. انضم لشبكة بيربليكستا المعتمدة لتبدأ في كسب العوائد والعمولات مع مكافأة ترحيبية بقيمة $50 دولار تُحجز لحسابك وتُصرف فور نشر أول 10 قوالب احترافية!'
+              : 'Your account is not registered as a creator yet. Join the Perplexta Creator Network to publish templates and earn a $50 welcome bonus unlocked upon publishing your first 10 pro templates!'}
+          </p>
 
-          <div className="p-3.5 rounded-shape-md bg-[var(--surface-subtle)] border border-[var(--border-main)] text-start space-y-2">
+          <div className="p-3.5 rounded-shape-sm bg-[var(--surface-subtle)] border border-[var(--border-default)] text-start space-y-2.5">
             <div className="text-xs font-bold text-[var(--text-primary)] flex items-center gap-2">
-              <CheckCircle2 size={14} className="text-[var(--fg-success)]" />
+              <CheckCircle2 size={14} className="text-[var(--fg-success)] shrink-0" />
               <span>{isAr ? 'مكافأة $50 معلقة تُصرف تلقائياً لمحفظتك بعد نشر 10 قوالب' : '$50 Bonus unlocked upon publishing 10 pro templates'}</span>
             </div>
             <div className="text-xs font-bold text-[var(--text-primary)] flex items-center gap-2">
-              <CheckCircle2 size={14} className="text-[var(--fg-success)]" />
+              <CheckCircle2 size={14} className="text-[var(--fg-success)] shrink-0" />
               <span>{isAr ? `عمولة ${proCommissionPercent}% على مبيعات واستخدامات القوالب الاحترافية` : `${proCommissionPercent}% Commission on pro template sales`}</span>
             </div>
             <div className="text-xs font-bold text-[var(--text-primary)] flex items-center gap-2">
-              <CheckCircle2 size={14} className="text-[var(--fg-success)]" />
+              <CheckCircle2 size={14} className="text-[var(--fg-success)] shrink-0" />
               <span>{isAr ? 'تحويل فوري إلى محفظة الدفع المباشرة أو الحساب البنكي' : 'Direct transfer to Perplexta Wallet or bank IBAN'}</span>
             </div>
           </div>
 
-          <div className="space-y-3 pt-2">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 pt-1">
             <button
+              type="button"
               onClick={() => setIsRegistrationModalOpen(true)}
-              className="w-full min-h-[44px] rounded-shape-sm bg-[var(--comp-button-primary-bg)] text-[var(--comp-button-primary-fg)] font-black text-xs flex items-center justify-center gap-2 shadow-md hover:opacity-95 transition-all cursor-pointer"
+              className="w-full h-10 px-4 rounded-shape-sm bg-[var(--comp-button-primary-bg)] text-[var(--comp-button-primary-fg)] font-black text-xs flex items-center justify-center gap-2 shadow-xs hover:opacity-95 active:scale-98 transition-all cursor-pointer"
             >
-              <Sparkles size={16} />
-              <span>{isAr ? 'سجل الآن كمبدع معتمد (مكافأة $50 مشروطة)' : 'Register as Creator ($50 Milestone Bonus)'}</span>
+              <Sparkles size={15} />
+              <span>{isAr ? 'سجل الآن كمبدع معتمد (مكافأة $50)' : 'Register as Creator ($50 Bonus)'}</span>
             </button>
 
             <button
-              onClick={() => navigate('/image-studio')}
-              className="w-full min-h-[44px] rounded-shape-sm bg-[var(--surface-subtle)] border border-[var(--border-main)] text-[var(--text-primary)] font-bold text-xs hover:bg-[var(--surface-inset)] transition-colors cursor-pointer"
+              type="button"
+              onClick={() => navigate('/viralbook')}
+              className="w-full h-10 px-4 rounded-shape-sm bg-[var(--surface-subtle)] hover:bg-[var(--surface-inset)] border border-[var(--border-default)] text-[var(--text-primary)] font-bold text-xs flex items-center justify-center gap-2 active:scale-98 transition-colors cursor-pointer"
             >
-              {isAr ? 'العودة إلى استوديو رينكس' : 'Return to Rinex Studio'}
+              <Compass size={15} className="text-[var(--fg-accent)]" />
+              <span>{isAr ? 'استكشاف مجتمع فيرال بوك' : 'Explore ViralBook Community'}</span>
             </button>
           </div>
         </div>
@@ -239,17 +247,17 @@ export const CreatorDashboardPage: React.FC = () => {
   const monthlyEarnings = (creator.earningsBalance * 0.45).toFixed(2);
 
   return (
-    <div className="min-h-screen bg-[var(--surface-page)] text-[var(--text-primary)] font-sans antialiased pb-20">
+    <div className="w-full max-w-4xl mx-auto text-[var(--text-primary)] font-sans antialiased pb-12 space-y-4">
       
-      {/* 1. Header Hero Title */}
-      <div className="bg-[var(--surface-card)] border-b border-[var(--border-main)] py-8 px-4 sm:px-6 lg:px-8">
-        <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+      {/* 1. Header Hero Title Card */}
+      <div className="ide-card p-3.5 sm:p-6 rounded-shape-md bg-[var(--surface-card)] border border-[var(--border-default)] shadow-xs">
+        <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
           <div className="space-y-1">
-            <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-shape-full bg-[color-mix(in_oklab,var(--accent)_12%,transparent)] border border-[color-mix(in_oklab,var(--accent)_25%,transparent)] text-[var(--accent)] text-xs font-black uppercase tracking-wider">
-              <Award size={13} />
-              <span>{isAr ? 'برنامج صناع المحتوى والمبدعين في رينكس' : 'Rinex Creators Program'}</span>
+            <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-shape-xs bg-[var(--bg-accent-muted)] border border-[var(--border-accent)]/25 text-[var(--fg-accent)] text-[10px] font-black uppercase tracking-wider">
+              <Award size={12} />
+              <span>{isAr ? 'برنامج صناع المحتوى والمبدعين في بيربليكستا' : 'Perplexta Creators Program'}</span>
             </div>
-            <h1 className="text-xl sm:text-2xl font-black tracking-tight text-[var(--text-primary)]">
+            <h1 className="text-base sm:text-xl font-black tracking-tight text-[var(--text-primary)]">
               {isAr ? 'لوحة تحكم الأرباح والإحصائيات' : 'Creator Earnings & Dashboard'}
             </h1>
             <p className="text-xs text-[var(--text-muted)]">
@@ -259,33 +267,36 @@ export const CreatorDashboardPage: React.FC = () => {
             </p>
           </div>
 
-          <div className="flex items-center gap-2 flex-wrap">
+          <div className="flex items-center gap-2 flex-wrap w-full md:w-auto">
             <button
+              type="button"
               onClick={() => navigate('/settings/wallet')}
-              className="min-h-[44px] px-4 rounded-shape-sm bg-[var(--surface-subtle)] hover:bg-[var(--surface-inset)] border border-[var(--border-main)] hover:border-[var(--border-accent)] text-[var(--text-primary)] font-bold text-xs flex items-center gap-1.5 transition-colors cursor-pointer"
+              className="flex-1 md:flex-none h-8 px-3 rounded-shape-sm bg-[var(--surface-subtle)] hover:bg-[var(--surface-inset)] border border-[var(--border-default)] hover:border-[var(--border-accent)] text-[var(--text-primary)] font-bold text-xs flex items-center justify-center gap-1.5 transition-colors cursor-pointer"
             >
-              <Wallet size={14} className="text-[var(--fg-success)]" />
+              <Wallet size={13} className="text-[var(--fg-success)]" />
               <span>{isAr ? 'محفظة الدفع المباشرة' : 'Direct Wallet'}</span>
             </button>
             <button
+              type="button"
               onClick={() => navigate(`/creator/${creator.username}`)}
-              className="min-h-[44px] px-4 rounded-shape-sm bg-[var(--surface-subtle)] hover:bg-[var(--surface-inset)] border border-[var(--border-main)] hover:border-[var(--border-accent)] text-[var(--text-primary)] font-bold text-xs flex items-center gap-1.5 transition-colors cursor-pointer"
+              className="flex-1 md:flex-none h-8 px-3 rounded-shape-sm bg-[var(--surface-subtle)] hover:bg-[var(--surface-inset)] border border-[var(--border-default)] hover:border-[var(--border-accent)] text-[var(--text-primary)] font-bold text-xs flex items-center justify-center gap-1.5 transition-colors cursor-pointer"
             >
-              <Compass size={14} />
+              <Compass size={13} />
               <span>{isAr ? 'عرض بروفايلي العام' : 'View My Public Profile'}</span>
             </button>
             <button
+              type="button"
               onClick={() => navigate('/image-studio')}
-              className="min-h-[44px] px-4 rounded-shape-sm bg-[var(--comp-button-primary-bg)] text-[var(--comp-button-primary-fg)] font-bold text-xs flex items-center gap-1.5 shadow-2xs hover:opacity-95 transition-all cursor-pointer"
+              className="hidden md:flex h-8 px-3.5 rounded-shape-sm bg-[var(--comp-button-primary-bg)] text-[var(--comp-button-primary-fg)] font-bold text-xs items-center justify-center gap-1.5 shadow-2xs hover:opacity-95 transition-all cursor-pointer"
             >
-              <Plus size={14} />
+              <Plus size={13} />
               <span>{isAr ? 'ابتكر قالب جديد' : 'Create Template'}</span>
             </button>
           </div>
         </div>
       </div>
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-8">
+      <div className="space-y-4">
         
         {/* Milestone Radar: Creator Welcome Bonus & Anti-Abuse Shield */}
         {creator && (

@@ -133,7 +133,7 @@ export const AdminRenderMetricsView: React.FC = () => {
         <button
           onClick={fetchMetrics}
           disabled={loading}
-          className="flex items-center gap-2 px-4 py-2 bg-[var(--accent)] text-[var(--fg-on-emphasis)] rounded-[var(--radius-md)] text-sm font-bold transition-colors duration-base shadow-sm disabled:opacity-50"
+          className="flex items-center gap-2 px-4 py-2 bg-[var(--accent)] text-[var(--fg-on-emphasis)] rounded-shape-md text-sm font-bold transition-colors duration-base shadow-sm disabled:opacity-50"
         >
           <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
           <span>تحديث البيانات / Refresh</span>
@@ -142,7 +142,7 @@ export const AdminRenderMetricsView: React.FC = () => {
 
       {/* KPI Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <div className="p-5 rounded-[var(--radius-md)] border bg-[var(--surface-card)] border-[var(--border-default)] shadow-sm">
+        <div className="p-5 rounded-shape-md border bg-[var(--surface-card)] border-[var(--border-default)] shadow-sm">
           <div className="flex items-center justify-between text-[var(--text-muted)] mb-2">
             <span className="text-xs font-semibold uppercase tracking-wider">إجمالي عمليات الرندر</span>
             <Cpu className="w-5 h-5 text-[var(--accent)]" />
@@ -151,7 +151,7 @@ export const AdminRenderMetricsView: React.FC = () => {
           <p className="text-xs text-[var(--text-secondary)] mt-1">عبر الفلتر المحدد</p>
         </div>
 
-        <div className="p-5 rounded-[var(--radius-md)] border bg-[var(--surface-card)] border-[var(--border-default)] shadow-sm">
+        <div className="p-5 rounded-shape-md border bg-[var(--surface-card)] border-[var(--border-default)] shadow-sm">
           <div className="flex items-center justify-between text-[var(--text-muted)] mb-2">
             <span className="text-xs font-semibold uppercase tracking-wider">متوسط زمن الاستجابة (Latency)</span>
             <Clock className="w-5 h-5 text-[var(--fg-accent)]" />
@@ -160,7 +160,7 @@ export const AdminRenderMetricsView: React.FC = () => {
           <p className="text-xs text-[var(--accent)] mt-1">أداء ممتاز واستجابة فورية</p>
         </div>
 
-        <div className="p-5 rounded-[var(--radius-md)] border bg-[var(--surface-card)] border-[var(--border-default)] shadow-sm">
+        <div className="p-5 rounded-shape-md border bg-[var(--surface-card)] border-[var(--border-default)] shadow-sm">
           <div className="flex items-center justify-between text-[var(--text-muted)] mb-2">
             <span className="text-xs font-semibold uppercase tracking-wider">أقصى زمن رندر مسجل</span>
             <Zap className="w-5 h-5 text-[var(--fg-warning)]" />
@@ -169,7 +169,7 @@ export const AdminRenderMetricsView: React.FC = () => {
           <p className="text-xs text-[var(--text-secondary)] mt-1">ذروة التحميل القياسية</p>
         </div>
 
-        <div className="p-5 rounded-[var(--radius-md)] border bg-[var(--surface-card)] border-[var(--border-default)] shadow-sm">
+        <div className="p-5 rounded-shape-md border bg-[var(--surface-card)] border-[var(--border-default)] shadow-sm">
           <div className="flex items-center justify-between text-[var(--text-muted)] mb-2">
             <span className="text-xs font-semibold uppercase tracking-wider">الجلسات النشطة</span>
             <Users className="w-5 h-5 text-[var(--fg-accent)]" />
@@ -180,7 +180,7 @@ export const AdminRenderMetricsView: React.FC = () => {
       </div>
 
       {/* Filters Toolbar */}
-      <div className="p-4 rounded-[var(--radius-md)] border flex flex-wrap items-center gap-4 bg-[var(--surface-subtle)] border-[var(--border-default)]">
+      <div className="p-4 rounded-shape-md border flex flex-wrap items-center gap-4 bg-[var(--surface-subtle)] border-[var(--border-default)]">
         <div className="flex items-center gap-2 min-w-[240px]">
           <span className="text-xs font-semibold text-[var(--text-muted)] uppercase shrink-0">المكون (Component):</span>
           <div className="flex-1 min-w-[180px]">
@@ -215,7 +215,7 @@ export const AdminRenderMetricsView: React.FC = () => {
       {/* Charts Section */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Area Chart: Latency Trend */}
-        <div className="p-5 rounded-[var(--radius-md)] border bg-[var(--surface-card)] border-[var(--border-default)] shadow-sm">
+        <div className="p-5 rounded-shape-md border bg-[var(--surface-card)] border-[var(--border-default)] shadow-sm">
           <h3 className="text-base font-semibold mb-4 flex items-center gap-2 text-[var(--text-primary)]">
             <Activity className="w-4 h-4 text-[var(--accent)]" />
             <span>مخطط زمن استجابة الرندر (Render Latency Area Trend)</span>
@@ -241,7 +241,7 @@ export const AdminRenderMetricsView: React.FC = () => {
         </div>
 
         {/* Bar Chart: Average Latency per Component */}
-        <div className="p-5 rounded-[var(--radius-md)] border bg-[var(--surface-card)] border-[var(--border-default)] shadow-sm">
+        <div className="p-5 rounded-shape-md border bg-[var(--surface-card)] border-[var(--border-default)] shadow-sm">
           <h3 className="text-base font-semibold mb-4 flex items-center gap-2 text-[var(--text-primary)]">
             <Server className="w-4 h-4 text-[var(--accent)]" />
             <span>متوسط زمن الرندر حسب المكون (Avg Latency per Component)</span>
@@ -268,7 +268,7 @@ export const AdminRenderMetricsView: React.FC = () => {
       </div>
 
       {/* Detailed Telemetry Table */}
-      <div className="rounded-[var(--radius-md)] border overflow-hidden bg-[var(--surface-card)] border-[var(--border-default)] shadow-sm">
+      <div className="rounded-shape-md border overflow-hidden bg-[var(--surface-card)] border-[var(--border-default)] shadow-sm">
         <div className="p-4 border-b border-[var(--border-default)] font-semibold flex items-center justify-between text-[var(--text-primary)]">
           <span>سجل القياسات الحية المفصلة (Detailed Telemetry Log)</span>
           <span className="text-xs font-normal text-[var(--text-muted)]">عرض أحدث {filteredMetrics.length} عملية</span>
@@ -298,7 +298,7 @@ export const AdminRenderMetricsView: React.FC = () => {
                     <td className="p-3 font-semibold text-[var(--accent)] font-sans">{m.componentName}</td>
                     <td className="p-3 text-[var(--text-primary)]">{m.renderCount}</td>
                     <td className="p-3">
-                      <span className={`px-2 py-0.5 rounded-[var(--radius-xs)] text-xs ${m.renderDuration > 30 ? 'bg-[var(--status-warning-subtle)]/10 text-[var(--fg-warning)] border border-[var(--status-warning)]/20' : 'bg-[var(--bg-accent-muted)] text-[var(--fg-accent)] border border-[var(--border-accent)]'}`}>
+                      <span className={`px-2 py-0.5 rounded-shape-xs text-xs ${m.renderDuration > 30 ? 'bg-[var(--status-warning-subtle)]/10 text-[var(--fg-warning)] border border-[var(--status-warning)]/20' : 'bg-[var(--bg-accent-muted)] text-[var(--fg-accent)] border border-[var(--border-accent)]'}`}>
                         {m.renderDuration} ms
                       </span>
                     </td>

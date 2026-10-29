@@ -489,7 +489,32 @@ export const VideoTrimmerModal: React.FC<VideoTrimmerModalProps> = ({
     }
 
     setProcessingStatus(isRtl ? 'جاري قص وتطبيق الفلاتر وحفظ الفيديو...' : 'Rendering trimmed video...');
-    const toastId = toast.loading(isRtl ? 'جاري قص ومعالجة الفيديو وحفظ التعديلات...' : 'Processing and trimming video...');
+    setIsProcessing(true);
+
+    // Fast-Path Bypass: If no trimming, filter, audio overlay, or mute changes were requested, skip heavy FFmpeg re-encoding (0ms wait)
+    const needsFfmpeg = Boolean(
+      startTime > 0.3 ||
+      (duration > 0 && Math.abs(endTime - duration) > 0.5) ||
+      (selectedFilter && selectedFilter !== 'normal') ||
+      selectedAudioTrack !== null ||
+      isMuted
+    );
+
+    if (!needsFfmpeg) {
+      setIsProcessing(false);
+      onTrimComplete({
+        videoUrl: targetSourceUrl,
+        startTime: 0,
+        endTime: cutDuration,
+        duration: cutDuration,
+        adFormat: matchedOption.format,
+        aspectRatio: selectedFormat,
+        videoFilter: selectedFilter,
+        audioTrack: selectedAudioTrack,
+      });
+      onClose();
+      return;
+    }
 
     try {
       // Execute server-side FFmpeg rendering
@@ -515,9 +540,6 @@ export const VideoTrimmerModal: React.FC<VideoTrimmerModalProps> = ({
         if (trimResponse.ok) {
           const trimResult = await trimResponse.json().catch(() => null);
           if (trimResult?.success && trimResult.processed_video_url) {
-            toast.dismiss(toastId);
-            toast.success(isRtl ? 'تم قص وتحرير الفيديو بنجاح! جاهز للنشر 🎬' : 'Video trimmed & rendered successfully!');
-            
             onTrimComplete({
               videoUrl: trimResult.processed_video_url,
               thumbnailUrl: trimResult.thumbnail_url || '',
@@ -535,10 +557,7 @@ export const VideoTrimmerModal: React.FC<VideoTrimmerModalProps> = ({
         }
       }
 
-      // Safe Graceful Fallback if server processing was not required
-      toast.dismiss(toastId);
-      toast.success(isRtl ? 'تم حفظ إعدادات الفيديو بنجاح' : 'Video settings applied successfully');
-
+      // Safe Graceful Fallback if server processing was not required or timed out
       onTrimComplete({
         videoUrl: targetSourceUrl,
         startTime,
@@ -552,8 +571,6 @@ export const VideoTrimmerModal: React.FC<VideoTrimmerModalProps> = ({
       onClose();
     } catch (err: any) {
       console.error('Trim error:', err);
-      toast.dismiss(toastId);
-      toast.error(isRtl ? 'حدث خطأ أثناء معالجة الفيديو' : 'Failed to process video');
       
       onTrimComplete({
         videoUrl: currentVideoUrl,
@@ -586,10 +603,11 @@ export const VideoTrimmerModal: React.FC<VideoTrimmerModalProps> = ({
       <AppModal
         open={isOpen}
         onClose={onClose}
-        layer="nested"
+        layer="lightbox"
+        className="!z-[1350]"
         size="md"
         dir={isRtl ? 'rtl' : 'ltr'}
-        contentClassName="!p-0 !border !border-[var(--border-default)] !rounded-[var(--radius-lg)] shadow-2xl !h-[88vh] !max-h-[660px] sm:!max-h-[700px] !w-[95%] sm:!max-w-md overflow-hidden bg-[var(--surface-page)]"
+        contentClassName="!p-0 !border !border-[var(--border-default)] !rounded-shape-lg shadow-2xl !h-[88vh] !max-h-[660px] sm:!max-h-[700px] !w-[95%] sm:!max-w-md overflow-hidden bg-[var(--surface-page)]"
       >
         {/* Native Single-Column Mobile-First Studio Layout */}
         <div className="relative w-full h-full flex flex-col bg-[var(--surface-page)] overflow-hidden select-none">
@@ -601,13 +619,13 @@ export const VideoTrimmerModal: React.FC<VideoTrimmerModalProps> = ({
               onClick={onClose}
               disabled={isProcessing}
               aria-label="Close"
-              className="w-7.5 h-7.5 rounded-[var(--radius-sm)] flex items-center justify-center text-[var(--text-muted)] hover:text-[var(--text-primary)] hover:bg-[var(--surface-subtle)] transition-colors cursor-pointer border border-transparent hover:border-[var(--border-default)] disabled:opacity-50"
+              className="w-7.5 h-7.5 rounded-shape-sm flex items-center justify-center text-[var(--text-muted)] hover:text-[var(--text-primary)] hover:bg-[var(--surface-subtle)] transition-colors cursor-pointer border border-transparent hover:border-[var(--border-default)] disabled:opacity-50"
             >
               <X size={16} />
             </button>
 
             {/* Time & Reset HUD */}
-            <div className="flex items-center gap-1 px-2.5 py-1 rounded-[var(--radius-sm)] bg-[var(--surface-subtle)] border border-[var(--border-default)] font-mono text-[10.5px] font-bold text-[var(--text-primary)]">
+            <div className="flex items-center gap-1 px-2.5 py-1 rounded-shape-sm bg-[var(--surface-subtle)] border border-[var(--border-default)] font-mono text-[10.5px] font-bold text-[var(--text-primary)]">
               <span className="text-[var(--text-primary)]">{formatTime(currentTime)}</span>
               <span className="text-[var(--text-muted)]">/</span>
               <span className="text-[var(--text-muted)]">{formatTime(endTime - startTime)}</span>
@@ -633,7 +651,7 @@ export const VideoTrimmerModal: React.FC<VideoTrimmerModalProps> = ({
               type="button"
               disabled={isProcessing}
               onClick={handleApplyTrim}
-              className="px-3 py-1 rounded-[var(--radius-sm)] bg-[var(--primary)] text-[var(--primary-foreground)] hover:opacity-90 active:scale-95 flex items-center gap-1.5 shadow-xs transition-all cursor-pointer disabled:opacity-50 border border-[var(--border-strong)] text-[11px] font-bold"
+              className="px-3 py-1 rounded-shape-sm bg-[var(--primary)] text-[var(--primary-foreground)] hover:opacity-90 active:scale-95 flex items-center gap-1.5 shadow-xs transition-all cursor-pointer disabled:opacity-50 border border-[var(--border-strong)] text-[11px] font-bold"
               title={isRtl ? 'حفظ واعتماد التحرير' : 'Apply & Save'}
               aria-label={isRtl ? 'حفظ واعتماد التحرير' : 'Apply & Save'}
             >
@@ -671,7 +689,7 @@ export const VideoTrimmerModal: React.FC<VideoTrimmerModalProps> = ({
 
             {/* Foreground Rendered Video Container */}
             <div className="relative z-10 w-full h-full flex items-center justify-center p-2 overflow-hidden pointer-events-none">
-              <div className={`relative overflow-hidden transition-all duration-200 flex items-center justify-center shadow-2xl rounded-[var(--radius-md)] bg-black ${
+              <div className={`relative overflow-hidden transition-all duration-200 flex items-center justify-center shadow-2xl rounded-shape-md bg-black ${
                 selectedFormat === '9:16' 
                   ? 'h-full aspect-[9/16]' 
                   : selectedFormat === '1:1' 
@@ -686,7 +704,7 @@ export const VideoTrimmerModal: React.FC<VideoTrimmerModalProps> = ({
                   playsInline
                   preload="auto"
                   style={{ filter: selectedFilterStyle }}
-                  className="w-full h-full object-cover overflow-hidden rounded-[var(--radius-md)] pointer-events-auto"
+                  className="w-full h-full object-cover overflow-hidden rounded-shape-md pointer-events-auto"
                 />
               </div>
             </div>
@@ -699,7 +717,7 @@ export const VideoTrimmerModal: React.FC<VideoTrimmerModalProps> = ({
             </div>
 
             {/* Quick Trim Length Indicator Pill */}
-            <div className="absolute bottom-2 left-2 z-20 px-2 py-0.5 rounded-[var(--radius-xs)] bg-black/60 backdrop-blur-xs border border-white/15 text-[9.5px] font-mono font-bold text-white/90 pointer-events-none flex items-center gap-1">
+            <div className="absolute bottom-2 left-2 z-20 px-2 py-0.5 rounded-shape-xs bg-black/60 backdrop-blur-xs border border-white/15 text-[9.5px] font-mono font-bold text-white/90 pointer-events-none flex items-center gap-1">
               <Scissors size={10} className="text-amber-400" />
               <span>{(endTime - startTime).toFixed(1)}s</span>
             </div>
@@ -710,7 +728,7 @@ export const VideoTrimmerModal: React.FC<VideoTrimmerModalProps> = ({
             
             {/* Active Selected Audio Track Indicator Badge */}
             {selectedAudioTrack && (
-              <div className="flex items-center justify-between px-2 py-1 rounded-[var(--radius-xs)] bg-purple-500/10 border border-purple-500/25 text-[10px] text-purple-300 animate-in fade-in duration-200">
+              <div className="flex items-center justify-between px-2 py-1 rounded-shape-xs bg-purple-500/10 border border-purple-500/25 text-[10px] text-purple-300 animate-in fade-in duration-200">
                 <div className="flex items-center gap-1.5 min-w-0 flex-1">
                   <Music size={11} className="shrink-0 animate-pulse text-purple-400" />
                   <span className="truncate font-bold text-[var(--text-primary)]">
@@ -737,7 +755,7 @@ export const VideoTrimmerModal: React.FC<VideoTrimmerModalProps> = ({
             <div className="relative w-full">
               {dragMode && (
                 <div 
-                  className="absolute -top-6 z-40 px-1.5 py-0.5 rounded-[var(--radius-xs)] bg-[var(--surface-card)] text-[var(--text-primary)] font-mono text-[8.5px] font-bold shadow-md border border-[var(--border-default)] transform -translate-x-1/2 flex items-center gap-1 pointer-events-none"
+                  className="absolute -top-6 z-40 px-1.5 py-0.5 rounded-shape-xs bg-[var(--surface-card)] text-[var(--text-primary)] font-mono text-[8.5px] font-bold shadow-md border border-[var(--border-default)] transform -translate-x-1/2 flex items-center gap-1 pointer-events-none"
                   style={{
                     left: `${
                       dragMode === 'start' 
@@ -758,7 +776,7 @@ export const VideoTrimmerModal: React.FC<VideoTrimmerModalProps> = ({
               <div
                 ref={timelineRef}
                 onPointerDown={(e) => handleTimelinePointerDown('scrub', e)}
-                className="relative h-7 w-full rounded-[var(--radius-sm)] bg-[var(--surface-subtle)] border border-[var(--border-default)] overflow-hidden cursor-pointer select-none touch-none"
+                className="relative h-7 w-full rounded-shape-sm bg-[var(--surface-subtle)] border border-[var(--border-default)] overflow-hidden cursor-pointer select-none touch-none"
               >
                 {/* Thumbnail Strip */}
                 <div className="absolute inset-0 flex items-center justify-between opacity-80 pointer-events-none overflow-hidden">
@@ -801,7 +819,7 @@ export const VideoTrimmerModal: React.FC<VideoTrimmerModalProps> = ({
                   className="absolute inset-y-0 w-0.5 bg-white shadow-md z-30 pointer-events-none"
                   style={{ left: `${Math.min(endPercent, Math.max(startPercent, currentPercent))}%` }}
                 >
-                  <div className="w-1.5 h-1.5 rounded-[var(--radius-xs)] bg-white -translate-x-[2px] -translate-y-0.5 shadow-sm" />
+                  <div className="w-1.5 h-1.5 rounded-shape-xs bg-white -translate-x-[2px] -translate-y-0.5 shadow-sm" />
                 </div>
 
                 {/* Left Handle */}
@@ -842,7 +860,7 @@ export const VideoTrimmerModal: React.FC<VideoTrimmerModalProps> = ({
                     key={item.label}
                     type="button"
                     onClick={() => applyPresetDuration(item.sec)}
-                    className="px-2 py-0.5 rounded-[var(--radius-xs)] bg-[var(--surface-subtle)] hover:bg-[var(--surface-card)] border border-[var(--border-default)] text-[9px] font-mono font-bold text-[var(--text-muted)] hover:text-[var(--text-primary)] transition-colors cursor-pointer"
+                    className="px-2 py-0.5 rounded-shape-xs bg-[var(--surface-subtle)] hover:bg-[var(--surface-card)] border border-[var(--border-default)] text-[9px] font-mono font-bold text-[var(--text-muted)] hover:text-[var(--text-primary)] transition-colors cursor-pointer"
                   >
                     {item.label}
                   </button>
@@ -856,7 +874,7 @@ export const VideoTrimmerModal: React.FC<VideoTrimmerModalProps> = ({
               <button
                 type="button"
                 onClick={togglePlay}
-                className="w-7.5 h-7.5 rounded-[var(--radius-sm)] bg-[var(--surface-subtle)] hover:bg-[var(--surface-card)] border border-[var(--border-default)] text-[var(--text-primary)] flex items-center justify-center shrink-0 cursor-pointer transition-colors"
+                className="w-7.5 h-7.5 rounded-shape-sm bg-[var(--surface-subtle)] hover:bg-[var(--surface-card)] border border-[var(--border-default)] text-[var(--text-primary)] flex items-center justify-center shrink-0 cursor-pointer transition-colors"
                 title={isPlaying ? (isRtl ? 'إيقاف مؤقت' : 'Pause') : (isRtl ? 'تشغيل' : 'Play')}
                 aria-label={isPlaying ? 'Pause' : 'Play'}
               >
@@ -864,7 +882,7 @@ export const VideoTrimmerModal: React.FC<VideoTrimmerModalProps> = ({
               </button>
 
               {/* Numbers Only Aspect Ratios */}
-              <div className="flex items-center gap-0.5 bg-[var(--surface-subtle)] p-0.5 rounded-[var(--radius-sm)] border border-[var(--border-default)] flex-1">
+              <div className="flex items-center gap-0.5 bg-[var(--surface-subtle)] p-0.5 rounded-shape-sm border border-[var(--border-default)] flex-1">
                 {FORMAT_OPTIONS.map((opt) => (
                   <button
                     key={opt.id}
@@ -873,7 +891,7 @@ export const VideoTrimmerModal: React.FC<VideoTrimmerModalProps> = ({
                       setSelectedFormat(opt.id as any);
                       triggerHaptic('light');
                     }}
-                    className={`flex-1 py-1 px-1 rounded-[var(--radius-xs)] text-[10px] sm:text-[11px] font-mono font-bold transition-all cursor-pointer flex items-center justify-center ${
+                    className={`flex-1 py-1 px-1 rounded-shape-xs text-[10px] sm:text-[11px] font-mono font-bold transition-all cursor-pointer flex items-center justify-center ${
                       selectedFormat === opt.id
                         ? 'bg-[var(--surface-card)] text-[var(--text-primary)] shadow-xs border border-[var(--border-default)]'
                         : 'text-[var(--text-muted)] hover:text-[var(--text-primary)]'
@@ -893,7 +911,7 @@ export const VideoTrimmerModal: React.FC<VideoTrimmerModalProps> = ({
                   setIsAudioPickerOpen(true);
                   if (onOpenAudioPicker) onOpenAudioPicker();
                 }}
-                className={`w-7.5 h-7.5 rounded-[var(--radius-sm)] border text-[var(--text-primary)] flex items-center justify-center shrink-0 cursor-pointer transition-colors ${
+                className={`w-7.5 h-7.5 rounded-shape-sm border text-[var(--text-primary)] flex items-center justify-center shrink-0 cursor-pointer transition-colors ${
                   selectedAudioTrack
                     ? 'bg-purple-500/20 border-purple-500/40 text-purple-400 font-bold'
                     : 'bg-[var(--surface-subtle)] hover:bg-[var(--surface-card)] border-[var(--border-default)]'
@@ -911,7 +929,7 @@ export const VideoTrimmerModal: React.FC<VideoTrimmerModalProps> = ({
                   setIsMuted(!isMuted);
                   triggerHaptic('light');
                 }}
-                className="w-7.5 h-7.5 rounded-[var(--radius-sm)] bg-[var(--surface-subtle)] hover:bg-[var(--surface-card)] border border-[var(--border-default)] text-[var(--text-primary)] flex items-center justify-center shrink-0 cursor-pointer transition-colors"
+                className="w-7.5 h-7.5 rounded-shape-sm bg-[var(--surface-subtle)] hover:bg-[var(--surface-card)] border border-[var(--border-default)] text-[var(--text-primary)] flex items-center justify-center shrink-0 cursor-pointer transition-colors"
                 title={isMuted ? (isRtl ? 'إلغاء كتم الصوت' : 'Unmute') : (isRtl ? 'كتم الصوت' : 'Mute')}
                 aria-label={isMuted ? (isRtl ? 'إلغاء كتم الصوت' : 'Unmute') : (isRtl ? 'كتم الصوت' : 'Mute')}
               >
@@ -933,7 +951,7 @@ export const VideoTrimmerModal: React.FC<VideoTrimmerModalProps> = ({
                   title={isRtl ? flt.nameAr : flt.nameEn}
                 >
                   <div
-                    className={`w-full max-w-[36px] h-5 rounded-[var(--radius-xs)] overflow-hidden border transition-all ${
+                    className={`w-full max-w-[36px] h-5 rounded-shape-xs overflow-hidden border transition-all ${
                       selectedFilter === flt.id
                         ? 'ring-1.5 ring-[var(--primary)] scale-105 border-[var(--primary)] shadow-xs'
                         : 'border-[var(--border-default)] opacity-80 hover:opacity-100 hover:scale-105'

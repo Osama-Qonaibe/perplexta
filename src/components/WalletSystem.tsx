@@ -769,8 +769,8 @@ export const WalletSystem: React.FC<{ theme: string; dir: 'ltr' | 'rtl' }> = ({ 
   if (loading && !wallet) {
     return (
       <div className="space-y-10 animate-pulse w-full max-w-5xl mx-auto px-6 md:px-12 pt-6">
-        <div className="h-[280px] w-full rounded-[var(--radius-md)] border border-[var(--border-default)] bg-[var(--surface-card)] transition-theme" />
-        <div className="h-[400px] w-full rounded-[var(--radius-md)] border border-[var(--border-default)] bg-[var(--surface-card)] transition-theme" />
+        <div className="h-[280px] w-full rounded-shape-md border border-[var(--border-default)] bg-[var(--surface-card)] transition-theme" />
+        <div className="h-[400px] w-full rounded-shape-md border border-[var(--border-default)] bg-[var(--surface-card)] transition-theme" />
       </div>
     );
   }
@@ -778,10 +778,10 @@ export const WalletSystem: React.FC<{ theme: string; dir: 'ltr' | 'rtl' }> = ({ 
   const currentBalance = Number(wallet?.balance || 0) || 0;
 
   return (
-    <div className="w-full flex flex-col relative transition-theme pt-1 sm:pt-6 pb-20">
+    <div className="w-full flex flex-col relative transition-theme pt-0 sm:pt-6 pb-8 sm:pb-20">
       
-      {/* 1. Mobile-Exclusive Dedicated View (Revolut/Apple Wallet Standard) */}
-      <div className="block md:hidden px-3 pt-1">
+      {/* 1. Mobile-Exclusive Dedicated View (Sovereign Perplexta Standard) */}
+      <div className="block md:hidden w-full">
         <MobileWalletView
           wallet={wallet}
           currentBalance={currentBalance}
@@ -839,13 +839,13 @@ export const WalletSystem: React.FC<{ theme: string; dir: 'ltr' | 'rtl' }> = ({ 
       <div className="hidden md:flex md:flex-col w-full">
         {/* Centered Banking Hero Card - High Density Elite */}
         <div className="px-2 sm:px-6 md:px-12 flex justify-center flex-none mt-2 sm:mt-4">
-        <div className="relative w-full max-w-5xl p-4 sm:p-8 md:p-10 rounded-[var(--radius-md)] border shadow-xl transition-all bg-[var(--surface-card)] border-[var(--border-default)]">
+        <div className="relative w-full max-w-5xl p-4 sm:p-8 md:p-10 rounded-shape-md border shadow-xl transition-all bg-[var(--surface-card)] border-[var(--border-default)]">
           
           <div className="flex flex-col gap-6 sm:gap-10">
             {/* Header Area */}
             <div className="flex flex-col md:flex-row items-center md:items-start justify-between gap-6 sm:gap-8">
               <div className="flex flex-col sm:flex-row items-center gap-4 sm:gap-6 text-center sm:text-left rtl:sm:text-right">
-                <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-[var(--radius-sm)] bg-[var(--bg-accent-muted)] flex items-center justify-center text-[var(--fg-accent)] border border-[var(--border-accent)]/30 shrink-0">
+                <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-shape-sm bg-[var(--bg-accent-muted)] flex items-center justify-center text-[var(--fg-accent)] border border-[var(--border-accent)]/30 shrink-0">
                   <Wallet size={24} className="sm:w-7 sm:h-7" strokeWidth={1.5} />
                 </div>
                 <div className="space-y-1">
@@ -869,7 +869,7 @@ export const WalletSystem: React.FC<{ theme: string; dir: 'ltr' | 'rtl' }> = ({ 
               <div className="flex flex-col sm:flex-row items-center gap-2 sm:gap-4 w-full md:w-auto">
                 <button 
                   onClick={() => setActiveTab('deposit')}
-                  className={`flex items-center gap-2 sm:gap-3 px-6 sm:px-8 py-3 sm:py-3.5 rounded-[var(--radius-sm)] border text-[10px] font-black uppercase tracking-[0.2em] sm:tracking-[0.3em] transition-all group w-full md:w-auto justify-center cursor-pointer ${
+                  className={`flex items-center gap-2 sm:gap-3 px-6 sm:px-8 py-3 sm:py-3.5 rounded-shape-sm border text-[10px] font-black uppercase tracking-[0.2em] sm:tracking-[0.3em] transition-all group w-full md:w-auto justify-center cursor-pointer ${
                     activeTab === 'deposit'
                       ? 'bg-[var(--accent)] border-[var(--border-accent)] text-slate-950 shadow-md font-bold'
                       : 'bg-[var(--surface-card)] border-[var(--border-default)] text-[var(--text-muted)] hover:text-[var(--fg-accent)] hover:border-[var(--border-accent)]/30'
@@ -880,7 +880,7 @@ export const WalletSystem: React.FC<{ theme: string; dir: 'ltr' | 'rtl' }> = ({ 
                 </button>
                 <button 
                   onClick={() => setActiveTab('withdraw')}
-                  className={`flex items-center gap-2 sm:gap-3 px-6 sm:px-8 py-3 sm:py-3.5 rounded-[var(--radius-sm)] border text-[10px] font-black uppercase tracking-[0.2em] sm:tracking-[0.3em] transition-all group w-full md:w-auto justify-center cursor-pointer ${
+                  className={`flex items-center gap-2 sm:gap-3 px-6 sm:px-8 py-3 sm:py-3.5 rounded-shape-sm border text-[10px] font-black uppercase tracking-[0.2em] sm:tracking-[0.3em] transition-all group w-full md:w-auto justify-center cursor-pointer ${
                     activeTab === 'withdraw'
                       ? 'bg-[var(--accent)] border-[var(--border-accent)] text-slate-950 shadow-md font-bold'
                       : 'bg-[var(--surface-card)] border-[var(--border-default)] text-[var(--text-muted)] hover:text-[var(--fg-accent)] hover:border-[var(--border-accent)]/30'
@@ -978,10 +978,10 @@ export const WalletSystem: React.FC<{ theme: string; dir: 'ltr' | 'rtl' }> = ({ 
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -15 }}
               transition={{ duration: 0.15 }}
-              className="p-5 sm:p-8 rounded-[var(--radius-md)] border bg-[var(--surface-card)] border-[var(--border-default)] shadow-xl relative"
+              className="p-5 sm:p-8 rounded-shape-md border bg-[var(--surface-card)] border-[var(--border-default)] shadow-xl relative"
             >
               <div className="flex items-center gap-4 mb-8">
-                <div className="w-10 h-10 rounded-[var(--radius-sm)] bg-[var(--bg-accent-muted)] flex items-center justify-center text-[var(--fg-accent)] border border-[var(--border-accent)]/30">
+                <div className="w-10 h-10 rounded-shape-sm bg-[var(--bg-accent-muted)] flex items-center justify-center text-[var(--fg-accent)] border border-[var(--border-accent)]/30">
                   <ArrowUpCircle size={20} />
                 </div>
                 <div>
@@ -997,7 +997,7 @@ export const WalletSystem: React.FC<{ theme: string; dir: 'ltr' | 'rtl' }> = ({ 
               <form onSubmit={handleDepositSubmit} className="space-y-8">
                 
                 {/* STRICT TRANSACTION BOUNDARIES & COMPLIANCE WARNING */}
-                <div className="p-4 rounded-[var(--radius-sm)] bg-[var(--accent)]/[0.03] border border-[var(--border-accent)]/20 space-y-2">
+                <div className="p-4 rounded-shape-sm bg-[var(--accent)]/[0.03] border border-[var(--border-accent)]/20 space-y-2">
                   <div className="flex items-center gap-2 text-[var(--fg-accent)]">
                     <ShieldCheck size={14} className="shrink-0" />
                     <span className="text-[10px] font-black uppercase tracking-widest">
@@ -1033,7 +1033,7 @@ export const WalletSystem: React.FC<{ theme: string; dir: 'ltr' | 'rtl' }> = ({ 
                         type="button"
                         key={`deposit-preset-${val}-${vIdx}`}
                         onClick={() => selectPredefinedAmount(val)}
-                        className={`py-4 rounded-[var(--radius-sm)] border text-xs font-black transition-all flex flex-col items-center justify-center gap-1 cursor-pointer ${
+                        className={`py-4 rounded-shape-sm border text-xs font-black transition-all flex flex-col items-center justify-center gap-1 cursor-pointer ${
                           depositAmount === val
                             ? 'bg-[var(--accent)]/15 border-[var(--border-accent)] text-[var(--fg-accent)] font-bold'
                             : 'bg-[var(--surface-card)] border-[var(--border-default)] text-[var(--text-muted)] hover:border-[var(--border-accent)]/40 hover:text-[var(--fg-accent)]'
@@ -1051,7 +1051,7 @@ export const WalletSystem: React.FC<{ theme: string; dir: 'ltr' | 'rtl' }> = ({ 
                   <label className="text-[10px] font-black uppercase tracking-widest text-[var(--text-muted)] block">
                     {dir === 'rtl' ? 'أو أدخل مبلغاً مخصصاً بالدولار الأمريكي :' : 'Or define custom deposit amount (USD):'}
                   </label>
-                  <div className="relative rounded-[var(--radius-sm)] shadow-sm bg-[var(--surface-card)]">
+                  <div className="relative rounded-shape-sm shadow-sm bg-[var(--surface-card)]">
                     <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
                       <span className="text-[13px] font-black text-[var(--fg-accent)]">$</span>
                     </div>
@@ -1062,7 +1062,7 @@ export const WalletSystem: React.FC<{ theme: string; dir: 'ltr' | 'rtl' }> = ({ 
                       onChange={(e) => handleDepositAmountChange(e.target.value)}
                       onBlur={handleDepositAmountBlur}
                       placeholder="0.00"
-                      className="block w-full pl-10 pr-12 py-4 bg-transparent border border-[var(--border-default)] rounded-[var(--radius-sm)] text-sm font-black text-[var(--text-primary)] focus:border-[var(--border-accent)] focus:outline-none focus:ring-1 focus:ring-[var(--border-accent)]/50"
+                      className="block w-full pl-10 pr-12 py-4 bg-transparent border border-[var(--border-default)] rounded-shape-sm text-sm font-black text-[var(--text-primary)] focus:border-[var(--border-accent)] focus:outline-none focus:ring-1 focus:ring-[var(--border-accent)]/50"
                     />
                     <div className="absolute inset-y-0 right-0 pr-4 flex items-center pointer-events-none">
                       <span className="text-[10px] font-black opacity-30 tracking-widest text-[var(--text-muted)]">USD</span>
@@ -1086,7 +1086,7 @@ export const WalletSystem: React.FC<{ theme: string; dir: 'ltr' | 'rtl' }> = ({ 
                         type="button"
                         key={`deposit-route-${m.id}-${mIdx}`}
                         onClick={() => setDepositMethod(m.id as any)}
-                        className={`p-5 rounded-[var(--radius-sm)] border text-left rtl:text-right flex items-center gap-4 transition-all relative overflow-hidden group cursor-pointer ${
+                        className={`p-5 rounded-shape-sm border text-left rtl:text-right flex items-center gap-4 transition-all relative overflow-hidden group cursor-pointer ${
                           depositMethod === m.id
                             ? 'bg-[var(--bg-accent-muted)] border-[var(--border-accent)] text-[var(--fg-accent)]'
                             : 'bg-[var(--surface-card)] border-[var(--border-default)] text-[var(--text-muted)] hover:border-[var(--border-accent)]/40 hover:text-[var(--text-primary)]'
@@ -1116,13 +1116,13 @@ export const WalletSystem: React.FC<{ theme: string; dir: 'ltr' | 'rtl' }> = ({ 
                 </div>
 
                 {/* Sub-Forms depending on Payment chosen */}
-                <div className="p-6 rounded-[var(--radius-md)] border border-[var(--border-default)] bg-[var(--surface-card)] transition-colors">
+                <div className="p-6 rounded-shape-md border border-[var(--border-default)] bg-[var(--surface-card)] transition-colors">
                   
                   {/* CREDIT CARD FIELDS */}
                   {depositMethod === 'card' && (
                     <div className="space-y-6">
                       {!isStripeActive ? (
-                        <div className="p-8 rounded-[var(--radius-sm)] border border-amber-500/20 bg-amber-500/5 text-center space-y-4">
+                        <div className="p-8 rounded-shape-sm border border-amber-500/20 bg-amber-500/5 text-center space-y-4">
                           <div className="w-12 h-12 rounded-full bg-amber-500/10 text-amber-500 flex items-center justify-center mx-auto">
                             <Lock size={20} />
                           </div>
@@ -1143,7 +1143,7 @@ export const WalletSystem: React.FC<{ theme: string; dir: 'ltr' | 'rtl' }> = ({ 
                           </div>
                           
                           {/* Premium Graphic Card displaying the current checkout value empowered by Stripe */}
-                          <div className="relative w-full max-w-sm h-48 rounded-[var(--radius-md)] bg-gradient-to-br from-slate-900 via-slate-800 to-slate-950 border border-slate-700/60 p-6 flex flex-col justify-between overflow-hidden shadow-2xl mx-auto">
+                          <div className="relative w-full max-w-sm h-48 rounded-shape-md bg-gradient-to-br from-slate-900 via-slate-800 to-slate-950 border border-slate-700/60 p-6 flex flex-col justify-between overflow-hidden shadow-2xl mx-auto">
                             <div className="absolute -right-10 -bottom-10 w-40 h-40 bg-[var(--bg-accent-muted)] rounded-full blur-3xl pointer-events-none" />
                             
                             <div className="flex items-start justify-between">
@@ -1177,7 +1177,7 @@ export const WalletSystem: React.FC<{ theme: string; dir: 'ltr' | 'rtl' }> = ({ 
                             </div>
                           </div>
 
-                          <div className="p-4 rounded-[var(--radius-sm)] bg-[var(--bg-accent-muted)] border border-[var(--border-accent)]/20 flex gap-3 text-left rtl:text-right">
+                          <div className="p-4 rounded-shape-sm bg-[var(--bg-accent-muted)] border border-[var(--border-accent)]/20 flex gap-3 text-left rtl:text-right">
                             <Lock size={16} className="text-[var(--fg-accent)] shrink-0 mt-0.5" />
                             <div className="space-y-1">
                               <p className="text-[10px] font-black text-[var(--fg-accent)] uppercase tracking-widest">{dir === 'rtl' ? 'بوابة Stripe الخارجية المشفرة' : 'FULLY EXTERNALIZED ENCRYPTED GATEWAY'}</p>
@@ -1202,7 +1202,7 @@ export const WalletSystem: React.FC<{ theme: string; dir: 'ltr' | 'rtl' }> = ({ 
                       </div>
                       
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs font-bold leading-relaxed uppercase">
-                        <div className="md:col-span-2 p-4 bg-[var(--surface-card)] rounded-[var(--radius-sm)] border border-[var(--border-default)] flex items-center justify-between">
+                        <div className="md:col-span-2 p-4 bg-[var(--surface-card)] rounded-shape-sm border border-[var(--border-default)] flex items-center justify-between">
                           <div>
                             <span className="text-[8px] text-[var(--text-muted)] tracking-widest block">{dir === 'rtl' ? 'عنوان محفظة الإيداع المخصصة لك (USDT TRC-20)' : 'Your Permanent Dedicated Deposit Address (USDT TRC-20)'}</span>
                             <span className="font-sans font-black text-xs text-[var(--fg-accent)] tracking-wider font-mono select-all truncate block max-w-sm md:max-w-md">{wallet?.crypto_address || 'TPh7eWpY29kZVN6QXV0VGhlbnRpY2F0aW9uTGVkZ2Vy'}</span>
@@ -1217,7 +1217,7 @@ export const WalletSystem: React.FC<{ theme: string; dir: 'ltr' | 'rtl' }> = ({ 
                         </div>
                       </div>
 
-                      <div className="p-4 bg-[var(--surface-card)] rounded-[var(--radius-sm)] border border-[var(--border-default)] text-center">
+                      <div className="p-4 bg-[var(--surface-card)] rounded-shape-sm border border-[var(--border-default)] text-center">
                         <p className="text-[10px] text-[var(--text-muted)] font-black uppercase tracking-widest leading-relaxed">
                           {dir === 'rtl' 
                             ? 'الرجاء إرسال شبكة TRC-20 فقط إلى العنوان الموضح أعلاه أولاً، ثم املأ رقم معاملة الهاش المرجعي وأرفق صورة الإيصال لإرسال الطلب للمراجعة والموافقة يدويًا.' 
@@ -1225,7 +1225,7 @@ export const WalletSystem: React.FC<{ theme: string; dir: 'ltr' | 'rtl' }> = ({ 
                         </p>
                       </div>
 
-                      <div className="p-4 rounded-[var(--radius-sm)] bg-[var(--status-warning-subtle)]/30 border border-[var(--status-warning)]/20 flex gap-3 text-left rtl:text-right">
+                      <div className="p-4 rounded-shape-sm bg-[var(--status-warning-subtle)]/30 border border-[var(--status-warning)]/20 flex gap-3 text-left rtl:text-right">
                         <Info size={16} className="text-[var(--fg-warning)] shrink-0 mt-0.5" />
                         <p className="text-[9px] font-black text-[var(--fg-warning)] uppercase tracking-wider leading-relaxed">
                           {dir === 'rtl' 
@@ -1235,7 +1235,7 @@ export const WalletSystem: React.FC<{ theme: string; dir: 'ltr' | 'rtl' }> = ({ 
                       </div>
 
                       {/* Manual Verification Form Fields for Crypto */}
-                      <div className="p-4 rounded-[var(--radius-sm)] bg-[var(--surface-card)] border border-[var(--border-default)] space-y-4">
+                      <div className="p-4 rounded-shape-sm bg-[var(--surface-card)] border border-[var(--border-default)] space-y-4">
                         <div className="space-y-1">
                           <label className="text-[9px] font-black uppercase tracking-widest text-[var(--text-muted)] block">
                             {dir === 'rtl' ? 'هاش المعاملة أو الكود التعريفي (مطلوب)' : 'Transaction Hash / Hash ID (Required)'}
@@ -1246,7 +1246,7 @@ export const WalletSystem: React.FC<{ theme: string; dir: 'ltr' | 'rtl' }> = ({ 
                             value={manualRefId}
                             onChange={(e) => setManualRefId(e.target.value)}
                             placeholder={dir === 'rtl' ? 'أدخل هاش التحويل (TXID) هنا...' : 'Enter USDT TRC-20 Transaction details...'}
-                            className="w-full bg-[var(--surface-card)] text-xs text-[var(--text-primary)] font-mono p-3 rounded-[var(--radius-sm)] border border-[var(--border-default)] focus:outline-none focus:border-[var(--border-accent)] transition-colors"
+                            className="w-full bg-[var(--surface-card)] text-xs text-[var(--text-primary)] font-mono p-3 rounded-shape-sm border border-[var(--border-default)] focus:outline-none focus:border-[var(--border-accent)] transition-colors"
                           />
                         </div>
 
@@ -1268,7 +1268,7 @@ export const WalletSystem: React.FC<{ theme: string; dir: 'ltr' | 'rtl' }> = ({ 
                             />
                             <label
                               htmlFor="manual-proof-upload"
-                              className="flex items-center justify-center gap-2 px-4 py-3 bg-[var(--surface-card)] border border-[var(--border-default)] hover:border-[var(--border-accent)]/40 rounded-[var(--radius-sm)] cursor-pointer text-[10px] font-black uppercase tracking-wider text-[var(--text-primary)] transition-all select-none"
+                              className="flex items-center justify-center gap-2 px-4 py-3 bg-[var(--surface-card)] border border-[var(--border-default)] hover:border-[var(--border-accent)]/40 rounded-shape-sm cursor-pointer text-[10px] font-black uppercase tracking-wider text-[var(--text-primary)] transition-all select-none"
                             >
                               <Paperclip size={12} className="text-[var(--fg-accent)]" />
                               {manualProofFile ? (manualProofFile.name.length > 20 ? manualProofFile.name.substring(0, 20) + '...' : manualProofFile.name) : (dir === 'rtl' ? 'اختر ملف الإثبات' : 'SELECT PROOF IMAGE')}
@@ -1297,15 +1297,15 @@ export const WalletSystem: React.FC<{ theme: string; dir: 'ltr' | 'rtl' }> = ({ 
                       </div>
  
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs font-bold leading-relaxed uppercase">
-                        <div className="p-3 bg-[var(--surface-card)] rounded-[var(--radius-sm)] border border-[var(--border-default)] space-y-1">
+                        <div className="p-3 bg-[var(--surface-card)] rounded-shape-sm border border-[var(--border-default)] space-y-1">
                           <span className="text-[8px] text-[var(--text-muted)] tracking-widest block">{dir === 'rtl' ? 'البنك المستلم' : 'Receiver Bank'}</span>
                           <span className="font-black text-[10px] text-[var(--text-primary)]">{wallet?.bank_name || 'Merchant Discount Bank IL (011)'}</span>
                         </div>
-                        <div className="p-3 bg-[var(--surface-card)] rounded-[var(--radius-sm)] border border-[var(--border-default)] space-y-1">
+                        <div className="p-3 bg-[var(--surface-card)] rounded-shape-sm border border-[var(--border-default)] space-y-1">
                           <span className="text-[8px] text-[var(--text-muted)] tracking-widest block">{dir === 'rtl' ? 'اسم المستفيد' : 'Beneficiary'}</span>
                           <span className="font-black text-[10px] text-[var(--text-primary)]">{wallet?.bank_recipient || 'Perplexta Tech Platforms LTD.'}</span>
                         </div>
-                        <div className="md:col-span-2 p-3 bg-[var(--surface-card)] rounded-[var(--radius-sm)] border border-[var(--border-default)] flex items-center justify-between">
+                        <div className="md:col-span-2 p-3 bg-[var(--surface-card)] rounded-shape-sm border border-[var(--border-default)] flex items-center justify-between">
                           <div>
                             <span className="text-[8px] text-[var(--text-muted)] tracking-widest block">{dir === 'rtl' ? 'رقم الحساب المصرفي الدولي (IBAN)' : 'IBAN Account'}</span>
                             <span className="font-sans font-black text-xs text-[var(--fg-accent)] tracking-wider font-mono">{wallet?.bank_iban || 'IL42 0110 0000 0000 3484 2192'}</span>
@@ -1318,7 +1318,7 @@ export const WalletSystem: React.FC<{ theme: string; dir: 'ltr' | 'rtl' }> = ({ 
                             <Copy size={14} />
                           </button>
                         </div>
-                        <div className="p-3 bg-[var(--surface-card)] rounded-[var(--radius-sm)] border border-[var(--border-default)] flex items-center justify-between">
+                        <div className="p-3 bg-[var(--surface-card)] rounded-shape-sm border border-[var(--border-default)] flex items-center justify-between">
                           <div>
                             <span className="text-[8px] text-[var(--text-muted)] tracking-widest block">{dir === 'rtl' ? 'رمز السويفت (SWIFT)' : 'SWIFT / BIC Code'}</span>
                             <span className="font-sans font-black text-xs text-[var(--fg-accent)] tracking-widest font-mono">{wallet?.bank_swift || 'PPLXIL33XXX'}</span>
@@ -1331,13 +1331,13 @@ export const WalletSystem: React.FC<{ theme: string; dir: 'ltr' | 'rtl' }> = ({ 
                             <Copy size={14} />
                           </button>
                         </div>
-                        <div className="md:col-span-2 p-3 bg-[var(--surface-card)] rounded-[var(--radius-sm)] border border-[var(--border-default)] space-y-1">
+                        <div className="md:col-span-2 p-3 bg-[var(--surface-card)] rounded-shape-sm border border-[var(--border-default)] space-y-1">
                           <span className="text-[8px] text-[var(--text-muted)] tracking-widest block">{dir === 'rtl' ? 'الرمز التعريفي للإيداع (يجب كتابته كشرح للحوالة للتعرف الفوري)' : 'Deposit Ref Code (Include in transfer description/memo)'}</span>
                           <span className="font-black font-mono text-[11px] text-amber-500">MEMO-PPLX-{wallet?.referral_activated ? 'ACT' : 'NEW'}</span>
                         </div>
                       </div>
 
-                      <div className="p-4 bg-[var(--surface-card)] rounded-[var(--radius-sm)] border border-[var(--border-default)] text-center">
+                      <div className="p-4 bg-[var(--surface-card)] rounded-shape-sm border border-[var(--border-default)] text-center">
                         <p className="text-[10px] text-[var(--text-muted)] font-black uppercase tracking-widest leading-relaxed">
                           {dir === 'rtl' 
                             ? 'الرجاء إجراء التحويل البنكي بالتفاصيل الموضحة أعلاه أولاً، ثم املأ الرقم المرجعي للحوالة وأرفق صورة الإيصال لإرسال الطلب للمراجعة والموافقة يدويًا.' 
@@ -1346,7 +1346,7 @@ export const WalletSystem: React.FC<{ theme: string; dir: 'ltr' | 'rtl' }> = ({ 
                       </div>
 
                       {/* Manual Verification Form Fields for Bank */}
-                      <div className="p-4 rounded-[var(--radius-sm)] bg-[var(--surface-card)] border border-[var(--border-default)] space-y-4">
+                      <div className="p-4 rounded-shape-sm bg-[var(--surface-card)] border border-[var(--border-default)] space-y-4">
                         <div className="space-y-1">
                           <label className="text-[9px] font-black uppercase tracking-widest text-[var(--text-muted)] block">
                             {dir === 'rtl' ? 'الرقم المرجعي أو كود التحويل البنكي (مطلوب)' : 'Bank Transaction Reference / Hash ID (Required)'}
@@ -1357,7 +1357,7 @@ export const WalletSystem: React.FC<{ theme: string; dir: 'ltr' | 'rtl' }> = ({ 
                             value={manualRefId}
                             onChange={(e) => setManualRefId(e.target.value)}
                             placeholder={dir === 'rtl' ? 'أدخل الرقم المرجعي أو كود التحويل البنكي هنا...' : 'Enter Bank transfer reference details...'}
-                            className="w-full bg-[var(--surface-card)] text-xs text-[var(--text-primary)] font-mono p-3 rounded-[var(--radius-sm)] border border-[var(--border-default)] focus:outline-none focus:border-[var(--border-accent)] transition-colors"
+                            className="w-full bg-[var(--surface-card)] text-xs text-[var(--text-primary)] font-mono p-3 rounded-shape-sm border border-[var(--border-default)] focus:outline-none focus:border-[var(--border-accent)] transition-colors"
                           />
                         </div>
 
@@ -1379,7 +1379,7 @@ export const WalletSystem: React.FC<{ theme: string; dir: 'ltr' | 'rtl' }> = ({ 
                             />
                             <label
                               htmlFor="bank-proof-upload"
-                              className="flex items-center justify-center gap-2 px-4 py-3 bg-[var(--surface-card)] border border-[var(--border-default)] hover:border-[var(--border-accent)]/40 rounded-[var(--radius-sm)] cursor-pointer text-[10px] font-black uppercase tracking-wider text-[var(--text-primary)] transition-all select-none"
+                              className="flex items-center justify-center gap-2 px-4 py-3 bg-[var(--surface-card)] border border-[var(--border-default)] hover:border-[var(--border-accent)]/40 rounded-shape-sm cursor-pointer text-[10px] font-black uppercase tracking-wider text-[var(--text-primary)] transition-all select-none"
                             >
                               <Paperclip size={12} className="text-[var(--fg-accent)]" />
                               {manualProofFile ? (manualProofFile.name.length > 20 ? manualProofFile.name.substring(0, 20) + '...' : manualProofFile.name) : (dir === 'rtl' ? 'اختر ملف الإثبات' : 'SELECT PROOF IMAGE')}
@@ -1403,7 +1403,7 @@ export const WalletSystem: React.FC<{ theme: string; dir: 'ltr' | 'rtl' }> = ({ 
                   {depositMethod === 'paypal' && (
                     <div className="space-y-6">
                       {!isPaypalActive ? (
-                        <div className="p-8 rounded-[var(--radius-sm)] border border-[var(--status-warning)]/20 bg-[var(--status-warning-subtle)]/30 text-center space-y-4">
+                        <div className="p-8 rounded-shape-sm border border-[var(--status-warning)]/20 bg-[var(--status-warning-subtle)]/30 text-center space-y-4">
                           <div className="w-12 h-12 rounded-full bg-[var(--status-warning-subtle)]/50 text-[var(--fg-warning)] flex items-center justify-center mx-auto">
                             <Lock size={20} />
                           </div>
@@ -1424,7 +1424,7 @@ export const WalletSystem: React.FC<{ theme: string; dir: 'ltr' | 'rtl' }> = ({ 
                           </div>
 
                           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs font-bold leading-relaxed uppercase">
-                            <div className="md:col-span-2 p-4 bg-[var(--surface-card)] rounded-[var(--radius-sm)] border border-[var(--border-default)] flex items-center justify-between">
+                            <div className="md:col-span-2 p-4 bg-[var(--surface-card)] rounded-shape-sm border border-[var(--border-default)] flex items-center justify-between">
                               <div>
                                 <span className="text-[8px] text-[var(--text-muted)] tracking-widest block">{dir === 'rtl' ? 'بريد PayPal الخاص بمحفظة الاستلام' : 'PayPal Receiver Email'}</span>
                                 <span className="font-sans font-black text-xs text-[var(--fg-accent)] tracking-wider font-mono">{wallet?.paypal_email || 'paypal@perplexta.com'}</span>
@@ -1439,7 +1439,7 @@ export const WalletSystem: React.FC<{ theme: string; dir: 'ltr' | 'rtl' }> = ({ 
                             </div>
                           </div>
 
-                          <div className="p-4 bg-[var(--surface-card)] rounded-[var(--radius-sm)] border border-[var(--border-default)] text-center">
+                          <div className="p-4 bg-[var(--surface-card)] rounded-shape-sm border border-[var(--border-default)] text-center">
                             <p className="text-[10px] text-[var(--text-muted)] font-black uppercase tracking-widest leading-relaxed">
                               {dir === 'rtl' 
                                 ? 'الرجاء تحويل القيمة المطلوبة إلى حساب بايبال الموضح أعلاه أولاً، ثم املأ رقم المعاملة المرجعي وأرفق صورة الإيصال لإرسال الطلب للمراجعة والموافقة يدويًا.' 
@@ -1448,7 +1448,7 @@ export const WalletSystem: React.FC<{ theme: string; dir: 'ltr' | 'rtl' }> = ({ 
                           </div>
 
                           {/* Manual Verification Form Fields for PayPal */}
-                          <div className="p-4 rounded-[var(--radius-sm)] bg-[var(--surface-card)] border border-[var(--border-default)] space-y-4">
+                          <div className="p-4 rounded-shape-sm bg-[var(--surface-card)] border border-[var(--border-default)] space-y-4">
                             <div className="space-y-1">
                               <label className="text-[9px] font-black uppercase tracking-widest text-[var(--text-muted)] block">
                                 {dir === 'rtl' ? 'رقم معاملة بايبال أو كود الحوالة (مطلوب)' : 'PayPal Transaction ID / Invoice Hash (Required)'}
@@ -1459,7 +1459,7 @@ export const WalletSystem: React.FC<{ theme: string; dir: 'ltr' | 'rtl' }> = ({ 
                                 value={manualRefId}
                                 onChange={(e) => setManualRefId(e.target.value)}
                                 placeholder={dir === 'rtl' ? 'أدخل رقم المعاملة المرجعي هنا...' : 'Enter PayPal Transaction details...'}
-                                className="w-full bg-[var(--surface-card)] text-xs text-[var(--text-primary)] font-mono p-3 rounded-[var(--radius-sm)] border border-[var(--border-default)] focus:outline-none focus:border-[var(--border-accent)] transition-colors"
+                                className="w-full bg-[var(--surface-card)] text-xs text-[var(--text-primary)] font-mono p-3 rounded-shape-sm border border-[var(--border-default)] focus:outline-none focus:border-[var(--border-accent)] transition-colors"
                               />
                             </div>
 
@@ -1481,7 +1481,7 @@ export const WalletSystem: React.FC<{ theme: string; dir: 'ltr' | 'rtl' }> = ({ 
                                 />
                                 <label
                                   htmlFor="paypal-proof-upload"
-                                  className="flex items-center justify-center gap-2 px-4 py-3 bg-[var(--surface-card)] border border-[var(--border-default)] hover:border-[var(--border-accent)]/40 rounded-[var(--radius-sm)] cursor-pointer text-[10px] font-black uppercase tracking-wider text-[var(--text-primary)] transition-all select-none"
+                                  className="flex items-center justify-center gap-2 px-4 py-3 bg-[var(--surface-card)] border border-[var(--border-default)] hover:border-[var(--border-accent)]/40 rounded-shape-sm cursor-pointer text-[10px] font-black uppercase tracking-wider text-[var(--text-primary)] transition-all select-none"
                                 >
                                   <Paperclip size={12} className="text-[var(--fg-accent)]" />
                                   {manualProofFile ? (manualProofFile.name.length > 20 ? manualProofFile.name.substring(0, 20) + '...' : manualProofFile.name) : (dir === 'rtl' ? 'اختر ملف الإثبات' : 'SELECT PROOF IMAGE')}
@@ -1513,7 +1513,7 @@ export const WalletSystem: React.FC<{ theme: string; dir: 'ltr' | 'rtl' }> = ({ 
                         initial={{ opacity: 0, height: 0 }}
                         animate={{ opacity: 1, height: 'auto' }}
                         exit={{ opacity: 0, height: 0 }}
-                        className="p-4 rounded-[var(--radius-sm)] border border-[var(--border-accent)]/30 bg-[var(--bg-accent-muted)] space-y-3"
+                        className="p-4 rounded-shape-sm border border-[var(--border-accent)]/30 bg-[var(--bg-accent-muted)] space-y-3"
                       >
                         <div className="flex items-center justify-between text-[10px] font-black uppercase tracking-widest text-[var(--fg-accent)]">
                           <span>
@@ -1555,7 +1555,7 @@ export const WalletSystem: React.FC<{ theme: string; dir: 'ltr' | 'rtl' }> = ({ 
                       (depositMethod === 'card' && !isStripeActive) ||
                       (depositMethod === 'paypal' && !isPaypalActive)
                     }
-                    className="w-full bg-[var(--accent)] hover:opacity-90 disabled:opacity-40 text-[var(--fg-on-emphasis)] font-black py-4 rounded-[var(--radius-sm)] text-[10px] uppercase tracking-[0.2em] transition-all shadow-md cursor-pointer"
+                    className="w-full bg-[var(--accent)] hover:opacity-90 disabled:opacity-40 text-[var(--fg-on-emphasis)] font-black py-4 rounded-shape-sm text-[10px] uppercase tracking-[0.2em] transition-all shadow-md cursor-pointer"
                   >
                     {isSubmittingDeposit ? (
                       (depositMethod === 'card') ? (
@@ -1585,10 +1585,10 @@ export const WalletSystem: React.FC<{ theme: string; dir: 'ltr' | 'rtl' }> = ({ 
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -15 }}
               transition={{ duration: 0.15 }}
-              className="p-8 rounded-[var(--radius-md)] border bg-[var(--surface-card)] border-[var(--border-default)] shadow-xl relative"
+              className="p-8 rounded-shape-md border bg-[var(--surface-card)] border-[var(--border-default)] shadow-xl relative"
             >
               <div className="flex items-center gap-4 mb-8">
-                <div className="w-10 h-10 rounded-[var(--radius-sm)] bg-[var(--bg-accent-muted)] flex items-center justify-center text-[var(--fg-accent)] border border-[var(--border-accent)]/30">
+                <div className="w-10 h-10 rounded-shape-sm bg-[var(--bg-accent-muted)] flex items-center justify-center text-[var(--fg-accent)] border border-[var(--border-accent)]/30">
                   <ArrowDownCircle size={20} />
                 </div>
                 <div>
@@ -1602,7 +1602,7 @@ export const WalletSystem: React.FC<{ theme: string; dir: 'ltr' | 'rtl' }> = ({ 
               </div>
 
               {currentBalance === 0 ? (
-                <div className="p-12 text-center rounded-[var(--radius-md)] border border-dashed border-[var(--border-default)] opacity-60">
+                <div className="p-12 text-center rounded-shape-md border border-dashed border-[var(--border-default)] opacity-60">
                   <AlertCircle size={40} className="mx-auto text-[var(--fg-warning)] mb-4" />
                   <h4 className="text-xs font-black uppercase tracking-widest text-[var(--text-primary)] mb-2">
                     {dir === 'rtl' ? 'رصيدك الحالي فارغ بالدولار' : 'Wallet balance is currently empty'}
@@ -1622,7 +1622,7 @@ export const WalletSystem: React.FC<{ theme: string; dir: 'ltr' | 'rtl' }> = ({ 
                         {dir === 'rtl' ? 'الحد الأقصى المتاح:' : 'Max Available:'} ${currentBalance.toLocaleString()}
                       </span>
                     </div>
-                    <div className="relative rounded-[var(--radius-sm)] shadow-sm bg-[var(--surface-card)]">
+                    <div className="relative rounded-shape-sm shadow-sm bg-[var(--surface-card)]">
                       <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
                         <span className="text-[13px] font-black text-[var(--fg-accent)]">$</span>
                       </div>
@@ -1631,7 +1631,7 @@ export const WalletSystem: React.FC<{ theme: string; dir: 'ltr' | 'rtl' }> = ({ 
                         value={withdrawAmount}
                         onChange={(e) => setWithdrawAmount(e.target.value)}
                         placeholder="0.00"
-                        className="block w-full pl-10 pr-12 py-4 bg-transparent border border-[var(--border-default)] rounded-[var(--radius-sm)] text-sm font-black text-[var(--text-primary)] focus:border-[var(--border-accent)] focus:outline-none"
+                        className="block w-full pl-10 pr-12 py-4 bg-transparent border border-[var(--border-default)] rounded-shape-sm text-sm font-black text-[var(--text-primary)] focus:border-[var(--border-accent)] focus:outline-none"
                       />
                       <div className="absolute inset-y-0 right-0 pr-4 flex items-center pointer-events-none">
                         <span className="text-[10px] font-black opacity-30 tracking-widest text-[var(--text-muted)]">USD</span>
@@ -1666,7 +1666,7 @@ export const WalletSystem: React.FC<{ theme: string; dir: 'ltr' | 'rtl' }> = ({ 
                           type="button"
                           key={m.id}
                           onClick={() => setWithdrawMethod(m.id as any)}
-                          className={`p-5 rounded-[var(--radius-sm)] border text-left rtl:text-right flex items-center gap-4 transition-all relative overflow-hidden group cursor-pointer ${
+                          className={`p-5 rounded-shape-sm border text-left rtl:text-right flex items-center gap-4 transition-all relative overflow-hidden group cursor-pointer ${
                             withdrawMethod === m.id
                               ? 'bg-[var(--bg-accent-muted)] border-[var(--border-accent)] text-[var(--fg-accent)]'
                               : 'bg-[var(--surface-card)] border-[var(--border-default)] text-[var(--text-muted)] hover:border-[var(--border-accent)]/40 hover:text-[var(--text-primary)]'
@@ -1689,7 +1689,7 @@ export const WalletSystem: React.FC<{ theme: string; dir: 'ltr' | 'rtl' }> = ({ 
                   </div>
 
                   {/* Form fields for payout methods */}
-                  <div className="p-6 rounded-[var(--radius-md)] border border-[var(--border-default)] bg-[var(--surface-card)] transition-colors">
+                  <div className="p-6 rounded-shape-md border border-[var(--border-default)] bg-[var(--surface-card)] transition-colors">
                     
                     {withdrawMethod === 'paypal' && (
                       <div className="space-y-2">
@@ -1702,7 +1702,7 @@ export const WalletSystem: React.FC<{ theme: string; dir: 'ltr' | 'rtl' }> = ({ 
                           value={withdrawDetails}
                           onChange={(e) => setWithdrawDetails(e.target.value)}
                           placeholder="payout-individual@email.com"
-                          className="block w-full px-4 py-3 bg-[var(--surface-card)] border border-[var(--border-default)] rounded-[var(--radius-sm)] text-xs font-black text-[var(--text-primary)] focus:border-[var(--border-accent)] focus:outline-none"
+                          className="block w-full px-4 py-3 bg-[var(--surface-card)] border border-[var(--border-default)] rounded-shape-sm text-xs font-black text-[var(--text-primary)] focus:border-[var(--border-accent)] focus:outline-none"
                         />
                         <span className="text-[8px] font-bold tracking-widest text-[var(--text-muted)] uppercase block mt-1">
                           {dir === 'rtl' ? '* تأكد من تطابق البريد لتجنب حدوث عمليات فشل في قنوات الدفع.' : '* Settlement will process directly to this authorized address within 12 hours.'}
@@ -1721,7 +1721,7 @@ export const WalletSystem: React.FC<{ theme: string; dir: 'ltr' | 'rtl' }> = ({ 
                           value={withdrawDetails}
                           onChange={(e) => setWithdrawDetails(e.target.value)}
                           placeholder="TPh7eWpY29kZVN6QXV0VGhlbn..."
-                          className="block w-full px-4 py-3 bg-[var(--surface-card)] border border-[var(--border-default)] rounded-[var(--radius-sm)] text-xs font-black tracking-wider text-[var(--text-primary)] focus:border-[var(--border-accent)] focus:outline-none font-mono"
+                          className="block w-full px-4 py-3 bg-[var(--surface-card)] border border-[var(--border-default)] rounded-shape-sm text-xs font-black tracking-wider text-[var(--text-primary)] focus:border-[var(--border-accent)] focus:outline-none font-mono"
                         />
                         <span className="text-[8px] font-bold tracking-widest text-[var(--text-muted)] uppercase block mt-1">
                           {dir === 'rtl' ? '* لا ترسل سوى عنوان TRC-20 لتجنب تلف المعاملة نهائياً.' : '* Node clearance executes on the TRON network instantly.'}
@@ -1740,7 +1740,7 @@ export const WalletSystem: React.FC<{ theme: string; dir: 'ltr' | 'rtl' }> = ({ 
                               value={withdrawHolderName}
                               onChange={(e) => setWithdrawHolderName(e.target.value)}
                               placeholder="Full Name here"
-                              className="block w-full px-4 py-3 bg-[var(--surface-card)] border border-[var(--border-default)] rounded-[var(--radius-sm)] text-xs font-black text-[var(--text-primary)] focus:border-[var(--border-accent)] focus:outline-none"
+                              className="block w-full px-4 py-3 bg-[var(--surface-card)] border border-[var(--border-default)] rounded-shape-sm text-xs font-black text-[var(--text-primary)] focus:border-[var(--border-accent)] focus:outline-none"
                             />
                           </div>
                           <div className="space-y-2">
@@ -1751,7 +1751,7 @@ export const WalletSystem: React.FC<{ theme: string; dir: 'ltr' | 'rtl' }> = ({ 
                               value={withdrawBankName}
                               onChange={(e) => setWithdrawBankName(e.target.value)}
                               placeholder="e.g. Bank Hapoalim"
-                              className="block w-full px-4 py-3 bg-[var(--surface-card)] border border-[var(--border-default)] rounded-[var(--radius-sm)] text-xs font-black text-[var(--text-primary)] focus:border-[var(--border-accent)] focus:outline-none"
+                              className="block w-full px-4 py-3 bg-[var(--surface-card)] border border-[var(--border-default)] rounded-shape-sm text-xs font-black text-[var(--text-primary)] focus:border-[var(--border-accent)] focus:outline-none"
                             />
                           </div>
                         </div>
@@ -1765,7 +1765,7 @@ export const WalletSystem: React.FC<{ theme: string; dir: 'ltr' | 'rtl' }> = ({ 
                               value={withdrawBankIBAN}
                               onChange={(e) => setWithdrawBankIBAN(e.target.value.toUpperCase())}
                               placeholder="IL0000000..."
-                              className="block w-full px-4 py-3 bg-[var(--surface-card)] border border-[var(--border-default)] rounded-[var(--radius-sm)] text-xs font-black text-[var(--text-primary)] focus:border-[var(--border-accent)] focus:outline-none font-mono"
+                              className="block w-full px-4 py-3 bg-[var(--surface-card)] border border-[var(--border-default)] rounded-shape-sm text-xs font-black text-[var(--text-primary)] focus:border-[var(--border-accent)] focus:outline-none font-mono"
                             />
                           </div>
                           <div className="space-y-2">
@@ -1776,7 +1776,7 @@ export const WalletSystem: React.FC<{ theme: string; dir: 'ltr' | 'rtl' }> = ({ 
                               value={withdrawSwift}
                               onChange={(e) => setWithdrawSwift(e.target.value.toUpperCase())}
                               placeholder="SWIFT"
-                              className="block w-full px-4 py-3 bg-[var(--surface-card)] border border-[var(--border-default)] rounded-[var(--radius-sm)] text-xs font-black text-[var(--text-primary)] focus:border-[var(--border-accent)] focus:outline-none font-mono"
+                              className="block w-full px-4 py-3 bg-[var(--surface-card)] border border-[var(--border-default)] rounded-shape-sm text-xs font-black text-[var(--text-primary)] focus:border-[var(--border-accent)] focus:outline-none font-mono"
                             />
                           </div>
                         </div>
@@ -1788,7 +1788,7 @@ export const WalletSystem: React.FC<{ theme: string; dir: 'ltr' | 'rtl' }> = ({ 
                   <button
                     type="submit"
                     disabled={isSubmittingWithdraw || parseFloat(withdrawAmount) > currentBalance}
-                    className="w-full bg-[var(--accent)] hover:opacity-90 disabled:opacity-40 text-[var(--fg-on-emphasis)] font-black py-4 rounded-[var(--radius-sm)] text-[10px] uppercase tracking-[0.2em] transition-all shadow-md cursor-pointer"
+                    className="w-full bg-[var(--accent)] hover:opacity-90 disabled:opacity-40 text-[var(--fg-on-emphasis)] font-black py-4 rounded-shape-sm text-[10px] uppercase tracking-[0.2em] transition-all shadow-md cursor-pointer"
                   >
                     {isSubmittingWithdraw ? (dir === 'rtl' ? 'جاري إثبات طلب التسوية المالي مع البنك المركزي...' : 'SUBMITTING SECURED DISBURSEMENT FLOW...') : (dir === 'rtl' ? 'تقديم طلب السحب الفوري' : 'SUBMIT WITHDRAWAL SETTLEMENT')}
                   </button>
@@ -1805,7 +1805,7 @@ export const WalletSystem: React.FC<{ theme: string; dir: 'ltr' | 'rtl' }> = ({ 
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              className="w-full rounded-[var(--radius-md)] border overflow-hidden transition-colors flex flex-col bg-[var(--surface-card)] border-[var(--border-default)] shadow-sm"
+              className="w-full rounded-shape-md border overflow-hidden transition-colors flex flex-col bg-[var(--surface-card)] border-[var(--border-default)] shadow-sm"
             >
               <div className="flex-1 flex flex-col">
                 {/* Premium Clean Up Utility Bar */}
@@ -1824,7 +1824,7 @@ export const WalletSystem: React.FC<{ theme: string; dir: 'ltr' | 'rtl' }> = ({ 
                   {transactions.length > 0 && (
                     <button
                       onClick={handleClearAllHistory}
-                      className="px-4 py-2 rounded-[var(--radius-sm)] border border-[var(--border-default)] bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 text-[9px] font-black tracking-widest uppercase transition-all flex items-center gap-2 cursor-pointer self-start sm:self-auto"
+                      className="px-4 py-2 rounded-shape-sm border border-[var(--border-default)] bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 text-[9px] font-black tracking-widest uppercase transition-all flex items-center gap-2 cursor-pointer self-start sm:self-auto"
                     >
                       <Trash2 size={12} />
                       {dir === 'rtl' ? 'أرشفة السجل بالكامل' : 'Archive Entire Log'}
@@ -1851,7 +1851,7 @@ export const WalletSystem: React.FC<{ theme: string; dir: 'ltr' | 'rtl' }> = ({ 
                           refId = dep.proof_url || 'N/A';
                         }
                         return (
-                          <div key={`manual-dep-${dep.id || dIdx}-${dIdx}`} className="p-4 rounded-[var(--radius-sm)] border border-dashed border-[var(--border-default)] bg-[var(--surface-card)] flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                          <div key={`manual-dep-${dep.id || dIdx}-${dIdx}`} className="p-4 rounded-shape-sm border border-dashed border-[var(--border-default)] bg-[var(--surface-card)] flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                             <div className="flex flex-col gap-1">
                               <p className="text-[11px] font-black text-[var(--text-primary)] leading-tight flex items-center gap-2">
                                 <span>{dir === 'rtl' ? 'طلب شحن يدوي' : 'Manual Deposit Claim'}</span>
@@ -1923,7 +1923,7 @@ export const WalletSystem: React.FC<{ theme: string; dir: 'ltr' | 'rtl' }> = ({ 
                         transactions.map((tx, txIdx) => (
                           <tr key={`wallet-tx-${tx.id || txIdx}-${txIdx}`} className="hover:bg-[var(--surface-card)] transition-colors group">
                              <td className="px-8 py-7">
-                                <code className="text-[11px] font-black text-[var(--fg-accent)] opacity-80 bg-[var(--bg-accent-muted)] px-2 py-1 rounded-[var(--radius-sm)]">TRX-{tx.id.toString(36).toUpperCase().padEnd(8, '0')}</code>
+                                <code className="text-[11px] font-black text-[var(--fg-accent)] opacity-80 bg-[var(--bg-accent-muted)] px-2 py-1 rounded-shape-sm">TRX-{tx.id.toString(36).toUpperCase().padEnd(8, '0')}</code>
                              </td>
                              <td className="px-8 py-7">
                                <div className="flex items-center gap-2">
@@ -1958,7 +1958,7 @@ export const WalletSystem: React.FC<{ theme: string; dir: 'ltr' | 'rtl' }> = ({ 
                                <span className="flex justify-end">
                                  <button
                                    onClick={() => handleHideTransaction(tx.id)}
-                                   className="bg-transparent border border-transparent transition-all hover:bg-[var(--surface-subtle)] rounded-[var(--radius-sm)] w-8 h-8 flex items-center justify-center text-[var(--text-muted)] hover:text-[var(--fg-accent)] cursor-pointer"
+                                   className="bg-transparent border border-transparent transition-all hover:bg-[var(--surface-subtle)] rounded-shape-sm w-8 h-8 flex items-center justify-center text-[var(--text-muted)] hover:text-[var(--fg-accent)] cursor-pointer"
                                    title={dir === 'rtl' ? 'أرشفة المعاملة' : 'Archive Transaction'}
                                  >
                                    <Trash2 size={13} />
@@ -2021,7 +2021,7 @@ export const WalletSystem: React.FC<{ theme: string; dir: 'ltr' | 'rtl' }> = ({ 
                 initial={{ scale: 0.95, y: 15 }}
                 animate={{ scale: 1, y: 0 }}
                 exit={{ scale: 0.95, y: 15 }}
-                className="bg-[var(--surface-card)] border border-[var(--border-default)] rounded-[var(--radius-md)] max-w-lg w-full p-6 md:p-8 text-center shadow-2xl relative overflow-hidden"
+                className="bg-[var(--surface-card)] border border-[var(--border-default)] rounded-shape-md max-w-lg w-full p-6 md:p-8 text-center shadow-2xl relative overflow-hidden"
               >
                 {/* Background glow circle */}
                 <div className="absolute -top-24 -left-24 w-48 h-48 bg-[var(--bg-accent-muted)] rounded-full blur-3xl pointer-events-none" />
@@ -2042,7 +2042,7 @@ export const WalletSystem: React.FC<{ theme: string; dir: 'ltr' | 'rtl' }> = ({ 
                 </p>
 
                 {/* Amount segment */}
-                <div className="bg-[var(--surface-card)] border border-[var(--border-default)] rounded-[var(--radius-sm)] py-4 px-6 inline-flex flex-col items-center justify-center mb-8 min-w-[200px]">
+                <div className="bg-[var(--surface-card)] border border-[var(--border-default)] rounded-shape-sm py-4 px-6 inline-flex flex-col items-center justify-center mb-8 min-w-[200px]">
                   <span className="text-[10px] font-black uppercase tracking-widest text-[var(--text-muted)] mb-1">
                     {dir === 'rtl' ? 'الرصيد المودع' : 'DEPOSITED AMOUNT'}
                   </span>

@@ -2114,7 +2114,7 @@ export const CORE_RELATIONS: ForeignKeyRelation[] = [
   { table: 'rinex_template_usages', constraint: 'fk_rinex_template_usages_creator', column: 'creator_id', ref: 'rinex_creators', onDelete: 'CASCADE' },
   { table: 'rinex_favorite_templates', constraint: 'fk_rinex_favorite_templates_user', column: 'user_id', ref: 'users', onDelete: 'CASCADE' },
   { table: 'rinex_favorite_templates', constraint: 'fk_rinex_favorite_templates_template', column: 'template_id', ref: 'rinex_templates', onDelete: 'CASCADE' },
-  { table: 'ad_stats', constraint: 'fk_ad_stats_advertisement', column: 'ad_id', ref: 'advertisements', onDelete: 'CASCADE' },
+  { table: 'ad_stats', constraint: 'fk_ad_stats_bulletin_ad', column: 'ad_id', ref: 'bulletin_ads', onDelete: 'CASCADE' },
   { table: 'google_tool_connections', constraint: 'fk_google_tool_connections_user', column: 'user_id', ref: 'users', onDelete: 'CASCADE' },
   { table: 'support_tickets', constraint: 'fk_support_tickets_user', column: 'user_id', ref: 'users', onDelete: 'CASCADE' },
   { table: 'support_ticket_replies', constraint: 'support_ticket_replies_user_id_fkey', column: 'user_id', ref: 'users', onDelete: 'CASCADE' },

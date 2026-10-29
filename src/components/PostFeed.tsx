@@ -39,7 +39,7 @@ class SinglePostErrorBoundary extends React.Component<{ children: React.ReactNod
   render() {
     if (this.state.hasError) {
       return (
-        <div className="p-3.5 rounded-[var(--radius-md)] bg-[var(--surface-subtle)] border border-[var(--border-default)] text-center text-xs text-[var(--text-muted)] my-2 shadow-2xs">
+        <div className="p-3.5 rounded-shape-md bg-[var(--surface-subtle)] border border-[var(--border-default)] text-center text-xs text-[var(--text-muted)] my-2 shadow-2xs">
           {this.props.isRtl ? 'تعذر عرض هذا المنشور مؤقتاً' : 'Could not display this post temporarily'}
         </div>
       );
@@ -557,16 +557,16 @@ export const PostFeed: React.FC<PostFeedProps> = ({
         {[1, 2, 3].map((n) => (
           <div
             key={`post-skel-${n}`}
-            className="rounded-[var(--radius-lg)] bg-[var(--surface-card)] p-4 border border-[var(--border-default)] animate-pulse space-y-3"
+            className="rounded-shape-lg bg-[var(--surface-card)] p-4 border border-[var(--border-default)] animate-pulse space-y-3"
           >
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-[var(--radius-sm)] bg-[var(--surface-subtle)]" />
+              <div className="w-10 h-10 rounded-shape-sm bg-[var(--surface-subtle)]" />
               <div className="space-y-1 flex-1">
                 <div className="h-3 bg-[var(--surface-subtle)] rounded w-2/3" />
                 <div className="h-2 bg-[var(--surface-subtle)] rounded w-1/3" />
               </div>
             </div>
-            <div className="aspect-square w-full bg-[var(--surface-subtle)] rounded-[var(--radius-md)]" />
+            <div className="aspect-square w-full bg-[var(--surface-subtle)] rounded-shape-md" />
           </div>
         ))}
       </div>
@@ -621,7 +621,7 @@ export const PostFeed: React.FC<PostFeedProps> = ({
               opacity: Math.min(1, pullY / 25 || 1) 
             }}
             exit={{ height: 0, opacity: 0 }}
-            className="col-span-full flex items-center justify-center gap-2 overflow-hidden text-xs font-bold text-[var(--fg-accent)] bg-[var(--surface-card)] rounded-[var(--radius-md)] border border-[var(--border-accent)]/30 py-2 shadow-xs transition-theme select-none"
+            className="col-span-full flex items-center justify-center gap-2 overflow-hidden text-xs font-bold text-[var(--fg-accent)] bg-[var(--surface-card)] rounded-shape-md border border-[var(--border-accent)]/30 py-2 shadow-xs transition-theme select-none"
           >
             <RefreshCw 
               size={15} 
@@ -650,7 +650,7 @@ export const PostFeed: React.FC<PostFeedProps> = ({
                 initial={{ opacity: 0, y: 12 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, height: 0, marginBottom: 0, transition: { duration: 0.22 } }}
-              className={`rounded-[var(--radius-md)] ${
+              className={`rounded-shape-md ${
                 activeMoreMenuId === ad.id || reactionBarAdId === ad.id
                   ? 'relative z-50 overflow-visible'
                   : 'relative z-10 overflow-hidden'
@@ -659,7 +659,7 @@ export const PostFeed: React.FC<PostFeedProps> = ({
               {/* Standard Card Content without Swipe Gestures */}
               <article
                 id={`bulletin-ad-${ad.id}`}
-                className={`w-full rounded-[var(--radius-md)] bg-[var(--surface-card)] border border-[var(--border-default)] shadow-xs flex flex-col transition-theme ${
+                className={`w-full rounded-shape-md bg-[var(--surface-card)] border border-[var(--border-default)] shadow-xs flex flex-col transition-theme ${
                   activeMoreMenuId === ad.id || reactionBarAdId === ad.id
                     ? 'relative z-50 overflow-visible'
                     : 'relative z-10 overflow-hidden'
@@ -1542,7 +1542,7 @@ export const PostFeed: React.FC<PostFeedProps> = ({
                             />
                           </div>
                           <div className="flex-1 min-w-0">
-                            <div className="bg-[var(--surface-card)] p-2.5 rounded-[var(--radius-md)] text-[var(--text-primary)] border border-[var(--border-default)] shadow-2xs">
+                            <div className="bg-[var(--surface-card)] p-2.5 rounded-shape-md text-[var(--text-primary)] border border-[var(--border-default)] shadow-2xs">
                               <span
                                 onClick={() => {
                                   if (comment.user_id && onOpenUserDetail) {
@@ -1663,7 +1663,7 @@ export const PostFeed: React.FC<PostFeedProps> = ({
           className="col-span-full py-6 text-center flex flex-col items-center justify-center gap-2"
         >
           {loadingMore ? (
-            <div className="flex items-center gap-2 text-xs font-bold text-[var(--fg-accent)] bg-[var(--bg-accent-muted)] px-5 py-2.5 rounded-[var(--radius-sm)] border border-[var(--border-accent)]/20 shadow-sm animate-pulse">
+            <div className="flex items-center gap-2 text-xs font-bold text-[var(--fg-accent)] bg-[var(--bg-accent-muted)] px-5 py-2.5 rounded-shape-sm border border-[var(--border-accent)]/20 shadow-sm animate-pulse">
               <Loader2 size={16} className="animate-spin text-[var(--fg-accent)]" />
               <span>{isRtl ? 'جاري تحميل المزيد من الإعلانات...' : 'Fetching more advertisements...'}</span>
             </div>

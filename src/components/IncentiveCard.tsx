@@ -117,7 +117,7 @@ export const IncentiveCard: React.FC = () => {
           animate={{ opacity: 1, y: 0, scale: 1, x: '-50%' }}
           exit={{ opacity: 0, scale: 0.95, y: -15, x: '-50%' }}
           transition={{ type: 'spring', stiffness: 350, damping: 28 }}
-          className={`fixed top-[calc(54px+env(safe-area-inset-top,0px))] left-1/2 z-[200] w-[90%] max-w-[350px] rounded-[var(--radius-lg)] border border-[var(--border-default)] shadow-xl overflow-hidden bg-[var(--surface-subtle)]/95 backdrop-blur-2xl`}
+          className={`fixed top-[calc(54px+env(safe-area-inset-top,0px))] left-1/2 z-[200] w-[90%] max-w-[350px] rounded-shape-lg border border-[var(--border-default)] shadow-xl overflow-hidden bg-[var(--surface-subtle)]/95 backdrop-blur-2xl`}
           onClick={(e) => e.stopPropagation()} // Prevent close when clicking the card itself
         >
           {/* Progress Bar (Header) */}
@@ -132,7 +132,7 @@ export const IncentiveCard: React.FC = () => {
 
           <div className="p-3.5 sm:p-4">
             <div className={`flex items-start gap-2 ${dir === 'rtl' ? 'flex-row-reverse' : 'flex-row'}`}>
-              <div className={`w-9 h-9 rounded-[var(--radius-md)] ${content.bg} flex items-center justify-center shrink-0`}>
+              <div className={`w-9 h-9 rounded-shape-md ${content.bg} flex items-center justify-center shrink-0`}>
                 {content.icon}
               </div>
               
@@ -147,13 +147,13 @@ export const IncentiveCard: React.FC = () => {
 
               <button 
                 onClick={handleClose}
-                className="text-[var(--text-muted)] hover:text-[var(--text-primary)] p-0.5 rounded-[var(--radius-sm)] transition-colors cursor-pointer"
+                className="text-[var(--text-muted)] hover:text-[var(--text-primary)] p-0.5 rounded-shape-sm transition-colors cursor-pointer"
               >
                 <X size={15} />
               </button>
             </div>
 
-            <div className={`mt-3 p-2.5 rounded-[var(--radius-md)] bg-[var(--surface-page)] border border-[var(--border-default)] ${dir === 'rtl' ? 'text-right' : 'text-left'}`}>
+            <div className={`mt-3 p-2.5 rounded-shape-md bg-[var(--surface-page)] border border-[var(--border-default)] ${dir === 'rtl' ? 'text-right' : 'text-left'}`}>
               <div className="flex items-center gap-1 mb-1">
                 <Users size={13} className="text-accent" />
                 <span className="text-[11px] font-extrabold text-accent uppercase tracking-wider">
@@ -167,14 +167,14 @@ export const IncentiveCard: React.FC = () => {
               <div className="mt-2.5 flex items-center gap-1">
                 <button 
                   onClick={handleShare}
-                  className="flex-1 flex items-center justify-center gap-1 px-3 py-2 rounded-[var(--radius-sm)] bg-[var(--control-active-bg)] hover:opacity-90 text-[var(--control-active-fg)] text-[11px] font-extrabold transition-all shadow-sm active:scale-95 cursor-pointer min-h-[36px]"
+                  className="flex-1 flex items-center justify-center gap-1 px-3 py-2 rounded-shape-sm bg-[var(--control-active-bg)] hover:opacity-90 text-[var(--control-active-fg)] text-[11px] font-extrabold transition-all shadow-sm active:scale-95 cursor-pointer min-h-[36px]"
                 >
                   <Share2 size={12} />
                   {dir === 'rtl' ? 'مشاركة الرابط' : 'Share Link'}
                 </button>
                 <button 
                   onClick={handleCopy}
-                  className="flex items-center justify-center gap-1 px-3 py-2 rounded-[var(--radius-sm)] bg-[var(--surface-subtle)] border border-[var(--border-default)] text-[var(--text-primary)] text-[11px] font-bold transition-all active:scale-95 cursor-pointer min-h-[36px]"
+                  className="flex items-center justify-center gap-1 px-3 py-2 rounded-shape-sm bg-[var(--surface-subtle)] border border-[var(--border-default)] text-[var(--text-primary)] text-[11px] font-bold transition-all active:scale-95 cursor-pointer min-h-[36px]"
                 >
                   {copied ? <Check size={12} className="text-accent" /> : <Copy size={12} />}
                   {copied ? (dir === 'rtl' ? 'تم النسخ' : 'Copied') : (dir === 'rtl' ? 'نسخ' : 'Copy')}

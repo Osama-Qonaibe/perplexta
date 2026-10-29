@@ -870,7 +870,7 @@ export const MediaLightboxModal: React.FC<MediaLightboxModalProps> = ({
 
       {/* AI Assistance Label if present */}
       {ad?.is_ai_generated && (
-        <div className="mx-3.5 sm:mx-4 mb-2 px-2 py-0.5 rounded-[var(--radius-xs)] bg-[var(--bg-accent-muted)] border border-[var(--border-accent)]/30 text-[var(--fg-accent)] text-[10px] font-black uppercase tracking-wider inline-flex items-center shrink-0 w-fit">
+        <div className="mx-3.5 sm:mx-4 mb-2 px-2 py-0.5 rounded-shape-xs bg-[var(--bg-accent-muted)] border border-[var(--border-accent)]/30 text-[var(--fg-accent)] text-[10px] font-black uppercase tracking-wider inline-flex items-center shrink-0 w-fit">
           AI
         </div>
       )}
@@ -899,7 +899,7 @@ export const MediaLightboxModal: React.FC<MediaLightboxModalProps> = ({
           </div>
         )}
         {currentItem.caption && currentItem.caption.trim() !== '' && (
-          <div className="p-2.5 rounded-[var(--radius-md)] bg-[var(--surface-card)] border border-[var(--border-default)] text-[var(--text-primary)] font-medium text-xs">
+          <div className="p-2.5 rounded-shape-md bg-[var(--surface-card)] border border-[var(--border-default)] text-[var(--text-primary)] font-medium text-xs">
             <span className="font-bold block mb-0.5 text-[11px] text-accent">{isRtl ? '📌 وصف هذه الصورة:' : '📌 Photo caption:'}</span>
             {currentItem.caption}
           </div>
@@ -914,7 +914,7 @@ export const MediaLightboxModal: React.FC<MediaLightboxModalProps> = ({
                 onClose();
                 onEditAd(ad);
               }}
-              className="flex-1 py-1.5 px-3 rounded-[var(--radius-sm)] bg-[var(--surface-card)] hover:bg-[var(--surface-subtle)] text-[var(--text-primary)] font-bold text-xs flex items-center justify-center gap-1 transition-colors border border-[var(--border-default)] cursor-pointer"
+              className="flex-1 py-1.5 px-3 rounded-shape-sm bg-[var(--surface-card)] hover:bg-[var(--surface-subtle)] text-[var(--text-primary)] font-bold text-xs flex items-center justify-center gap-1 transition-colors border border-[var(--border-default)] cursor-pointer"
             >
               <Edit3 size={13} />
               <span>{isRtl ? 'تعديل' : 'Edit'}</span>
@@ -928,7 +928,7 @@ export const MediaLightboxModal: React.FC<MediaLightboxModalProps> = ({
                 onClose();
                 onBoostAd(ad);
               }}
-              className="flex-1 py-1.5 px-3 rounded-[var(--radius-sm)] bg-[var(--comp-button-primary-bg)] text-[var(--comp-button-primary-fg)] hover:opacity-90 font-bold text-xs flex items-center justify-center gap-1 shadow-sm transition-colors cursor-pointer"
+              className="flex-1 py-1.5 px-3 rounded-shape-sm bg-[var(--comp-button-primary-bg)] text-[var(--comp-button-primary-fg)] hover:opacity-90 font-bold text-xs flex items-center justify-center gap-1 shadow-sm transition-colors cursor-pointer"
             >
               <Rocket size={13} />
               <span>{isRtl ? 'ترويج المنشور' : 'Boost Post'}</span>
@@ -941,9 +941,9 @@ export const MediaLightboxModal: React.FC<MediaLightboxModalProps> = ({
       <div className="px-4 py-2 flex items-center justify-between text-[11px] text-[var(--text-muted)] shrink-0 bg-[var(--surface-card)]">
         <div className="flex items-center gap-1">
           <div className="flex -space-x-1 rtl:space-x-reverse items-center">
-            <span className="w-4 h-4 rounded-[4px] bg-blue-500 text-white text-[9px] flex items-center justify-center">👍</span>
-            <span className="w-4 h-4 rounded-[4px] bg-red-500 text-white text-[9px] flex items-center justify-center">❤️</span>
-            <span className="w-4 h-4 rounded-[4px] bg-amber-500 text-white text-[9px] flex items-center justify-center">🥰</span>
+            <span className="w-4 h-4 rounded-shape-xs bg-blue-500 text-white text-[9px] flex items-center justify-center">👍</span>
+            <span className="w-4 h-4 rounded-shape-xs bg-red-500 text-white text-[9px] flex items-center justify-center">❤️</span>
+            <span className="w-4 h-4 rounded-shape-xs bg-amber-500 text-white text-[9px] flex items-center justify-center">🥰</span>
           </div>
           <span className="font-bold text-[var(--text-primary)] font-mono">{likesCount}</span>
         </div>
@@ -1105,7 +1105,7 @@ export const MediaLightboxModal: React.FC<MediaLightboxModalProps> = ({
         ) : commentsList.length === 0 ? (
           /* Empty Comments State */
           <div className="flex flex-col items-center justify-center py-10 px-4 text-center select-none">
-            <div className="w-12 h-12 rounded-[var(--radius-md)] bg-[var(--surface-subtle)] border border-[var(--border-default)] text-[var(--text-muted)] flex items-center justify-center mb-3">
+            <div className="w-12 h-12 rounded-shape-md bg-[var(--surface-subtle)] border border-[var(--border-default)] text-[var(--text-muted)] flex items-center justify-center mb-3">
               <FileText size={20} className="opacity-50" />
             </div>
             <h4 className="text-sm font-bold text-[var(--text-primary)]">
@@ -1127,7 +1127,7 @@ export const MediaLightboxModal: React.FC<MediaLightboxModalProps> = ({
                 />
               </div>
               <div className="flex-1 min-w-0">
-                <div className="bg-[var(--surface-subtle)] p-2.5 rounded-[var(--radius-md)] text-[var(--text-primary)] border border-[var(--border-default)]">
+                <div className="bg-[var(--surface-subtle)] p-2.5 rounded-shape-md text-[var(--text-primary)] border border-[var(--border-default)]">
                   <span className="font-extrabold text-xs block truncate text-[var(--text-primary)]">
                     {comm.author_name}
                   </span>
@@ -1559,7 +1559,7 @@ export const MediaLightboxModal: React.FC<MediaLightboxModalProps> = ({
                 if (isRtl) handleNext();
                 else handlePrev();
               }}
-              className="absolute left-2 sm:left-6 top-1/2 -translate-y-1/2 z-40 w-9 h-9 sm:w-11 sm:h-11 min-h-[36px] min-w-[36px] sm:min-h-[44px] sm:min-w-[44px] rounded-full sm:rounded-[var(--comp-button-radius,8px)] bg-black/40 sm:bg-[var(--surface-card)]/90 text-white sm:text-[var(--text-primary)] hover:text-accent backdrop-blur-md flex items-center justify-center transition-all hover:scale-110 active:scale-95 cursor-pointer border-0 sm:border sm:border-[var(--border-main)] shadow-xl pointer-events-auto"
+              className="absolute left-2 sm:left-6 top-1/2 -translate-y-1/2 z-40 w-8 h-8 sm:w-10 sm:h-10 min-h-[32px] min-w-[32px] sm:min-h-[40px] sm:min-w-[40px] rounded-full sm:rounded-shape-sm bg-black/40 sm:bg-[var(--surface-card)]/90 text-white sm:text-[var(--text-primary)] hover:text-accent backdrop-blur-md flex items-center justify-center transition-all hover:scale-110 active:scale-95 cursor-pointer border-0 sm:border sm:border-[var(--border-main)] shadow-xl pointer-events-auto"
               title={isRtl ? 'التالي' : 'Previous'}
             >
               {isRtl ? <ChevronRight size={20} className="sm:w-6 sm:h-6" /> : <ChevronLeft size={20} className="sm:w-6 sm:h-6" />}
@@ -1575,7 +1575,7 @@ export const MediaLightboxModal: React.FC<MediaLightboxModalProps> = ({
                 if (isRtl) handlePrev();
                 else handleNext();
               }}
-              className="absolute right-2 sm:right-6 top-1/2 -translate-y-1/2 z-40 w-9 h-9 sm:w-11 sm:h-11 min-h-[36px] min-w-[36px] sm:min-h-[44px] sm:min-w-[44px] rounded-full sm:rounded-[var(--comp-button-radius,8px)] bg-black/40 sm:bg-[var(--surface-card)]/90 text-white sm:text-[var(--text-primary)] hover:text-accent backdrop-blur-md flex items-center justify-center transition-all hover:scale-110 active:scale-95 cursor-pointer border-0 sm:border sm:border-[var(--border-main)] shadow-xl pointer-events-auto"
+              className="absolute right-2 sm:right-6 top-1/2 -translate-y-1/2 z-40 w-8 h-8 sm:w-10 sm:h-10 min-h-[32px] min-w-[32px] sm:min-h-[40px] sm:min-w-[40px] rounded-full sm:rounded-shape-sm bg-black/40 sm:bg-[var(--surface-card)]/90 text-white sm:text-[var(--text-primary)] hover:text-accent backdrop-blur-md flex items-center justify-center transition-all hover:scale-110 active:scale-95 cursor-pointer border-0 sm:border sm:border-[var(--border-main)] shadow-xl pointer-events-auto"
               title={isRtl ? 'السابق' : 'Next'}
             >
               {isRtl ? <ChevronLeft size={20} className="sm:w-6 sm:h-6" /> : <ChevronRight size={20} className="sm:w-6 sm:h-6" />}
@@ -1646,7 +1646,7 @@ export const MediaLightboxModal: React.FC<MediaLightboxModalProps> = ({
                       setPan({ x: 0, y: 0 });
                       setRotation(0);
                     }}
-                    className={`relative shrink-0 w-12 h-12 rounded-[var(--comp-button-radius,8px)] overflow-hidden border-2 transition-all cursor-pointer ${
+                    className={`relative shrink-0 w-10 h-10 rounded-shape-sm overflow-hidden border-2 transition-all cursor-pointer ${
                       isSelected
                         ? 'border-accent scale-105 opacity-100 shadow-md'
                         : 'border-[var(--border-main)] opacity-60 hover:opacity-100'
@@ -1785,7 +1785,7 @@ export const MediaLightboxModal: React.FC<MediaLightboxModalProps> = ({
                 onClick={(e) => e.stopPropagation()}
               >
                 {/* Pull handle */}
-                <div className="w-12 h-1.5 rounded-[4px] bg-[var(--border-main)] mx-auto mt-2.5 mb-1 shrink-0" />
+                <div className="w-12 h-1.5 rounded-shape-xs bg-[var(--border-main)] mx-auto mt-2.5 mb-1 shrink-0" />
                 <div className="flex-1 min-h-0 overflow-hidden">
                   {renderSidebarContent()}
                 </div>

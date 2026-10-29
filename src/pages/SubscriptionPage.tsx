@@ -10,6 +10,7 @@ import { ContentContainer } from '../components/ContentContainer';
 import { ALL_TOOLS } from '../constants';
 import { trackPremiumSubscriptionEvent } from '../utils/analytics';
 import { triggerTierUnlockConfetti } from '../utils/confetti';
+import { triggerHaptic } from '../utils/haptics';
 
 const ModalPortal: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [mounted, setMounted] = useState(false);
@@ -329,13 +330,21 @@ export const SubscriptionPage: React.FC = () => {
         </div>
       )}
 
-      <div className="sticky -top-0.5 z-20 -mx-4 md:-mx-8 px-4 md:px-8 py-3.5 mb-6 transition-theme bg-[var(--surface-page)]/95 backdrop-blur-md border-b border-[var(--border-main)]">
+      <div className="md:sticky md:-top-0.5 z-20 -mx-4 md:-mx-8 px-4 md:px-8 py-3.5 mb-6 transition-theme bg-[var(--surface-page)]/95 backdrop-blur-md border-b border-[var(--border-main)]">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div className="flex items-center gap-3">
             <button 
-              onClick={() => navigate('/')}
+              type="button"
+              onClick={() => {
+                triggerHaptic('light');
+                if (window.history.length > 1) {
+                  navigate(-1);
+                } else {
+                  navigate(user ? '/chat' : '/');
+                }
+              }}
               className="w-8 h-8 min-w-[32px] min-h-[32px] max-w-[32px] max-h-[32px] btn-square-primary touch-target-44-expanded rounded-shape-sm flex items-center justify-center transition-theme bg-[var(--surface-subtle)] border border-[var(--border-main)] text-[var(--text-secondary)] hover:text-[var(--fg-accent)] hover:border-[var(--border-accent)] active:scale-95 cursor-pointer shrink-0"
-              title={dir === 'rtl' ? 'الرئيسية' : 'Home'}
+              title={dir === 'rtl' ? 'رجوع' : 'Back'}
             >
               {dir === 'rtl' ? <ChevronRight size={16} /> : <ChevronLeft size={16} />}
             </button>
@@ -518,7 +527,7 @@ export const SubscriptionPage: React.FC = () => {
               >
                 {/* Admin Defined Plan Color Stripe */}
                 <div 
-                  className="absolute top-0 left-0 right-0 h-1 rounded-t-[var(--radius-md)] transition-all group-hover:h-1.5" 
+                  className="absolute top-0 left-0 right-0 h-1 rounded-t-shape-md transition-all group-hover:h-1.5" 
                   style={{ backgroundColor: planColor }}
                 />
 

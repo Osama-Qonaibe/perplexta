@@ -525,265 +525,9 @@ export const ChatComposer: React.FC<ChatComposerProps> = ({
           {/* 2. Bottom Toolbar (Single-Row Baseline & Language Button Visual Identity) */}
           <div className="flex items-center justify-between px-3.5 py-2.5 flex-nowrap -mx-3.5 -mb-3.5 sm:-mx-3.5 sm:-mb-3.5 bg-[var(--surface-subtle)] border-t border-[var(--border-subtle)] rounded-b-shape-md transition-colors">
             
-            {/* Left Action Chips / Tools */}
-            <div className="flex items-center gap-2 sm:gap-2 flex-nowrap min-w-0">
-              <div className="flex items-center gap-2 shrink-0 flex-nowrap">
-                    {/* FAST Accent Chip */}
-                    <div ref={modelsMenuRef} className="relative shrink-0">
-                      {(() => {
-                        const isModelActive = ['chat_fast', 'chat_pro', 'chat_reasoning'].includes(selectedTool);
-                        return (
-                          <>
-                            <button
-                              type="button"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                if (!isInputDisabled) {
-                                  setIsModelMenuOpen(prev => !prev);
-                                  setIsAdvancedToolsOpen(false);
-                                }
-                              }}
-                              className={`w-8 h-8 sm:w-auto sm:px-2.5 sm:h-8 flex items-center justify-center gap-1 sm:gap-1.5 rounded-shape-sm border border-[var(--border-default)] hover:border-[var(--border-accent)]/60 transition-all duration-200 active:scale-95 text-xs font-mono cursor-pointer shrink-0 bg-transparent relative before:absolute before:-inset-1.5 sm:before:hidden before:content-[''] box-border ${
-                                isModelActive 
-                                  ? 'text-[var(--text-primary)]' 
-                                  : 'text-[var(--text-muted)] hover:text-[var(--text-primary)] shadow-2xs'
-                              }`}
-                            >
-                              <span className="shrink-0 flex items-center justify-center w-3.5 h-3.5">
-                                {React.isValidElement(currentModel?.icon) 
-                                  ? React.cloneElement(currentModel.icon as React.ReactElement<{ size?: number; className?: string }>, { 
-                                      size: 14, 
-                                      className: `w-3.5 h-3.5 transition-all duration-300 ${
-                                        isModelActive 
-                                          ? 'text-[var(--fg-accent)] fill-[var(--fg-accent)]' 
-                                          : 'text-[var(--text-muted)]'
-                                      }` 
-                                    })
-                                  : <Zap className={`w-3.5 h-3.5 transition-all duration-300 ${
-                                      isModelActive 
-                                        ? 'fill-[var(--fg-accent)] text-[var(--fg-accent)]' 
-                                        : 'text-[var(--text-muted)]'
-                                    }`} />}
-                              </span>
-                              <span className="hidden sm:inline whitespace-nowrap">{isModelActive ? currentModel?.label : (dir === 'rtl' ? 'سريع' : 'FAST')}</span>
-                              <ChevronDown className="w-3 h-3 hidden sm:inline ml-0.5 shrink-0 text-[var(--text-muted)] transition-colors" />
-                            </button>
-
-                            {isModelMenuOpen && (
-                              <motion.div 
-                                initial={{ opacity: 0, scale: 0.98 }}
-                                animate={{ opacity: 1, scale: 1 }}
-                                exit={{ opacity: 0, scale: 0.98 }}
-                                transition={{ duration: 0.10, ease: [0.16, 1, 0.3, 1] }}
-                                style={{ transformOrigin: dir === 'rtl' ? 'bottom right' : 'bottom left' }}
-                                className={`absolute bottom-full mb-2 ${dir === 'rtl' ? 'right-0' : 'left-0'} w-40 p-1.5 rounded-shape-md border border-[var(--border-default)] shadow-2xl ring-1 ring-black/5 dark:ring-white/10 flex flex-col gap-0.5 z-[200] bg-[var(--surface-card)] backdrop-blur-2xl`}
-                                onClick={(e) => e.stopPropagation()}
-                              >
-                                {sortedModels.map((model, idx) => {
-                                  const limit = currentPlan?.limits?.[model.id];
-                                  const isZeroLimit = limit?.daily === 0 && limit?.monthly === 0;
-                                  const hasBalance = (balance && balance > 0) || (balanceUSD && balanceUSD > 0);
-                                  const isLocked = currentPlan ? isZeroLimit && !hasBalance : false;
-                                  const isSelected = selectedModel === model.id && isModelActive;
-
-                                  return (
-                                    <button 
-                                      key={`${model.id}-${idx}`} 
-                                      onClick={() => {
-                                        if (isLocked) return;
-                                        setSelectedModel(model.id as any);
-                                        const targetTool = model.id === 'fast' ? 'chat_fast' : model.id === 'pro' ? 'chat_pro' : model.id === 'thinking' ? 'chat_reasoning' : 'chat_fast';
-                                        setSelectedTool(targetTool);
-                                        setActiveDropdown('model');
-                                        setIsModelMenuOpen(false);
-                                      }}
-                                      className={`group flex items-center justify-between w-full h-[36px] min-h-[36px] px-3 py-2 rounded-shape-sm flex-nowrap transition-all duration-fast text-xs font-medium cursor-pointer ${
-                                        isLocked
-                                          ? 'opacity-40 cursor-not-allowed text-[var(--text-disabled)]'
-                                          : isSelected
-                                            ? 'bg-[var(--bg-accent-muted)] text-[var(--fg-accent)] font-semibold border border-[var(--border-accent)]/30'
-                                            : HOVER_STYLES.dropdownItem + ' border border-transparent'
-                                      }`}
-                                    >
-                                      <div className="flex items-center gap-2 flex-nowrap">
-                                        <span className={`shrink-0 flex items-center justify-center w-3.5 h-3.5 transition-colors duration-fast ${
-                                          isLocked 
-                                            ? 'text-[var(--text-disabled)] opacity-60' 
-                                            : isSelected 
-                                              ? 'text-[var(--fg-accent)] fill-[var(--fg-accent)]' 
-                                              : 'text-[var(--text-muted)] group-hover:text-[var(--text-primary)]'
-                                        }`}>
-                                          {React.isValidElement(model.icon) 
-                                            ? React.cloneElement(model.icon as React.ReactElement<{ size?: number; className?: string }>, { 
-                                                size: 14, 
-                                                className: `w-3.5 h-3.5 transition-colors duration-fast ${isSelected ? 'text-[var(--fg-accent)]' : ''}` 
-                                              })
-                                            : <Zap className={`w-3.5 h-3.5 transition-colors duration-fast ${isSelected ? 'fill-[var(--fg-accent)] text-[var(--fg-accent)]' : ''}`} />}
-                                        </span>
-                                        <span className={`whitespace-nowrap transition-colors duration-fast ${
-                                          isLocked ? '' : 'group-hover:text-[var(--text-primary)]'
-                                        }`}>
-                                          {model.label}
-                                        </span>
-                                      </div>
-                                      <div className="flex items-center gap-0.5 shrink-0">
-                                        {isLocked && (
-                                          <Lock size={11} className="text-[var(--fg-warning)] shrink-0" />
-                                        )}
-                                      </div>
-                                    </button>
-                                  );
-                                })}
-                              </motion.div>
-                            )}
-                          </>
-                        );
-                      })()}
-                    </div>
-
-                    {/* Analysis Dropdown Chip */}
-                    <div ref={toolsMenuRef} className="relative shrink-0">
-                      {(() => {
-                        const isToolActive = !['chat_fast', 'chat_pro', 'chat_reasoning'].includes(selectedTool);
-                        return (
-                          <>
-                            <button
-                              type="button"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                if (!isInputDisabled) {
-                                  setIsAdvancedToolsOpen(prev => !prev);
-                                  setIsModelMenuOpen(false);
-                                }
-                              }}
-                              className={`w-8 h-8 sm:w-auto sm:px-2.5 sm:h-8 flex items-center justify-center gap-1 sm:gap-1.5 rounded-shape-sm border border-[var(--border-default)] hover:border-[var(--border-accent)]/60 transition-all duration-200 active:scale-95 text-xs font-medium cursor-pointer shrink-0 bg-transparent relative before:absolute before:-inset-1.5 sm:before:hidden before:content-[''] box-border ${
-                                isToolActive 
-                                  ? 'text-[var(--text-primary)]' 
-                                  : 'text-[var(--text-muted)] hover:text-[var(--text-primary)] shadow-2xs'
-                              }`}
-                            >
-                              <span className="shrink-0 flex items-center justify-center w-3.5 h-3.5">
-                                {React.isValidElement(currentTool?.icon) 
-                                  ? React.cloneElement(currentTool.icon as React.ReactElement<{ size?: number; className?: string }>, { 
-                                      size: 14, 
-                                      className: `w-3.5 h-3.5 shrink-0 transition-all duration-300 ${isToolActive ? 'text-[var(--fg-accent)]' : 'text-[var(--text-muted)]'}` 
-                                    })
-                                  : <Search className={`w-3.5 h-3.5 shrink-0 transition-all duration-300 ${isToolActive ? 'text-[var(--fg-accent)]' : 'text-[var(--text-muted)]'}`} />}
-                              </span>
-                              <span className="hidden sm:inline whitespace-nowrap">{currentTool?.label || (dir === 'rtl' ? 'تحليل' : 'Analysis')}</span>
-                              <ChevronDown className="w-3 h-3 hidden sm:inline ml-0.5 shrink-0 text-[var(--text-muted)] transition-colors" />
-                            </button>
-
-                            {isAdvancedToolsOpen && (
-                              <motion.div 
-                                initial={{ opacity: 0, scale: 0.98 }}
-                                animate={{ opacity: 1, scale: 1 }}
-                                exit={{ opacity: 0, scale: 0.98 }}
-                                transition={{ duration: 0.10, ease: [0.16, 1, 0.3, 1] }}
-                                style={{ transformOrigin: dir === 'rtl' ? 'bottom right' : 'bottom left' }}
-                                className={`absolute bottom-full mb-2 ${dir === 'rtl' ? 'right-0' : 'left-0'} w-52 max-w-[calc(100vw-2rem)] rounded-shape-md border border-[var(--border-default)] shadow-2xl ring-1 ring-black/5 dark:ring-white/10 flex flex-col z-[200] overflow-hidden bg-[var(--surface-card)] backdrop-blur-2xl p-1.5`}
-                                onClick={(e) => e.stopPropagation()}
-                              >
-                                <div className={`flex flex-col gap-0.5 ${SCROLL_STYLES.limited('70vh')} sm:max-h-[60vh]`}>
-                                  {sortedAdvancedTools.map((tool, tIdx) => {
-                                    const limit = currentPlan?.limits?.[tool.id];
-                                    const isZeroLimit = limit?.daily === 0 && limit?.monthly === 0;
-                                    const hasBalance = (balance && balance > 0) || (balanceUSD && balanceUSD > 0);
-                                    const isLocked = currentPlan ? isZeroLimit && !hasBalance : false;
-                                    const isSelected = selectedTool === tool.id;
-
-                                    return (
-                                      <button 
-                                        key={`adv-tool-${tool.id}-${tIdx}`} 
-                                        onClick={() => {
-                                          if (isLocked) return;
-                                          if (tool.id === 'code') {
-                                            navigate('/app');
-                                            setIsAdvancedToolsOpen(false);
-                                            return;
-                                          }
-                                          if (tool.id === 'audio_studio' || tool.isRouter) {
-                                            navigate('/audio-studio');
-                                            setIsAdvancedToolsOpen(false);
-                                            return;
-                                          }
-                                          setSelectedTool(tool.id);
-                                          setActiveDropdown('tool');
-                                          setIsAdvancedToolsOpen(false);
-                                        }}
-                                        className={`group flex items-center justify-between w-full h-[36px] min-h-[36px] px-3 py-2 rounded-shape-sm transition-all duration-fast text-xs font-medium cursor-pointer select-none active:scale-98 ${
-                                          isLocked 
-                                            ? 'opacity-40 cursor-not-allowed text-[var(--text-disabled)]'
-                                            : isSelected 
-                                              ? 'bg-[var(--bg-accent-muted)] text-[var(--fg-accent)] font-semibold border border-[var(--border-accent)]/30'
-                                              : HOVER_STYLES.dropdownItem + ' border border-transparent'
-                                        }`}
-                                      >
-                                        {/* Tool Label & Icon */}
-                                        <div className="flex items-center gap-2.5 min-w-0">
-                                          <span className={`shrink-0 flex items-center justify-center w-3.5 h-3.5 transition-colors duration-fast ${
-                                            isLocked 
-                                              ? 'text-[var(--text-disabled)] opacity-70' 
-                                              : isSelected 
-                                                ? 'text-[var(--fg-accent)]' 
-                                                : 'text-[var(--text-muted)] group-hover:text-[var(--text-primary)]'
-                                          }`}>
-                                            {React.isValidElement(tool.icon) 
-                                              ? React.cloneElement(tool.icon as React.ReactElement<{ size?: number; className?: string }>, { 
-                                                  size: 14, 
-                                                  className: `w-3.5 h-3.5 transition-colors duration-fast ${isSelected ? 'text-[var(--fg-accent)]' : ''}` 
-                                                })
-                                              : <Sparkles className={`w-3.5 h-3.5 transition-colors duration-fast ${isSelected ? 'text-[var(--fg-accent)]' : ''}`} />}
-                                          </span>
-                                          <span className={`truncate transition-colors duration-fast ${
-                                            isLocked ? '' : 'group-hover:text-[var(--text-primary)]'
-                                          }`}>
-                                            {tool.label}
-                                          </span>
-                                        </div>
-
-                                        {/* Badges / Router Arrow / Lock */}
-                                        <div className="flex items-center gap-1 shrink-0 ms-2">
-                                          {tool.isRouter && !isLocked && (
-                                            <ArrowUpRight size={13} className="text-[var(--fg-accent)] shrink-0" />
-                                          )}
-                                          {tool.isNew && !isLocked && !isSelected && !tool.isRouter && (
-                                            <span className="px-1.5 py-0.5 rounded-shape-xs bg-[var(--surface-subtle)] border border-[var(--border-default)] text-[var(--text-secondary)] text-[8.5px] font-mono font-bold uppercase tracking-wider">
-                                              NEW
-                                            </span>
-                                          )}
-                                          {isLocked && (
-                                            <Lock size={11} className="text-[var(--fg-warning)] shrink-0" />
-                                          )}
-                                        </div>
-                                      </button>
-                                    );
-                                  })}
-                                </div>
-                              </motion.div>
-                            )}
-                          </>
-                        );
-                      })()}
-                    </div>
-
-                    {/* Voice Input Chip */}
-                    <button
-                      type="button"
-                      onClick={toggleRecording}
-                      disabled={isInputDisabled}
-                      className={`w-8 h-8 sm:w-auto sm:px-2.5 sm:h-8 flex items-center justify-center gap-1 sm:gap-1.5 rounded-shape-sm border transition-all duration-200 active:scale-95 text-xs font-medium disabled:opacity-30 disabled:cursor-not-allowed shrink-0 cursor-pointer bg-transparent relative before:absolute before:-inset-1.5 sm:before:hidden before:content-[''] box-border ${
-                        isRecording 
-                          ? 'border-[var(--fg-danger)]/60 text-[var(--fg-danger)] animate-pulse' 
-                          : 'border-[var(--border-default)] hover:border-[var(--border-accent)]/60 text-[var(--text-muted)] hover:text-[var(--text-primary)] shadow-2xs'
-                      }`}
-                    >
-                      <Mic className={`w-3.5 h-3.5 shrink-0 transition-all duration-300 ${isRecording ? 'text-[var(--fg-danger)]' : 'text-[var(--text-muted)]'}`} />
-                      <span className="hidden sm:inline whitespace-nowrap">{isRecording ? (dir === 'rtl' ? 'تسجيل...' : 'Recording...') : (dir === 'rtl' ? 'صوت' : 'Voice')}</span>
-                    </button>
-              </div>
-
-              {/* Attach File Chip */}
+            {/* Start Action Chips: Attach (+), Mode/Analysis Dropdown, Model Selector */}
+            <div className="flex items-center gap-1.5 sm:gap-2 flex-nowrap min-w-0">
+              {/* Attach File Button (+ on mobile, Paperclip + Attach on desktop) */}
               <button
                 type="button"
                 onClick={() => {
@@ -793,34 +537,292 @@ export const ChatComposer: React.FC<ChatComposerProps> = ({
                 }}
                 disabled={isInputDisabled}
                 className="w-8 h-8 sm:w-auto sm:px-2.5 sm:h-8 flex items-center justify-center gap-1 sm:gap-1.5 rounded-shape-sm border border-[var(--border-default)] bg-transparent hover:border-[var(--border-accent)]/60 text-[var(--text-muted)] hover:text-[var(--text-primary)] transition-all duration-200 active:scale-95 text-xs font-medium disabled:opacity-30 disabled:cursor-not-allowed shrink-0 cursor-pointer shadow-2xs relative before:absolute before:-inset-1.5 sm:before:hidden before:content-[''] box-border"
+                title={dir === 'rtl' ? 'إرفاق ملف' : 'Attach file'}
               >
-                <Paperclip className="w-3.5 h-3.5 text-[var(--text-muted)] shrink-0" />
+                <Plus className="w-4 h-4 sm:hidden text-[var(--text-secondary)] shrink-0" />
+                <Paperclip className="w-3.5 h-3.5 hidden sm:inline text-[var(--text-muted)] shrink-0" />
                 <span className="hidden sm:inline whitespace-nowrap">{dir === 'rtl' ? 'إرفاق' : 'Attach'}</span>
               </button>
+
+              {/* Analysis / AI Tools Dropdown Chip */}
+              <div ref={toolsMenuRef} className="relative shrink-0">
+                {(() => {
+                  const isToolActive = !['chat_fast', 'chat_pro', 'chat_reasoning'].includes(selectedTool);
+                  return (
+                    <>
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          if (!isInputDisabled) {
+                            setIsAdvancedToolsOpen(prev => !prev);
+                            setIsModelMenuOpen(false);
+                          }
+                        }}
+                        className={`h-8 px-2 sm:px-2.5 flex items-center justify-center gap-1 sm:gap-1.5 rounded-shape-sm border border-[var(--border-default)] hover:border-[var(--border-accent)]/60 transition-all duration-200 active:scale-95 text-xs font-medium cursor-pointer shrink-0 bg-transparent relative before:absolute before:-inset-1.5 sm:before:hidden before:content-[''] box-border ${
+                          isToolActive 
+                            ? 'text-[var(--text-primary)]' 
+                            : 'text-[var(--text-muted)] hover:text-[var(--text-primary)] shadow-2xs'
+                        }`}
+                      >
+                        <span className="shrink-0 flex items-center justify-center w-3.5 h-3.5">
+                          {React.isValidElement(currentTool?.icon) 
+                            ? React.cloneElement(currentTool.icon as React.ReactElement<{ size?: number; className?: string }>, { 
+                                size: 14, 
+                                className: `w-3.5 h-3.5 shrink-0 transition-all duration-300 ${isToolActive ? 'text-[var(--fg-accent)]' : 'text-[var(--text-muted)]'}` 
+                              })
+                            : <Search className={`w-3.5 h-3.5 shrink-0 transition-all duration-300 ${isToolActive ? 'text-[var(--fg-accent)]' : 'text-[var(--text-muted)]'}`} />}
+                        </span>
+                        <span className="hidden sm:inline whitespace-nowrap">{currentTool?.label || (dir === 'rtl' ? 'تحليل' : 'Analysis')}</span>
+                        <ChevronDown className="w-3 h-3 shrink-0 text-[var(--text-muted)] transition-colors" />
+                      </button>
+
+                      {isAdvancedToolsOpen && (
+                        <motion.div 
+                          initial={{ opacity: 0, scale: 0.98 }}
+                          animate={{ opacity: 1, scale: 1 }}
+                          exit={{ opacity: 0, scale: 0.98 }}
+                          transition={{ duration: 0.10, ease: [0.16, 1, 0.3, 1] }}
+                          style={{ transformOrigin: dir === 'rtl' ? 'bottom right' : 'bottom left' }}
+                          className={`absolute bottom-full mb-2 ${dir === 'rtl' ? 'right-0' : 'left-0'} w-52 max-w-[calc(100vw-2rem)] rounded-shape-md border border-[var(--border-default)] shadow-2xl ring-1 ring-black/5 dark:ring-white/10 flex flex-col z-[200] overflow-hidden bg-[var(--surface-card)] backdrop-blur-2xl p-1.5`}
+                          onClick={(e) => e.stopPropagation()}
+                        >
+                          <div className={`flex flex-col gap-0.5 ${SCROLL_STYLES.limited('70vh')} sm:max-h-[60vh]`}>
+                            {sortedAdvancedTools.map((tool, tIdx) => {
+                              const limit = currentPlan?.limits?.[tool.id];
+                              const isZeroLimit = limit?.daily === 0 && limit?.monthly === 0;
+                              const hasBalance = (balance && balance > 0) || (balanceUSD && balanceUSD > 0);
+                              const isLocked = currentPlan ? isZeroLimit && !hasBalance : false;
+                              const isSelected = selectedTool === tool.id;
+
+                              return (
+                                <button 
+                                  key={`adv-tool-${tool.id}-${tIdx}`} 
+                                  onClick={() => {
+                                    if (isLocked) return;
+                                    if (tool.id === 'code') {
+                                      navigate('/app');
+                                      setIsAdvancedToolsOpen(false);
+                                      return;
+                                    }
+                                    if (tool.id === 'audio_studio' || tool.isRouter) {
+                                      navigate('/audio-studio');
+                                      setIsAdvancedToolsOpen(false);
+                                      return;
+                                    }
+                                    setSelectedTool(tool.id);
+                                    setActiveDropdown('tool');
+                                    setIsAdvancedToolsOpen(false);
+                                  }}
+                                  className={`group flex items-center justify-between w-full h-[36px] min-h-[36px] px-3 py-2 rounded-shape-sm transition-all duration-fast text-xs font-medium cursor-pointer select-none active:scale-98 ${
+                                    isLocked 
+                                      ? 'opacity-40 cursor-not-allowed text-[var(--text-disabled)]'
+                                      : isSelected 
+                                        ? 'bg-[var(--bg-accent-muted)] text-[var(--fg-accent)] font-semibold border border-[var(--border-accent)]/30'
+                                        : HOVER_STYLES.dropdownItem + ' border border-transparent'
+                                  }`}
+                                >
+                                  <div className="flex items-center gap-2.5 min-w-0">
+                                    <span className={`shrink-0 flex items-center justify-center w-3.5 h-3.5 transition-colors duration-fast ${
+                                      isLocked 
+                                        ? 'text-[var(--text-disabled)] opacity-70' 
+                                        : isSelected 
+                                          ? 'text-[var(--fg-accent)]' 
+                                          : 'text-[var(--text-muted)] group-hover:text-[var(--text-primary)]'
+                                    }`}>
+                                      {React.isValidElement(tool.icon) 
+                                        ? React.cloneElement(tool.icon as React.ReactElement<{ size?: number; className?: string }>, { 
+                                            size: 14, 
+                                            className: `w-3.5 h-3.5 transition-colors duration-fast ${isSelected ? 'text-[var(--fg-accent)]' : ''}` 
+                                          })
+                                        : <Sparkles className={`w-3.5 h-3.5 transition-colors duration-fast ${isSelected ? 'text-[var(--fg-accent)]' : ''}`} />}
+                                    </span>
+                                    <span className={`truncate transition-colors duration-fast ${
+                                      isLocked ? '' : 'group-hover:text-[var(--text-primary)]'
+                                    }`}>
+                                      {tool.label}
+                                    </span>
+                                  </div>
+
+                                  <div className="flex items-center gap-1 shrink-0 ms-2">
+                                    {tool.isRouter && !isLocked && (
+                                      <ArrowUpRight size={13} className="text-[var(--fg-accent)] shrink-0" />
+                                    )}
+                                    {tool.isNew && !isLocked && !isSelected && !tool.isRouter && (
+                                      <span className="px-1.5 py-0.5 rounded-shape-xs bg-[var(--surface-subtle)] border border-[var(--border-default)] text-[var(--text-secondary)] text-[8.5px] font-mono font-bold uppercase tracking-wider">
+                                        NEW
+                                      </span>
+                                    )}
+                                    {isLocked && (
+                                      <Lock size={11} className="text-[var(--fg-warning)] shrink-0" />
+                                    )}
+                                  </div>
+                                </button>
+                              );
+                            })}
+                          </div>
+                        </motion.div>
+                      )}
+                    </>
+                  );
+                })()}
+              </div>
+
+              {/* FAST / Model Selector Chip */}
+              <div ref={modelsMenuRef} className="relative shrink-0">
+                {(() => {
+                  const isModelActive = ['chat_fast', 'chat_pro', 'chat_reasoning'].includes(selectedTool);
+                  return (
+                    <>
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          if (!isInputDisabled) {
+                            setIsModelMenuOpen(prev => !prev);
+                            setIsAdvancedToolsOpen(false);
+                          }
+                        }}
+                        className={`w-8 h-8 sm:w-auto sm:px-2.5 sm:h-8 flex items-center justify-center gap-1 sm:gap-1.5 rounded-shape-sm border border-[var(--border-default)] hover:border-[var(--border-accent)]/60 transition-all duration-200 active:scale-95 text-xs font-mono cursor-pointer shrink-0 bg-transparent relative before:absolute before:-inset-1.5 sm:before:hidden before:content-[''] box-border ${
+                          isModelActive 
+                            ? 'text-[var(--text-primary)]' 
+                            : 'text-[var(--text-muted)] hover:text-[var(--text-primary)] shadow-2xs'
+                        }`}
+                      >
+                        <span className="shrink-0 flex items-center justify-center w-3.5 h-3.5">
+                          {React.isValidElement(currentModel?.icon) 
+                            ? React.cloneElement(currentModel.icon as React.ReactElement<{ size?: number; className?: string }>, { 
+                                size: 14, 
+                                className: `w-3.5 h-3.5 transition-all duration-300 ${
+                                  isModelActive 
+                                    ? 'text-[var(--fg-accent)] fill-[var(--fg-accent)]' 
+                                    : 'text-[var(--text-muted)]'
+                                }` 
+                              })
+                            : <Zap className={`w-3.5 h-3.5 transition-all duration-300 ${
+                                isModelActive 
+                                  ? 'fill-[var(--fg-accent)] text-[var(--fg-accent)]' 
+                                  : 'text-[var(--text-muted)]'
+                              }`} />}
+                        </span>
+                        <span className="hidden sm:inline whitespace-nowrap">{isModelActive ? currentModel?.label : (dir === 'rtl' ? 'سريع' : 'FAST')}</span>
+                        <ChevronDown className="w-3 h-3 hidden sm:inline ml-0.5 shrink-0 text-[var(--text-muted)] transition-colors" />
+                      </button>
+
+                      {isModelMenuOpen && (
+                        <motion.div 
+                          initial={{ opacity: 0, scale: 0.98 }}
+                          animate={{ opacity: 1, scale: 1 }}
+                          exit={{ opacity: 0, scale: 0.98 }}
+                          transition={{ duration: 0.10, ease: [0.16, 1, 0.3, 1] }}
+                          style={{ transformOrigin: dir === 'rtl' ? 'bottom right' : 'bottom left' }}
+                          className={`absolute bottom-full mb-2 ${dir === 'rtl' ? 'right-0' : 'left-0'} w-40 p-1.5 rounded-shape-md border border-[var(--border-default)] shadow-2xl ring-1 ring-black/5 dark:ring-white/10 flex flex-col gap-0.5 z-[200] bg-[var(--surface-card)] backdrop-blur-2xl`}
+                          onClick={(e) => e.stopPropagation()}
+                        >
+                          {sortedModels.map((model, idx) => {
+                            const limit = currentPlan?.limits?.[model.id];
+                            const isZeroLimit = limit?.daily === 0 && limit?.monthly === 0;
+                            const hasBalance = (balance && balance > 0) || (balanceUSD && balanceUSD > 0);
+                            const isLocked = currentPlan ? isZeroLimit && !hasBalance : false;
+                            const isSelected = selectedModel === model.id && isModelActive;
+
+                            return (
+                              <button 
+                                key={`${model.id}-${idx}`} 
+                                onClick={() => {
+                                  if (isLocked) return;
+                                  setSelectedModel(model.id as any);
+                                  const targetTool = model.id === 'fast' ? 'chat_fast' : model.id === 'pro' ? 'chat_pro' : model.id === 'thinking' ? 'chat_reasoning' : 'chat_fast';
+                                  setSelectedTool(targetTool);
+                                  setActiveDropdown('model');
+                                  setIsModelMenuOpen(false);
+                                }}
+                                className={`group flex items-center justify-between w-full h-[36px] min-h-[36px] px-3 py-2 rounded-shape-sm flex-nowrap transition-all duration-fast text-xs font-medium cursor-pointer ${
+                                  isLocked
+                                    ? 'opacity-40 cursor-not-allowed text-[var(--text-disabled)]'
+                                    : isSelected
+                                      ? 'bg-[var(--bg-accent-muted)] text-[var(--fg-accent)] font-semibold border border-[var(--border-accent)]/30'
+                                      : HOVER_STYLES.dropdownItem + ' border border-transparent'
+                                }`}
+                              >
+                                <div className="flex items-center gap-2 flex-nowrap">
+                                  <span className={`shrink-0 flex items-center justify-center w-3.5 h-3.5 transition-colors duration-fast ${
+                                    isLocked 
+                                      ? 'text-[var(--text-disabled)] opacity-60' 
+                                      : isSelected 
+                                        ? 'text-[var(--fg-accent)] fill-[var(--fg-accent)]' 
+                                        : 'text-[var(--text-muted)] group-hover:text-[var(--text-primary)]'
+                                  }`}>
+                                    {React.isValidElement(model.icon) 
+                                      ? React.cloneElement(model.icon as React.ReactElement<{ size?: number; className?: string }>, { 
+                                          size: 14, 
+                                          className: `w-3.5 h-3.5 transition-colors duration-fast ${isSelected ? 'text-[var(--fg-accent)]' : ''}` 
+                                        })
+                                      : <Zap className={`w-3.5 h-3.5 transition-colors duration-fast ${isSelected ? 'fill-[var(--fg-accent)] text-[var(--fg-accent)]' : ''}`} />}
+                                  </span>
+                                  <span className={`whitespace-nowrap transition-colors duration-fast ${
+                                    isLocked ? '' : 'group-hover:text-[var(--text-primary)]'
+                                  }`}>
+                                    {model.label}
+                                  </span>
+                                </div>
+                                <div className="flex items-center gap-0.5 shrink-0">
+                                  {isLocked && (
+                                    <Lock size={11} className="text-[var(--fg-warning)] shrink-0" />
+                                  )}
+                                </div>
+                              </button>
+                            );
+                          })}
+                        </motion.div>
+                      )}
+                    </>
+                  );
+                })()}
+              </div>
             </div>
 
-            {/* Right Submit Action Button (Language Button Visual Identity - rounded-shape-sm) */}
-            <button
-              type="button"
-              onClick={() => {
-                handleSendOrStop();
-              }}
-              disabled={!query.trim() && !isGenerating}
-              className={`w-8 h-8 rounded-shape-sm flex items-center justify-center shrink-0 active:scale-95 transition-all duration-fast border cursor-pointer relative before:absolute before:-inset-1.5 before:content-[''] box-border ${
-                isGenerating
-                  ? 'bg-[var(--fg-danger)] text-white border-[var(--fg-danger)] hover:opacity-90 font-bold shadow-md animate-pulse'
-                  : query.trim()
-                    ? 'bg-[var(--accent)] text-[var(--fg-on-emphasis)] border-[var(--border-accent)] hover:opacity-90 font-bold shadow-xs'
-                    : 'bg-[var(--surface-card)] text-[var(--text-muted)] border-[var(--border-default)] opacity-40 cursor-not-allowed'
-              }`}
-              title={isGenerating ? (dir === 'rtl' ? 'إيقاف التوليد' : 'Stop Generation') : (dir === 'rtl' ? 'إرسال' : 'Send')}
-            >
-              {isGenerating ? (
-                <Square className="w-3.5 h-3.5 fill-current shrink-0 text-white" />
-              ) : (
-                <ArrowUp className="w-4 h-4 stroke-[2.5]" />
-              )}
-            </button>
+            {/* End Action Controls: Voice Input + Submit Button */}
+            <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
+              {/* Voice Input Chip */}
+              <button
+                type="button"
+                onClick={toggleRecording}
+                disabled={isInputDisabled}
+                className={`w-8 h-8 sm:w-auto sm:px-2.5 sm:h-8 flex items-center justify-center gap-1 sm:gap-1.5 rounded-shape-sm border transition-all duration-200 active:scale-95 text-xs font-medium disabled:opacity-30 disabled:cursor-not-allowed shrink-0 cursor-pointer bg-transparent relative before:absolute before:-inset-1.5 sm:before:hidden before:content-[''] box-border ${
+                  isRecording 
+                    ? 'border-[var(--fg-danger)]/60 text-[var(--fg-danger)] animate-pulse' 
+                    : 'border-[var(--border-default)] hover:border-[var(--border-accent)]/60 text-[var(--text-muted)] hover:text-[var(--text-primary)] shadow-2xs'
+                }`}
+                title={isRecording ? (dir === 'rtl' ? 'إيقاف التسجيل الصوتي' : 'Stop voice recording') : (dir === 'rtl' ? 'إدخال صوتي' : 'Voice input')}
+              >
+                <Mic className={`w-3.5 h-3.5 shrink-0 transition-all duration-300 ${isRecording ? 'text-[var(--fg-danger)]' : 'text-[var(--text-muted)]'}`} />
+                <span className="hidden sm:inline whitespace-nowrap">{isRecording ? (dir === 'rtl' ? 'تسجيل...' : 'Recording...') : (dir === 'rtl' ? 'صوت' : 'Voice')}</span>
+              </button>
+
+              {/* Submit / Stop Action Button */}
+              <button
+                type="button"
+                onClick={() => {
+                  handleSendOrStop();
+                }}
+                disabled={!query.trim() && !isGenerating}
+                className={`w-8 h-8 rounded-shape-sm flex items-center justify-center shrink-0 active:scale-95 transition-all duration-fast border cursor-pointer relative before:absolute before:-inset-1.5 before:content-[''] box-border ${
+                  isGenerating
+                    ? 'bg-[var(--fg-danger)] text-white border-[var(--fg-danger)] hover:opacity-90 font-bold shadow-md animate-pulse'
+                    : query.trim()
+                      ? 'bg-[var(--accent)] text-[var(--fg-on-emphasis)] border-[var(--border-accent)] hover:opacity-90 font-bold shadow-xs'
+                      : 'bg-[var(--surface-card)] text-[var(--text-muted)] border-[var(--border-default)] opacity-40 cursor-not-allowed'
+                }`}
+                title={isGenerating ? (dir === 'rtl' ? 'إيقاف التوليد' : 'Stop Generation') : (dir === 'rtl' ? 'إرسال' : 'Send')}
+              >
+                {isGenerating ? (
+                  <Square className="w-3.5 h-3.5 fill-current shrink-0 text-white" />
+                ) : (
+                  <ArrowUp className="w-4 h-4 stroke-[2.5]" />
+                )}
+              </button>
+            </div>
 
           </div>
         </motion.div>

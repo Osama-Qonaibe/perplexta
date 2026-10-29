@@ -603,7 +603,7 @@ export const CodeBlock: React.FC<CodeBlockProps> = ({
     <div
       dir="ltr"
       style={{ direction: 'ltr', unicodeBidi: 'isolate', textAlign: 'left' }}
-      className="relative group mx-auto my-5 sm:my-6 w-full max-w-full min-w-0 rounded-[var(--radius-md)] shadow-xs overflow-hidden border border-[var(--border-default)] bg-[var(--surface-card)] transition-colors perplexta-codeblock"
+      className="relative group mx-auto my-5 sm:my-6 w-full max-w-full min-w-0 rounded-shape-md shadow-xs overflow-hidden border border-[var(--border-default)] bg-[var(--surface-card)] transition-colors perplexta-codeblock"
     >
       {/* Code Container Header */}
       <div className="sticky top-0 z-20 h-10 w-full flex items-center justify-between px-3.5 sm:px-4 border-b border-[var(--border-default)] bg-[var(--surface-subtle)] text-[var(--text-secondary)] perplexta-codeblock-header select-none">

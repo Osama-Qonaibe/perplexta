@@ -85,7 +85,7 @@ export const ModalShell: React.FC<ModalShellProps> = ({
             animate="open"
             exit="closed"
             className={`
-              w-full ${SIZE_CLASSES[size]} rounded-2xl sm:rounded-[var(--radius-md)] bg-[var(--surface-card)] border border-[var(--border-default)]
+              w-full ${SIZE_CLASSES[size]} rounded-2xl sm:rounded-shape-md bg-[var(--surface-card)] border border-[var(--border-default)]
               p-4 sm:p-6 shadow-[0_20px_50px_rgba(0,0,0,0.6)] space-y-3 sm:space-y-4 transform-gpu
               text-[var(--text-primary)] my-auto max-h-[92dvh] sm:max-h-[88dvh] flex flex-col
               overflow-y-auto overscroll-contain transition-theme custom-scrollbar

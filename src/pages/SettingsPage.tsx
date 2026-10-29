@@ -295,8 +295,16 @@ export const SettingsPage: React.FC = () => {
       <div className="flex md:hidden sticky top-0 z-40 w-full h-14 px-4 items-center justify-between border-b backdrop-blur-md bg-[var(--surface-page)]/95 border-[var(--border-main)] shrink-0 select-none pt-[env(safe-area-inset-top,0px)]">
         <div className="flex items-center gap-2.5">
           <button 
-            onClick={() => navigate('/')} 
-            className="h-8 px-2.5 touch-target-44 flex items-center gap-1 rounded-shape-sm bg-transparent hover:bg-[var(--surface-subtle)] border border-[var(--border-main)] hover:border-[var(--border-accent)]/60 text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-all duration-150 active:scale-95 cursor-pointer shadow-2xs"
+            type="button"
+            onClick={() => {
+              triggerHaptic('light');
+              if (window.history.length > 1) {
+                navigate(-1);
+              } else {
+                navigate('/chat');
+              }
+            }} 
+            className="h-8 px-2.5 touch-target-44-expanded flex items-center gap-1 rounded-shape-sm bg-transparent hover:bg-[var(--surface-subtle)] border border-[var(--border-main)] hover:border-[var(--border-accent)]/60 text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-all duration-150 active:scale-95 cursor-pointer shadow-2xs"
           >
             {dir === 'rtl' ? <ChevronRight size={14} /> : <ChevronLeft size={14} />}
             <span className="text-xs font-bold">{dir === 'rtl' ? 'رجوع' : 'Back'}</span>
@@ -309,7 +317,7 @@ export const SettingsPage: React.FC = () => {
         <div className="flex items-center gap-1.5">
           <button 
             onClick={() => logout()}
-            className="w-8 h-8 touch-target-44 flex items-center justify-center rounded-shape-sm border border-[var(--border-main)] hover:border-rose-500/60 bg-transparent hover:bg-rose-500/10 text-rose-500 active:scale-95 transition-all duration-150 cursor-pointer shadow-2xs"
+            className="w-8 h-8 touch-target-44-expanded flex items-center justify-center rounded-shape-sm border border-[var(--border-main)] hover:border-rose-500/60 bg-transparent hover:bg-rose-500/10 text-rose-500 active:scale-95 transition-all duration-150 cursor-pointer shadow-2xs"
             title={t('logout')}
           >
             <LogOut size={14} />

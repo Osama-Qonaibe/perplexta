@@ -320,8 +320,8 @@ export const RecommendationWidget: React.FC<RecommendationWidgetProps> = ({
       {isLoading ? (
         <div className={isBulletinOnly || variant === 'compact' ? 'grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-1 gap-2' : 'grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3'}>
           {Array.from({ length: limit > 4 ? 4 : limit }).map((_, i) => (
-            <div key={`rec-widget-skel-${i}`} className="h-16 sm:h-20 rounded-[var(--radius-sm)] bg-[var(--surface-subtle)] animate-pulse p-3 flex items-center gap-3 border border-[var(--border-default)]">
-              <div className="w-10 h-10 bg-[var(--surface-inset)] rounded-[var(--radius-xs)] shrink-0" />
+            <div key={`rec-widget-skel-${i}`} className="h-16 sm:h-20 rounded-shape-sm bg-[var(--surface-subtle)] animate-pulse p-3 flex items-center gap-3 border border-[var(--border-default)]">
+              <div className="w-10 h-10 bg-[var(--surface-inset)] rounded-shape-xs shrink-0" />
               <div className="flex-1 space-y-1">
                 <div className="w-3/4 h-3 bg-[var(--surface-inset)] rounded" />
                 <div className="w-1/2 h-2.5 bg-[var(--surface-inset)] rounded" />
@@ -330,12 +330,12 @@ export const RecommendationWidget: React.FC<RecommendationWidgetProps> = ({
           ))}
         </div>
       ) : error ? (
-        <div className="p-3 rounded-[var(--radius-sm)] border border-[var(--fg-danger)]/30 bg-[var(--fg-danger)]/10 text-center text-xs text-[var(--fg-danger)]">
+        <div className="p-3 rounded-shape-sm border border-[var(--fg-danger)]/30 bg-[var(--fg-danger)]/10 text-center text-xs text-[var(--fg-danger)]">
           {error}
         </div>
       ) : visibleItems.length === 0 ? (
         <div className="py-6 px-3 text-center space-y-2">
-          <div className="w-8 h-8 rounded-[var(--radius-sm)] bg-[var(--bg-accent-muted)] flex items-center justify-center mx-auto text-[var(--accent)]">
+          <div className="w-8 h-8 rounded-shape-sm bg-[var(--bg-accent-muted)] flex items-center justify-center mx-auto text-[var(--accent)]">
             <Megaphone size={16} />
           </div>
           <h4 className="text-xs font-bold text-[var(--text-primary)]">

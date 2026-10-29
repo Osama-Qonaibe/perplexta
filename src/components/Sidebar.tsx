@@ -428,19 +428,19 @@ export const Sidebar: React.FC<{ activeLanguage?: string }> = ({ activeLanguage 
     };
   }, [fetchChats, socket, language]);
 
-  const rawNavItems: { icon: React.ReactNode, label: string, path: string, className?: string }[] = [];
-
-  if (user) {
-    rawNavItems.push({
+  const rawNavItems: { icon: React.ReactNode, label: string, path: string, className?: string, requiresAuth?: boolean }[] = [
+    {
       icon: <Sparkles size={18} />,
       label: language === 'ar' ? 'اكتشف' : 'Discover',
       path: '/discover'
-    });
-  }
-
-  if (user) {
-    rawNavItems.push({ icon: <Gift size={18} />, label: t('rewards'), path: '/rewards' });
-  }
+    },
+    {
+      icon: <Gift size={18} />,
+      label: t('rewards') || (language === 'ar' ? 'المكافآت' : 'Rewards'),
+      path: '/rewards',
+      requiresAuth: true
+    }
+  ];
 
   if (!isMobile && (typeof window === 'undefined' || window.innerWidth >= 768)) {
     rawNavItems.push({ 
@@ -483,9 +483,9 @@ export const Sidebar: React.FC<{ activeLanguage?: string }> = ({ activeLanguage 
           width: isSidebarOpen ? 180 : 50
         }}
         transition={SIDEBAR_TRANSITION}
-        className={`fixed z-[150] select-none bg-[var(--surface-sidebar)] border-[var(--border-default)] ${
+        className={`hidden lg:flex fixed z-[150] select-none bg-[var(--surface-sidebar)] border-[var(--border-default)] ${
           dir === 'rtl' ? 'border-l' : 'border-r'
-        } flex flex-col top-0 h-[100dvh] pb-safe start-0 pointer-events-auto visible`}
+        } flex-col top-0 h-[100dvh] pb-safe start-0 pointer-events-auto visible`}
         style={{ 
           contain: 'layout', 
           willChange: 'width',
@@ -517,8 +517,13 @@ export const Sidebar: React.FC<{ activeLanguage?: string }> = ({ activeLanguage 
                   <NavLink
                     key={`nav-${item.path}-${index}`}
                     to={item.path}
-                    onClick={() => {
+                    onClick={(e) => {
                       triggerHaptic('selection');
+                      if (item.requiresAuth && !user) {
+                        e.preventDefault();
+                        setIsAuthModalOpen(true);
+                        if (isMobile) setIsSidebarOpen(false);
+                      }
                     }}
                   >
                     {({ isActive }) => {

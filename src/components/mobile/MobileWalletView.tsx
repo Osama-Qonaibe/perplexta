@@ -150,185 +150,76 @@ export const MobileWalletView: React.FC<MobileWalletViewProps> = ({
   const transactionTabs = [
     { id: 'transactions', label: isRtl ? 'الإيداعات' : 'Deposits' },
     { id: 'withdrawal_history', label: isRtl ? 'السحوبات' : 'Withdrawals' },
-    { id: 'earnings', label: isRtl ? 'المكافآت والنقاط' : 'Rewards' },
-    { id: 'expenses', label: isRtl ? 'كل العمليات' : 'All Activity' }
+    { id: 'earnings', label: isRtl ? 'المكافآت' : 'Rewards' },
+    { id: 'expenses', label: isRtl ? 'كل العمليات' : 'All' }
   ];
 
   const pointsCount = wallet?.points ? Number(wallet.points) : 0;
   const referralLink = `${window.location.origin}/register?ref=${wallet?.referral_code || 'VIP'}`;
+  const isHistoryActive = activeTab === 'transactions' || activeTab === 'withdrawal_history' || activeTab === 'expenses';
 
   return (
-    <div className="w-full flex flex-col space-y-3.5 pb-16">
+    <div className="w-full flex flex-col space-y-4 pb-12 max-w-4xl mx-auto">
       
-      {/* 1. Top Real-time Status Bar */}
-      <div className="flex items-center justify-between px-1">
-        <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-[var(--status-success-subtle)] border border-[var(--fg-success)]/20 text-[var(--fg-success)]">
-          <span className="w-2 h-2 rounded-full bg-[var(--fg-success)] animate-pulse" />
-          <span className="text-[10px] font-bold tracking-tight">
-            {isRtl ? 'مزامنة مباشرة بالوقت الفعلي' : 'Real-time Live Sync'}
-          </span>
-        </div>
-
-        <div className="flex items-center gap-1.5">
-          <button
-            type="button"
-            onClick={handleManualRefresh}
-            disabled={isRefreshing}
-            className="p-1.5 rounded-[var(--radius-sm)] bg-[var(--surface-subtle)] border border-[var(--border-default)] text-[var(--text-muted)] hover:text-accent active:scale-90 transition-all cursor-pointer"
-            title={isRtl ? 'تحديث الرصيد يدوياً' : 'Refresh wallet'}
-          >
-            <RefreshCw size={14} className={isRefreshing ? 'animate-spin text-accent' : ''} />
-          </button>
-          <button
-            type="button"
-            onClick={() => setShowBalance(!showBalance)}
-            className="p-1.5 rounded-[var(--radius-sm)] bg-[var(--surface-subtle)] border border-[var(--border-default)] text-[var(--text-muted)] hover:text-[var(--text-primary)] active:scale-90 transition-all cursor-pointer"
-            title={showBalance ? (isRtl ? 'إخفاء الرصيد' : 'Hide balance') : (isRtl ? 'إظهار الرصيد' : 'Show balance')}
-          >
-            {showBalance ? <Eye size={14} /> : <EyeOff size={14} />}
-          </button>
-        </div>
-      </div>
-
-      {/* 2. Top Primary Action Bar (Reordered to Top for Elite Accessibility) */}
-      <div className="grid grid-cols-4 gap-2">
-        {/* Button 1: Top Up / Deposit */}
-        <button
-          type="button"
-          onClick={() => setActiveTab('deposit')}
-          className={`flex flex-col items-center gap-1.5 p-2.5 rounded-[var(--radius-lg)] border transition-all active:scale-95 cursor-pointer shadow-xs ${
-            activeTab === 'deposit'
-              ? 'bg-[var(--bg-accent-emphasis)] text-[var(--fg-on-emphasis)] border-transparent ring-2 ring-accent/30'
-              : 'bg-[var(--surface-card)] border-[var(--border-default)] hover:border-accent/40'
-          }`}
-        >
-          <div className={`w-10 h-10 rounded-[var(--radius-md)] flex items-center justify-center transition-colors ${
-            activeTab === 'deposit'
-              ? 'bg-white/20 text-white'
-              : 'bg-[var(--status-success-subtle)] text-[var(--fg-success)]'
-          }`}>
-            <Plus size={20} strokeWidth={2.5} />
-          </div>
-          <span className={`text-[11px] font-bold leading-none ${activeTab === 'deposit' ? 'text-white' : 'text-[var(--text-primary)]'}`}>
-            {isRtl ? 'إيداع رصيد' : 'Deposit Funds'}
-          </span>
-        </button>
-
-        {/* Button 2: Withdraw */}
-        <button
-          type="button"
-          onClick={() => setActiveTab('withdraw')}
-          className={`flex flex-col items-center gap-1.5 p-2.5 rounded-[var(--radius-lg)] border transition-all active:scale-95 cursor-pointer shadow-xs ${
-            activeTab === 'withdraw'
-              ? 'bg-[var(--bg-accent-emphasis)] text-[var(--fg-on-emphasis)] border-transparent ring-2 ring-accent/30'
-              : 'bg-[var(--surface-card)] border-[var(--border-default)] hover:border-accent/40'
-          }`}
-        >
-          <div className={`w-10 h-10 rounded-[var(--radius-md)] flex items-center justify-center transition-colors ${
-            activeTab === 'withdraw'
-              ? 'bg-white/20 text-white'
-              : 'bg-amber-500/10 text-amber-600 dark:text-amber-400'
-          }`}>
-            <ArrowUpRight size={20} strokeWidth={2.5} />
-          </div>
-          <span className={`text-[11px] font-bold leading-none ${activeTab === 'withdraw' ? 'text-white' : 'text-[var(--text-primary)]'}`}>
-            {isRtl ? 'سحب' : 'Withdraw'}
-          </span>
-        </button>
-
-        {/* Button 3: Points & Rewards */}
-        <button
-          type="button"
-          onClick={() => setActiveTab('earnings')}
-          className={`flex flex-col items-center gap-1.5 p-2.5 rounded-[var(--radius-lg)] border transition-all active:scale-95 cursor-pointer shadow-xs ${
-            activeTab === 'earnings'
-              ? 'bg-[var(--bg-accent-emphasis)] text-[var(--fg-on-emphasis)] border-transparent ring-2 ring-accent/30'
-              : 'bg-[var(--surface-card)] border-[var(--border-default)] hover:border-accent/40'
-          }`}
-        >
-          <div className={`w-10 h-10 rounded-[var(--radius-md)] flex items-center justify-center transition-colors ${
-            activeTab === 'earnings'
-              ? 'bg-white/20 text-white'
-              : 'bg-indigo-500/10 text-indigo-600 dark:text-indigo-400'
-          }`}>
-            <Sparkles size={18} strokeWidth={2.4} />
-          </div>
-          <span className={`text-[11px] font-bold leading-none ${activeTab === 'earnings' ? 'text-white' : 'text-[var(--text-primary)]'}`}>
-            {isRtl ? 'المكافآت' : 'Rewards'}
-          </span>
-        </button>
-
-        {/* Button 4: History / Statement */}
-        <button
-          type="button"
-          onClick={() => setActiveTab('transactions')}
-          className={`flex flex-col items-center gap-1.5 p-2.5 rounded-[var(--radius-lg)] border transition-all active:scale-95 cursor-pointer shadow-xs ${
-            activeTab === 'transactions' || activeTab === 'withdrawal_history' || activeTab === 'expenses'
-              ? 'bg-[var(--bg-accent-emphasis)] text-[var(--fg-on-emphasis)] border-transparent ring-2 ring-accent/30'
-              : 'bg-[var(--surface-card)] border-[var(--border-default)] hover:border-accent/40'
-          }`}
-        >
-          <div className={`w-10 h-10 rounded-[var(--radius-md)] flex items-center justify-center transition-colors ${
-            activeTab === 'transactions' || activeTab === 'withdrawal_history' || activeTab === 'expenses'
-              ? 'bg-white/20 text-white'
-              : 'bg-[var(--surface-subtle)] text-[var(--text-muted)]'
-          }`}>
-            <History size={18} strokeWidth={2.4} />
-          </div>
-          <span className={`text-[11px] font-bold leading-none ${
-            activeTab === 'transactions' || activeTab === 'withdrawal_history' || activeTab === 'expenses'
-              ? 'text-white'
-              : 'text-[var(--text-primary)]'
-          }`}>
-            {isRtl ? 'السجل' : 'History'}
-          </span>
-        </button>
-      </div>
-
-      {/* 3. Virtual Banking Digital Card (Hero Component) */}
-      <div className="relative w-full rounded-[var(--radius-lg)] p-5 bg-gradient-to-br from-[var(--surface-card)] via-[var(--surface-card)] to-[var(--surface-subtle)] border border-[var(--border-default)] shadow-sm overflow-hidden">
-        {/* Decorative background glow */}
-        <div className="absolute -top-12 -right-12 w-32 h-32 rounded-full bg-accent/5 blur-2xl pointer-events-none" />
-        <div className="absolute -bottom-12 -left-12 w-32 h-32 rounded-full bg-accent/5 blur-2xl pointer-events-none" />
-
-        <div className="relative z-10 flex flex-col space-y-3.5">
-          {/* Card Top: Brand & Badge */}
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <div className="w-8 h-8 rounded-[var(--radius-md)] bg-[var(--bg-accent-emphasis)]/10 text-accent flex items-center justify-center border border-[var(--border-accent)]/30">
-                <Wallet size={16} strokeWidth={2.2} />
-              </div>
-              <div>
-                <p className="text-[11px] font-black tracking-wider text-[var(--text-primary)] leading-tight uppercase">
-                  PERPLEXTA
-                </p>
-                <p className="text-[9px] font-semibold text-[var(--text-muted)] leading-tight">
-                  {isRtl ? 'الدفتر المالي المعتمد' : 'Verified Ledger'}
-                </p>
-              </div>
+      {/* 1. Sovereign Banking & Liquidity Card (Unified Perplexta Card Standard) */}
+      <div className="ide-card p-3.5 sm:p-5 rounded-shape-md border border-[var(--border-default)] bg-[var(--surface-card)] shadow-xs space-y-3.5">
+        
+        {/* Header Row: Title & Live Controls */}
+        <div className="flex items-center justify-between pb-3 border-b border-[var(--border-default)] gap-2">
+          <div className="flex items-center gap-2.5 min-w-0">
+            <div className="w-8 h-8 rounded-shape-sm bg-[var(--bg-accent-muted)] border border-[var(--border-accent)]/20 text-[var(--fg-accent)] shrink-0 flex items-center justify-center">
+              <Wallet size={16} />
             </div>
-
-            <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-accent/10 border border-accent/20 text-accent">
-              <ShieldCheck size={12} />
-              <span className="text-[9px] font-extrabold tracking-tight">Enterprise VIP</span>
-            </div>
-          </div>
-
-          {/* Balance Section */}
-          <div className="pt-1">
-            <div className="flex items-center justify-between">
-              <p className="text-[10px] font-bold uppercase tracking-wider text-[var(--text-muted)]">
-                {isRtl ? 'الرصيد المتاح للتشغيل والمشتريات' : 'Available Liquidity Balance'}
+            <div className="min-w-0">
+              <div className="flex items-center gap-1.5">
+                <h2 className="text-xs sm:text-sm font-black uppercase tracking-wider text-[var(--text-primary)] truncate">
+                  {isRtl ? 'المحفظة والرصيد' : 'Wallet & Liquidity'}
+                </h2>
+                <span className="w-1.5 h-1.5 rounded-shape-full bg-[var(--fg-success)] shrink-0" />
+              </div>
+              <p className="text-[10px] font-bold text-[var(--text-muted)] uppercase tracking-wider truncate">
+                {isRtl ? 'الدفتر المالي المعتمد • مزامنة لحظية' : 'Verified Ledger • Live Sync'}
               </p>
-              <div className="flex items-center gap-1 text-[10px] font-bold text-amber-500">
-                <Coins size={12} />
-                <span>{pointsCount.toLocaleString()} PTS</span>
-              </div>
             </div>
+          </div>
 
-            <div className="flex items-baseline gap-1 mt-1">
-              <span className="text-xl font-bold text-accent">$</span>
-              <span className="text-3xl font-black tracking-tight text-[var(--text-primary)] font-mono">
+          <div className="flex items-center gap-1.5 shrink-0">
+            <button
+              type="button"
+              onClick={handleManualRefresh}
+              disabled={isRefreshing}
+              className="w-8 h-8 flex items-center justify-center rounded-shape-sm bg-[var(--surface-subtle)]/60 hover:bg-[var(--surface-subtle)] border border-[var(--border-default)] hover:border-[var(--border-accent)]/40 text-[var(--text-secondary)] hover:text-[var(--fg-accent)] active:scale-95 transition-all cursor-pointer touch-target-44-expanded"
+              title={isRtl ? 'تحديث الرصيد يدوياً' : 'Refresh wallet'}
+            >
+              <RefreshCw size={14} className={isRefreshing ? 'animate-spin text-[var(--fg-accent)]' : ''} />
+            </button>
+            <button
+              type="button"
+              onClick={() => setShowBalance(!showBalance)}
+              className="w-8 h-8 flex items-center justify-center rounded-shape-sm bg-[var(--surface-subtle)]/60 hover:bg-[var(--surface-subtle)] border border-[var(--border-default)] hover:border-[var(--border-accent)]/40 text-[var(--text-secondary)] hover:text-[var(--text-primary)] active:scale-95 transition-all cursor-pointer touch-target-44-expanded"
+              title={showBalance ? (isRtl ? 'إخفاء الرصيد' : 'Hide balance') : (isRtl ? 'إظهار الرصيد' : 'Show balance')}
+            >
+              {showBalance ? <Eye size={14} /> : <EyeOff size={14} />}
+            </button>
+          </div>
+        </div>
+
+        {/* Balance Display Box */}
+        <div className="p-3.5 rounded-shape-sm border border-[var(--border-default)] bg-[var(--surface-subtle)] space-y-2.5">
+          <div className="flex items-center justify-between gap-2">
+            <span className="text-[10px] font-bold uppercase tracking-wider text-[var(--text-muted)]">
+              {isRtl ? 'الرصيد المتاح للتشغيل والمشتريات' : 'Available Liquidity Balance'}
+            </span>
+            <div className="h-6 px-2 rounded-shape-xs bg-[var(--surface-card)] border border-[var(--border-default)] flex items-center gap-1 text-[10px] font-bold text-[var(--fg-accent)] font-mono shrink-0">
+              <Coins size={11} />
+              <span>{pointsCount.toLocaleString()} PTS</span>
+            </div>
+          </div>
+
+          <div className="flex items-baseline justify-between gap-2">
+            <div className="flex items-baseline gap-1">
+              <span className="text-lg font-bold text-[var(--fg-accent)]">$</span>
+              <span className="text-2xl sm:text-3xl font-black tracking-tight text-[var(--text-primary)] font-mono">
                 {showBalance
                   ? safeBalance.toLocaleString(undefined, {
                       minimumFractionDigits: 2,
@@ -336,53 +227,103 @@ export const MobileWalletView: React.FC<MobileWalletViewProps> = ({
                     })
                   : '••••••'}
               </span>
-              <span className="text-xs font-bold text-[var(--text-muted)] ml-1">USD</span>
+              <span className="text-[10px] font-bold text-[var(--text-muted)] uppercase ms-1">USD</span>
             </div>
-          </div>
 
-          {/* Card Bottom: Masked Number & Audit Status */}
-          <div className="pt-2 border-t border-[var(--border-default)]/60 flex items-center justify-between text-[10px] font-medium text-[var(--text-muted)]">
-            <div className="font-mono tracking-widest text-[var(--text-primary)] font-bold">
-              •••• •••• •••• 8842
-            </div>
-            <div className="flex items-center gap-1 text-[var(--fg-success)] font-bold">
-              <CheckCircle2 size={12} />
-              <span>{isRtl ? 'مدقق ومشفر 100%' : '100% Audited'}</span>
+            <div className="flex items-center gap-1 px-2 py-0.5 rounded-shape-xs bg-[var(--surface-card)] border border-[var(--border-default)] text-[var(--fg-success)] text-[10px] font-bold shrink-0">
+              <ShieldCheck size={11} />
+              <span>{isRtl ? 'مدقق 100%' : 'Audited'}</span>
             </div>
           </div>
         </div>
+
+        {/* 2. Unified 4-Action Navigation Bar (Strict h-10 / 40px Standard) */}
+        <div className="grid grid-cols-4 gap-1.5">
+          <button
+            type="button"
+            onClick={() => setActiveTab('deposit')}
+            className={`h-10 px-2 rounded-shape-sm border flex items-center justify-center gap-1.5 text-[11px] font-bold transition-all active:scale-95 cursor-pointer select-none ${
+              activeTab === 'deposit'
+                ? 'bg-[var(--bg-accent-muted)] border-[var(--border-accent)]/40 text-[var(--fg-accent)] shadow-2xs'
+                : 'bg-[var(--surface-subtle)]/50 hover:bg-[var(--surface-subtle)] border-[var(--border-default)] text-[var(--text-secondary)] hover:text-[var(--text-primary)]'
+            }`}
+          >
+            <Plus size={14} className="shrink-0" />
+            <span className="truncate">{isRtl ? 'إيداع' : 'Deposit'}</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => setActiveTab('withdraw')}
+            className={`h-10 px-2 rounded-shape-sm border flex items-center justify-center gap-1.5 text-[11px] font-bold transition-all active:scale-95 cursor-pointer select-none ${
+              activeTab === 'withdraw'
+                ? 'bg-[var(--bg-accent-muted)] border-[var(--border-accent)]/40 text-[var(--fg-accent)] shadow-2xs'
+                : 'bg-[var(--surface-subtle)]/50 hover:bg-[var(--surface-subtle)] border-[var(--border-default)] text-[var(--text-secondary)] hover:text-[var(--text-primary)]'
+            }`}
+          >
+            <ArrowUpRight size={14} className="shrink-0" />
+            <span className="truncate">{isRtl ? 'سحب' : 'Withdraw'}</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => setActiveTab('earnings')}
+            className={`h-10 px-2 rounded-shape-sm border flex items-center justify-center gap-1.5 text-[11px] font-bold transition-all active:scale-95 cursor-pointer select-none ${
+              activeTab === 'earnings'
+                ? 'bg-[var(--bg-accent-muted)] border-[var(--border-accent)]/40 text-[var(--fg-accent)] shadow-2xs'
+                : 'bg-[var(--surface-subtle)]/50 hover:bg-[var(--surface-subtle)] border-[var(--border-default)] text-[var(--text-secondary)] hover:text-[var(--text-primary)]'
+            }`}
+          >
+            <Sparkles size={13} className="shrink-0" />
+            <span className="truncate">{isRtl ? 'المكافآت' : 'Rewards'}</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => setActiveTab('transactions')}
+            className={`h-10 px-2 rounded-shape-sm border flex items-center justify-center gap-1.5 text-[11px] font-bold transition-all active:scale-95 cursor-pointer select-none ${
+              isHistoryActive
+                ? 'bg-[var(--bg-accent-muted)] border-[var(--border-accent)]/40 text-[var(--fg-accent)] shadow-2xs'
+                : 'bg-[var(--surface-subtle)]/50 hover:bg-[var(--surface-subtle)] border-[var(--border-default)] text-[var(--text-secondary)] hover:text-[var(--text-primary)]'
+            }`}
+          >
+            <History size={13} className="shrink-0" />
+            <span className="truncate">{isRtl ? 'السجل' : 'History'}</span>
+          </button>
+        </div>
       </div>
 
-      {/* 4. Dynamic Interactive Panels */}
+      {/* 3. Dynamic Interactive Panels */}
       <AnimatePresence mode="wait">
         
         {/* ===================== VIEW 1: DEPOSIT PORTAL ===================== */}
         {activeTab === 'deposit' && (
           <motion.div
             key="mobile-deposit-view"
-            initial={{ opacity: 0, y: 8 }}
+            initial={{ opacity: 0, y: 6 }}
             animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -8 }}
-            className="p-4 sm:p-5 rounded-[var(--radius-lg)] bg-[var(--surface-card)] border border-[var(--border-default)] space-y-4 shadow-sm"
+            exit={{ opacity: 0, y: -6 }}
+            transition={{ duration: 0.15 }}
+            className="ide-card p-3.5 sm:p-5 rounded-shape-md bg-[var(--surface-card)] border border-[var(--border-default)] space-y-4 shadow-xs"
           >
-            <div className="flex items-center justify-between pb-2 border-b border-[var(--border-default)]">
-              <div className="flex items-center gap-2">
-                <div className="w-8 h-8 rounded-[var(--radius-sm)] bg-[var(--status-success-subtle)] text-[var(--fg-success)] flex items-center justify-center">
-                  <Plus size={18} strokeWidth={2.5} />
+            <div className="flex items-center justify-between pb-3 border-b border-[var(--border-default)]">
+              <div className="flex items-center gap-2.5">
+                <div className="w-8 h-8 rounded-shape-sm bg-[var(--bg-accent-muted)] border border-[var(--border-accent)]/20 text-[var(--fg-accent)] flex items-center justify-center shrink-0">
+                  <Plus size={16} />
                 </div>
                 <div>
-                  <h3 className="text-xs font-black text-[var(--text-primary)]">
+                  <h3 className="text-xs font-black uppercase tracking-wider text-[var(--text-primary)]">
                     {isRtl ? 'بوابة إيداع الرصيد المباشر' : 'Instant Deposit Portal'}
                   </h3>
-                  <p className="text-[10px] text-[var(--text-muted)]">
-                    {isRtl ? 'الحد الأدنى: 10$ | الحد الأقصى: 1000$' : 'Min: $10 | Max: $1,000 USD'}
+                  <p className="text-[10px] font-bold text-[var(--text-muted)]">
+                    {isRtl ? 'الحد الأدنى: 10$ • الحد الأقصى: 1000$' : 'Min: $10 • Max: $1,000 USD'}
                   </p>
                 </div>
               </div>
               <button
                 type="button"
                 onClick={() => setActiveTab('transactions')}
-                className="text-[11px] font-bold text-accent hover:underline flex items-center gap-0.5 cursor-pointer"
+                className="h-8 px-3 rounded-shape-sm bg-[var(--surface-subtle)]/50 hover:bg-[var(--surface-subtle)] border border-[var(--border-default)] text-[11px] font-bold text-[var(--text-secondary)] hover:text-[var(--text-primary)] flex items-center justify-center cursor-pointer transition-all"
               >
                 {isRtl ? 'إلغاء' : 'Cancel'}
               </button>
@@ -391,7 +332,7 @@ export const MobileWalletView: React.FC<MobileWalletViewProps> = ({
             <form onSubmit={handleDepositSubmit} className="space-y-3.5">
               {/* Preset Buttons */}
               <div className="space-y-1.5">
-                <label className="text-[10px] font-bold uppercase tracking-wider text-[var(--text-muted)]">
+                <label className="text-[10px] font-bold uppercase tracking-wider text-[var(--text-muted)] block">
                   {isRtl ? 'المبالغ المقترحة:' : 'Quick Select Amount:'}
                 </label>
                 <div className="grid grid-cols-5 gap-1.5">
@@ -400,10 +341,10 @@ export const MobileWalletView: React.FC<MobileWalletViewProps> = ({
                       key={`mob-preset-${val}`}
                       type="button"
                       onClick={() => selectPredefinedAmount(val)}
-                      className={`h-8 rounded-shape-sm text-xs font-bold transition-all cursor-pointer flex items-center justify-center ${
+                      className={`h-8 rounded-shape-xs text-xs font-bold transition-all cursor-pointer flex items-center justify-center border ${
                         depositAmount === val
-                          ? 'bg-[var(--bg-accent-emphasis)] text-[var(--fg-on-emphasis)] shadow-xs'
-                          : 'bg-[var(--surface-subtle)] text-[var(--text-primary)] border border-[var(--border-default)] hover:border-[var(--border-accent)]'
+                          ? 'bg-[var(--bg-accent-muted)] border-[var(--border-accent)]/40 text-[var(--fg-accent)] shadow-2xs'
+                          : 'bg-[var(--surface-subtle)] text-[var(--text-primary)] border-[var(--border-default)] hover:border-[var(--border-accent)]/30'
                       }`}
                     >
                       ${val}
@@ -414,7 +355,7 @@ export const MobileWalletView: React.FC<MobileWalletViewProps> = ({
 
               {/* Custom Input */}
               <div className="space-y-1">
-                <label className="text-[10px] font-bold uppercase tracking-wider text-[var(--text-muted)]">
+                <label className="text-[10px] font-bold uppercase tracking-wider text-[var(--text-muted)] block">
                   {isRtl ? 'أو أدخل مبلغاً مخصصاً ($):' : 'Custom Amount (USD):'}
                 </label>
                 <div className="relative flex items-center">
@@ -428,7 +369,7 @@ export const MobileWalletView: React.FC<MobileWalletViewProps> = ({
                     onChange={(e) => handleDepositAmountChange(e.target.value)}
                     onBlur={handleDepositAmountBlur}
                     placeholder="100.00"
-                    className="w-full h-10 pl-8 pr-12 rounded-shape-sm bg-[var(--surface-subtle)] border border-[var(--border-default)] text-sm font-bold text-[var(--text-primary)] focus:border-[var(--border-accent)] focus:outline-none"
+                    className="w-full h-10 pl-8 pr-12 rounded-shape-sm bg-[var(--surface-subtle)] border border-[var(--border-default)] text-sm font-bold font-mono text-[var(--text-primary)] focus:border-[var(--border-accent)] focus:outline-none"
                   />
                   <span className="absolute inset-y-0 right-3 flex items-center text-[10px] font-bold text-[var(--text-muted)]">
                     USD
@@ -438,15 +379,15 @@ export const MobileWalletView: React.FC<MobileWalletViewProps> = ({
 
               {/* Method Selector */}
               <div className="space-y-1.5">
-                <label className="text-[10px] font-bold uppercase tracking-wider text-[var(--text-muted)]">
+                <label className="text-[10px] font-bold uppercase tracking-wider text-[var(--text-muted)] block">
                   {isRtl ? 'اختر وسيلة الدفع:' : 'Payment Method:'}
                 </label>
                 <div className="grid grid-cols-2 gap-2">
                   {[
-                    { id: 'card', name: isRtl ? 'بطاقة بنكية (Stripe)' : 'Credit Card', icon: <CreditCard size={15} />, active: isStripeActive },
-                    { id: 'crypto', name: isRtl ? 'USDT (TRC-20)' : 'USDT Crypto', icon: <Smartphone size={15} />, active: true },
-                    { id: 'paypal', name: isRtl ? 'بايبال (PayPal)' : 'PayPal', icon: <Globe size={15} />, active: isPaypalActive },
-                    { id: 'bank', name: isRtl ? 'تحويل بنكي' : 'Bank Wire', icon: <Building size={15} />, active: true }
+                    { id: 'card', name: isRtl ? 'بطاقة بنكية (Stripe)' : 'Credit Card', icon: <CreditCard size={14} />, active: isStripeActive },
+                    { id: 'crypto', name: isRtl ? 'USDT (TRC-20)' : 'USDT Crypto', icon: <Smartphone size={14} />, active: true },
+                    { id: 'paypal', name: isRtl ? 'بايبال (PayPal)' : 'PayPal', icon: <Globe size={14} />, active: isPaypalActive },
+                    { id: 'bank', name: isRtl ? 'تحويل بنكي' : 'Bank Wire', icon: <Building size={14} />, active: true }
                   ].map((m) => (
                     <button
                       key={`mob-pay-${m.id}`}
@@ -454,7 +395,7 @@ export const MobileWalletView: React.FC<MobileWalletViewProps> = ({
                       onClick={() => setDepositMethod(m.id as any)}
                       className={`h-10 px-3 rounded-shape-sm border flex items-center gap-2 transition-all cursor-pointer ${
                         depositMethod === m.id
-                          ? 'bg-[var(--bg-accent-muted)] border-[var(--border-accent)] text-[var(--fg-accent)] font-bold shadow-xs'
+                          ? 'bg-[var(--bg-accent-muted)] border-[var(--border-accent)]/40 text-[var(--fg-accent)] font-bold shadow-2xs'
                           : 'bg-[var(--surface-subtle)] border-[var(--border-default)] text-[var(--text-muted)] hover:text-[var(--text-primary)]'
                       }`}
                     >
@@ -467,24 +408,24 @@ export const MobileWalletView: React.FC<MobileWalletViewProps> = ({
 
               {/* Crypto USDT (TRC-20) Panel */}
               {depositMethod === 'crypto' && (
-                <div className="p-3.5 rounded-shape-md bg-[var(--surface-subtle)] border border-[var(--border-default)] space-y-2.5">
+                <div className="p-3.5 rounded-shape-sm bg-[var(--surface-subtle)] border border-[var(--border-default)] space-y-2.5">
                   <div className="flex items-center justify-between text-[11px] font-bold text-[var(--text-primary)]">
                     <span>{isRtl ? 'عنوان المحفظة (USDT - TRC20):' : 'USDT TRC-20 Wallet Address:'}</span>
                     <button
                       type="button"
                       onClick={() => copyToClipboard(wallet?.crypto_address || 'TPnB82hPZk7dZ6eU5rX9Y21pQ6')}
-                      className="flex items-center gap-1 text-[var(--fg-accent)] font-bold cursor-pointer"
+                      className="h-8 px-2.5 rounded-shape-xs bg-[var(--surface-card)] border border-[var(--border-default)] flex items-center gap-1 text-[var(--fg-accent)] text-[10px] font-bold cursor-pointer"
                     >
                       {isCopied ? <Check size={12} /> : <Copy size={12} />}
                       <span>{isCopied ? (isRtl ? 'تم النسخ' : 'Copied') : (isRtl ? 'نسخ' : 'Copy')}</span>
                     </button>
                   </div>
-                  <code className="block p-2 rounded-shape-xs bg-[var(--surface-card)] border border-[var(--border-default)] text-[11px] font-mono text-[var(--text-primary)] break-all select-all font-bold">
+                  <code className="block p-2.5 rounded-shape-xs bg-[var(--surface-card)] border border-[var(--border-default)] text-[11px] font-mono text-[var(--text-primary)] break-all select-all font-bold">
                     {wallet?.crypto_address || 'TPnB82hPZk7dZ6eU5rX9Y21pQ6'}
                   </code>
 
                   <div className="space-y-1 pt-1">
-                    <label className="text-[10px] font-bold text-[var(--text-muted)]">
+                    <label className="text-[10px] font-bold text-[var(--text-muted)] block">
                       {isRtl ? 'رقم الحوالة أو الهاش (TXID):' : 'Transaction Reference / TXID:'}
                     </label>
                     <input
@@ -498,14 +439,14 @@ export const MobileWalletView: React.FC<MobileWalletViewProps> = ({
                   </div>
 
                   <div className="space-y-1">
-                    <label className="text-[10px] font-bold text-[var(--text-muted)]">
+                    <label className="text-[10px] font-bold text-[var(--text-muted)] block">
                       {isRtl ? 'صورة إشعار التحويل (اختياري):' : 'Receipt Screenshot (Optional):'}
                     </label>
                     <input
                       type="file"
                       accept="image/*"
                       onChange={(e) => setManualProofFile(e.target.files?.[0] || null)}
-                      className="w-full text-[10px] text-[var(--text-muted)] file:mr-2 file:py-1 file:px-2.5 file:rounded-md file:border-0 file:text-[10px] file:font-bold file:bg-accent file:text-white"
+                      className="w-full h-10 py-1.5 px-2 rounded-shape-sm bg-[var(--surface-card)] border border-[var(--border-default)] text-[10px] text-[var(--text-muted)] file:mr-2 file:py-1 file:px-2.5 file:rounded-shape-xs file:border-0 file:text-[10px] file:font-bold file:bg-[var(--bg-accent-muted)] file:text-[var(--fg-accent)]"
                     />
                   </div>
                 </div>
@@ -513,11 +454,11 @@ export const MobileWalletView: React.FC<MobileWalletViewProps> = ({
 
               {/* Bank Wire Panel */}
               {depositMethod === 'bank' && (
-                <div className="p-3.5 rounded-[var(--radius-md)] bg-[var(--surface-subtle)] border border-[var(--border-default)] space-y-2 text-xs">
+                <div className="p-3.5 rounded-shape-sm bg-[var(--surface-subtle)] border border-[var(--border-default)] space-y-2 text-xs">
                   <p className="text-[11px] font-bold text-[var(--text-primary)]">
                     {isRtl ? 'بيانات التحويل البنكي المعتمد:' : 'Direct Wire Banking Details:'}
                   </p>
-                  <div className="space-y-1.5 text-[10px] text-[var(--text-muted)] font-mono bg-[var(--surface-card)] p-2.5 rounded-[var(--radius-sm)] border border-[var(--border-default)]">
+                  <div className="space-y-1.5 text-[10px] text-[var(--text-muted)] font-mono bg-[var(--surface-card)] p-2.5 rounded-shape-xs border border-[var(--border-default)]">
                     <div className="flex justify-between"><span>Bank:</span><span className="font-bold text-[var(--text-primary)]">{wallet?.bank_name || 'Standard Chartered'}</span></div>
                     <div className="flex justify-between"><span>Recipient:</span><span className="font-bold text-[var(--text-primary)]">{wallet?.bank_recipient || 'Perplexta Global Ltd'}</span></div>
                     <div className="flex justify-between"><span>IBAN:</span><span className="font-bold text-[var(--text-primary)]">{wallet?.bank_iban || 'GB29NWBK60161331926819'}</span></div>
@@ -525,7 +466,7 @@ export const MobileWalletView: React.FC<MobileWalletViewProps> = ({
                   </div>
 
                   <div className="space-y-1 pt-1">
-                    <label className="text-[10px] font-bold text-[var(--text-muted)]">
+                    <label className="text-[10px] font-bold text-[var(--text-muted)] block">
                       {isRtl ? 'رقم الإشعار البنكي / رقم العملية:' : 'Bank Transfer Reference #:'}
                     </label>
                     <input
@@ -534,7 +475,7 @@ export const MobileWalletView: React.FC<MobileWalletViewProps> = ({
                       value={manualRefId}
                       onChange={(e) => setManualRefId(e.target.value)}
                       placeholder="e.g. WIRE-89421"
-                      className="w-full px-3 py-2 rounded-[var(--radius-sm)] bg-[var(--surface-card)] border border-[var(--border-default)] text-xs font-mono text-[var(--text-primary)] focus:border-accent focus:outline-none"
+                      className="w-full h-10 px-3 rounded-shape-sm bg-[var(--surface-card)] border border-[var(--border-default)] text-xs font-mono text-[var(--text-primary)] focus:border-[var(--border-accent)] focus:outline-none"
                     />
                   </div>
                 </div>
@@ -544,16 +485,16 @@ export const MobileWalletView: React.FC<MobileWalletViewProps> = ({
               <button
                 type="submit"
                 disabled={isSubmittingDeposit}
-                className="w-full py-3.5 rounded-[var(--radius-md)] bg-[var(--bg-accent-emphasis)] text-[var(--fg-on-emphasis)] font-bold text-xs uppercase tracking-wider flex items-center justify-center gap-2 shadow-sm active:scale-98 transition-all disabled:opacity-50 cursor-pointer"
+                className="w-full h-10 rounded-shape-sm bg-[var(--comp-button-primary-bg)] text-[var(--comp-button-primary-fg)] hover:opacity-90 font-bold text-xs uppercase tracking-wider flex items-center justify-center gap-2 shadow-xs active:scale-98 transition-all disabled:opacity-50 cursor-pointer"
               >
                 {isSubmittingDeposit ? (
                   <>
-                    <Loader2 size={16} className="animate-spin" />
+                    <Loader2 size={15} className="animate-spin" />
                     <span>{isRtl ? 'جاري الاتصال والتأكيد المشفر...' : 'Processing...'}</span>
                   </>
                 ) : (
                   <>
-                    <Plus size={16} strokeWidth={2.5} />
+                    <Plus size={15} />
                     <span>{isRtl ? `تأكيد إيداع $${depositAmount || '0'} USD` : `Confirm $${depositAmount || '0'} Deposit`}</span>
                   </>
                 )}
@@ -566,21 +507,22 @@ export const MobileWalletView: React.FC<MobileWalletViewProps> = ({
         {activeTab === 'withdraw' && (
           <motion.div
             key="mobile-withdraw-view"
-            initial={{ opacity: 0, y: 8 }}
+            initial={{ opacity: 0, y: 6 }}
             animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -8 }}
-            className="p-4 rounded-[var(--radius-lg)] bg-[var(--surface-card)] border border-[var(--border-default)] space-y-4 shadow-sm"
+            exit={{ opacity: 0, y: -6 }}
+            transition={{ duration: 0.15 }}
+            className="ide-card p-3.5 sm:p-5 rounded-shape-md bg-[var(--surface-card)] border border-[var(--border-default)] space-y-4 shadow-xs"
           >
-            <div className="flex items-center justify-between pb-2 border-b border-[var(--border-default)]">
-              <div className="flex items-center gap-2">
-                <div className="w-8 h-8 rounded-[var(--radius-sm)] bg-amber-500/10 text-amber-600 flex items-center justify-center">
-                  <ArrowUpRight size={18} strokeWidth={2.5} />
+            <div className="flex items-center justify-between pb-3 border-b border-[var(--border-default)]">
+              <div className="flex items-center gap-2.5">
+                <div className="w-8 h-8 rounded-shape-sm bg-[var(--bg-accent-muted)] border border-[var(--border-accent)]/20 text-[var(--fg-accent)] flex items-center justify-center shrink-0">
+                  <ArrowUpRight size={16} />
                 </div>
                 <div>
-                  <h3 className="text-xs font-black text-[var(--text-primary)]">
+                  <h3 className="text-xs font-black uppercase tracking-wider text-[var(--text-primary)]">
                     {isRtl ? 'طلب سحب الأرباح والسيولة' : 'Withdrawal Request Portal'}
                   </h3>
-                  <p className="text-[10px] text-[var(--text-muted)]">
+                  <p className="text-[10px] font-bold text-[var(--text-muted)]">
                     {isRtl ? `الرصيد المتاح: $${safeBalance.toFixed(2)} USD` : `Available: $${safeBalance.toFixed(2)} USD`}
                   </p>
                 </div>
@@ -588,7 +530,7 @@ export const MobileWalletView: React.FC<MobileWalletViewProps> = ({
               <button
                 type="button"
                 onClick={() => setActiveTab('transactions')}
-                className="text-[11px] font-bold text-accent hover:underline flex items-center gap-0.5 cursor-pointer"
+                className="h-8 px-3 rounded-shape-sm bg-[var(--surface-subtle)]/50 hover:bg-[var(--surface-subtle)] border border-[var(--border-default)] text-[11px] font-bold text-[var(--text-secondary)] hover:text-[var(--text-primary)] flex items-center justify-center cursor-pointer transition-all"
               >
                 {isRtl ? 'إلغاء' : 'Cancel'}
               </button>
@@ -597,7 +539,7 @@ export const MobileWalletView: React.FC<MobileWalletViewProps> = ({
             <form onSubmit={handleWithdrawSubmit} className="space-y-3.5">
               {/* Quick Amount Selectors */}
               <div className="space-y-1.5">
-                <label className="text-[10px] font-bold uppercase tracking-wider text-[var(--text-muted)]">
+                <label className="text-[10px] font-bold uppercase tracking-wider text-[var(--text-muted)] block">
                   {isRtl ? 'المبالغ السريعة:' : 'Quick Select Amount:'}
                 </label>
                 <div className="grid grid-cols-4 gap-1.5">
@@ -606,10 +548,10 @@ export const MobileWalletView: React.FC<MobileWalletViewProps> = ({
                       key={`mob-w-preset-${val}`}
                       type="button"
                       onClick={() => selectWithdrawPredefinedAmount(val, safeBalance)}
-                      className={`py-2 rounded-[var(--radius-md)] text-xs font-bold transition-all cursor-pointer ${
+                      className={`h-8 rounded-shape-xs text-xs font-bold transition-all cursor-pointer flex items-center justify-center border ${
                         withdrawAmount === val
-                          ? 'bg-[var(--bg-accent-emphasis)] text-[var(--fg-on-emphasis)] shadow-xs'
-                          : 'bg-[var(--surface-subtle)] text-[var(--text-primary)] border border-[var(--border-default)] hover:border-accent'
+                          ? 'bg-[var(--bg-accent-muted)] border-[var(--border-accent)]/40 text-[var(--fg-accent)] shadow-2xs'
+                          : 'bg-[var(--surface-subtle)] text-[var(--text-primary)] border-[var(--border-default)] hover:border-[var(--border-accent)]/30'
                       }`}
                     >
                       ${val}
@@ -620,11 +562,11 @@ export const MobileWalletView: React.FC<MobileWalletViewProps> = ({
 
               {/* Custom Input */}
               <div className="space-y-1">
-                <label className="text-[10px] font-bold uppercase tracking-wider text-[var(--text-muted)]">
+                <label className="text-[10px] font-bold uppercase tracking-wider text-[var(--text-muted)] block">
                   {isRtl ? 'المبلغ المطلوب سحبه ($):' : 'Withdraw Amount (USD):'}
                 </label>
-                <div className="relative">
-                  <span className="absolute inset-y-0 left-3 flex items-center text-sm font-bold text-accent">
+                <div className="relative flex items-center">
+                  <span className="absolute inset-y-0 left-3 flex items-center text-sm font-bold text-[var(--fg-accent)]">
                     $
                   </span>
                   <input
@@ -634,7 +576,7 @@ export const MobileWalletView: React.FC<MobileWalletViewProps> = ({
                     onChange={(e) => handleWithdrawAmountChange(e.target.value)}
                     onBlur={() => handleWithdrawAmountBlur(safeBalance)}
                     placeholder="50.00"
-                    className="w-full pl-8 pr-12 py-2.5 rounded-[var(--radius-md)] bg-[var(--surface-subtle)] border border-[var(--border-default)] text-sm font-bold text-[var(--text-primary)] focus:border-accent focus:outline-none"
+                    className="w-full h-10 pl-8 pr-12 rounded-shape-sm bg-[var(--surface-subtle)] border border-[var(--border-default)] text-sm font-bold font-mono text-[var(--text-primary)] focus:border-[var(--border-accent)] focus:outline-none"
                   />
                   <span className="absolute inset-y-0 right-3 flex items-center text-[10px] font-bold text-[var(--text-muted)]">
                     USD
@@ -644,27 +586,27 @@ export const MobileWalletView: React.FC<MobileWalletViewProps> = ({
 
               {/* Payout Channels */}
               <div className="space-y-1.5">
-                <label className="text-[10px] font-bold uppercase tracking-wider text-[var(--text-muted)]">
+                <label className="text-[10px] font-bold uppercase tracking-wider text-[var(--text-muted)] block">
                   {isRtl ? 'وسيلة التحويل والسحب:' : 'Payout Channel:'}
                 </label>
                 <div className="grid grid-cols-3 gap-1.5">
                   {[
-                    { id: 'paypal', name: isRtl ? 'بايبال' : 'PayPal', icon: <Globe size={14} /> },
-                    { id: 'crypto', name: isRtl ? 'USDT (TRC20)' : 'USDT TRC20', icon: <Smartphone size={14} /> },
-                    { id: 'bank', name: isRtl ? 'تحويل بنكي' : 'Bank Wire', icon: <Building size={14} /> }
+                    { id: 'paypal', name: isRtl ? 'بايبال' : 'PayPal', icon: <Globe size={13} /> },
+                    { id: 'crypto', name: isRtl ? 'USDT TRC20' : 'USDT TRC20', icon: <Smartphone size={13} /> },
+                    { id: 'bank', name: isRtl ? 'تحويل بنكي' : 'Bank Wire', icon: <Building size={13} /> }
                   ].map((m) => (
                     <button
                       key={`mob-w-channel-${m.id}`}
                       type="button"
                       onClick={() => setWithdrawMethod(m.id as any)}
-                      className={`p-2.5 rounded-[var(--radius-md)] border flex flex-col items-center gap-1 transition-all cursor-pointer ${
+                      className={`h-10 px-2 rounded-shape-sm border flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
                         withdrawMethod === m.id
-                          ? 'bg-[var(--bg-accent-emphasis)]/10 border-accent text-accent font-bold shadow-xs'
+                          ? 'bg-[var(--bg-accent-muted)] border-[var(--border-accent)]/40 text-[var(--fg-accent)] font-bold shadow-2xs'
                           : 'bg-[var(--surface-subtle)] border-[var(--border-default)] text-[var(--text-muted)] hover:text-[var(--text-primary)]'
                       }`}
                     >
                       {m.icon}
-                      <span className="text-[10px] font-bold">{m.name}</span>
+                      <span className="text-[10px] font-bold truncate">{m.name}</span>
                     </button>
                   ))}
                 </div>
@@ -673,7 +615,7 @@ export const MobileWalletView: React.FC<MobileWalletViewProps> = ({
               {/* Channel Detail Inputs */}
               {withdrawMethod === 'paypal' && (
                 <div className="space-y-1">
-                  <label className="text-[10px] font-bold text-[var(--text-muted)]">
+                  <label className="text-[10px] font-bold text-[var(--text-muted)] block">
                     {isRtl ? 'البريد الإلكتروني لحساب بايبال:' : 'PayPal Email:'}
                   </label>
                   <input
@@ -682,14 +624,14 @@ export const MobileWalletView: React.FC<MobileWalletViewProps> = ({
                     value={withdrawDetails}
                     onChange={(e) => setWithdrawDetails(e.target.value)}
                     placeholder="user@example.com"
-                    className="w-full px-3 py-2.5 rounded-[var(--radius-md)] bg-[var(--surface-subtle)] border border-[var(--border-default)] text-xs font-bold text-[var(--text-primary)] focus:border-accent focus:outline-none"
+                    className="w-full h-10 px-3 rounded-shape-sm bg-[var(--surface-subtle)] border border-[var(--border-default)] text-xs font-bold text-[var(--text-primary)] focus:border-[var(--border-accent)] focus:outline-none"
                   />
                 </div>
               )}
 
               {withdrawMethod === 'crypto' && (
                 <div className="space-y-1">
-                  <label className="text-[10px] font-bold text-[var(--text-muted)]">
+                  <label className="text-[10px] font-bold text-[var(--text-muted)] block">
                     {isRtl ? 'عنوان محفظة USDT (TRC-20):' : 'USDT TRC-20 Address:'}
                   </label>
                   <input
@@ -698,7 +640,7 @@ export const MobileWalletView: React.FC<MobileWalletViewProps> = ({
                     value={withdrawDetails}
                     onChange={(e) => setWithdrawDetails(e.target.value)}
                     placeholder="T..."
-                    className="w-full px-3 py-2.5 rounded-[var(--radius-md)] bg-[var(--surface-subtle)] border border-[var(--border-default)] text-xs font-mono text-[var(--text-primary)] focus:border-accent focus:outline-none"
+                    className="w-full h-10 px-3 rounded-shape-sm bg-[var(--surface-subtle)] border border-[var(--border-default)] text-xs font-mono text-[var(--text-primary)] focus:border-[var(--border-accent)] focus:outline-none"
                   />
                 </div>
               )}
@@ -711,7 +653,7 @@ export const MobileWalletView: React.FC<MobileWalletViewProps> = ({
                     value={withdrawHolderName}
                     onChange={(e) => setWithdrawHolderName(e.target.value)}
                     placeholder={isRtl ? 'اسم صاحب الحساب' : 'Account Holder Name'}
-                    className="w-full px-3 py-2 rounded-[var(--radius-md)] bg-[var(--surface-subtle)] border border-[var(--border-default)] text-xs font-bold text-[var(--text-primary)] focus:border-accent focus:outline-none"
+                    className="w-full h-10 px-3 rounded-shape-sm bg-[var(--surface-subtle)] border border-[var(--border-default)] text-xs font-bold text-[var(--text-primary)] focus:border-[var(--border-accent)] focus:outline-none"
                   />
                   <input
                     type="text"
@@ -719,7 +661,7 @@ export const MobileWalletView: React.FC<MobileWalletViewProps> = ({
                     value={withdrawBankName}
                     onChange={(e) => setWithdrawBankName(e.target.value)}
                     placeholder={isRtl ? 'اسم البنك' : 'Bank Name'}
-                    className="w-full px-3 py-2 rounded-[var(--radius-md)] bg-[var(--surface-subtle)] border border-[var(--border-default)] text-xs font-bold text-[var(--text-primary)] focus:border-accent focus:outline-none"
+                    className="w-full h-10 px-3 rounded-shape-sm bg-[var(--surface-subtle)] border border-[var(--border-default)] text-xs font-bold text-[var(--text-primary)] focus:border-[var(--border-accent)] focus:outline-none"
                   />
                   <input
                     type="text"
@@ -727,14 +669,14 @@ export const MobileWalletView: React.FC<MobileWalletViewProps> = ({
                     value={withdrawBankIBAN}
                     onChange={(e) => setWithdrawBankIBAN(e.target.value)}
                     placeholder={isRtl ? 'رقم IBAN أو الحساب' : 'IBAN / Account Number'}
-                    className="w-full px-3 py-2 rounded-[var(--radius-md)] bg-[var(--surface-subtle)] border border-[var(--border-default)] text-xs font-mono text-[var(--text-primary)] focus:border-accent focus:outline-none"
+                    className="w-full h-10 px-3 rounded-shape-sm bg-[var(--surface-subtle)] border border-[var(--border-default)] text-xs font-mono text-[var(--text-primary)] focus:border-[var(--border-accent)] focus:outline-none"
                   />
                   <input
                     type="text"
                     value={withdrawSwift}
                     onChange={(e) => setWithdrawSwift(e.target.value)}
                     placeholder={isRtl ? 'رمز SWIFT / BIC (اختياري)' : 'SWIFT / BIC Code'}
-                    className="w-full px-3 py-2 rounded-[var(--radius-md)] bg-[var(--surface-subtle)] border border-[var(--border-default)] text-xs font-mono text-[var(--text-primary)] focus:border-accent focus:outline-none"
+                    className="w-full h-10 px-3 rounded-shape-sm bg-[var(--surface-subtle)] border border-[var(--border-default)] text-xs font-mono text-[var(--text-primary)] focus:border-[var(--border-accent)] focus:outline-none"
                   />
                 </div>
               )}
@@ -743,16 +685,16 @@ export const MobileWalletView: React.FC<MobileWalletViewProps> = ({
               <button
                 type="submit"
                 disabled={isSubmittingWithdraw || parseFloat(withdrawAmount) > safeBalance || safeBalance < 10}
-                className="w-full py-3.5 rounded-[var(--radius-md)] bg-amber-500 text-white font-bold text-xs uppercase tracking-wider flex items-center justify-center gap-2 shadow-sm active:scale-98 transition-all disabled:opacity-50 cursor-pointer"
+                className="w-full h-10 rounded-shape-sm bg-[var(--comp-button-primary-bg)] text-[var(--comp-button-primary-fg)] hover:opacity-90 font-bold text-xs uppercase tracking-wider flex items-center justify-center gap-2 shadow-xs active:scale-98 transition-all disabled:opacity-50 cursor-pointer"
               >
                 {isSubmittingWithdraw ? (
                   <>
-                    <Loader2 size={16} className="animate-spin" />
+                    <Loader2 size={15} className="animate-spin" />
                     <span>{isRtl ? 'جاري إرسال الطلب للمراجعة...' : 'Submitting...'}</span>
                   </>
                 ) : (
                   <>
-                    <Send size={15} />
+                    <Send size={14} />
                     <span>{isRtl ? `طلب سحب $${withdrawAmount || '0'} USD` : `Submit $${withdrawAmount || '0'} Withdrawal`}</span>
                   </>
                 )}
@@ -765,29 +707,30 @@ export const MobileWalletView: React.FC<MobileWalletViewProps> = ({
         {activeTab === 'earnings' && (
           <motion.div
             key="mobile-points-view"
-            initial={{ opacity: 0, y: 8 }}
+            initial={{ opacity: 0, y: 6 }}
             animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -8 }}
+            exit={{ opacity: 0, y: -6 }}
+            transition={{ duration: 0.15 }}
             className="space-y-3.5"
           >
             {/* Points Conversion Card */}
-            <div className="p-4 rounded-[var(--radius-lg)] bg-[var(--surface-card)] border border-[var(--border-default)] space-y-3.5 shadow-sm">
-              <div className="flex items-center justify-between pb-2 border-b border-[var(--border-default)]">
-                <div className="flex items-center gap-2">
-                  <div className="w-8 h-8 rounded-[var(--radius-sm)] bg-indigo-500/10 text-indigo-600 flex items-center justify-center">
-                    <Sparkles size={18} strokeWidth={2.4} />
+            <div className="ide-card p-3.5 sm:p-5 rounded-shape-md bg-[var(--surface-card)] border border-[var(--border-default)] space-y-3.5 shadow-xs">
+              <div className="flex items-center justify-between pb-3 border-b border-[var(--border-default)]">
+                <div className="flex items-center gap-2.5">
+                  <div className="w-8 h-8 rounded-shape-sm bg-[var(--bg-accent-muted)] border border-[var(--border-accent)]/20 text-[var(--fg-accent)] flex items-center justify-center shrink-0">
+                    <Sparkles size={16} />
                   </div>
                   <div>
-                    <h3 className="text-xs font-black text-[var(--text-primary)]">
+                    <h3 className="text-xs font-black uppercase tracking-wider text-[var(--text-primary)]">
                       {isRtl ? 'تحويل نقاط المكافآت إلى رصيد' : 'Points to Cash Converter'}
                     </h3>
-                    <p className="text-[10px] text-[var(--text-muted)]">
+                    <p className="text-[10px] font-bold text-[var(--text-muted)]">
                       {isRtl ? '1,000 نقطة = $1.00 USD في رصيدك فوراً' : '1,000 Points = $1.00 USD Instant Credit'}
                     </p>
                   </div>
                 </div>
 
-                <div className="px-2.5 py-1 rounded-full bg-amber-500/10 border border-amber-500/20 text-amber-600 dark:text-amber-400 text-[10px] font-bold">
+                <div className="px-2.5 py-1 rounded-shape-xs bg-[var(--surface-subtle)] border border-[var(--border-default)] text-[var(--fg-accent)] text-[10px] font-bold font-mono shrink-0">
                   {pointsCount.toLocaleString()} PTS
                 </div>
               </div>
@@ -795,10 +738,10 @@ export const MobileWalletView: React.FC<MobileWalletViewProps> = ({
               <form onSubmit={handleConvertSubmit} className="space-y-3">
                 {/* Conversion Input */}
                 <div className="space-y-1">
-                  <label className="text-[10px] font-bold uppercase tracking-wider text-[var(--text-muted)]">
+                  <label className="text-[10px] font-bold uppercase tracking-wider text-[var(--text-muted)] block">
                     {isRtl ? 'عدد النقاط المراد تحويلها:' : 'Points to Convert:'}
                   </label>
-                  <div className="relative">
+                  <div className="relative flex items-center">
                     <input
                       type="number"
                       min="100"
@@ -806,9 +749,9 @@ export const MobileWalletView: React.FC<MobileWalletViewProps> = ({
                       value={convertAmount}
                       onChange={(e) => setConvertAmount(e.target.value)}
                       placeholder="1000"
-                      className="w-full pl-4 pr-16 py-2.5 rounded-[var(--radius-md)] bg-[var(--surface-subtle)] border border-[var(--border-default)] text-sm font-bold text-[var(--text-primary)] focus:border-accent focus:outline-none"
+                      className="w-full h-10 pl-4 pr-16 rounded-shape-sm bg-[var(--surface-subtle)] border border-[var(--border-default)] text-sm font-bold font-mono text-[var(--text-primary)] focus:border-[var(--border-accent)] focus:outline-none"
                     />
-                    <span className="absolute inset-y-0 right-3 flex items-center text-[10px] font-bold text-accent">
+                    <span className="absolute inset-y-0 right-3 flex items-center text-[10px] font-bold text-[var(--fg-accent)]">
                       PTS
                     </span>
                   </div>
@@ -821,10 +764,10 @@ export const MobileWalletView: React.FC<MobileWalletViewProps> = ({
                       key={`pts-preset-${idx}`}
                       type="button"
                       onClick={() => setConvertAmount(ptsVal)}
-                      className={`py-1.5 rounded-[var(--radius-sm)] text-[10px] font-bold transition-all cursor-pointer ${
+                      className={`h-8 rounded-shape-xs text-[10px] font-bold transition-all cursor-pointer flex items-center justify-center border ${
                         convertAmount === ptsVal
-                          ? 'bg-[var(--bg-accent-emphasis)] text-[var(--fg-on-emphasis)]'
-                          : 'bg-[var(--surface-subtle)] text-[var(--text-primary)] border border-[var(--border-default)]'
+                          ? 'bg-[var(--bg-accent-muted)] border-[var(--border-accent)]/40 text-[var(--fg-accent)] shadow-2xs'
+                          : 'bg-[var(--surface-subtle)] text-[var(--text-primary)] border-[var(--border-default)]'
                       }`}
                     >
                       {idx === 3 ? (isRtl ? 'الكل' : 'All') : `${ptsVal}`}
@@ -833,7 +776,7 @@ export const MobileWalletView: React.FC<MobileWalletViewProps> = ({
                 </div>
 
                 {/* Live Value Calculation Preview */}
-                <div className="p-2.5 rounded-[var(--radius-md)] bg-[var(--surface-subtle)] border border-[var(--border-default)] flex items-center justify-between text-xs">
+                <div className="p-2.5 rounded-shape-sm bg-[var(--surface-subtle)] border border-[var(--border-default)] flex items-center justify-between text-xs">
                   <span className="text-[11px] font-bold text-[var(--text-muted)]">
                     {isRtl ? 'القيمة المالية الناتجة:' : 'Estimated USD Value:'}
                   </span>
@@ -846,16 +789,16 @@ export const MobileWalletView: React.FC<MobileWalletViewProps> = ({
                 <button
                   type="submit"
                   disabled={isConverting || pointsCount < 100 || parseInt(convertAmount, 10) > pointsCount}
-                  className="w-full py-3 rounded-[var(--radius-md)] bg-indigo-600 text-white font-bold text-xs uppercase tracking-wider flex items-center justify-center gap-2 shadow-sm active:scale-98 transition-all disabled:opacity-50 cursor-pointer"
+                  className="w-full h-10 rounded-shape-sm bg-[var(--comp-button-primary-bg)] text-[var(--comp-button-primary-fg)] hover:opacity-90 font-bold text-xs uppercase tracking-wider flex items-center justify-center gap-2 shadow-xs active:scale-98 transition-all disabled:opacity-50 cursor-pointer"
                 >
                   {isConverting ? (
                     <>
-                      <Loader2 size={16} className="animate-spin" />
+                      <Loader2 size={15} className="animate-spin" />
                       <span>{isRtl ? 'جاري التحويل الفوري...' : 'Converting...'}</span>
                     </>
                   ) : (
                     <>
-                      <Sparkles size={15} />
+                      <Sparkles size={14} />
                       <span>{isRtl ? 'تحويل النقاط لرصيد فوري' : 'Convert to Instant Cash'}</span>
                     </>
                   )}
@@ -864,31 +807,31 @@ export const MobileWalletView: React.FC<MobileWalletViewProps> = ({
             </div>
 
             {/* Referral Tree Card */}
-            <div className="p-4 rounded-[var(--radius-lg)] bg-[var(--surface-card)] border border-[var(--border-default)] space-y-3 shadow-sm">
-              <div className="flex items-center gap-2">
-                <div className="w-8 h-8 rounded-[var(--radius-sm)] bg-accent/10 text-accent flex items-center justify-center">
-                  <Share2 size={16} />
+            <div className="ide-card p-3.5 sm:p-5 rounded-shape-md bg-[var(--surface-card)] border border-[var(--border-default)] space-y-3 shadow-xs">
+              <div className="flex items-center gap-2.5">
+                <div className="w-8 h-8 rounded-shape-sm bg-[var(--bg-accent-muted)] border border-[var(--border-accent)]/20 text-[var(--fg-accent)] flex items-center justify-center shrink-0">
+                  <Share2 size={15} />
                 </div>
                 <div>
-                  <h4 className="text-xs font-bold text-[var(--text-primary)]">
+                  <h4 className="text-xs font-black uppercase tracking-wider text-[var(--text-primary)]">
                     {isRtl ? 'رابط الإحالة ونظام الأرباح' : 'Referral Rewards System'}
                   </h4>
-                  <p className="text-[10px] text-[var(--text-muted)]">
+                  <p className="text-[10px] font-bold text-[var(--text-muted)]">
                     {isRtl ? 'احصل على عمولات ونقاط مع كل دعوة جديدة' : 'Earn commission points for every invite'}
                   </p>
                 </div>
               </div>
 
               <div className="flex items-center gap-2">
-                <code className="flex-1 p-2.5 rounded-[var(--radius-md)] bg-[var(--surface-subtle)] border border-[var(--border-default)] text-[10px] font-mono text-[var(--text-primary)] truncate">
+                <code className="flex-1 h-8 px-2.5 flex items-center rounded-shape-sm bg-[var(--surface-subtle)] border border-[var(--border-default)] text-[10px] font-mono text-[var(--text-primary)] truncate">
                   {referralLink}
                 </code>
                 <button
                   type="button"
                   onClick={() => copyToClipboard(referralLink)}
-                  className="px-3 py-2.5 rounded-[var(--radius-md)] bg-[var(--bg-accent-emphasis)] text-[var(--fg-on-emphasis)] text-xs font-bold flex items-center gap-1 active:scale-95 cursor-pointer"
+                  className="h-8 px-3 rounded-shape-sm bg-[var(--bg-accent-muted)] border border-[var(--border-accent)]/30 text-[var(--fg-accent)] text-xs font-bold flex items-center justify-center gap-1 active:scale-95 cursor-pointer shrink-0"
                 >
-                  {isCopied ? <Check size={14} /> : <Copy size={14} />}
+                  {isCopied ? <Check size={13} /> : <Copy size={13} />}
                   <span>{isCopied ? (isRtl ? 'تم' : 'Done') : (isRtl ? 'نسخ' : 'Copy')}</span>
                 </button>
               </div>
@@ -903,10 +846,38 @@ export const MobileWalletView: React.FC<MobileWalletViewProps> = ({
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="space-y-3"
+            transition={{ duration: 0.15 }}
+            className="ide-card p-3.5 sm:p-5 rounded-shape-md bg-[var(--surface-card)] border border-[var(--border-default)] shadow-xs space-y-3.5"
           >
-            {/* Filter Pills */}
-            <div className="flex items-center gap-1.5 p-1 rounded-[var(--radius-md)] bg-[var(--surface-subtle)] border border-[var(--border-default)] overflow-x-auto touch-pan-x custom-scrollbar">
+            {/* Section Title & Archive Control */}
+            <div className="flex items-center justify-between gap-2">
+              <div className="flex items-center gap-2">
+                <div className="w-8 h-8 rounded-shape-sm bg-[var(--bg-accent-muted)] border border-[var(--border-accent)]/20 text-[var(--fg-accent)] flex items-center justify-center shrink-0">
+                  <History size={15} />
+                </div>
+                <div>
+                  <h3 className="text-xs font-black uppercase tracking-wider text-[var(--text-primary)]">
+                    {isRtl ? 'الحركات والتدقيق المالي' : 'Ledger Feed'}
+                  </h3>
+                  <p className="text-[10px] font-bold text-[var(--text-muted)]">
+                    {isRtl ? 'سجل الإيداعات والسحوبات والمكافآت' : 'Deposits, withdrawals & rewards history'}
+                  </p>
+                </div>
+              </div>
+              {transactions.length > 0 && (
+                <button
+                  type="button"
+                  onClick={handleClearAllHistory}
+                  className="h-8 px-2.5 rounded-shape-sm bg-rose-500/10 border border-rose-500/20 flex items-center gap-1 text-[10px] font-bold text-rose-400 hover:bg-rose-500/20 active:scale-95 transition-all cursor-pointer shrink-0"
+                >
+                  <Trash2 size={12} />
+                  <span>{isRtl ? 'أرشفة السجل' : 'Archive'}</span>
+                </button>
+              )}
+            </div>
+
+            {/* 4-Column Non-Scrolling Sub-Tabs (Zero Scrollbar, Zero Clipping) */}
+            <div className="grid grid-cols-4 gap-1 p-1 rounded-shape-sm bg-[var(--surface-subtle)] border border-[var(--border-default)]">
               {transactionTabs.map((tab) => {
                 const isActive = activeTab === tab.id;
                 return (
@@ -914,13 +885,13 @@ export const MobileWalletView: React.FC<MobileWalletViewProps> = ({
                     key={`mob-tab-${tab.id}`}
                     type="button"
                     onClick={() => setActiveTab(tab.id)}
-                    className={`flex-1 py-1.5 px-2.5 rounded-[var(--radius-sm)] text-[11px] font-bold whitespace-nowrap transition-all text-center cursor-pointer shrink-0 ${
+                    className={`h-8 px-1.5 rounded-shape-xs text-[10px] sm:text-[11px] font-bold truncate transition-all flex items-center justify-center cursor-pointer border ${
                       isActive
-                        ? 'bg-[var(--surface-card)] text-accent shadow-xs'
-                        : 'text-[var(--text-muted)] hover:text-[var(--text-primary)]'
+                        ? 'bg-[var(--bg-accent-muted)] border-[var(--border-accent)]/30 text-[var(--fg-accent)] shadow-2xs'
+                        : 'border-transparent text-[var(--text-muted)] hover:text-[var(--text-primary)]'
                     }`}
                   >
-                    {tab.label}
+                    <span className="truncate">{tab.label}</span>
                   </button>
                 );
               })}
@@ -928,18 +899,18 @@ export const MobileWalletView: React.FC<MobileWalletViewProps> = ({
 
             {/* Pending Deposits Notice if any */}
             {activeTab === 'transactions' && manualDeposits.length > 0 && (
-              <div className="p-3 rounded-[var(--radius-md)] bg-amber-500/10 border border-amber-500/20 space-y-2">
-                <div className="flex items-center gap-1.5 text-amber-600 dark:text-amber-400 text-xs font-bold">
-                  <span className="w-2 h-2 rounded-full bg-amber-500 animate-ping" />
+              <div className="p-3 rounded-shape-sm bg-[var(--surface-subtle)] border border-[var(--border-default)] space-y-2">
+                <div className="flex items-center gap-1.5 text-[var(--fg-warning)] text-xs font-bold">
+                  <span className="w-2 h-2 rounded-shape-full bg-[var(--fg-warning)] animate-pulse" />
                   <span>{isRtl ? 'عمليات إيداع قيد المراجعة الفورية' : 'Pending Review Deposits'}</span>
                 </div>
                 {manualDeposits.map((dep, idx) => (
-                  <div key={`mob-manual-${dep.id || idx}`} className="p-2 rounded-[var(--radius-sm)] bg-[var(--surface-card)] border border-[var(--border-default)] flex items-center justify-between text-xs">
+                  <div key={`mob-manual-${dep.id || idx}`} className="p-2.5 rounded-shape-xs bg-[var(--surface-card)] border border-[var(--border-default)] flex items-center justify-between text-xs">
                     <div>
-                      <p className="font-bold text-[var(--text-primary)]">${Number(dep.amount).toFixed(2)} USD</p>
+                      <p className="font-bold font-mono text-[var(--text-primary)]">${Number(dep.amount).toFixed(2)} USD</p>
                       <p className="text-[10px] text-[var(--text-muted)] font-mono">{dep.method}</p>
                     </div>
-                    <span className="px-2 py-0.5 rounded-md text-[9px] font-bold bg-amber-500/10 text-amber-600 border border-amber-500/20">
+                    <span className="px-2 py-0.5 rounded-shape-xs text-[9px] font-bold bg-[var(--surface-subtle)] text-[var(--fg-warning)] border border-[var(--border-default)]">
                       {isRtl ? 'قيد التدقيق' : 'Pending'}
                     </span>
                   </div>
@@ -947,108 +918,87 @@ export const MobileWalletView: React.FC<MobileWalletViewProps> = ({
               </div>
             )}
 
-            {/* Transactions List */}
-            <div className="space-y-2">
-              <div className="flex items-center justify-between px-1">
-                <p className="text-[11px] font-bold text-[var(--text-muted)] uppercase tracking-wider">
-                  {isRtl ? 'الحركات والتدقيق المالي' : 'Ledger Feed'}
-                </p>
-                {transactions.length > 0 && (
-                  <button
-                    type="button"
-                    onClick={handleClearAllHistory}
-                    className="flex items-center gap-1 text-[10px] font-bold text-rose-500 hover:text-rose-600 active:scale-95 transition-transform cursor-pointer"
-                  >
-                    <Trash2 size={12} />
-                    <span>{isRtl ? 'أرشفة السجل' : 'Archive'}</span>
-                  </button>
-                )}
-              </div>
-
+            {/* Transactions List Container (Stable Min-Height to Prevent Layout Shift) */}
+            <div className="min-h-[210px] flex flex-col justify-center space-y-2">
               {loading ? (
-                <div className="py-12 flex flex-col items-center justify-center gap-2 text-[var(--text-muted)]">
-                  <Loader2 size={24} className="animate-spin text-accent" />
+                <div className="py-10 flex flex-col items-center justify-center gap-2.5 text-[var(--text-muted)]">
+                  <Loader2 size={22} className="animate-spin text-[var(--fg-accent)]" />
                   <span className="text-xs font-bold">{isRtl ? 'مزامنة السجل بالوقت الفعلي...' : 'Syncing Ledger in Real-time...'}</span>
                 </div>
               ) : transactions.length === 0 ? (
-                <div className="py-10 rounded-[var(--radius-lg)] bg-[var(--surface-card)] border border-[var(--border-default)] flex flex-col items-center justify-center text-center p-6 space-y-2">
-                  <div className="w-12 h-12 rounded-full bg-[var(--surface-subtle)] flex items-center justify-center text-[var(--text-muted)]">
-                    <History size={22} />
+                <div className="py-8 rounded-shape-sm bg-[var(--surface-subtle)]/50 border border-dashed border-[var(--border-default)] flex flex-col items-center justify-center text-center p-5 space-y-2">
+                  <div className="w-8 h-8 rounded-shape-sm bg-[var(--bg-accent-muted)] border border-[var(--border-accent)]/20 flex items-center justify-center text-[var(--fg-accent)]">
+                    <History size={16} />
                   </div>
                   <p className="text-xs font-bold text-[var(--text-primary)]">
                     {isRtl ? 'لا توجد حركات مسجلة حالياً' : 'No recorded transactions yet'}
                   </p>
-                  <p className="text-[10px] text-[var(--text-muted)] max-w-xs">
+                  <p className="text-[10px] text-[var(--text-muted)] max-w-xs leading-relaxed">
                     {isRtl ? 'كافة عمليات الإيداع والسحب والتحويلات ستظهر هنا بدقة فورية.' : 'All wallet activities will be synced and logged here.'}
                   </p>
                 </div>
               ) : (
-                transactions.map((tx, idx) => {
-                  const isDeposit = tx.transaction_type === 'deposit' || tx.amount > 0;
-                  const isWithdrawal = tx.transaction_type === 'withdrawal' || tx.amount < 0;
+                <div className="space-y-2">
+                  {transactions.map((tx, idx) => {
+                    const isDeposit = tx.transaction_type === 'deposit' || tx.amount > 0;
+                    const isWithdrawal = tx.transaction_type === 'withdrawal' || tx.amount < 0;
 
-                  return (
-                    <div
-                      key={`mob-tx-${tx.id || idx}`}
-                      className="p-3.5 rounded-[var(--radius-md)] bg-[var(--surface-card)] border border-[var(--border-default)] flex items-center justify-between gap-3 shadow-xs"
-                    >
-                      <div className="flex items-center gap-3">
-                        <div className={`w-9 h-9 rounded-[var(--radius-md)] flex items-center justify-center shrink-0 ${
-                          isDeposit
-                            ? 'bg-[var(--status-success-subtle)] text-[var(--fg-success)]'
-                            : isWithdrawal
-                            ? 'bg-amber-500/10 text-amber-600 dark:text-amber-400'
-                            : 'bg-indigo-500/10 text-indigo-600 dark:text-indigo-400'
-                        }`}>
-                          {isDeposit ? (
-                            <ArrowDownLeft size={18} strokeWidth={2.4} />
-                          ) : isWithdrawal ? (
-                            <ArrowUpRight size={18} strokeWidth={2.4} />
-                          ) : (
-                            <Sparkles size={18} strokeWidth={2.4} />
-                          )}
-                        </div>
+                    return (
+                      <div
+                        key={`mob-tx-${tx.id || idx}`}
+                        className="p-3 rounded-shape-sm bg-[var(--surface-subtle)]/60 border border-[var(--border-default)] flex items-center justify-between gap-3"
+                      >
+                        <div className="flex items-center gap-3 min-w-0">
+                          <div className={`w-8 h-8 rounded-shape-sm flex items-center justify-center shrink-0 border ${
+                            isDeposit
+                              ? 'bg-[var(--status-success-subtle)] text-[var(--fg-success)] border-[var(--fg-success)]/20'
+                              : 'bg-[var(--bg-accent-muted)] text-[var(--fg-accent)] border-[var(--border-accent)]/20'
+                          }`}>
+                            {isDeposit ? (
+                              <ArrowDownLeft size={15} />
+                            ) : isWithdrawal ? (
+                              <ArrowUpRight size={15} />
+                            ) : (
+                              <Sparkles size={15} />
+                            )}
+                          </div>
 
-                        <div className="space-y-0.5">
-                          <p className="text-xs font-bold text-[var(--text-primary)] leading-tight line-clamp-1">
-                            {tx.description || (isDeposit ? (isRtl ? 'شحن رصيد المحفظة' : 'Deposit') : (isRtl ? 'سحب رصيد' : 'Withdrawal'))}
-                          </p>
-                          <div className="flex items-center gap-1.5 text-[9px] text-[var(--text-muted)] font-mono">
-                            <span>{new Date(tx.created_at).toLocaleDateString()}</span>
-                            <span>•</span>
-                            <span>{new Date(tx.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
+                          <div className="space-y-0.5 min-w-0">
+                            <p className="text-xs font-bold text-[var(--text-primary)] leading-tight truncate">
+                              {tx.description || (isDeposit ? (isRtl ? 'شحن رصيد المحفظة' : 'Deposit') : (isRtl ? 'سحب رصيد' : 'Withdrawal'))}
+                            </p>
+                            <div className="flex items-center gap-1.5 text-[9px] text-[var(--text-muted)] font-mono">
+                              <span>{new Date(tx.created_at).toLocaleDateString()}</span>
+                              <span>•</span>
+                              <span>{new Date(tx.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
+                            </div>
                           </div>
                         </div>
-                      </div>
 
-                      <div className="flex flex-col items-end gap-1 shrink-0">
-                        <span className={`text-xs font-black font-mono ${
-                          isDeposit ? 'text-[var(--fg-success)]' : 'text-[var(--text-primary)]'
-                        }`}>
-                          {isDeposit ? '+' : ''}${Math.abs(tx.amount).toFixed(2)}
-                        </span>
-                        
-                        <div className="flex items-center gap-1.5">
-                          <span className={`px-1.5 py-0.2 rounded text-[8px] font-bold uppercase tracking-wider ${
-                            tx.status === 'success'
-                              ? 'bg-[var(--status-success-subtle)] text-[var(--fg-success)]'
-                              : 'bg-amber-500/10 text-amber-600 dark:text-amber-400'
-                          }`}>
-                            {tx.status}
-                          </span>
+                        <div className="flex items-center gap-2 shrink-0">
+                          <div className="flex flex-col items-end gap-0.5">
+                            <span className={`text-xs font-black font-mono ${
+                              isDeposit ? 'text-[var(--fg-success)]' : 'text-[var(--text-primary)]'
+                            }`}>
+                              {isDeposit ? '+' : ''}${Math.abs(tx.amount).toFixed(2)}
+                            </span>
+                            <span className="px-1.5 py-0.5 rounded-shape-xs text-[8px] font-bold uppercase tracking-wider bg-[var(--surface-card)] border border-[var(--border-default)] text-[var(--text-muted)]">
+                              {tx.status}
+                            </span>
+                          </div>
                           <button
                             type="button"
                             onClick={() => handleHideTransaction(tx.id)}
-                            className="text-[var(--text-muted)] hover:text-rose-500 p-0.5 transition-colors cursor-pointer"
+                            className="w-8 h-8 flex items-center justify-center rounded-shape-xs text-[var(--text-muted)] hover:text-rose-400 hover:bg-rose-500/10 transition-colors cursor-pointer"
                             title={isRtl ? 'إخفاء المعاملة' : 'Hide'}
                           >
-                            <Trash2 size={11} />
+                            <Trash2 size={13} />
                           </button>
                         </div>
                       </div>
-                    </div>
-                  );
-                })
+                    );
+                  })}
+                </div>
               )}
             </div>
           </motion.div>
@@ -1059,3 +1009,4 @@ export const MobileWalletView: React.FC<MobileWalletViewProps> = ({
     </div>
   );
 };
+

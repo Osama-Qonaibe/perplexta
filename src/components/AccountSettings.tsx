@@ -140,10 +140,10 @@ export const AccountSettings: React.FC<AccountSettingsProps> = ({ user, onUpdate
     const isEditing = editingField === field;
 
     return (
-      <div className="flex flex-col md:flex-row md:items-center justify-between py-3.5 sm:py-4 border-b border-[var(--border-default)] group gap-3">
+      <div className="flex items-center justify-between py-3.5 sm:py-4 border-b border-[var(--border-default)] group gap-3">
         <div className="flex items-center gap-3 sm:gap-4 flex-1 min-w-0">
-          <div className="p-2 sm:p-2.5 rounded-[var(--radius-sm)] bg-[var(--surface-subtle)] text-[var(--text-muted)] group-hover:text-[var(--fg-accent)] group-hover:bg-[var(--bg-accent-muted)] transition-all duration-fast shrink-0 border border-transparent group-hover:border-[var(--border-accent)]/20">
-            {React.cloneElement(icon as React.ReactNode as React.ReactElement<{ size?: number; className?: string }>, { size: 16 })}
+          <div className="w-8 h-8 rounded-shape-sm bg-[var(--surface-subtle)] text-[var(--text-muted)] group-hover:text-[var(--fg-accent)] group-hover:bg-[var(--bg-accent-muted)] transition-all duration-fast shrink-0 border border-[var(--border-default)]/50 group-hover:border-[var(--border-accent)]/20 flex items-center justify-center">
+            {React.cloneElement(icon as React.ReactNode as React.ReactElement<{ size?: number; className?: string }>, { size: 15 })}
           </div>
           <div className="flex-1 min-w-0">
             <p className="text-[10px] font-bold text-[var(--text-muted)] uppercase tracking-wider mb-0.5">{label}</p>
@@ -152,7 +152,7 @@ export const AccountSettings: React.FC<AccountSettingsProps> = ({ user, onUpdate
                 <textarea
                   value={editValue}
                   onChange={(e) => setEditValue(e.target.value)}
-                  className="w-full p-2.5 rounded-[var(--radius-sm)] border border-[var(--border-default)] focus:border-[var(--border-accent)] focus:ring-1 focus:ring-[var(--border-accent)]/30 outline-none transition-all font-medium bg-[var(--surface-subtle)] text-[var(--text-primary)] min-h-[90px] text-xs sm:text-sm"
+                  className="w-full p-2.5 rounded-shape-sm border border-[var(--border-default)] focus:border-[var(--border-accent)] focus:ring-1 focus:ring-[var(--border-accent)]/30 outline-none transition-all font-medium bg-[var(--surface-subtle)] text-[var(--text-primary)] min-h-[90px] text-xs sm:text-sm"
                   autoFocus
                 />
               ) : (
@@ -167,7 +167,7 @@ export const AccountSettings: React.FC<AccountSettingsProps> = ({ user, onUpdate
                     type={type}
                     value={editValue}
                     onChange={(e) => setEditValue(e.target.value)}
-                    className="w-full p-2 rounded-[var(--radius-sm)] border border-[var(--border-default)] focus:border-[var(--border-accent)] focus:ring-1 focus:ring-[var(--border-accent)]/30 outline-none transition-all font-bold bg-[var(--surface-subtle)] text-[var(--text-primary)] text-xs sm:text-sm"
+                    className="w-full h-8 px-2.5 rounded-shape-sm border border-[var(--border-default)] focus:border-[var(--border-accent)] focus:ring-1 focus:ring-[var(--border-accent)]/30 outline-none transition-all font-bold bg-[var(--surface-subtle)] text-[var(--text-primary)] text-xs sm:text-sm"
                     autoFocus
                   />
                 </form>
@@ -181,27 +181,27 @@ export const AccountSettings: React.FC<AccountSettingsProps> = ({ user, onUpdate
         </div>
         <div className="flex items-center justify-end gap-2 shrink-0">
           {isEditing ? (
-            <div className="flex gap-1">
+            <div className="flex gap-1.5">
               <button 
                 type="button"
                 onClick={handleSave}
-                className="p-2 text-[var(--fg-accent)] hover:bg-[var(--bg-accent-muted)] border border-[var(--border-accent)]/20 rounded-[var(--radius-sm)] transition-all duration-fast cursor-pointer"
+                className="w-8 h-8 flex items-center justify-center text-[var(--fg-accent)] hover:bg-[var(--bg-accent-muted)] border border-[var(--border-accent)]/20 rounded-shape-sm transition-all duration-fast cursor-pointer"
               >
-                <Check size={16} />
+                <Check size={15} />
               </button>
               <button 
                 type="button"
                 onClick={() => setEditingField(null)}
-                className="p-2 text-rose-400 hover:bg-rose-500/10 border border-rose-500/20 rounded-[var(--radius-sm)] transition-all duration-fast cursor-pointer"
+                className="w-8 h-8 flex items-center justify-center text-rose-400 hover:bg-rose-500/10 border border-rose-500/20 rounded-shape-sm transition-all duration-fast cursor-pointer"
               >
-                <X size={16} />
+                <X size={15} />
               </button>
             </div>
           ) : (
             <button 
               type="button"
               onClick={() => handleStartEdit(field, field === 'password' ? '' : value)}
-              className="text-[var(--text-secondary)] hover:text-[var(--fg-accent)] text-xs font-bold flex items-center gap-1 transition-all duration-fast px-3 py-1.5 rounded-shape-sm bg-transparent hover:bg-[var(--surface-subtle)]/25 border border-[var(--border-default)] hover:border-[var(--border-accent)]/40 cursor-pointer active:scale-95 select-none"
+              className="h-8 px-3 text-[var(--text-secondary)] hover:text-[var(--fg-accent)] text-xs font-bold flex items-center justify-center gap-1.5 transition-all duration-fast rounded-shape-sm bg-[var(--surface-subtle)]/50 hover:bg-[var(--surface-subtle)] border border-[var(--border-default)] hover:border-[var(--border-accent)]/40 cursor-pointer active:scale-95 select-none shrink-0"
             >
               <Edit2 size={13} />
               <span>{t('edit').toUpperCase()}</span>
@@ -220,9 +220,9 @@ export const AccountSettings: React.FC<AccountSettingsProps> = ({ user, onUpdate
       
       {/* SECTION 1: Profile & Account Information Card */}
       <div className="ide-card p-3.5 sm:p-6 shadow-xs space-y-1">
-        <div className="flex items-center gap-2 sm:gap-3 pb-3 border-b border-[var(--border-default)] mb-1">
-          <div className="text-[var(--fg-accent)] shrink-0 flex items-center justify-center">
-            <User size={18} />
+        <div className="flex items-center gap-2.5 sm:gap-3 pb-3 border-b border-[var(--border-default)] mb-1">
+          <div className="w-8 h-8 rounded-shape-sm bg-[var(--bg-accent-muted)] border border-[var(--border-accent)]/20 text-[var(--fg-accent)] shrink-0 flex items-center justify-center">
+            <User size={16} />
           </div>
           <div>
             <h2 className="text-xs sm:text-sm font-black uppercase tracking-wider text-[var(--text-primary)]">
@@ -236,7 +236,7 @@ export const AccountSettings: React.FC<AccountSettingsProps> = ({ user, onUpdate
         </div>
 
         {/* Avatar Section */}
-        <div className="flex items-center justify-between py-3 sm:py-4 border-b border-[var(--border-default)] group">
+        <div className="flex items-center justify-between py-3.5 sm:py-4 border-b border-[var(--border-default)] group gap-3">
           <input 
             type="file" 
             ref={fileInputRef} 
@@ -251,19 +251,19 @@ export const AccountSettings: React.FC<AccountSettingsProps> = ({ user, onUpdate
                   src={resolveImageUrl(user.avatar, 'avatar')} 
                   alt="Avatar" 
                   onError={() => setAvatarLoadError(true)}
-                  className="w-12 h-12 sm:w-16 sm:h-16 rounded-shape-sm object-cover border transition-all duration-fast"
+                  className="w-12 h-12 sm:w-14 sm:h-14 rounded-shape-sm object-cover border transition-all duration-fast"
                   style={{ borderColor: user.subscription?.plan_color || 'var(--border-default)' }}
                   referrerPolicy="no-referrer"
                 />
               ) : (
                 <div 
-                  className="w-12 h-12 sm:w-16 sm:h-16 rounded-shape-sm bg-[var(--surface-subtle)] border border-[var(--border-default)] flex items-center justify-center text-[var(--text-muted)] group-hover:text-[var(--fg-accent)] group-hover:border-[var(--border-accent)]/30 transition-all duration-fast"
+                  className="w-12 h-12 sm:w-14 sm:h-14 rounded-shape-sm bg-[var(--surface-subtle)] border border-[var(--border-default)] flex items-center justify-center text-[var(--text-muted)] group-hover:text-[var(--fg-accent)] group-hover:border-[var(--border-accent)]/30 transition-all duration-fast"
                 >
                   {isUploading ? <Loader2 className="animate-spin" size={16} /> : <Camera size={18} />}
                 </div>
               )}
               <div 
-                className="absolute -bottom-1 -right-1 p-1 sm:p-1.5 bg-[var(--surface-card)] border border-[var(--border-default)] rounded-shape-xs text-[var(--text-secondary)] hover:text-[var(--fg-accent)] cursor-pointer hover:border-[var(--border-accent)]/50 active:scale-95 transition-all shadow-2xs" 
+                className="absolute -bottom-1 -right-1 w-5 h-5 flex items-center justify-center bg-[var(--surface-card)] border border-[var(--border-default)] rounded-shape-xs text-[var(--text-secondary)] hover:text-[var(--fg-accent)] cursor-pointer hover:border-[var(--border-accent)]/50 active:scale-95 transition-all shadow-2xs" 
                 onClick={() => fileInputRef.current?.click()}
               >
                 {isUploading ? <Loader2 size={10} className="animate-spin" /> : <Camera size={10} />}
@@ -287,11 +287,11 @@ export const AccountSettings: React.FC<AccountSettingsProps> = ({ user, onUpdate
             type="button"
             onClick={() => fileInputRef.current?.click()}
             disabled={isUploading}
-            className="text-[var(--text-secondary)] hover:text-[var(--fg-accent)] text-xs font-bold flex items-center gap-1 transition-all duration-fast p-2 sm:px-3 sm:py-1.5 rounded-shape-sm bg-transparent hover:bg-[var(--surface-subtle)]/25 border border-[var(--border-default)] hover:border-[var(--border-accent)]/40 shrink-0 cursor-pointer active:scale-95 select-none"
+            className="h-8 px-3 text-[var(--text-secondary)] hover:text-[var(--fg-accent)] text-xs font-bold flex items-center justify-center gap-1.5 transition-all duration-fast rounded-shape-sm bg-[var(--surface-subtle)]/50 hover:bg-[var(--surface-subtle)] border border-[var(--border-default)] hover:border-[var(--border-accent)]/40 shrink-0 cursor-pointer active:scale-95 select-none"
             title={t('edit')}
           >
-            <Edit2 size={13} className="sm:hidden" />
-            <span className="hidden sm:inline">{t('edit').toUpperCase()}</span>
+            <Edit2 size={13} />
+            <span>{t('edit').toUpperCase()}</span>
           </button>
         </div>
 
@@ -299,10 +299,10 @@ export const AccountSettings: React.FC<AccountSettingsProps> = ({ user, onUpdate
         {renderEditableField(t('email'), 'email', user.email || '', <Mail size={16} />, 'email')}
         {renderEditableField(t('password'), 'password', '', <Lock size={16} />, 'password')}
 
-        <div className="flex items-center justify-between py-3 sm:py-4 border-b border-[var(--border-default)]">
+        <div className="flex items-center justify-between py-3.5 sm:py-4 border-b border-[var(--border-default)]">
           <div className="flex items-center gap-3 sm:gap-4 min-w-0">
-            <div className="p-2 sm:p-2.5 rounded-[var(--radius-sm)] bg-[var(--surface-subtle)] text-[var(--text-muted)] shrink-0 border border-transparent">
-              <ShieldCheck size={16} />
+            <div className="w-8 h-8 rounded-shape-sm bg-[var(--surface-subtle)] text-[var(--text-muted)] shrink-0 border border-[var(--border-default)]/50 flex items-center justify-center">
+              <ShieldCheck size={15} />
             </div>
             <div className="min-w-0">
               <p className="text-[10px] font-bold text-[var(--text-muted)] uppercase tracking-wider mb-0.5">{t('kycStatus')}</p>
@@ -314,10 +314,10 @@ export const AccountSettings: React.FC<AccountSettingsProps> = ({ user, onUpdate
           </div>
         </div>
 
-        <div className="flex items-center justify-between py-3 sm:py-4">
+        <div className="flex items-center justify-between py-3.5 sm:py-4">
           <div className="flex items-center gap-3 sm:gap-4 min-w-0">
-            <div className="p-2 sm:p-2.5 rounded-[var(--radius-sm)] bg-[var(--surface-subtle)] text-[var(--text-muted)] shrink-0 border border-transparent">
-              <CreditCard size={16} />
+            <div className="w-8 h-8 rounded-shape-sm bg-[var(--surface-subtle)] text-[var(--text-muted)] shrink-0 border border-[var(--border-default)]/50 flex items-center justify-center">
+              <CreditCard size={15} />
             </div>
             <div className="min-w-0">
               <p className="text-[10px] font-bold text-[var(--text-muted)] uppercase tracking-wider mb-0.5">{t('currentPlan')}</p>
@@ -331,8 +331,8 @@ export const AccountSettings: React.FC<AccountSettingsProps> = ({ user, onUpdate
 
       {/* SECTION 2: Preferences & Appearance Card */}
       <div className="ide-card p-3.5 sm:p-6 shadow-xs space-y-1">
-        <div className="flex items-center gap-2 sm:gap-3 pb-3 border-b border-[var(--border-default)] mb-1">
-          <div className="p-1.5 sm:p-2 rounded-[var(--radius-xs)] bg-[var(--bg-accent-muted)] border border-[var(--border-accent)]/20 text-[var(--fg-accent)] shrink-0">
+        <div className="flex items-center gap-2.5 sm:gap-3 pb-3 border-b border-[var(--border-default)] mb-1">
+          <div className="w-8 h-8 rounded-shape-sm bg-[var(--bg-accent-muted)] border border-[var(--border-accent)]/20 text-[var(--fg-accent)] shrink-0 flex items-center justify-center">
             <Monitor size={16} />
           </div>
           <div>
@@ -346,28 +346,28 @@ export const AccountSettings: React.FC<AccountSettingsProps> = ({ user, onUpdate
         </div>
 
         {/* Language Selection */}
-        <div className="flex items-center justify-between py-3 sm:py-4 border-b border-[var(--border-default)] group gap-2">
+        <div className="flex items-center justify-between py-3.5 sm:py-4 border-b border-[var(--border-default)] group gap-2">
            <div className="flex items-center gap-3 sm:gap-4 min-w-0">
-              <div className="p-2 sm:p-2.5 rounded-[var(--radius-sm)] bg-[var(--surface-subtle)] text-[var(--text-muted)] shrink-0 border border-transparent">
-                <Languages size={16} />
+              <div className="w-8 h-8 rounded-shape-sm bg-[var(--surface-subtle)] text-[var(--text-muted)] shrink-0 border border-[var(--border-default)]/50 flex items-center justify-center">
+                <Languages size={15} />
               </div>
               <div className="min-w-0">
                 <p className="text-[10px] font-bold text-[var(--text-muted)] uppercase tracking-wider mb-0.5">{t('languagePreference') || 'Platform Language'}</p>
                 <p className="font-bold text-xs sm:text-sm text-[var(--text-primary)] truncate">{language === 'ar' ? 'العربية' : 'English'}</p>
               </div>
            </div>
-           <div className="flex gap-1 p-1 bg-[var(--surface-subtle)] rounded-[var(--radius-sm)] border border-[var(--border-default)] shrink-0">
+           <div className="flex items-center gap-1 p-1 bg-[var(--surface-subtle)] rounded-shape-sm border border-[var(--border-default)] shrink-0">
               <button 
                 type="button"
                 onClick={() => setLanguage('ar')}
-                className={`px-3 py-1 rounded-[var(--radius-xs)] text-[10px] font-bold uppercase tracking-wider transition-all duration-fast cursor-pointer ${language === 'ar' ? 'bg-[var(--bg-accent-muted)] border border-[var(--border-accent)]/30 text-[var(--fg-accent)]' : 'text-[var(--text-muted)] hover:text-[var(--text-primary)]'}`}
+                className={`h-8 px-3 rounded-shape-xs text-[10px] font-bold uppercase tracking-wider flex items-center justify-center transition-all duration-fast cursor-pointer ${language === 'ar' ? 'bg-[var(--bg-accent-muted)] border border-[var(--border-accent)]/30 text-[var(--fg-accent)]' : 'text-[var(--text-muted)] hover:text-[var(--text-primary)]'}`}
               >
                 العربية
               </button>
               <button 
                 type="button"
                 onClick={() => setLanguage('en')}
-                className={`px-3 py-1 rounded-[var(--radius-xs)] text-[10px] font-bold uppercase tracking-wider transition-all duration-fast cursor-pointer ${language === 'en' ? 'bg-[var(--bg-accent-muted)] border border-[var(--border-accent)]/30 text-[var(--fg-accent)]' : 'text-[var(--text-muted)] hover:text-[var(--text-primary)]'}`}
+                className={`h-8 px-3 rounded-shape-xs text-[10px] font-bold uppercase tracking-wider flex items-center justify-center transition-all duration-fast cursor-pointer ${language === 'en' ? 'bg-[var(--bg-accent-muted)] border border-[var(--border-accent)]/30 text-[var(--fg-accent)]' : 'text-[var(--text-muted)] hover:text-[var(--text-primary)]'}`}
               >
                 English
               </button>
@@ -375,44 +375,44 @@ export const AccountSettings: React.FC<AccountSettingsProps> = ({ user, onUpdate
         </div>
 
         {/* Theme Selection */}
-        <div className="flex items-center justify-between py-3 sm:py-4 border-b border-[var(--border-default)] group gap-2">
+        <div className="flex items-center justify-between py-3.5 sm:py-4 border-b border-[var(--border-default)] group gap-2">
            <div className="flex items-center gap-3 sm:gap-4 min-w-0">
-              <div className="p-2 sm:p-2.5 rounded-[var(--radius-sm)] bg-[var(--surface-subtle)] text-[var(--text-muted)] shrink-0 border border-transparent">
-                <Monitor size={16} />
+              <div className="w-8 h-8 rounded-shape-sm bg-[var(--surface-subtle)] text-[var(--text-muted)] shrink-0 border border-[var(--border-default)]/50 flex items-center justify-center">
+                <Monitor size={15} />
               </div>
               <div className="min-w-0">
                 <p className="text-[10px] font-bold text-[var(--text-muted)] uppercase tracking-wider mb-0.5">{t('themePreference')}</p>
                 <p className="font-bold text-xs sm:text-sm text-[var(--text-primary)] uppercase truncate">{theme === 'system' ? t('systemMode') : theme === 'dark' ? t('darkMode') : t('lightMode')}</p>
               </div>
            </div>
-           <div className="shrink-0 scale-90 sm:scale-100">
+           <div className="shrink-0">
              <ThemeToggleButton variant="segmented" />
            </div>
         </div>
 
         {/* Email Notifications */}
-        <div className="flex items-center justify-between py-3 sm:py-4 border-b border-[var(--border-default)] group gap-2">
+        <div className="flex items-center justify-between py-3.5 sm:py-4 border-b border-[var(--border-default)] group gap-2">
            <div className="flex items-center gap-3 sm:gap-4 min-w-0">
-              <div className="p-2 sm:p-2.5 rounded-[var(--radius-sm)] bg-[var(--surface-subtle)] text-[var(--text-muted)] shrink-0 border border-transparent">
-                <Mail size={16} />
+              <div className="w-8 h-8 rounded-shape-sm bg-[var(--surface-subtle)] text-[var(--text-muted)] shrink-0 border border-[var(--border-default)]/50 flex items-center justify-center">
+                <Mail size={15} />
               </div>
               <div className="min-w-0">
                 <p className="text-[10px] font-bold text-[var(--text-muted)] uppercase tracking-wider mb-0.5">{dir === 'rtl' ? 'إشعارات البريد' : 'Email Notifications'}</p>
                 <p className="font-bold text-xs sm:text-sm text-[var(--text-primary)] uppercase truncate">{user.email_notifications !== false ? (dir === 'rtl' ? 'مفعل' : 'Enabled') : (dir === 'rtl' ? 'معطل' : 'Disabled')}</p>
               </div>
            </div>
-           <div className="flex gap-1 p-1 bg-[var(--surface-subtle)] rounded-[var(--radius-sm)] border border-[var(--border-default)] shrink-0">
+           <div className="flex items-center gap-1 p-1 bg-[var(--surface-subtle)] rounded-shape-sm border border-[var(--border-default)] shrink-0">
               <button 
                 type="button"
                 onClick={() => onUpdate({ email_notifications: true })}
-                className={`px-3 py-1 rounded-[var(--radius-xs)] text-[10px] font-bold uppercase tracking-wider transition-all duration-fast cursor-pointer ${user.email_notifications !== false ? 'bg-[var(--bg-accent-muted)] border border-[var(--border-accent)]/30 text-[var(--fg-accent)]' : 'text-[var(--text-muted)] hover:text-[var(--text-primary)]'}`}
+                className={`h-8 px-3 rounded-shape-xs text-[10px] font-bold uppercase tracking-wider flex items-center justify-center transition-all duration-fast cursor-pointer ${user.email_notifications !== false ? 'bg-[var(--bg-accent-muted)] border border-[var(--border-accent)]/30 text-[var(--fg-accent)]' : 'text-[var(--text-muted)] hover:text-[var(--text-primary)]'}`}
               >
                 {dir === 'rtl' ? 'تفعيل' : 'Enable'}
               </button>
               <button 
                 type="button"
                 onClick={() => onUpdate({ email_notifications: false })}
-                className={`px-3 py-1 rounded-[var(--radius-xs)] text-[10px] font-bold uppercase tracking-wider transition-all duration-fast cursor-pointer ${
+                className={`h-8 px-3 rounded-shape-xs text-[10px] font-bold uppercase tracking-wider flex items-center justify-center transition-all duration-fast cursor-pointer ${
                   user.email_notifications === false 
                     ? 'bg-rose-500/20 border border-rose-500/30 text-rose-400' 
                     : 'text-[var(--text-muted)] hover:text-[var(--text-primary)]'
@@ -424,10 +424,10 @@ export const AccountSettings: React.FC<AccountSettingsProps> = ({ user, onUpdate
         </div>
 
         {/* Aggressive Data Saver & Content Compression Toggle */}
-        <div className="flex items-center justify-between py-3 sm:py-4 group gap-2">
+        <div className="flex items-center justify-between py-3.5 sm:py-4 group gap-2">
            <div className="flex items-center gap-3 sm:gap-4 min-w-0">
-              <div className="p-2 sm:p-2.5 rounded-[var(--radius-sm)] bg-[var(--surface-subtle)] text-[var(--text-muted)] shrink-0 border border-transparent">
-                <Zap size={16} />
+              <div className="w-8 h-8 rounded-shape-sm bg-[var(--surface-subtle)] text-[var(--text-muted)] shrink-0 border border-[var(--border-default)]/50 flex items-center justify-center">
+                <Zap size={15} />
               </div>
               <div className="min-w-0">
                 <p className="text-[10px] font-bold text-[var(--text-muted)] uppercase tracking-wider mb-0.5">
@@ -443,7 +443,7 @@ export const AccountSettings: React.FC<AccountSettingsProps> = ({ user, onUpdate
                 </p>
               </div>
            </div>
-           <div className="flex gap-1 p-1 bg-[var(--surface-subtle)] rounded-[var(--radius-sm)] border border-[var(--border-default)] shrink-0">
+           <div className="flex items-center gap-1 p-1 bg-[var(--surface-subtle)] rounded-shape-sm border border-[var(--border-default)] shrink-0">
               <button 
                 type="button"
                 onClick={() => {
@@ -452,7 +452,7 @@ export const AccountSettings: React.FC<AccountSettingsProps> = ({ user, onUpdate
                   onUpdate({ data_saver: true });
                   notify(dir === 'rtl' ? 'تم تفعيل وضع توفير البيانات والضغط الفائق' : 'Data Saver & Aggressive Compression enabled');
                 }}
-                className={`px-3 py-1 rounded-[var(--radius-xs)] text-[10px] font-bold uppercase tracking-wider transition-all duration-fast cursor-pointer ${user.data_saver ? 'bg-[var(--bg-accent-muted)] border border-[var(--border-accent)]/30 text-[var(--fg-accent)]' : 'text-[var(--text-muted)] hover:text-[var(--text-primary)]'}`}
+                className={`h-8 px-3 rounded-shape-xs text-[10px] font-bold uppercase tracking-wider flex items-center justify-center transition-all duration-fast cursor-pointer ${user.data_saver ? 'bg-[var(--bg-accent-muted)] border border-[var(--border-accent)]/30 text-[var(--fg-accent)]' : 'text-[var(--text-muted)] hover:text-[var(--text-primary)]'}`}
               >
                 {dir === 'rtl' ? 'تفعيل' : 'Enable'}
               </button>
@@ -464,7 +464,7 @@ export const AccountSettings: React.FC<AccountSettingsProps> = ({ user, onUpdate
                   onUpdate({ data_saver: false });
                   notify(dir === 'rtl' ? 'تم إيقاف وضع توفير البيانات' : 'Data Saver disabled');
                 }}
-                className={`px-3 py-1 rounded-[var(--radius-xs)] text-[10px] font-bold uppercase tracking-wider transition-all duration-fast cursor-pointer ${
+                className={`h-8 px-3 rounded-shape-xs text-[10px] font-bold uppercase tracking-wider flex items-center justify-center transition-all duration-fast cursor-pointer ${
                   !user.data_saver 
                     ? 'bg-rose-500/20 border border-rose-500/30 text-rose-400' 
                     : 'text-[var(--text-muted)] hover:text-[var(--text-primary)]'
@@ -478,8 +478,8 @@ export const AccountSettings: React.FC<AccountSettingsProps> = ({ user, onUpdate
 
       {/* SECTION 3: Archive & Data Card */}
       <div className="ide-card p-3.5 sm:p-6 shadow-xs space-y-2 sm:space-y-3">
-        <div className="flex items-center gap-2 sm:gap-3 pb-3 border-b border-[var(--border-default)]">
-          <div className="p-1.5 sm:p-2 rounded-[var(--radius-xs)] bg-[var(--bg-accent-muted)] border border-[var(--border-accent)]/20 text-[var(--fg-accent)] shrink-0">
+        <div className="flex items-center gap-2.5 sm:gap-3 pb-3 border-b border-[var(--border-default)]">
+          <div className="w-8 h-8 rounded-shape-sm bg-[var(--bg-accent-muted)] border border-[var(--border-accent)]/20 text-[var(--fg-accent)] shrink-0 flex items-center justify-center">
             <Archive size={16} />
           </div>
           <div>
@@ -497,11 +497,11 @@ export const AccountSettings: React.FC<AccountSettingsProps> = ({ user, onUpdate
       </div>
 
       {/* SECTION 4: Danger Zone (Account Deletion) */}
-      <div className="p-3.5 sm:p-5 rounded-[var(--radius-md)] border border-rose-500/20 bg-rose-500/[0.03] transition-all">
+      <div className="p-3.5 sm:p-5 rounded-shape-md border border-rose-500/20 bg-rose-500/[0.03] transition-all">
         <div className="flex flex-row items-center justify-between gap-3">
-          <div className="flex items-center gap-2 sm:gap-4 min-w-0">
-            <div className="p-2 sm:p-2.5 rounded-[var(--radius-sm)] bg-rose-500/10 text-rose-400 shrink-0 border border-rose-500/20">
-              <Trash2 size={16} />
+          <div className="flex items-center gap-3 sm:gap-4 min-w-0">
+            <div className="w-8 h-8 rounded-shape-sm bg-rose-500/10 text-rose-400 shrink-0 border border-rose-500/20 flex items-center justify-center">
+              <Trash2 size={15} />
             </div>
             <div className="min-w-0">
               <h4 className="text-xs sm:text-sm font-bold uppercase tracking-wider text-rose-400 truncate">
@@ -517,7 +517,7 @@ export const AccountSettings: React.FC<AccountSettingsProps> = ({ user, onUpdate
           <button
             type="button"
             onClick={() => setIsDeleteDialogOpen(true)}
-            className="px-3.5 py-2 rounded-[var(--radius-sm)] text-xs font-bold uppercase tracking-wider text-white bg-rose-600 hover:bg-rose-500 active:scale-95 transition-all duration-fast shrink-0 shadow-xs cursor-pointer"
+            className="h-8 px-3.5 rounded-shape-sm text-xs font-bold uppercase tracking-wider text-white bg-rose-600 hover:bg-rose-500 active:scale-95 transition-all duration-fast shrink-0 shadow-xs flex items-center justify-center cursor-pointer"
           >
             {dir === 'rtl' ? 'حذف الحساب' : 'Delete'}
           </button>
@@ -533,11 +533,11 @@ export const AccountSettings: React.FC<AccountSettingsProps> = ({ user, onUpdate
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.95, y: 10 }}
               transition={{ duration: 0.15 }}
-              className="w-full max-w-md bg-[var(--surface-card)] border border-[var(--border-default)] rounded-[var(--radius-md)] p-5 sm:p-6 shadow-2xl space-y-4"
+              className="w-full max-w-md bg-[var(--surface-card)] border border-[var(--border-default)] rounded-shape-md p-5 sm:p-6 shadow-2xl space-y-4"
             >
               <div className="flex items-center gap-3 text-rose-400">
-                <div className="p-2 rounded-[var(--radius-xs)] bg-rose-500/10 border border-rose-500/20 shrink-0">
-                  <AlertTriangle size={18} />
+                <div className="w-8 h-8 rounded-shape-sm bg-rose-500/10 border border-rose-500/20 shrink-0 flex items-center justify-center">
+                  <AlertTriangle size={16} />
                 </div>
                 <h3 className="text-xs sm:text-sm font-bold uppercase tracking-wider">
                   {dir === 'rtl' ? 'تأكيد حذف الحساب' : 'Confirm Account Deletion'}
@@ -555,7 +555,7 @@ export const AccountSettings: React.FC<AccountSettingsProps> = ({ user, onUpdate
                   type="button"
                   disabled={isDeletingAccount}
                   onClick={() => setIsDeleteDialogOpen(false)}
-                  className="px-3.5 py-2 rounded-[var(--radius-sm)] text-xs font-bold text-[var(--text-muted)] hover:text-[var(--text-primary)] hover:bg-[var(--surface-subtle)] border border-[var(--border-default)] transition-all duration-fast cursor-pointer"
+                  className="h-8 px-3.5 rounded-shape-sm text-xs font-bold text-[var(--text-muted)] hover:text-[var(--text-primary)] hover:bg-[var(--surface-subtle)] border border-[var(--border-default)] transition-all duration-fast flex items-center justify-center cursor-pointer"
                 >
                   {dir === 'rtl' ? 'إلغاء' : 'Cancel'}
                 </button>
@@ -563,7 +563,7 @@ export const AccountSettings: React.FC<AccountSettingsProps> = ({ user, onUpdate
                   type="button"
                   disabled={isDeletingAccount}
                   onClick={handleDeleteAccount}
-                  className="px-4 py-2 rounded-[var(--radius-sm)] text-xs font-bold text-white bg-rose-600 hover:bg-rose-500 active:scale-95 transition-all duration-fast flex items-center gap-2 disabled:opacity-50 cursor-pointer"
+                  className="h-8 px-4 rounded-shape-sm text-xs font-bold text-white bg-rose-600 hover:bg-rose-500 active:scale-95 transition-all duration-fast flex items-center justify-center gap-2 disabled:opacity-50 cursor-pointer"
                 >
                   {isDeletingAccount && <Loader2 size={14} className="animate-spin" />}
                   {dir === 'rtl' ? 'حذف نهائي' : 'Delete'}

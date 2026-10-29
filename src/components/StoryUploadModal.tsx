@@ -1401,7 +1401,7 @@ export const StoryUploadModal: React.FC<StoryUploadModalProps> = ({
                   {isVideo && (
                     <div className="space-y-3">
                       {videoDuration > 30.5 && (
-                        <div className="bg-[var(--surface-subtle)] p-3 rounded-[var(--radius-sm)] border border-[var(--border-default)] space-y-2">
+                        <div className="bg-[var(--surface-subtle)] p-3 rounded-shape-sm border border-[var(--border-default)] space-y-2">
                           <div className="flex items-center justify-between">
                             <span className="text-[11px] font-bold text-[var(--text-primary)] flex items-center gap-1">
                               <Scissors size={12} className="text-[var(--fg-accent)]" />
@@ -1438,7 +1438,7 @@ export const StoryUploadModal: React.FC<StoryUploadModalProps> = ({
                       )}
 
                       {/* Cover selection panel */}
-                      <div className="bg-[var(--surface-subtle)] p-3 rounded-[var(--radius-sm)] border border-[var(--border-default)] space-y-2">
+                      <div className="bg-[var(--surface-subtle)] p-3 rounded-shape-sm border border-[var(--border-default)] space-y-2">
                         <div className="flex items-center justify-between gap-2">
                           <span className="text-[10px] font-extrabold text-[var(--text-secondary)] uppercase tracking-wider">
                             {isRtl ? 'توصيات المقطع' : 'Clip Recommendations'}
@@ -1446,7 +1446,7 @@ export const StoryUploadModal: React.FC<StoryUploadModalProps> = ({
                           <button
                             type="button"
                             onClick={() => customCoverInputRef.current?.click()}
-                            className="flex items-center gap-1 px-2 py-1 rounded-[var(--radius-xs)] bg-[var(--bg-accent-muted)] hover:opacity-85 text-[var(--fg-accent)] text-[9px] font-bold border border-[var(--border-accent)]/25 transition-colors cursor-pointer"
+                            className="flex items-center gap-1 px-2 py-1 rounded-shape-xs bg-[var(--bg-accent-muted)] hover:opacity-85 text-[var(--fg-accent)] text-[9px] font-bold border border-[var(--border-accent)]/25 transition-colors cursor-pointer"
                           >
                             <Upload size={9} />
                             <span>{isRtl ? 'رفع صورة غلاف' : 'Upload cover'}</span>
@@ -1471,7 +1471,7 @@ export const StoryUploadModal: React.FC<StoryUploadModalProps> = ({
                               <div
                                 key={idx}
                                 onClick={() => setSelectedCoverIndex(idx)}
-                                className={`relative aspect-[9/16] rounded-[var(--radius-xs)] overflow-hidden border-2 cursor-pointer transition-all hover:opacity-90 ${
+                                className={`relative aspect-[9/16] rounded-shape-xs overflow-hidden border-2 cursor-pointer transition-all hover:opacity-90 ${
                                   selectedCoverIndex === idx ? 'border-[var(--border-accent)] scale-[1.03] shadow-md' : 'border-[var(--border-default)]'
                                 }`}
                               >

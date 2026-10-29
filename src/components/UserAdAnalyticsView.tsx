@@ -75,7 +75,7 @@ export const UserAdAnalyticsView: React.FC = () => {
 
   if (isLoading) {
     return (
-      <div className="p-12 text-center text-xs text-[var(--text-muted)] flex flex-col items-center justify-center gap-3 bg-[var(--surface-card)] border border-[var(--border-default)] rounded-[var(--radius-lg)] min-h-[400px]">
+      <div className="p-12 text-center text-xs text-[var(--text-muted)] flex flex-col items-center justify-center gap-3 bg-[var(--surface-card)] border border-[var(--border-default)] rounded-shape-lg min-h-[400px]">
         <RefreshCw size={28} className="animate-spin text-accent" />
         <span className="font-bold text-sm text-[var(--text-primary)]">
           {isRtl ? 'جاري تحليل نتائج الحملات والإعلانات الخاصة بك...' : 'Analyzing your ad campaigns & audience data...'}
@@ -86,7 +86,7 @@ export const UserAdAnalyticsView: React.FC = () => {
 
   if (!data || !data.summary) {
     return (
-      <div className="p-12 text-center text-xs text-[var(--text-muted)] flex flex-col items-center justify-center gap-3 bg-[var(--surface-card)] border border-[var(--border-default)] rounded-[var(--radius-lg)] min-h-[300px]">
+      <div className="p-12 text-center text-xs text-[var(--text-muted)] flex flex-col items-center justify-center gap-3 bg-[var(--surface-card)] border border-[var(--border-default)] rounded-shape-lg min-h-[300px]">
         <BarChart2 size={36} className="text-[var(--text-muted)] opacity-50" />
         <span className="font-bold text-sm text-[var(--text-primary)]">
           {isRtl ? 'لا توجد بيانات إحصائية متاحة حالياً' : 'No ad analytics data available yet.'}
@@ -100,7 +100,7 @@ export const UserAdAnalyticsView: React.FC = () => {
 
   return (
     <div className="space-y-6 transition-theme [will-change:background-color,border-color,color]">
-      <div className="bg-[var(--surface-card)] border border-[var(--border-default)] rounded-[var(--radius-lg)] p-5 relative overflow-hidden">
+      <div className="bg-[var(--surface-card)] border border-[var(--border-default)] rounded-shape-lg p-5 relative overflow-hidden">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 relative z-10">
           <div>
             <div className="flex items-center gap-2 text-[var(--fg-accent)] text-xs font-bold uppercase tracking-wider mb-1">
@@ -128,7 +128,7 @@ export const UserAdAnalyticsView: React.FC = () => {
       </div>
 
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
-        <div className="bg-[var(--surface-card)] border border-[var(--border-default)] p-3.5 rounded-[var(--radius-md)] flex flex-col justify-between">
+        <div className="bg-[var(--surface-card)] border border-[var(--border-default)] p-3.5 rounded-shape-md flex flex-col justify-between">
           <div className="flex items-center justify-between text-[var(--fg-accent)]">
             <span className="text-[10px] font-bold text-[var(--text-muted)]">{isRtl ? 'المشاهدات' : 'Impressions'}</span>
             <Eye size={15} />
@@ -139,7 +139,7 @@ export const UserAdAnalyticsView: React.FC = () => {
           </div>
         </div>
 
-        <div className="bg-[var(--surface-card)] border border-[var(--border-default)] p-3.5 rounded-[var(--radius-md)] flex flex-col justify-between">
+        <div className="bg-[var(--surface-card)] border border-[var(--border-default)] p-3.5 rounded-shape-md flex flex-col justify-between">
           <div className="flex items-center justify-between text-accent">
             <span className="text-[10px] font-bold text-[var(--text-muted)]">{isRtl ? 'النقرات' : 'Clicks'}</span>
             <MousePointerClick size={15} />
@@ -150,7 +150,7 @@ export const UserAdAnalyticsView: React.FC = () => {
           </div>
         </div>
 
-        <div className="bg-[var(--surface-card)] border border-[var(--border-default)] p-3.5 rounded-[var(--radius-md)] flex flex-col justify-between">
+        <div className="bg-[var(--surface-card)] border border-[var(--border-default)] p-3.5 rounded-shape-md flex flex-col justify-between">
           <div className="flex items-center justify-between text-[var(--fg-accent)]">
             <span className="text-[10px] font-bold text-[var(--text-muted)]">{isRtl ? 'نسبة النقر CTR' : 'Click Rate (CTR)'}</span>
             <TrendingUp size={15} />
@@ -163,7 +163,7 @@ export const UserAdAnalyticsView: React.FC = () => {
           </div>
         </div>
 
-        <div className="bg-[var(--surface-card)] border border-[var(--border-default)] p-3.5 rounded-[var(--radius-md)] flex flex-col justify-between">
+        <div className="bg-[var(--surface-card)] border border-[var(--border-default)] p-3.5 rounded-shape-md flex flex-col justify-between">
           <div className="flex items-center justify-between text-amber-500">
             <span className="text-[10px] font-bold text-[var(--text-muted)]">{isRtl ? 'إجمالي الإنفاق' : 'Total Spend'}</span>
             <DollarSign size={15} />
@@ -174,7 +174,7 @@ export const UserAdAnalyticsView: React.FC = () => {
           </div>
         </div>
 
-        <div className="bg-[var(--surface-card)] border border-[var(--border-default)] p-3.5 rounded-[var(--radius-md)] flex flex-col justify-between">
+        <div className="bg-[var(--surface-card)] border border-[var(--border-default)] p-3.5 rounded-shape-md flex flex-col justify-between">
           <div className="flex items-center justify-between text-teal-500">
             <span className="text-[10px] font-bold text-[var(--text-muted)]">{isRtl ? 'الاستفسارات والرسائل' : 'Customer Leads'}</span>
             <MessageCircle size={15} />
@@ -185,7 +185,7 @@ export const UserAdAnalyticsView: React.FC = () => {
           </div>
         </div>
 
-        <div className="bg-[var(--surface-card)] border border-[var(--border-default)] p-3.5 rounded-[var(--radius-md)] flex flex-col justify-between">
+        <div className="bg-[var(--surface-card)] border border-[var(--border-default)] p-3.5 rounded-shape-md flex flex-col justify-between">
           <div className="flex items-center justify-between text-pink-500">
             <span className="text-[10px] font-bold text-[var(--text-muted)]">{isRtl ? 'التفاعل والإعجابات' : 'Engagements'}</span>
             <ThumbsUp size={15} />
@@ -198,7 +198,7 @@ export const UserAdAnalyticsView: React.FC = () => {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <div className="lg:col-span-2 bg-[var(--surface-card)] border border-[var(--border-default)] rounded-[var(--radius-lg)] p-5 space-y-4">
+        <div className="lg:col-span-2 bg-[var(--surface-card)] border border-[var(--border-default)] rounded-shape-lg p-5 space-y-4">
           <div className="flex items-center justify-between pb-3 border-b border-[var(--border-default)]">
             <div>
               <h3 className="font-extrabold text-sm text-[var(--text-primary)] flex items-center gap-2">
@@ -260,7 +260,7 @@ export const UserAdAnalyticsView: React.FC = () => {
           </div>
         </div>
 
-        <div className="bg-[var(--surface-card)] border border-[var(--border-default)] rounded-[var(--radius-lg)] p-5 space-y-4">
+        <div className="bg-[var(--surface-card)] border border-[var(--border-default)] rounded-shape-lg p-5 space-y-4">
           <div className="pb-3 border-b border-[var(--border-default)]">
             <h3 className="font-extrabold text-sm text-[var(--text-primary)] flex items-center gap-2">
               <MapPin size={18} className="text-[var(--fg-accent)]" />
@@ -298,7 +298,7 @@ export const UserAdAnalyticsView: React.FC = () => {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <div className="bg-[var(--surface-card)] border border-[var(--border-default)] rounded-[var(--radius-lg)] p-5 space-y-4">
+        <div className="bg-[var(--surface-card)] border border-[var(--border-default)] rounded-shape-lg p-5 space-y-4">
           <div className="pb-3 border-b border-[var(--border-default)]">
             <h3 className="font-extrabold text-sm text-[var(--text-primary)] flex items-center gap-2">
               <Users size={18} className="text-purple-500" />
@@ -330,7 +330,7 @@ export const UserAdAnalyticsView: React.FC = () => {
           </div>
         </div>
 
-        <div className="bg-[var(--surface-card)] border border-[var(--border-default)] rounded-[var(--radius-lg)] p-5 space-y-4">
+        <div className="bg-[var(--surface-card)] border border-[var(--border-default)] rounded-shape-lg p-5 space-y-4">
           <div className="pb-3 border-b border-[var(--border-default)]">
             <h3 className="font-extrabold text-sm text-[var(--text-primary)] flex items-center gap-2">
               <PieIcon size={18} className="text-pink-500" />
@@ -372,7 +372,7 @@ export const UserAdAnalyticsView: React.FC = () => {
           </div>
         </div>
 
-        <div className="bg-[var(--surface-card)] border border-[var(--border-default)] rounded-[var(--radius-lg)] p-5 space-y-4">
+        <div className="bg-[var(--surface-card)] border border-[var(--border-default)] rounded-shape-lg p-5 space-y-4">
           <div className="pb-3 border-b border-[var(--border-default)]">
             <h3 className="font-extrabold text-sm text-[var(--text-primary)] flex items-center gap-2">
               <Smartphone size={18} className="text-accent" />
@@ -419,7 +419,7 @@ export const UserAdAnalyticsView: React.FC = () => {
         </div>
       </div>
 
-      <div className="bg-[var(--surface-card)] border border-[var(--border-default)] rounded-[var(--radius-lg)] p-5 space-y-4">
+      <div className="bg-[var(--surface-card)] border border-[var(--border-default)] rounded-shape-lg p-5 space-y-4">
         <div className="pb-3 border-b border-[var(--border-default)]">
           <h3 className="font-extrabold text-sm text-[var(--text-primary)] flex items-center gap-2">
             <Zap size={18} className="text-amber-500 animate-pulse" />
@@ -434,7 +434,7 @@ export const UserAdAnalyticsView: React.FC = () => {
           {insights.map((item: any, idx: number) => (
             <div
               key={`insight-${idx}-${item.title_en || item.title_ar}`}
-              className="p-4 rounded-[var(--radius-md)] border border-[var(--border-default)] bg-[var(--surface-subtle)] space-y-2"
+              className="p-4 rounded-shape-md border border-[var(--border-default)] bg-[var(--surface-subtle)] space-y-2"
             >
               <div className="font-extrabold text-xs text-[var(--fg-accent)] flex items-center gap-1">
                 <CheckCircle2 size={15} />
@@ -448,7 +448,7 @@ export const UserAdAnalyticsView: React.FC = () => {
         </div>
       </div>
 
-      <div className="bg-[var(--surface-card)] border border-[var(--border-default)] rounded-[var(--radius-lg)] p-5 space-y-4">
+      <div className="bg-[var(--surface-card)] border border-[var(--border-default)] rounded-shape-lg p-5 space-y-4">
         <div className="pb-3 border-b border-[var(--border-default)] flex items-center justify-between">
           <div>
             <h3 className="font-extrabold text-sm text-[var(--text-primary)] flex items-center gap-2">
@@ -489,7 +489,7 @@ export const UserAdAnalyticsView: React.FC = () => {
                           alt={ad.title}
                           width={48}
                           height={48}
-                          className="rounded-[var(--radius-xs)] border border-[var(--border-default)]"
+                          className="rounded-shape-xs border border-[var(--border-default)]"
                         />
                         <div>
                           <div className="font-extrabold text-[var(--text-primary)] text-xs line-clamp-1">{ad.title}</div>
@@ -520,7 +520,7 @@ export const UserAdAnalyticsView: React.FC = () => {
                     </td>
 
                     <td className="p-3 text-center">
-                      <span className={`px-2.5 py-1 rounded-[var(--radius-xs)] text-[10px] font-black ${
+                      <span className={`px-2.5 py-1 rounded-shape-xs text-[10px] font-black ${
                         ad.status === 'approved'
                           ? 'bg-accent/10 text-[var(--fg-accent)] border border-accent/30'
                           : ad.status === 'pending'

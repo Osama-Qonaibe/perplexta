@@ -604,7 +604,7 @@ export const CreatorProfilePage: React.FC = () => {
                             e.stopPropagation();
                             handleUseTemplate(tpl);
                           }}
-                          className="h-7.5 px-3 rounded-shape-xs bg-[var(--comp-button-primary-bg)] text-[var(--comp-button-primary-fg)] font-bold text-[10.5px] flex items-center gap-1 hover:opacity-95 active:scale-95 transition-all cursor-pointer shadow-2xs"
+                          className="h-8 px-3 rounded-shape-xs bg-[var(--comp-button-primary-bg)] text-[var(--comp-button-primary-fg)] font-bold text-[10.5px] flex items-center gap-1 hover:opacity-95 active:scale-95 transition-all cursor-pointer shadow-2xs"
                         >
                           <Palette size={11} />
                           <span>{isAr ? 'استخدم القالب' : 'Use Template'}</span>

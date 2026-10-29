@@ -120,6 +120,8 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
 const AdminRoute = ({ children }: { children: React.ReactNode }) => {
   const { user, isAuthReady } = useAppContext();
   if (!isAuthReady) return null;
+  const isMobile = typeof window !== 'undefined' && window.matchMedia('(max-width: 767px)').matches;
+  if (isMobile) return <Navigate to="/chat" replace />;
   const isAdmin = user && user.role === 'admin';
   const isSupport = user && user.role === 'support';
   if (!isAdmin && !isSupport) return <Navigate to="/" replace />;
@@ -521,7 +523,9 @@ export default function App() {
                             <Route path="creator/:username" element={<CreatorProfilePage />} />
                             <Route path="creator" element={<CreatorProfilePage />} />
                             <Route path="creator-dashboard" element={<ProtectedRoute><CreatorDashboardPage /></ProtectedRoute>} />
-                            <Route path="settings/creators-hub" element={<ProtectedRoute><CreatorDashboardPage /></ProtectedRoute>} />
+                            <Route path="wallet" element={<Navigate to="/settings/wallet" replace />} />
+                            <Route path="bookmarks" element={<Navigate to="/viralbook/saved" replace />} />
+                            <Route path="saved" element={<Navigate to="/viralbook/saved" replace />} />
                             <Route path="terms" element={<Terms />} />
                             <Route path="privacy" element={<Privacy />} />
                             <Route path="about" element={<About />} />

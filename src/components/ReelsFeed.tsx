@@ -1724,7 +1724,7 @@ export const ReelsFeed: React.FC<ReelsFeedProps> = ({
         {onClose && (
           <button
             onClick={onClose}
-            className="px-6 py-2.5 rounded-[var(--radius-md)] bg-accent text-white font-extrabold text-xs shadow-md active:scale-95 transition-all cursor-pointer"
+            className="px-6 py-2.5 rounded-shape-md bg-accent text-white font-extrabold text-xs shadow-md active:scale-95 transition-all cursor-pointer"
           >
             {isRtl ? 'العودة للصفحة الرئيسية' : 'Return to Feed'}
           </button>
@@ -1735,7 +1735,13 @@ export const ReelsFeed: React.FC<ReelsFeedProps> = ({
   }
 
   return createPortal(
-    <div className="fixed inset-0 z-[1220] w-screen h-[100dvh] bg-[var(--surface-page)] text-[var(--text-primary)] overflow-hidden select-none font-sans m-0 p-0 rounded-none shadow-none border-0 flex flex-row">
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      transition={{ duration: 0.2, ease: 'easeOut' }}
+      className="fixed inset-0 z-[1220] w-screen h-[100dvh] bg-[var(--surface-page)] text-[var(--text-primary)] overflow-hidden select-none font-sans m-0 p-0 rounded-none shadow-none border-0 flex flex-row transform-gpu"
+    >
       {/* Main Video Feed Area (Right in RTL, Left in LTR) */}
       <div className="flex-1 relative h-full flex flex-col min-w-0 bg-[var(--surface-page)]">
       {/* Ambient Backdrop for Desktop */}
@@ -1949,17 +1955,17 @@ export const ReelsFeed: React.FC<ReelsFeedProps> = ({
       <div className="hidden md:flex fixed end-4 lg:end-8 top-1/2 -translate-y-1/2 z-40 flex-col items-center gap-2 select-none pointer-events-auto">
         <button
           onClick={() => scrollToIndex(activeIndex <= 0 ? activeReelsList.length - 1 : activeIndex - 1)}
-          className="w-10 h-10 rounded-[var(--radius-sm)] bg-[var(--surface-card)] hover:bg-[var(--surface-subtle)] text-[var(--text-primary)] border border-[var(--border-default)] flex items-center justify-center transition-theme cursor-pointer active:scale-95"
+          className="w-10 h-10 rounded-shape-sm bg-[var(--surface-card)] hover:bg-[var(--surface-subtle)] text-[var(--text-primary)] border border-[var(--border-default)] flex items-center justify-center transition-theme cursor-pointer active:scale-95"
           title={isRtl ? 'المقطع السابق (↑)' : 'Previous Reel (↑)'}
         >
           <ChevronUp size={20} />
         </button>
-        <div className="px-2.5 py-1 rounded-[var(--radius-xs)] bg-[var(--surface-card)] border border-[var(--border-default)] text-[10px] font-mono font-bold text-[var(--text-secondary)]">
+        <div className="px-2.5 py-1 rounded-shape-xs bg-[var(--surface-card)] border border-[var(--border-default)] text-[10px] font-mono font-bold text-[var(--text-secondary)]">
           {activeIndex + 1} / {activeReelsList.length || 1}
         </div>
         <button
           onClick={() => scrollToIndex(activeIndex >= activeReelsList.length - 1 ? 0 : activeIndex + 1)}
-          className="w-10 h-10 rounded-[var(--radius-sm)] bg-[var(--surface-card)] hover:bg-[var(--surface-subtle)] text-[var(--text-primary)] border border-[var(--border-default)] flex items-center justify-center transition-theme cursor-pointer active:scale-95"
+          className="w-10 h-10 rounded-shape-sm bg-[var(--surface-card)] hover:bg-[var(--surface-subtle)] text-[var(--text-primary)] border border-[var(--border-default)] flex items-center justify-center transition-theme cursor-pointer active:scale-95"
           title={isRtl ? 'المقطع التالي (↓)' : 'Next Reel (↓)'}
         >
           <ChevronDown size={20} />
@@ -1967,7 +1973,7 @@ export const ReelsFeed: React.FC<ReelsFeedProps> = ({
       </div>
 
       {/* Desktop Keyboard Shortcuts Help Pill */}
-      <div className="hidden xl:flex fixed start-6 bottom-4 z-40 items-center gap-2 px-3.5 py-1.5 rounded-[var(--radius-xs)] bg-[var(--surface-card)]/90 backdrop-blur-md border border-[var(--border-default)] text-[10px] font-bold text-[var(--text-secondary)] select-none pointer-events-none shadow-sm">
+      <div className="hidden xl:flex fixed start-6 bottom-4 z-40 items-center gap-2 px-3.5 py-1.5 rounded-shape-xs bg-[var(--surface-card)]/90 backdrop-blur-md border border-[var(--border-default)] text-[10px] font-bold text-[var(--text-secondary)] select-none pointer-events-none shadow-sm">
         <span>{isRtl ? 'التنقل:' : 'Navigate:'}</span>
         <kbd className="px-1.5 py-0.5 rounded bg-[var(--surface-subtle)] text-[var(--text-primary)] text-[9px] font-mono border border-[var(--border-default)]">↑</kbd>
         <kbd className="px-1.5 py-0.5 rounded bg-[var(--surface-subtle)] text-[var(--text-primary)] text-[9px] font-mono border border-[var(--border-default)]">↓</kbd>
@@ -2202,7 +2208,7 @@ export const ReelsFeed: React.FC<ReelsFeedProps> = ({
                         }}
                         className="absolute bottom-full mb-2 z-40 pointer-events-none flex flex-col items-center animate-in fade-in zoom-in-95 duration-fast"
                       >
-                        <div className="px-2.5 py-1.5 rounded-[var(--radius-md)] bg-[var(--surface-card)]/95 backdrop-blur-md border border-[var(--border-default)] shadow-2xl text-[var(--text-primary)] text-[11px] font-mono flex items-center gap-2 whitespace-nowrap">
+                        <div className="px-2.5 py-1.5 rounded-shape-md bg-[var(--surface-card)]/95 backdrop-blur-md border border-[var(--border-default)] shadow-2xl text-[var(--text-primary)] text-[11px] font-mono flex items-center gap-2 whitespace-nowrap">
                           <span className="font-bold text-accent">
                             {formatTime(reelsHoverMeta.time)}
                           </span>
@@ -2260,14 +2266,14 @@ export const ReelsFeed: React.FC<ReelsFeedProps> = ({
                         animate={{ scale: 1, opacity: 1 }}
                         exit={{ scale: 0.7, opacity: 0 }}
                         transition={{ type: 'spring', damping: 25, stiffness: 350 }}
-                        className="absolute z-30 pointer-events-none flex items-center gap-2 px-4 py-2.5 rounded-[var(--radius-md)] bg-[var(--surface-card)]/95 backdrop-blur-md border border-[var(--border-default)] text-[var(--text-primary)] shadow-2xl"
+                        className="absolute z-30 pointer-events-none flex items-center gap-2 px-4 py-2.5 rounded-shape-md bg-[var(--surface-card)]/95 backdrop-blur-md border border-[var(--border-default)] text-[var(--text-primary)] shadow-2xl"
                       >
                         {muteFeedback.isMuted ? (
-                          <div className="w-8 h-8 rounded-[8px] bg-red-500/20 text-red-400 flex items-center justify-center">
+                          <div className="w-8 h-8 rounded-shape-sm bg-red-500/20 text-red-400 flex items-center justify-center">
                             <VolumeX size={14} />
                           </div>
                         ) : (
-                          <div className="w-8 h-8 rounded-[8px] bg-[var(--fg-success)]/20 text-[var(--fg-success)] flex items-center justify-center">
+                          <div className="w-8 h-8 rounded-shape-sm bg-[var(--fg-success)]/20 text-[var(--fg-success)] flex items-center justify-center">
                             <Volume2 size={14} />
                           </div>
                         )}
@@ -2300,7 +2306,7 @@ export const ReelsFeed: React.FC<ReelsFeedProps> = ({
 
                   {/* MOBILE ONLY: In-card Action Column - Compact 32px Design Tokens */}
                   <div
-                    className="md:hidden absolute bottom-12 sm:bottom-14 z-30 flex flex-col items-center gap-1.5 sm:gap-2 end-2 sm:end-3 select-none"
+                    className="md:hidden absolute bottom-[calc(3.5rem+env(safe-area-inset-bottom,0px))] z-30 flex flex-col items-center gap-1.5 sm:gap-2 end-2 sm:end-3 select-none"
                     onClick={(e) => e.stopPropagation()}
                   >
                     {/* Author Avatar + Follow Button */}
@@ -2322,6 +2328,7 @@ export const ReelsFeed: React.FC<ReelsFeedProps> = ({
                           isFollowing ? 'bg-[var(--status-success)]' : 'bg-[var(--status-danger)] hover:opacity-90'
                         }`}
                         title={isFollowing ? (isRtl ? 'تتابع بالفعل' : 'Following') : (isRtl ? 'متابعة' : 'Follow')}
+                        aria-label={isFollowing ? (isRtl ? 'إلغاء المتابعة' : 'Unfollow') : (isRtl ? 'متابعة' : 'Follow')}
                       >
                         {isFollowing ? <Check size={8} className="stroke-[3]" /> : <Plus size={8} className="stroke-[3]" />}
                       </button>
@@ -2333,6 +2340,7 @@ export const ReelsFeed: React.FC<ReelsFeedProps> = ({
                         onClick={(e) => handleLikeClick(e, reel.id)}
                         className="w-8 h-8 min-w-[32px] min-h-[32px] rounded-shape-sm flex items-center justify-center bg-black/50 backdrop-blur-md border border-white/20 hover:bg-rose-500/15 hover:border-rose-500/40 text-white hover:text-rose-400 active:scale-95 transition-all duration-fast cursor-pointer shadow-xs relative before:absolute before:-inset-1.5 before:content-['']"
                         title={isRtl ? 'أعجبني' : 'Like'}
+                        aria-label={isRtl ? 'أعجبني' : 'Like'}
                       >
                         <Heart
                           size={15}
@@ -2354,6 +2362,7 @@ export const ReelsFeed: React.FC<ReelsFeedProps> = ({
                         onClick={(e) => openCommentsDrawer(e, reel.id)}
                         className="w-8 h-8 min-w-[32px] min-h-[32px] rounded-shape-sm flex items-center justify-center bg-black/50 backdrop-blur-md border border-white/20 hover:bg-[var(--bg-accent-muted)] hover:border-[var(--border-accent)]/30 text-white hover:text-[var(--fg-accent)] active:scale-95 transition-all duration-fast cursor-pointer shadow-xs relative before:absolute before:-inset-1.5 before:content-['']"
                         title={isRtl ? 'التعليقات' : 'Comments'}
+                        aria-label={isRtl ? 'التعليقات' : 'Comments'}
                       >
                         <MessageCircle size={15} className="stroke-[2.2]" />
                       </button>
@@ -2368,6 +2377,7 @@ export const ReelsFeed: React.FC<ReelsFeedProps> = ({
                         onClick={(e) => handleSaveClick(e, reel.id)}
                         className="w-8 h-8 min-w-[32px] min-h-[32px] rounded-shape-sm flex items-center justify-center bg-black/50 backdrop-blur-md border border-white/20 hover:bg-[var(--status-warning-subtle)] hover:border-[var(--status-warning)] text-white hover:text-[var(--fg-warning)] active:scale-95 transition-all duration-fast cursor-pointer shadow-xs relative before:absolute before:-inset-1.5 before:content-['']"
                         title={isSaved ? (isRtl ? 'إزالة من المحفوظات' : 'Saved') : (isRtl ? 'حفظ' : 'Save')}
+                        aria-label={isSaved ? (isRtl ? 'إزالة من المحفوظات' : 'Saved') : (isRtl ? 'حفظ' : 'Save')}
                       >
                         <Bookmark
                           size={15}
@@ -2389,6 +2399,7 @@ export const ReelsFeed: React.FC<ReelsFeedProps> = ({
                         onClick={(e) => openShareSheet(e, reel)}
                         className="w-8 h-8 min-w-[32px] min-h-[32px] rounded-shape-sm flex items-center justify-center bg-black/50 backdrop-blur-md border border-white/20 hover:bg-[var(--bg-accent-muted)] hover:border-[var(--border-accent)]/30 text-white hover:text-[var(--fg-accent)] active:scale-95 transition-all duration-fast cursor-pointer shadow-xs relative before:absolute before:-inset-1.5 before:content-['']"
                         title={isRtl ? 'مشاركة' : 'Share'}
+                        aria-label={isRtl ? 'مشاركة' : 'Share'}
                       >
                         <Share2 size={15} className="stroke-[2.2]" />
                       </button>
@@ -2406,6 +2417,7 @@ export const ReelsFeed: React.FC<ReelsFeedProps> = ({
                         }}
                         className="w-8 h-8 min-w-[32px] min-h-[32px] rounded-shape-sm flex items-center justify-center bg-black/50 backdrop-blur-md border border-white/20 hover:bg-[var(--bg-accent-muted)] hover:border-[var(--border-accent)]/30 text-white hover:text-[var(--fg-accent)] active:scale-95 transition-all duration-fast cursor-pointer shadow-xs relative before:absolute before:-inset-1.5 before:content-['']"
                         title={isRtl ? 'خيارات إضافية' : 'More options'}
+                        aria-label={isRtl ? 'خيارات إضافية' : 'More options'}
                       >
                         <MoreVertical size={15} className="stroke-[2.2]" />
                       </button>
@@ -2463,7 +2475,7 @@ export const ReelsFeed: React.FC<ReelsFeedProps> = ({
 
                   {/* Captions Overlay at Bottom of Card */}
                   <div
-                    className={`absolute bottom-3.5 sm:bottom-4 md:hidden z-20 start-3 sm:start-4 end-16 sm:end-20 max-w-[calc(100%-68px)] sm:max-w-[calc(100%-80px)] space-y-1 pointer-events-auto select-none ${
+                    className={`absolute bottom-[calc(1rem+env(safe-area-inset-bottom,0px))] md:hidden z-20 start-3 sm:start-4 end-16 sm:end-20 max-w-[calc(100%-68px)] sm:max-w-[calc(100%-80px)] space-y-1 pointer-events-auto select-none ${
                       isRtl ? 'text-right' : 'text-left'
                     }`}
                     onClick={(e) => e.stopPropagation()}
@@ -2752,7 +2764,7 @@ export const ReelsFeed: React.FC<ReelsFeedProps> = ({
             animate={{ y: 0 }}
             exit={{ y: '100%' }}
             transition={{ duration: 0.2, ease: [0.16, 1, 0.3, 1] }}
-            className="md:hidden absolute inset-x-0 bottom-0 z-50 h-[65%] bg-[var(--surface-card)] backdrop-blur-xl rounded-t-3xl border-t border-[var(--border-default)] flex flex-col shadow-2xl text-[var(--text-primary)] transform-gpu no-flicker"
+            className="md:hidden absolute inset-x-0 bottom-0 z-50 h-[65%] bg-[var(--surface-card)] backdrop-blur-xl rounded-t-shape-lg border-t border-[var(--border-default)] flex flex-col shadow-2xl text-[var(--text-primary)] transform-gpu no-flicker"
           >
             {/* Mobile Header */}
             <div className="flex items-center justify-between p-4 border-b border-[var(--border-default)] shrink-0">
@@ -2767,7 +2779,7 @@ export const ReelsFeed: React.FC<ReelsFeedProps> = ({
                   setCommentsOpen(false);
                   setReplyToComment(null);
                 }}
-                className="p-1.5 bg-[var(--surface-subtle)] rounded-[8px] text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors cursor-pointer"
+                className="p-1.5 bg-[var(--surface-subtle)] rounded-shape-sm text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors cursor-pointer"
               >
                 <X size={16} />
               </button>
@@ -2785,7 +2797,7 @@ export const ReelsFeed: React.FC<ReelsFeedProps> = ({
                 if (list.length === 0) {
                   return (
                     <div className="h-full flex flex-col items-center justify-center text-center p-6 text-[var(--text-muted)] space-y-3">
-                      <div className="w-12 h-12 rounded-[var(--radius-xs)] border-2 border-dashed border-[var(--border-default)] flex items-center justify-center">
+                      <div className="w-12 h-12 rounded-shape-xs border-2 border-dashed border-[var(--border-default)] flex items-center justify-center">
                         <MessageSquare size={20} className="opacity-50" />
                       </div>
                       <p className="text-xs font-bold">{isRtl ? 'لا توجد تعليقات حتى الآن.' : 'No comments yet.'}</p>
@@ -2798,7 +2810,7 @@ export const ReelsFeed: React.FC<ReelsFeedProps> = ({
                       <BulletinAvatar src={comment.author_avatar} alt={comment.author_name} size="sm" fallbackText={comment.author_name} />
                     </div>
                     <div className="flex-1 min-w-0">
-                      <div className="bg-[var(--surface-subtle)] rounded-[var(--radius-md)] p-3 border border-[var(--border-default)]">
+                      <div className="bg-[var(--surface-subtle)] rounded-shape-md p-3 border border-[var(--border-default)]">
                         <span className="font-extrabold text-[13px] text-[var(--text-primary)] block truncate">{comment.author_name}</span>
                         <p className="text-[13px] leading-relaxed break-words text-[var(--text-secondary)] mt-0.5">{comment.content || (comment as any).comment_text || ''}</p>
                       </div>
@@ -3131,7 +3143,7 @@ export const ReelsFeed: React.FC<ReelsFeedProps> = ({
 
               {/* 4. AI Generated Label */}
               {activeAd?.is_ai_generated && (
-                <div className="mx-3.5 sm:mx-4 mb-2 px-2 py-0.5 rounded-[var(--radius-xs)] bg-[var(--bg-accent-muted)] border border-[var(--border-accent)]/30 text-[var(--fg-accent)] text-[10px] font-black uppercase tracking-wider inline-flex items-center shrink-0 w-fit">
+                <div className="mx-3.5 sm:mx-4 mb-2 px-2 py-0.5 rounded-shape-xs bg-[var(--bg-accent-muted)] border border-[var(--border-accent)]/30 text-[var(--fg-accent)] text-[10px] font-black uppercase tracking-wider inline-flex items-center shrink-0 w-fit">
                   AI
                 </div>
               )}
@@ -3177,7 +3189,7 @@ export const ReelsFeed: React.FC<ReelsFeedProps> = ({
                       onClick={() => {
                         onEditReel(activeAd);
                       }}
-                      className="flex-1 py-1.5 px-3 rounded-[var(--radius-sm)] bg-[var(--surface-card)] hover:bg-[var(--surface-subtle)] text-[var(--text-primary)] font-bold text-xs flex items-center justify-center gap-1 transition-colors cursor-pointer border border-[var(--border-default)]"
+                      className="flex-1 py-1.5 px-3 rounded-shape-sm bg-[var(--surface-card)] hover:bg-[var(--surface-subtle)] text-[var(--text-primary)] font-bold text-xs flex items-center justify-center gap-1 transition-colors cursor-pointer border border-[var(--border-default)]"
                     >
                       <Edit3 size={13} />
                       <span>{isRtl ? 'تعديل' : 'Edit'}</span>
@@ -3190,7 +3202,7 @@ export const ReelsFeed: React.FC<ReelsFeedProps> = ({
                       onClick={() => {
                         onBoostAd(activeAd);
                       }}
-                      className="flex-1 py-1.5 px-3 rounded-[var(--radius-sm)] bg-[var(--comp-button-primary-bg)] text-[var(--comp-button-primary-fg)] hover:opacity-90 font-bold text-xs flex items-center justify-center gap-1 shadow-sm transition-colors cursor-pointer"
+                      className="flex-1 py-1.5 px-3 rounded-shape-sm bg-[var(--comp-button-primary-bg)] text-[var(--comp-button-primary-fg)] hover:opacity-90 font-bold text-xs flex items-center justify-center gap-1 shadow-sm transition-colors cursor-pointer"
                     >
                       <Rocket size={13} />
                       <span>{isRtl ? 'ترويج المنشور' : 'Boost Post'}</span>
@@ -3471,7 +3483,7 @@ export const ReelsFeed: React.FC<ReelsFeedProps> = ({
                       type="button"
                       onClick={() => handleSendDesktopComment(activeReel.id)}
                       disabled={!commentInput.trim() || isSubmittingComment}
-                      className="w-7 h-7 rounded-[8px] bg-accent hover:bg-accent/90 disabled:opacity-30 text-white flex items-center justify-center transition-all cursor-pointer disabled:cursor-not-allowed shrink-0"
+                      className="w-7 h-7 rounded-shape-sm bg-accent hover:bg-accent/90 disabled:opacity-30 text-white flex items-center justify-center transition-all cursor-pointer disabled:cursor-not-allowed shrink-0"
                       title={isRtl ? 'إرسال (Enter)' : 'Send (Enter)'}
                     >
                       {isSubmittingComment ? (
@@ -3662,7 +3674,7 @@ export const ReelsFeed: React.FC<ReelsFeedProps> = ({
                 </div>
                 <button
                   onClick={() => setInsightsReel(null)}
-                  className="p-1.5 rounded-[8px] hover:bg-[var(--surface-subtle)] text-[var(--text-secondary)] transition-colors cursor-pointer"
+                  className="p-1.5 rounded-shape-sm hover:bg-[var(--surface-subtle)] text-[var(--text-secondary)] transition-colors cursor-pointer"
                 >
                   <X size={14} />
                 </button>
@@ -3670,11 +3682,11 @@ export const ReelsFeed: React.FC<ReelsFeedProps> = ({
 
               {/* Insights Body Grid */}
               <div className="p-5 space-y-4">
-                <div className="flex items-center gap-3 p-3 rounded-[var(--radius-md)] bg-[var(--surface-subtle)] border border-[var(--border-default)]">
+                <div className="flex items-center gap-3 p-3 rounded-shape-md bg-[var(--surface-subtle)] border border-[var(--border-default)]">
                   <img
                     src={insightsReel.image_url || insightsReel.author_avatar || '/default-avatar.png'}
                     alt={insightsReel.author_name}
-                    className="w-14 h-14 object-cover rounded-[8px] shrink-0 border border-[var(--border-default)]"
+                    className="w-14 h-14 object-cover rounded-shape-sm shrink-0 border border-[var(--border-default)]"
                   />
                   <div className="min-w-0 flex-1">
                     <h4 className="font-bold text-sm text-[var(--text-primary)] truncate">
@@ -3688,7 +3700,7 @@ export const ReelsFeed: React.FC<ReelsFeedProps> = ({
 
                 {/* Core Metrics Grid */}
                 <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-                  <div className="p-3.5 rounded-[var(--radius-md)] bg-[var(--surface-subtle)] border border-[var(--border-default)] flex flex-col items-center text-center">
+                  <div className="p-3.5 rounded-shape-md bg-[var(--surface-subtle)] border border-[var(--border-default)] flex flex-col items-center text-center">
                     <Eye size={14} className="text-[var(--text-secondary)] mb-1" />
                     <span className="text-lg font-black text-[var(--text-primary)] tabular-nums">
                       {formatCompactCount(impressionsState[insightsReel.id] ?? insightsReel.impressions_count ?? 0)}
@@ -3698,7 +3710,7 @@ export const ReelsFeed: React.FC<ReelsFeedProps> = ({
                     </span>
                   </div>
 
-                  <div className="p-3.5 rounded-[var(--radius-md)] bg-[var(--surface-subtle)] border border-[var(--border-default)] flex flex-col items-center text-center">
+                  <div className="p-3.5 rounded-shape-md bg-[var(--surface-subtle)] border border-[var(--border-default)] flex flex-col items-center text-center">
                     <Heart size={14} className="text-red-500 mb-1" />
                     <span className="text-lg font-black text-[var(--text-primary)] tabular-nums">
                       {formatCompactCount(likesState[insightsReel.id]?.count ?? insightsReel.likes_count ?? 0)}
@@ -3708,7 +3720,7 @@ export const ReelsFeed: React.FC<ReelsFeedProps> = ({
                     </span>
                   </div>
 
-                  <div className="p-3.5 rounded-[var(--radius-md)] bg-[var(--surface-subtle)] border border-[var(--border-default)] flex flex-col items-center text-center">
+                  <div className="p-3.5 rounded-shape-md bg-[var(--surface-subtle)] border border-[var(--border-default)] flex flex-col items-center text-center">
                     <MessageCircle size={14} className="text-[var(--fg-success)] mb-1" />
                     <span className="text-lg font-black text-[var(--text-primary)] tabular-nums">
                       {formatCompactCount(insightsReel.comments_count || (commentsMap[insightsReel.id]?.length || 0))}
@@ -3718,7 +3730,7 @@ export const ReelsFeed: React.FC<ReelsFeedProps> = ({
                     </span>
                   </div>
 
-                  <div className="p-3.5 rounded-[var(--radius-md)] bg-[var(--surface-subtle)] border border-[var(--border-default)] flex flex-col items-center text-center">
+                  <div className="p-3.5 rounded-shape-md bg-[var(--surface-subtle)] border border-[var(--border-default)] flex flex-col items-center text-center">
                     <Share2 size={14} className="text-accent mb-1" />
                     <span className="text-lg font-black text-[var(--text-primary)] tabular-nums">
                       {formatCompactCount(sharesState[insightsReel.id] ?? insightsReel.shares_count ?? 0)}
@@ -3728,7 +3740,7 @@ export const ReelsFeed: React.FC<ReelsFeedProps> = ({
                     </span>
                   </div>
 
-                  <div className="p-3.5 rounded-[var(--radius-md)] bg-[var(--surface-subtle)] border border-[var(--border-default)] flex flex-col items-center text-center">
+                  <div className="p-3.5 rounded-shape-md bg-[var(--surface-subtle)] border border-[var(--border-default)] flex flex-col items-center text-center">
                     <Bookmark size={14} className="text-amber-500 mb-1" />
                     <span className="text-lg font-black text-[var(--text-primary)] tabular-nums">
                       {formatCompactCount(Number((insightsReel as any).saves_count || (savesState[insightsReel.id] ? 1 : 0)))}
@@ -3738,7 +3750,7 @@ export const ReelsFeed: React.FC<ReelsFeedProps> = ({
                     </span>
                   </div>
 
-                  <div className="p-3.5 rounded-[var(--radius-md)] bg-[var(--surface-subtle)] border border-[var(--border-default)] flex flex-col items-center text-center">
+                  <div className="p-3.5 rounded-shape-md bg-[var(--surface-subtle)] border border-[var(--border-default)] flex flex-col items-center text-center">
                     <TrendingUp size={14} className="text-accent mb-1" />
                     <span className="text-lg font-black text-[var(--text-primary)] tabular-nums">
                       {(() => {
@@ -3763,14 +3775,14 @@ export const ReelsFeed: React.FC<ReelsFeedProps> = ({
                       if (onBoostAd) onBoostAd(insightsReel as any);
                       setInsightsReel(null);
                     }}
-                    className="flex-1 py-2.5 rounded-[var(--radius-md)] bg-accent hover:bg-accent/90 text-white font-bold text-xs flex items-center justify-center gap-2 shadow-lg cursor-pointer transition-all active:scale-95"
+                    className="flex-1 py-2.5 rounded-shape-md bg-accent hover:bg-accent/90 text-white font-bold text-xs flex items-center justify-center gap-2 shadow-lg cursor-pointer transition-all active:scale-95"
                   >
                     <Megaphone size={16} />
                     {isRtl ? 'ترويج هذا المقطع وزيادة الوصول' : 'Promote Reel for Higher Reach'}
                   </button>
                   <button
                     onClick={() => setInsightsReel(null)}
-                    className="px-4 py-2.5 rounded-[var(--radius-md)] bg-[var(--surface-subtle)] border border-[var(--border-default)] text-[var(--text-primary)] font-bold text-xs hover:bg-[var(--surface-card)] transition-colors cursor-pointer"
+                    className="px-4 py-2.5 rounded-shape-md bg-[var(--surface-subtle)] border border-[var(--border-default)] text-[var(--text-primary)] font-bold text-xs hover:bg-[var(--surface-card)] transition-colors cursor-pointer"
                   >
                     {isRtl ? 'إغلاق' : 'Close'}
                   </button>
@@ -3819,7 +3831,7 @@ export const ReelsFeed: React.FC<ReelsFeedProps> = ({
                 )}
                 <button
                   onClick={() => setIsSearchOpen(false)}
-                  className="px-3 py-1 text-xs font-bold rounded-[8px] bg-[var(--surface-subtle)] hover:bg-[var(--border-default)] text-[var(--text-primary)] transition-colors cursor-pointer"
+                  className="px-3 py-1 text-xs font-bold rounded-shape-sm bg-[var(--surface-subtle)] hover:bg-[var(--border-default)] text-[var(--text-primary)] transition-colors cursor-pointer"
                 >
                   {isRtl ? 'إلغاء' : 'Cancel'}
                 </button>
@@ -3858,7 +3870,7 @@ export const ReelsFeed: React.FC<ReelsFeedProps> = ({
                           }
                           setIsSearchOpen(false);
                         }}
-                        className="flex items-center gap-3 p-2.5 rounded-[var(--radius-md)] hover:bg-[var(--surface-subtle)] border border-transparent hover:border-[var(--border-default)] cursor-pointer transition-all"
+                        className="flex items-center gap-3 p-2.5 rounded-shape-md hover:bg-[var(--surface-subtle)] border border-transparent hover:border-[var(--border-default)] cursor-pointer transition-all"
                       >
                         <img
                           src={r.image_url || r.author_avatar || '/default-avatar.png'}
@@ -3895,7 +3907,7 @@ export const ReelsFeed: React.FC<ReelsFeedProps> = ({
           </motion.div>
         )}
       </AnimatePresence>
-    </div>,
+    </motion.div>,
     document.body
   );
 };

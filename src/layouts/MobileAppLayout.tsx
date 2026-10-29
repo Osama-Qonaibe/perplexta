@@ -16,11 +16,12 @@ export const MobileAppLayout: React.FC = () => {
   const location = useLocation();
 
   const isRestrictedRoute = isDesktopOnlyRoute(location.pathname);
-  const isChatRoute = location.pathname.startsWith('/chat') || location.pathname === '/';
+  const isChatRoute = location.pathname.startsWith('/chat');
   const isViralbookRoute = location.pathname.startsWith('/viralbook') || location.pathname.startsWith('/bulletin') || location.pathname.startsWith('/reels') || location.pathname.startsWith('/p/') || location.pathname.startsWith('/post/');
   const isStudioRoute = location.pathname.startsWith('/image-studio') || location.pathname.startsWith('/app') || location.pathname.startsWith('/audio-studio') || location.pathname.startsWith('/creator/');
   const isLandingRoute = location.pathname === '/' || location.pathname === '/overview' || location.pathname === '/welcome' || location.pathname === '/docs/overview';
-  const isIsolatedMobileView = isViralbookRoute || isStudioRoute || isLandingRoute;
+  const isSettingsRoute = location.pathname.startsWith('/settings');
+  const isIsolatedMobileView = isViralbookRoute || isStudioRoute || isLandingRoute || isSettingsRoute;
 
   // Capture native touch swipe gestures across PWA shell components
   const { touchHandlers } = usePWASwipeNavigation({
@@ -45,7 +46,7 @@ export const MobileAppLayout: React.FC = () => {
       <main className={`flex-1 flex flex-col overflow-hidden relative ${
         (isIsolatedMobileView || isFullscreen)
           ? 'pt-0 pb-0'
-          : 'pt-[calc(48px+env(safe-area-inset-top,0px))] pb-[calc(56px+env(safe-area-inset-bottom,0px))]'
+          : 'pt-[calc(50px+env(safe-area-inset-top,0px))] pb-0'
       } bg-[var(--surface-page)] transition-theme`}>
         <div
           className={`flex-1 h-full relative min-w-0 main-scroll-container ${
@@ -65,10 +66,8 @@ export const MobileAppLayout: React.FC = () => {
         </div>
       </main>
 
-      {/* Persistent Bottom Mobile Navigation Bar */}
-      {!isIsolatedMobileView && !isFullscreen && (
-        <MobileNavigation />
-      )}
+      {/* Unified Slide-Over Mobile Sidebar Drawer & Account Sheet */}
+      <MobileNavigation />
 
       {/* Global Auth Modal & Mobile Chat History Drawer */}
       <AuthModal />

@@ -73,14 +73,14 @@ export const RecommendationsPage: React.FC = () => {
 
   return (
     <div className="min-h-screen-safe bg-[var(--surface-page)] text-[var(--text-primary)] pb-24 transition-theme">
-      {/* Page Sticky Header */}
-      <div className="sticky top-0 z-30 bg-[var(--surface-page)]/95 backdrop-blur-md border-b border-[var(--border-default)] px-3 sm:px-6 py-2.5 transition-theme shadow-2xs">
+      {/* Page Header (Sticky on desktop, natural flow on mobile) */}
+      <div className="md:sticky md:top-0 z-20 bg-[var(--surface-page)]/95 backdrop-blur-md border-b border-[var(--border-default)] px-3 sm:px-6 py-2.5 transition-theme shadow-2xs">
         <div className="max-w-7xl mx-auto flex items-center justify-between gap-3">
           <div className="flex items-center gap-2.5 sm:gap-3 min-w-0">
             <button
               type="button"
               onClick={() => navigate(-1)}
-              className="h-8 px-2.5 flex items-center gap-1 rounded-shape-sm bg-transparent border border-[var(--border-default)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:border-[var(--border-accent)]/60 hover:bg-[var(--surface-subtle)] transition-all duration-150 active:scale-95 cursor-pointer"
+              className="h-8 px-2.5 flex items-center gap-1 rounded-shape-sm bg-transparent border border-[var(--border-default)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:border-[var(--border-accent)]/60 hover:bg-[var(--surface-subtle)] transition-all duration-150 active:scale-95 cursor-pointer touch-target-44-expanded"
               title={dir === 'rtl' ? 'رجوع' : 'Back'}
             >
               <div className="h-[23px] leading-[23px] flex items-center gap-1">

@@ -2996,6 +2996,20 @@ export async function runVersionedMigrations(
       `).catch((err: any) => console.warn('[Migration v136] Notice on username unique index:', err.message));
     });
 
+    await runVersioned('v137_ad_stats_bulletin_ads_foreign_key', 'Fix ad_stats foreign key constraint to reference bulletin_ads instead of advertisements', async (tx) => {
+      await tx.query(`
+        DO $$
+        BEGIN
+          IF EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'fk_ad_stats_advertisement') THEN
+            ALTER TABLE ad_stats DROP CONSTRAINT fk_ad_stats_advertisement;
+          END IF;
+          IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'fk_ad_stats_bulletin_ad') THEN
+            ALTER TABLE ad_stats ADD CONSTRAINT fk_ad_stats_bulletin_ad FOREIGN KEY (ad_id) REFERENCES bulletin_ads(id) ON DELETE CASCADE;
+          END IF;
+        END $$;
+      `).catch((err: any) => console.warn('[Migration v137] Notice on ad_stats foreign key migration:', err.message));
+    });
+
   console.log("[Migrations] All versioned migrations completed successfully.");
 }
 

@@ -3,6 +3,7 @@ import { Outlet, useLocation } from 'react-router-dom';
 import { Sidebar } from '../components/Sidebar';
 import { Header } from '../components/Header';
 import { AuthModal } from '../components/AuthModal';
+import { MobileNavigation } from '../components/mobile/MobileNavigation';
 import { MobileChatHistoryDrawer } from '../components/mobile/MobileChatHistoryDrawer';
 import { SponsoredSidebar } from '../components/SponsoredSidebar';
 import { useAppContext } from '../context/AppContext';
@@ -20,13 +21,24 @@ export const DesktopLayout: React.FC = () => {
   const isCreatorRoute = location.pathname.startsWith('/creator/');
   const isLandingRoute = location.pathname === '/' || location.pathname === '/overview' || location.pathname === '/welcome' || location.pathname === '/docs/overview';
   const isFullSovereignView = isViralbookRoute || isStudioRoute || isCreatorRoute || isLandingRoute || isFullscreen;
+  const [isLgScreen, setIsLgScreen] = React.useState(() => typeof window !== 'undefined' ? window.innerWidth >= 1024 : true);
+
+  React.useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const media = window.matchMedia('(min-width: 1024px)');
+    const update = (e: MediaQueryListEvent | MediaQueryList) => setIsLgScreen(e.matches);
+    update(media);
+    media.addEventListener('change', update);
+    return () => media.removeEventListener('change', update);
+  }, []);
+
   // Stable base sidebar offset to eliminate any horizontal layout shifts
-  const baseSidebarOffset = (isMobile || isFullSovereignView) ? 0 : 50;
-  const isChatRoute = location.pathname.startsWith('/chat') || location.pathname === '/';
+  const baseSidebarOffset = (isMobile || isFullSovereignView || !isLgScreen) ? 0 : 50;
+  const isChatRoute = location.pathname.startsWith('/chat');
 
   // Dynamic smooth collapse when clicking outside sidebar on desktop
   React.useEffect(() => {
-    if (!isSidebarOpen || isMobile) return;
+    if (!isSidebarOpen || isMobile || (typeof window !== 'undefined' && window.innerWidth < 1024)) return;
 
     const handleOutsideClick = (e: MouseEvent | TouchEvent) => {
       // Ignore clicks/touches in top/bottom buffer zones (outside active viewport area)
@@ -99,6 +111,7 @@ export const DesktopLayout: React.FC = () => {
         </main>
       </div>
 
+      <MobileNavigation />
       <AuthModal />
       <MobileChatHistoryDrawer />
     </div>

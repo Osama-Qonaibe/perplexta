@@ -120,7 +120,7 @@ export const ActionItem = forwardRef<HTMLButtonElement, ActionItemProps>(({
       {/* Trailing Extras pushed to far opposite side via mr-auto in RTL / ml-auto in LTR */}
       <div className={`shrink-0 flex items-center gap-1 ${isRtl ? 'mr-auto' : 'ml-auto'}`}>
         {isLocked && (
-          <span className="text-[10px] flex items-center gap-1 text-[var(--fg-warning)] bg-[var(--surface-subtle)] px-1.5 py-0.5 rounded-[var(--radius-xs)] font-mono border border-[var(--border-subtle)]">
+          <span className="text-[10px] flex items-center gap-1 text-[var(--fg-warning)] bg-[var(--surface-subtle)] px-1.5 py-0.5 rounded-shape-xs font-mono border border-[var(--border-subtle)]">
             <Lock className="w-2.5 h-2.5" />
             <span>PRO</span>
           </span>
@@ -131,7 +131,7 @@ export const ActionItem = forwardRef<HTMLButtonElement, ActionItemProps>(({
         )}
 
         {shortcut && !isLocked && (
-          <kbd className="text-[10px] font-mono px-1.5 py-0.5 rounded-[var(--radius-xs)] bg-[var(--surface-subtle)] text-[var(--text-muted)] border border-[var(--border-default)]">
+          <kbd className="text-[10px] font-mono px-1.5 py-0.5 rounded-shape-xs bg-[var(--surface-subtle)] text-[var(--text-muted)] border border-[var(--border-default)]">
             {shortcut}
           </kbd>
         )}

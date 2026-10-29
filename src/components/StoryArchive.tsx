@@ -97,7 +97,7 @@ export const StoryArchive: React.FC<StoryArchiveProps> = ({ dir, token, showToas
 
   if (archivedStories.length === 0) {
     return (
-      <div className="flex flex-col items-center justify-center py-10 px-4 bg-[var(--surface-subtle)] rounded-[var(--radius-sm)] border border-[var(--border-default)] text-center">
+      <div className="flex flex-col items-center justify-center py-10 px-4 bg-[var(--surface-subtle)] rounded-shape-sm border border-[var(--border-default)] text-center">
         <div className="w-12 h-12 rounded-full bg-[var(--surface-card)] flex items-center justify-center mb-3 text-[var(--text-muted)] border border-[var(--border-default)]">
           <Archive size={20} />
         </div>
@@ -116,7 +116,7 @@ export const StoryArchive: React.FC<StoryArchiveProps> = ({ dir, token, showToas
   return (
     <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
       {archivedStories.map((story, sIdx) => (
-        <div key={`archived-story-${story.id || sIdx}-${sIdx}`} className="relative aspect-[9/16] rounded-[var(--radius-sm)] overflow-hidden bg-black group border border-[var(--border-default)] shadow-xs">
+        <div key={`archived-story-${story.id || sIdx}-${sIdx}`} className="relative aspect-[9/16] rounded-shape-sm overflow-hidden bg-black group border border-[var(--border-default)] shadow-xs">
           {story.video_url ? (
             <video 
               src={getMediaUrl(story.video_url)} 
@@ -143,14 +143,14 @@ export const StoryArchive: React.FC<StoryArchiveProps> = ({ dir, token, showToas
             <div className="flex gap-1 w-full">
               <button 
                 onClick={() => handleReshare(story.id)}
-                className="flex-1 py-1.5 bg-[var(--accent)] hover:opacity-90 text-[var(--fg-on-emphasis)] rounded-[var(--radius-xs)] text-[10px] font-bold flex justify-center items-center gap-1 transition-all cursor-pointer"
+                className="flex-1 py-1.5 bg-[var(--accent)] hover:opacity-90 text-[var(--fg-on-emphasis)] rounded-shape-xs text-[10px] font-bold flex justify-center items-center gap-1 transition-all cursor-pointer"
                 title={dir === 'rtl' ? 'إعادة نشر' : 'Reshare'}
               >
                 <RotateCcw size={12} />
               </button>
               <button 
                 onClick={() => handleDelete(story.id)}
-                className="flex-1 py-1.5 bg-rose-600 hover:bg-rose-500 text-white rounded-[var(--radius-xs)] text-[10px] font-bold flex justify-center items-center gap-1 transition-all cursor-pointer"
+                className="flex-1 py-1.5 bg-rose-600 hover:bg-rose-500 text-white rounded-shape-xs text-[10px] font-bold flex justify-center items-center gap-1 transition-all cursor-pointer"
                 title={dir === 'rtl' ? 'حذف نهائي' : 'Delete'}
               >
                 <Trash2 size={12} />

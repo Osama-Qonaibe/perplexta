@@ -257,7 +257,7 @@ export const AdMessengerHub: React.FC<AdMessengerHubProps> = ({ inquiries, onRef
   });
 
   return (
-    <div className="bg-[var(--surface-card)] border border-[var(--border-default)] rounded-[var(--radius-lg)] shadow-xl overflow-hidden grid grid-cols-1 lg:grid-cols-12 h-[640px]">
+    <div className="bg-[var(--surface-card)] border border-[var(--border-default)] rounded-shape-lg shadow-xl overflow-hidden grid grid-cols-1 lg:grid-cols-12 h-[640px]">
       {/* Left Sidebar: Conversations List (Messenger Inbox style) */}
       <div
         className={`lg:col-span-4 border-e border-[var(--border-default)] flex flex-col bg-[var(--surface-subtle)] ${
@@ -271,7 +271,7 @@ export const AdMessengerHub: React.FC<AdMessengerHubProps> = ({ inquiries, onRef
               <MessageSquare size={18} className="text-[var(--fg-accent)]" />
               <span>{isRtl ? 'رسائل المعلنين' : 'Advertiser Messenger'}</span>
             </h3>
-            <span className="px-2.5 py-0.5 rounded-[var(--radius-xs)] bg-[var(--bg-accent-muted)] text-[var(--fg-accent)] text-xs font-black border border-[var(--border-accent)]/20">
+            <span className="px-2.5 py-0.5 rounded-shape-xs bg-[var(--bg-accent-muted)] text-[var(--fg-accent)] text-xs font-black border border-[var(--border-accent)]/20">
               {inquiries.length}
             </span>
           </div>
@@ -282,7 +282,7 @@ export const AdMessengerHub: React.FC<AdMessengerHubProps> = ({ inquiries, onRef
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               placeholder={isRtl ? 'بحث في المحادثات...' : 'Search messenger inbox...'}
-              className={`w-full ${isRtl ? 'pr-9 pl-3' : 'pl-9 pr-3'} py-2 bg-[var(--surface-card)] border border-[var(--border-default)] rounded-[var(--radius-sm)] text-xs focus:border-[var(--focus-outline)] outline-none transition-theme text-[var(--text-primary)]`}
+              className={`w-full ${isRtl ? 'pr-9 pl-3' : 'pl-9 pr-3'} py-2 bg-[var(--surface-card)] border border-[var(--border-default)] rounded-shape-sm text-xs focus:border-[var(--focus-outline)] outline-none transition-theme text-[var(--text-primary)]`}
             />
             <Search size={14} className={`absolute ${isRtl ? 'right-3' : 'left-3'} top-1/2 -translate-y-1/2 text-[var(--text-muted)]`} />
           </div>
@@ -323,7 +323,7 @@ export const AdMessengerHub: React.FC<AdMessengerHubProps> = ({ inquiries, onRef
                     </div>
                     <p className="text-xs text-[var(--text-secondary)] truncate mb-1.5 font-medium">{inq.message}</p>
                     {inq.ad_title && (
-                      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-[var(--radius-xs)] bg-[var(--surface-subtle)] text-[10px] font-bold text-[var(--text-muted)] truncate max-w-full">
+                      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-shape-xs bg-[var(--surface-subtle)] text-[10px] font-bold text-[var(--text-muted)] truncate max-w-full">
                         📌 {inq.ad_title}
                       </span>
                     )}
@@ -349,7 +349,7 @@ export const AdMessengerHub: React.FC<AdMessengerHubProps> = ({ inquiries, onRef
                 {/* Mobile Back Button */}
                 <button
                   onClick={() => setSelectedThread(null)}
-                  className="lg:hidden p-2 rounded-[var(--radius-sm)] bg-[var(--surface-subtle)] text-[var(--text-primary)]"
+                  className="lg:hidden p-2 rounded-shape-sm bg-[var(--surface-subtle)] text-[var(--text-primary)]"
                 >
                   {isRtl ? <ArrowRight size={18} /> : <ArrowLeft size={18} />}
                 </button>
@@ -362,7 +362,7 @@ export const AdMessengerHub: React.FC<AdMessengerHubProps> = ({ inquiries, onRef
                 <div>
                   <div className="flex items-center gap-2">
                     <h4 className="font-extrabold text-sm text-[var(--text-primary)]">{selectedThread.sender_name}</h4>
-                    <span className="inline-flex items-center gap-1 text-[10px] font-extrabold text-[var(--fg-accent)] bg-[var(--bg-accent-muted)] px-2 py-0.5 rounded-[var(--radius-xs)] border border-[var(--border-accent)]/20">
+                    <span className="inline-flex items-center gap-1 text-[10px] font-extrabold text-[var(--fg-accent)] bg-[var(--bg-accent-muted)] px-2 py-0.5 rounded-shape-xs border border-[var(--border-accent)]/20">
                       <Lock size={10} />
                       <span>E2EE</span>
                     </span>
@@ -379,7 +379,7 @@ export const AdMessengerHub: React.FC<AdMessengerHubProps> = ({ inquiries, onRef
                 <button
                   type="button"
                   onClick={handleReportThread}
-                  className="px-2 py-1 rounded-[var(--radius-xs)] border border-rose-500/30 bg-rose-500/10 text-rose-500 hover:bg-rose-500/20 transition-theme flex items-center gap-1 text-xs font-bold cursor-pointer"
+                  className="px-2 py-1 rounded-shape-xs border border-rose-500/30 bg-rose-500/10 text-rose-500 hover:bg-rose-500/20 transition-theme flex items-center gap-1 text-xs font-bold cursor-pointer"
                   title={isRtl ? 'إبلاغ عن محتوى أو مستخدم غير لائق' : 'Report inappropriate user or content'}
                 >
                   <Flag size={13} />
@@ -387,9 +387,9 @@ export const AdMessengerHub: React.FC<AdMessengerHubProps> = ({ inquiries, onRef
                 </button>
 
                 {selectedThread.ad_title && (
-                  <div className="hidden sm:flex items-center gap-2 bg-[var(--surface-card)] px-3 py-1.5 rounded-[var(--radius-sm)] border border-[var(--border-default)] max-w-xs truncate">
+                  <div className="hidden sm:flex items-center gap-2 bg-[var(--surface-card)] px-3 py-1.5 rounded-shape-sm border border-[var(--border-default)] max-w-xs truncate">
                     {selectedThread.ad_image && (
-                      <img src={selectedThread.ad_image} alt="" className="w-7 h-7 rounded-[var(--radius-xs)] object-cover shrink-0" />
+                      <img src={selectedThread.ad_image} alt="" className="w-7 h-7 rounded-shape-xs object-cover shrink-0" />
                     )}
                     <div className="min-w-0 text-start">
                       <span className="text-[10px] text-[var(--text-muted)] block">{isRtl ? 'إعلان مرتبط:' : 'Regarding ad:'}</span>
@@ -420,14 +420,14 @@ export const AdMessengerHub: React.FC<AdMessengerHubProps> = ({ inquiries, onRef
                   return (
                     <div key={`hub-msg-${msg.id || mIdx}-${mIdx}`} className={`flex flex-col ${isMe ? 'items-end' : 'items-start'} space-y-1`}>
                       <div
-                        className={`max-w-[80%] sm:max-w-[70%] px-4 py-3 rounded-[var(--radius-md)] text-xs leading-relaxed shadow-xs relative ${
+                        className={`max-w-[80%] sm:max-w-[70%] px-4 py-3 rounded-shape-md text-xs leading-relaxed shadow-xs relative ${
                           isMe
                             ? 'bg-[var(--comp-button-primary-bg)] text-[var(--comp-button-primary-fg)] font-medium'
                             : 'bg-[var(--surface-card)] text-[var(--text-primary)] border border-[var(--border-default)]'
                         }`}
                       >
                         {msg.media_url && (
-                          <div className="mb-2 rounded-[var(--radius-sm)] overflow-hidden max-h-56 border border-black/10">
+                          <div className="mb-2 rounded-shape-sm overflow-hidden max-h-56 border border-black/10">
                             <img src={msg.media_url} alt="Media" className="w-full h-full object-cover" />
                           </div>
                         )}
@@ -455,7 +455,7 @@ export const AdMessengerHub: React.FC<AdMessengerHubProps> = ({ inquiries, onRef
 
               {/* Typing indicator */}
               {recipientTyping && (
-                <div className="flex items-center gap-2 text-xs text-[var(--text-muted)] italic bg-[var(--surface-card)] px-3 py-1.5 rounded-[var(--radius-xs)] w-fit border border-[var(--border-default)]">
+                <div className="flex items-center gap-2 text-xs text-[var(--text-muted)] italic bg-[var(--surface-card)] px-3 py-1.5 rounded-shape-xs w-fit border border-[var(--border-default)]">
                   <span className="flex gap-1">
                     <span className="w-1.5 h-1.5 bg-[var(--fg-accent)] rounded-[2px] animate-bounce" />
                     <span className="w-1.5 h-1.5 bg-[var(--fg-accent)] rounded-[2px] animate-bounce [animation-delay:0.2s]" />
@@ -473,7 +473,7 @@ export const AdMessengerHub: React.FC<AdMessengerHubProps> = ({ inquiries, onRef
                 <button
                   key={`messenger-quick-prompt-${idx}-${q}`}
                   onClick={() => handleSendMessage(q)}
-                  className="text-[11px] font-bold px-3 py-1.5 rounded-[var(--radius-sm)] bg-[var(--surface-subtle)] hover:bg-[var(--bg-accent-muted)] hover:text-[var(--fg-accent)] text-[var(--text-secondary)] whitespace-nowrap transition-theme border border-[var(--border-default)]"
+                  className="text-[11px] font-bold px-3 py-1.5 rounded-shape-sm bg-[var(--surface-subtle)] hover:bg-[var(--bg-accent-muted)] hover:text-[var(--fg-accent)] text-[var(--text-secondary)] whitespace-nowrap transition-theme border border-[var(--border-default)]"
                 >
                   {q}
                 </button>
@@ -484,7 +484,7 @@ export const AdMessengerHub: React.FC<AdMessengerHubProps> = ({ inquiries, onRef
             {attachedImage && (
               <div className="p-2 bg-[var(--surface-subtle)] border-t border-[var(--border-default)] flex items-center justify-between shrink-0">
                 <div className="flex items-center gap-2">
-                  <img src={attachedImage} alt="Preview" className="w-10 h-10 object-cover rounded-[var(--radius-xs)]" />
+                  <img src={attachedImage} alt="Preview" className="w-10 h-10 object-cover rounded-shape-xs" />
                   <span className="text-xs text-[var(--text-secondary)] font-medium">{isRtl ? 'صورة جاهزة للإرسال' : 'Image ready'}</span>
                 </div>
                 <button onClick={() => setAttachedImage(null)} className="p-1 text-[var(--text-muted)] hover:text-[var(--fg-danger)]">
@@ -498,7 +498,7 @@ export const AdMessengerHub: React.FC<AdMessengerHubProps> = ({ inquiries, onRef
               <input type="file" ref={fileInputRef} accept="image/*" onChange={handleImageSelect} className="hidden" />
               <button
                 onClick={() => fileInputRef.current?.click()}
-                className="p-2.5 rounded-[var(--radius-sm)] text-[var(--text-muted)] hover:text-[var(--fg-accent)] hover:bg-[var(--surface-subtle)] transition-colors"
+                className="p-2.5 rounded-shape-sm text-[var(--text-muted)] hover:text-[var(--fg-accent)] hover:bg-[var(--surface-subtle)] transition-colors"
                 title={isRtl ? 'إرفاق صورة' : 'Attach image'}
               >
                 <Paperclip size={18} />
@@ -514,12 +514,12 @@ export const AdMessengerHub: React.FC<AdMessengerHubProps> = ({ inquiries, onRef
                   }
                 }}
                 placeholder={isRtl ? 'اكتب رسالتك المشفرة هنا...' : 'Type encrypted message...'}
-                className="flex-1 bg-[var(--surface-subtle)] text-[var(--text-primary)] text-xs px-4 py-3 rounded-[var(--radius-sm)] border border-transparent focus:border-[var(--focus-outline)] focus:bg-[var(--surface-card)] focus:outline-none transition-theme"
+                className="flex-1 bg-[var(--surface-subtle)] text-[var(--text-primary)] text-xs px-4 py-3 rounded-shape-sm border border-transparent focus:border-[var(--focus-outline)] focus:bg-[var(--surface-card)] focus:outline-none transition-theme"
               />
               <button
                 onClick={() => handleSendMessage()}
                 disabled={(!inputMessage.trim() && !attachedImage) || sending}
-                className="p-3 rounded-[var(--radius-sm)] bg-[var(--comp-button-primary-bg)] hover:opacity-90 disabled:opacity-40 text-[var(--comp-button-primary-fg)] font-bold transition-theme shadow-md flex items-center justify-center shrink-0"
+                className="p-3 rounded-shape-sm bg-[var(--comp-button-primary-bg)] hover:opacity-90 disabled:opacity-40 text-[var(--comp-button-primary-fg)] font-bold transition-theme shadow-md flex items-center justify-center shrink-0"
               >
                 {sending ? <Loader2 size={16} className="animate-spin" /> : <Send size={16} />}
               </button>
@@ -527,7 +527,7 @@ export const AdMessengerHub: React.FC<AdMessengerHubProps> = ({ inquiries, onRef
           </>
         ) : (
           <div className="h-full flex flex-col items-center justify-center text-center p-8 text-[var(--text-muted)]">
-            <div className="w-16 h-16 rounded-[var(--radius-md)] bg-[var(--bg-accent-muted)] text-[var(--fg-accent)] flex items-center justify-center mb-4">
+            <div className="w-16 h-16 rounded-shape-md bg-[var(--bg-accent-muted)] text-[var(--fg-accent)] flex items-center justify-center mb-4">
               <MessageSquare size={28} />
             </div>
             <h4 className="font-extrabold text-base text-[var(--text-primary)] mb-1">

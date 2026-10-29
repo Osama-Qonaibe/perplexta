@@ -258,7 +258,7 @@ export const AdDirectChat: React.FC<AdDirectChatProps> = ({ ad, onClose, isCompa
   };
 
   return (
-    <div className={`flex flex-col bg-[var(--surface-card)] border border-[var(--border-default)] rounded-[var(--radius-lg)] shadow-lg overflow-hidden ${isCompact ? 'h-[440px]' : 'h-[520px]'} transition-colors duration-fast`}>
+    <div className={`flex flex-col bg-[var(--surface-card)] border border-[var(--border-default)] rounded-shape-lg shadow-lg overflow-hidden ${isCompact ? 'h-[440px]' : 'h-[520px]'} transition-colors duration-fast`}>
       {/* Encryption & Participant Header */}
       <div className="px-4 py-3 bg-[var(--surface-subtle)] border-b border-[var(--border-default)] flex items-center justify-between shrink-0">
         <div className="flex items-center gap-3">
@@ -274,7 +274,7 @@ export const AdDirectChat: React.FC<AdDirectChatProps> = ({ ad, onClose, isCompa
               <h4 className="font-extrabold text-sm text-[var(--text-primary)] line-clamp-1">
                 {otherParticipant?.name || (isRtl ? 'محادثة خاصة' : 'Private Inquiry')}
               </h4>
-              <span className="inline-flex items-center gap-1 text-[10px] font-extrabold text-[var(--fg-accent)] bg-[var(--bg-accent-muted)] px-2 py-0.5 rounded-[var(--radius-xs)] border border-[var(--border-accent)]/20 shrink-0">
+              <span className="inline-flex items-center gap-1 text-[10px] font-extrabold text-[var(--fg-accent)] bg-[var(--bg-accent-muted)] px-2 py-0.5 rounded-shape-xs border border-[var(--border-accent)]/20 shrink-0">
                 <Lock size={10} />
                 <span>E2EE</span>
               </span>
@@ -319,7 +319,7 @@ export const AdDirectChat: React.FC<AdDirectChatProps> = ({ ad, onClose, isCompa
           </div>
         ) : messages.length === 0 ? (
           <div className="h-full flex flex-col items-center justify-center text-center p-4">
-            <div className="w-12 h-12 rounded-[var(--radius-md)] bg-[var(--bg-accent-muted)] text-[var(--fg-accent)] flex items-center justify-center mb-3">
+            <div className="w-12 h-12 rounded-shape-md bg-[var(--bg-accent-muted)] text-[var(--fg-accent)] flex items-center justify-center mb-3">
               <MessageSquare size={22} />
             </div>
             <h5 className="font-extrabold text-sm text-[var(--text-primary)] mb-1">
@@ -341,7 +341,7 @@ export const AdDirectChat: React.FC<AdDirectChatProps> = ({ ad, onClose, isCompa
                   <button
                     key={`quick-prompt-empty-${idx}-${q}`}
                     onClick={() => handleSendMessage(q)}
-                    className="text-xs font-bold px-3 py-2 min-h-[36px] rounded-[var(--radius-sm)] bg-[var(--surface-card)] hover:bg-[var(--bg-accent-emphasis)] hover:text-[var(--fg-on-emphasis)] text-[var(--text-secondary)] border border-[var(--border-default)] transition-colors duration-fast text-start"
+                    className="text-xs font-bold px-3 py-2 min-h-[36px] rounded-shape-sm bg-[var(--surface-card)] hover:bg-[var(--bg-accent-emphasis)] hover:text-[var(--fg-on-emphasis)] text-[var(--text-secondary)] border border-[var(--border-default)] transition-colors duration-fast text-start"
                   >
                     {q}
                   </button>
@@ -358,7 +358,7 @@ export const AdDirectChat: React.FC<AdDirectChatProps> = ({ ad, onClose, isCompa
                 className={`flex flex-col ${isMe ? 'items-end' : 'items-start'} space-y-1`}
               >
                 <div
-                  className={`max-w-[85%] sm:max-w-[78%] px-3.5 py-2.5 rounded-[var(--radius-md)] text-xs leading-relaxed relative transition-colors duration-fast ${
+                  className={`max-w-[85%] sm:max-w-[78%] px-3.5 py-2.5 rounded-shape-md text-xs leading-relaxed relative transition-colors duration-fast ${
                     isMe
                       ? 'bg-[var(--bg-accent-emphasis)] text-[var(--fg-on-emphasis)] font-medium'
                       : 'bg-[var(--surface-card)] text-[var(--text-primary)] border border-[var(--border-default)]'
@@ -366,7 +366,7 @@ export const AdDirectChat: React.FC<AdDirectChatProps> = ({ ad, onClose, isCompa
                 >
                   {/* Media attachment if exists */}
                   {msg.media_url && (
-                    <div className="mb-2 rounded-[var(--radius-sm)] overflow-hidden max-h-48 border border-[var(--border-default)]">
+                    <div className="mb-2 rounded-shape-sm overflow-hidden max-h-48 border border-[var(--border-default)]">
                       <img
                         src={getMediaUrl(msg.media_url)}
                         alt="Attached media"
@@ -408,7 +408,7 @@ export const AdDirectChat: React.FC<AdDirectChatProps> = ({ ad, onClose, isCompa
 
         {/* Recipient Typing Indicator */}
         {recipientTyping && (
-          <div className="flex items-center gap-2 text-xs text-[var(--text-muted)] italic bg-[var(--surface-card)] px-3 py-1.5 rounded-[var(--radius-sm)] w-fit border border-[var(--border-default)]">
+          <div className="flex items-center gap-2 text-xs text-[var(--text-muted)] italic bg-[var(--surface-card)] px-3 py-1.5 rounded-shape-sm w-fit border border-[var(--border-default)]">
             <span className="flex gap-1">
               <span className="w-1.5 h-1.5 bg-[var(--fg-accent)] rounded-full animate-bounce" />
               <span className="w-1.5 h-1.5 bg-[var(--fg-accent)] rounded-full animate-bounce [animation-delay:0.2s]" />
@@ -428,7 +428,7 @@ export const AdDirectChat: React.FC<AdDirectChatProps> = ({ ad, onClose, isCompa
             <button
               key={`quick-prompt-bar-${idx}-${q}`}
               onClick={() => handleSendMessage(q)}
-              className="text-[11px] font-medium px-2.5 py-1 min-h-[36px] rounded-[var(--radius-xs)] bg-[var(--surface-subtle)] hover:bg-[var(--bg-accent-muted)] hover:text-[var(--fg-accent)] text-[var(--text-secondary)] whitespace-nowrap transition-colors duration-fast border border-[var(--border-subtle)]"
+              className="text-[11px] font-medium px-2.5 py-1 min-h-[36px] rounded-shape-xs bg-[var(--surface-subtle)] hover:bg-[var(--bg-accent-muted)] hover:text-[var(--fg-accent)] text-[var(--text-secondary)] whitespace-nowrap transition-colors duration-fast border border-[var(--border-subtle)]"
             >
               {q}
             </button>
@@ -440,7 +440,7 @@ export const AdDirectChat: React.FC<AdDirectChatProps> = ({ ad, onClose, isCompa
       {attachedImage && (
         <div className="p-2 bg-[var(--surface-subtle)] border-t border-[var(--border-default)] flex items-center justify-between shrink-0">
           <div className="flex items-center gap-2">
-            <img src={getMediaUrl(attachedImage)} alt="Preview" className="w-10 h-10 object-cover rounded-[var(--radius-sm)] border border-[var(--border-default)]" />
+            <img src={getMediaUrl(attachedImage)} alt="Preview" className="w-10 h-10 object-cover rounded-shape-sm border border-[var(--border-default)]" />
             <span className="text-xs text-[var(--text-secondary)] font-medium">
               {isRtl ? 'صورة مرفقة جاهزة للإرسال' : 'Image attached'}
             </span>
@@ -488,14 +488,14 @@ export const AdDirectChat: React.FC<AdDirectChatProps> = ({ ad, onClose, isCompa
           placeholder={
             isRtl ? 'اكتب استفسارك المباشر هنا (مشفر بالكامل)...' : 'Type your encrypted inquiry...'
           }
-          className="flex-1 bg-[var(--surface-subtle)] text-[var(--text-primary)] placeholder:text-[var(--text-muted)] text-xs px-3.5 py-2.5 min-h-[40px] rounded-[var(--radius-sm)] border border-[var(--border-subtle)] focus:border-[var(--focus-outline)] focus:bg-[var(--surface-card)] focus:outline-none transition-colors duration-fast"
+          className="flex-1 bg-[var(--surface-subtle)] text-[var(--text-primary)] placeholder:text-[var(--text-muted)] text-xs px-3.5 py-2.5 min-h-[40px] rounded-shape-sm border border-[var(--border-subtle)] focus:border-[var(--focus-outline)] focus:bg-[var(--surface-card)] focus:outline-none transition-colors duration-fast"
         />
 
         <button
           onClick={() => handleSendMessage()}
           disabled={(!inputMessage.trim() && !attachedImage) || sending}
           aria-label={isRtl ? 'إرسال الرسالة المشفرة' : 'Send message'}
-          className="p-2.5 min-w-[44px] min-h-[44px] rounded-[var(--radius-sm)] bg-[var(--bg-accent-emphasis)] hover:opacity-90 disabled:opacity-40 text-[var(--fg-on-emphasis)] font-bold transition-colors duration-fast flex items-center justify-center shrink-0 cursor-pointer"
+          className="p-2.5 min-w-[44px] min-h-[44px] rounded-shape-sm bg-[var(--bg-accent-emphasis)] hover:opacity-90 disabled:opacity-40 text-[var(--fg-on-emphasis)] font-bold transition-colors duration-fast flex items-center justify-center shrink-0 cursor-pointer"
         >
           {sending ? <Loader2 size={16} className="animate-spin" /> : <Send size={16} />}
         </button>

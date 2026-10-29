@@ -18,7 +18,7 @@ export interface BulletinAvatarProps {
 
 const SIZE_CONFIGS = {
   sm: {
-    container: 'w-8 h-8 min-w-[32px] min-h-[32px] max-w-[32px] max-h-[32px] rounded-[8px] border-[1.5px]',
+    container: 'w-8 h-8 min-w-[32px] min-h-[32px] max-w-[32px] max-h-[32px] rounded-shape-sm border-[1.5px]',
     text: 'text-[10px]',
     iconSize: 14,
     badgeSize: 10,
@@ -28,7 +28,7 @@ const SIZE_CONFIGS = {
     innerRadius: 'rounded-[6px]',
   },
   md: {
-    container: 'w-10 h-10 min-w-[40px] min-h-[40px] max-w-[40px] max-h-[40px] rounded-[8px] border-2',
+    container: 'w-10 h-10 min-w-[40px] min-h-[40px] max-w-[40px] max-h-[40px] rounded-shape-sm border-2',
     text: 'text-xs',
     iconSize: 16,
     badgeSize: 11,
@@ -44,17 +44,17 @@ const SIZE_CONFIGS = {
     badgeSize: 13,
     badgePadding: 'p-[2px]',
     badgeOffset: 'bottom-0 end-0',
-    onlineDot: 'w-3.5 h-3.5 rounded-[4px]',
-    innerRadius: 'rounded-[8px]',
+    onlineDot: 'w-3.5 h-3.5 rounded-shape-xs',
+    innerRadius: 'rounded-shape-sm',
   },
   xl: {
-    container: 'w-20 h-20 sm:w-24 sm:h-24 min-w-[80px] min-h-[80px] max-w-[96px] max-h-[96px] rounded-[12px] border-3',
+    container: 'w-20 h-20 sm:w-24 sm:h-24 min-w-[80px] min-h-[80px] max-w-[96px] max-h-[96px] rounded-shape-md border-3',
     text: 'text-base sm:text-lg',
     iconSize: 30,
     badgeSize: 16,
     badgePadding: 'p-1',
     badgeOffset: 'bottom-1 end-1',
-    onlineDot: 'w-4 h-4 rounded-[4px]',
+    onlineDot: 'w-4 h-4 rounded-shape-xs',
     innerRadius: 'rounded-[10px]',
   },
 };
@@ -131,7 +131,7 @@ export const BulletinAvatar: React.FC<BulletinAvatarProps> = ({
 
       {(isPage || verified) && !isOnline && (
         <span
-          className={`absolute ${config.badgeOffset} bg-accent text-white rounded-[4px] ${config.badgePadding} border border-[var(--surface-card)] shadow-xs flex items-center justify-center`}
+          className={`absolute ${config.badgeOffset} bg-accent text-white rounded-shape-xs ${config.badgePadding} border border-[var(--surface-card)] shadow-xs flex items-center justify-center`}
           title={isPage ? 'Commercial Page' : 'Verified'}
         >
           <CheckCircle2 size={config.badgeSize} className="stroke-[3]" />

@@ -1193,7 +1193,7 @@ export const ProjectOverviewPage: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen bg-[var(--surface-page)] text-[var(--text-primary)] font-sans antialiased selection:bg-[var(--fg-accent)] selection:text-white">
+    <div className="min-h-[100dvh] md:min-h-screen flex flex-col bg-[var(--surface-page)] text-[var(--text-primary)] font-sans antialiased selection:bg-[var(--fg-accent)] selection:text-white">
       {/* =========================================================================
           1. FLOATING PILL NAVBAR (Exact ChatDeck Structure & Perplexta M3 Tokens)
           ========================================================================= */}
@@ -1205,7 +1205,7 @@ export const ProjectOverviewPage: React.FC = () => {
               : 'opacity-100 pointer-events-auto translate-y-0'
           }`}
         >
-          <div className="mx-auto max-w-7xl px-6 lg:px-12 py-3">
+          <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-12 py-2.5 sm:py-3">
             <div className="relative flex items-center justify-between">
               {/* Brand Logo Zone */}
               <div className="flex items-center">
@@ -1591,7 +1591,7 @@ export const ProjectOverviewPage: React.FC = () => {
               </div>
 
               {/* Right Action Controls */}
-              <div className="hidden lg:flex items-center gap-2.5">
+              <div className="flex items-center gap-2 lg:gap-2.5">
                 <button
                   type="button"
                   onClick={() => setLanguage(isRtl ? 'en' : 'ar')}
@@ -1604,7 +1604,7 @@ export const ProjectOverviewPage: React.FC = () => {
                 <button
                   type="button"
                   onClick={handleStartNow}
-                  className="h-8 px-4 rounded-shape-sm text-xs font-black uppercase tracking-wider bg-[var(--comp-button-primary-bg)] text-[var(--comp-button-primary-fg)] hover:opacity-90 transition-all active:scale-95 cursor-pointer shadow-xs flex items-center justify-center relative touch-target-44-expanded"
+                  className="hidden lg:flex h-8 px-4 rounded-shape-sm text-xs font-black uppercase tracking-wider bg-[var(--comp-button-primary-bg)] text-[var(--comp-button-primary-fg)] hover:opacity-90 transition-all active:scale-95 cursor-pointer shadow-xs items-center justify-center relative touch-target-44-expanded"
                 >
                   <span>{isRtl ? 'ابدأ الآن' : 'Get Started'}</span>
                 </button>
@@ -1617,73 +1617,93 @@ export const ProjectOverviewPage: React.FC = () => {
       )}
 
       {/* =========================================================================
-          MAIN CONTAINER (Exact ChatDeck Padding & Centering: pt-36 max-w-7xl)
+          MAIN CONTAINER (Centered on Mobile, Full Showcase on Desktop)
           ========================================================================= */}
-      <main className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 pt-20 sm:pt-40">
+      <main className="flex-1 flex flex-col justify-center md:block w-full mx-auto max-w-7xl px-3.5 sm:px-6 lg:px-8 pt-14 pb-4 md:pt-40 md:pb-0">
         {/* =========================================================================
-            1. MOBILE COMPACT GATEWAY (Forced via Tailwind md:hidden for viewports < 768px)
+            1. MOBILE COMPACT GATEWAY (Centered Vertically & Horizontally on < 768px)
             ========================================================================= */}
-        <div className="block md:hidden w-full space-y-4 pb-8">
-          <div className="p-5 rounded-shape-lg bg-[var(--surface-card)] border border-[var(--border-default)] shadow-xs space-y-4 relative overflow-hidden">
-            <div className="absolute -top-12 -end-12 w-48 h-48 bg-[color-mix(in_oklab,var(--accent)_12%,transparent)] rounded-full blur-2xl pointer-events-none" />
+        <div className="flex md:hidden flex-col items-center justify-center w-full my-auto py-1">
+          <div className="w-full max-w-[380px] mx-auto p-4 sm:p-5 rounded-shape-lg bg-[var(--surface-card)] border border-[var(--border-main)] shadow-sm space-y-3 relative overflow-hidden text-center">
+            <div className="absolute -top-12 left-1/2 -translate-x-1/2 w-48 h-32 bg-[color-mix(in_oklab,var(--accent)_12%,transparent)] rounded-full blur-2xl pointer-events-none" />
             
-            <div className="flex items-center gap-2 text-xs font-bold text-[var(--fg-accent)]">
-              <Sparkles size={14} />
-              <span>{isRtl ? 'منصة بيربليكستا للمحمول' : 'Perplexta Mobile Workspace'}</span>
+            {/* Top Identity Kicker */}
+            <div className="relative z-10 flex items-center justify-center">
+              <div className="inline-flex items-center justify-center gap-1.5 h-6 px-3 rounded-shape-sm bg-[var(--surface-subtle)] border border-[var(--border-main)] text-[11px] font-bold text-[var(--fg-accent)] shadow-2xs">
+                <span className="w-1.5 h-1.5 rounded-full bg-[var(--fg-accent)] animate-pulse shrink-0" />
+                <span>{isRtl ? 'منصة بيربليكستا للمحمول' : 'Perplexta Mobile Workspace'}</span>
+              </div>
             </div>
 
-            <div className="space-y-1.5">
-              <h1 className="text-xl sm:text-2xl font-black text-[var(--text-primary)] leading-snug">
+            {/* Typography Section */}
+            <div className="relative z-10 space-y-1 text-center">
+              <h1 className="text-lg sm:text-xl font-black text-[var(--text-primary)] leading-tight text-balance">
                 {isRtl ? 'منصة الذكاء الاصطناعي والأبحاث المتقدمة' : 'Integrated AI Research & Analytics Platform'}
               </h1>
-              <p className="text-xs text-[var(--text-secondary)] leading-relaxed font-medium">
+              <p className="text-xs text-[var(--text-secondary)] leading-relaxed font-medium text-balance max-w-[34ch] mx-auto">
                 {isRtl ? 'وصول مخصص وسريع للإنتاج العلمي، المحادثات الذكية، توليد الصور، وإدارة الحملات الإعلانية.' : 'Streamlined access to academic research, smart chat, image synthesis, and ad campaign management.'}
               </p>
             </div>
 
-            {/* Quick Primary CTAs Stack */}
-            <div className="grid grid-cols-1 gap-2.5 pt-2">
+            {/* Quick Primary CTAs Stack - Perplexta Brand Standard */}
+            <div className="relative z-10 grid grid-cols-1 gap-2 pt-0.5">
               <button
                 type="button"
                 onClick={() => setIsAuthModalOpen(true)}
-                className="h-10 px-4 rounded-shape-sm bg-[var(--comp-button-primary-bg)] text-[var(--comp-button-primary-fg)] font-bold text-xs inline-flex items-center justify-center gap-2 shadow-xs active:scale-95 transition-all cursor-pointer w-full"
+                className="h-10 px-4 rounded-shape-sm bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs inline-flex items-center justify-center gap-2 shadow-xs active:scale-95 transition-all cursor-pointer w-full touch-target-44-expanded"
               >
-                <UserPlus size={15} />
+                <UserPlus size={15} className="shrink-0" />
                 <span>{isRtl ? 'تسجيل جديد / تسجيل الدخول' : 'Sign In / Register'}</span>
               </button>
 
               <button
                 type="button"
                 onClick={() => navigate('/viralbook')}
-                className="h-10 px-4 rounded-shape-sm bg-[var(--surface-subtle)] hover:bg-[var(--surface-card)] text-[var(--text-primary)] border border-[var(--border-default)] font-bold text-xs inline-flex items-center justify-center gap-2 shadow-2xs active:scale-95 transition-all cursor-pointer w-full"
+                className="h-10 px-4 rounded-shape-sm bg-[var(--surface-subtle)] hover:bg-[var(--surface-card)] text-[var(--text-primary)] border border-[var(--border-main)] hover:border-[var(--border-accent)] font-bold text-xs inline-flex items-center justify-center gap-2 shadow-2xs active:scale-95 transition-all cursor-pointer w-full touch-target-44-expanded"
               >
-                <Globe size={15} className="text-[var(--fg-success)]" />
+                <Globe size={15} className="text-blue-500 dark:text-blue-400 shrink-0" />
                 <span>{isRtl ? 'فيرال بوك' : 'ViralBook'}</span>
               </button>
             </div>
 
-            {/* Mobile Highlights 2x2 Grid */}
-            <div className="grid grid-cols-2 gap-2 pt-3 border-t border-[var(--border-default)] text-[11px] font-bold text-[var(--text-secondary)]">
-              <div className="flex items-center gap-2 px-2.5 h-9 rounded-shape-xs bg-[var(--surface-subtle)] border border-[var(--border-default)]">
-                <span className="w-2 h-2 rounded-shape-full bg-[var(--fg-accent)] shrink-0" />
+            {/* Mobile Highlights 2x2 Grid - Sleek Feature Badges */}
+            <div className="relative z-10 grid grid-cols-2 gap-1.5 pt-2.5 border-t border-[var(--border-main)]/60 text-[11px] font-semibold text-[var(--text-secondary)]">
+              <button
+                type="button"
+                onClick={() => navigate('/image-studio')}
+                className="flex items-center justify-center gap-1.5 px-2 h-8 rounded-shape-sm bg-[var(--surface-subtle)]/70 hover:bg-[var(--surface-subtle)] border border-[var(--border-main)]/60 shadow-2xs cursor-pointer active:scale-95 transition-all touch-target-44-expanded"
+              >
+                <ImageIcon size={13} className="text-blue-500 shrink-0" />
                 <span className="truncate">{isRtl ? 'توليد الصور' : 'Image Generation'}</span>
-              </div>
-              <div className="flex items-center gap-2 px-2.5 h-9 rounded-shape-xs bg-[var(--surface-subtle)] border border-[var(--border-default)]">
-                <span className="w-2 h-2 rounded-shape-full bg-[var(--fg-success)] shrink-0" />
+              </button>
+              <button
+                type="button"
+                onClick={() => navigate('/chat?mode=academic')}
+                className="flex items-center justify-center gap-1.5 px-2 h-8 rounded-shape-sm bg-[var(--surface-subtle)]/70 hover:bg-[var(--surface-subtle)] border border-[var(--border-main)]/60 shadow-2xs cursor-pointer active:scale-95 transition-all touch-target-44-expanded"
+              >
+                <BookOpen size={13} className="text-teal-500 shrink-0" />
                 <span className="truncate">{isRtl ? 'باحث أكاديمي' : 'Academic Research'}</span>
-              </div>
-              <div className="flex items-center gap-2 px-2.5 h-9 rounded-shape-xs bg-[var(--surface-subtle)] border border-[var(--border-default)]">
-                <span className="w-2 h-2 rounded-shape-full bg-[var(--fg-warning)] shrink-0" />
+              </button>
+              <button
+                type="button"
+                onClick={() => navigate('/viralbook?tab=ads')}
+                className="flex items-center justify-center gap-1.5 px-2 h-8 rounded-shape-sm bg-[var(--surface-subtle)]/70 hover:bg-[var(--surface-subtle)] border border-[var(--border-main)]/60 shadow-2xs cursor-pointer active:scale-95 transition-all touch-target-44-expanded"
+              >
+                <Megaphone size={13} className="text-amber-500 shrink-0" />
                 <span className="truncate">{isRtl ? 'مساعد الإعلانات' : 'Ad Copilot'}</span>
-              </div>
-              <div className="flex items-center gap-2 px-2.5 h-9 rounded-shape-xs bg-[var(--surface-subtle)] border border-[var(--border-default)]">
-                <span className="w-2 h-2 rounded-shape-full bg-[var(--fg-info)] shrink-0" />
-                <span className="truncate">{isRtl ? 'استوديو التطبيقات' : 'App Studio'}</span>
-              </div>
+              </button>
+              <button
+                type="button"
+                onClick={() => navigate('/chat')}
+                className="flex items-center justify-center gap-1.5 px-2 h-8 rounded-shape-sm bg-[var(--surface-subtle)]/70 hover:bg-[var(--surface-subtle)] border border-[var(--border-main)]/60 shadow-2xs cursor-pointer active:scale-95 transition-all touch-target-44-expanded"
+              >
+                <MessageSquare size={13} className="text-indigo-500 shrink-0" />
+                <span className="truncate">{isRtl ? 'المحادثات الذكية' : 'Smart AI Chat'}</span>
+              </button>
             </div>
 
             {/* Compact Mobile Copyright */}
-            <div className="pt-3 border-t border-[var(--border-default)] text-center text-[10px] font-bold text-[var(--text-muted)]">
+            <div className="relative z-10 pt-2 border-t border-[var(--border-main)]/60 text-center text-[10.5px] font-medium text-[var(--text-muted)]">
               <p>© {new Date().getFullYear()} {brandName}. {isRtl ? 'جميع الحقوق محفوظة.' : 'All rights reserved.'}</p>
             </div>
           </div>

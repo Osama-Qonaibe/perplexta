@@ -359,7 +359,7 @@ export function SelectDropdown<T extends string | number = string>({
                           setFocusedIndex(0);
                         }}
                         placeholder={searchPlaceholder || (dir === 'rtl' ? 'بحث...' : 'Search...')}
-                        className="w-full bg-[var(--surface-subtle)] border border-[var(--border-subtle)] rounded-[var(--radius-xs)] ps-7 pe-2 py-1 text-[11px] font-sans text-[var(--text-primary)] placeholder-[var(--text-muted)] focus:outline-none focus:border-[var(--border-accent)]/40"
+                        className="w-full bg-[var(--surface-subtle)] border border-[var(--border-subtle)] rounded-shape-xs ps-7 pe-2 py-1 text-[11px] font-sans text-[var(--text-primary)] placeholder-[var(--text-muted)] focus:outline-none focus:border-[var(--border-accent)]/40"
                         onClick={(e) => e.stopPropagation()}
                       />
                     </div>
@@ -431,7 +431,7 @@ export function SelectDropdown<T extends string | number = string>({
                             )}
 
                             {opt.isNew && !opt.isLocked && (
-                              <span className="px-1.5 py-[1px] rounded-[var(--radius-xs)] bg-[var(--surface-subtle)] border border-[var(--border-default)] text-[8px] font-mono font-bold uppercase tracking-wider text-[var(--text-secondary)]">
+                              <span className="px-1.5 py-[1px] rounded-shape-xs bg-[var(--surface-subtle)] border border-[var(--border-default)] text-[8px] font-mono font-bold uppercase tracking-wider text-[var(--text-secondary)]">
                                 NEW
                               </span>
                             )}

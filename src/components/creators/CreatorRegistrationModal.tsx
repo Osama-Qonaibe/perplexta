@@ -26,8 +26,8 @@ export const CreatorRegistrationModal: React.FC<CreatorRegistrationModalProps> =
     username: (user as any)?.username || 'designer_' + Math.floor(Math.random() * 8999 + 1000),
     roleAr: 'مصمم قوالب وهويات بصرية احترافية',
     roleEn: 'Brand & Template Design Specialist',
-    bioAr: 'صانع محتوى في شبكة رينكس للإبداع، أبتكر قوالب تسويقية وحركية عالية الجودة لمساعدة رواد الأعمال والمصممين.',
-    bioEn: 'Rinex Creative Network member, crafting high-performance visual and motion templates.',
+    bioAr: 'صانع محتوى في شبكة بيربليكستا للإبداع، أبتكر قوالب تسويقية وحركية عالية الجودة لمساعدة رواد الأعمال والمصممين.',
+    bioEn: 'Perplexta Creative Network member, crafting high-performance visual and motion templates.',
     portfolioUrl: '',
     payoutMethod: 'wallet',
     categories: ['marketing', 'reels', 'story']
@@ -108,7 +108,7 @@ export const CreatorRegistrationModal: React.FC<CreatorRegistrationModalProps> =
       toast.success(
         isAr 
           ? `تهانينا! تم اعتماد حسابك كمبدع رسمياً (${createdCreator.name}). تم حجز مكافأة الترحيب وسيتم فك قفلها وتحويلها لمحفظتك فور نشر أول 10 قوالب احترافية!` 
-          : `Congratulations! Certified as a Rinex Creator. Your welcome bonus is reserved and unlocks upon publishing your first 10 verified templates!`
+          : `Congratulations! Certified as a Perplexta Creator. Your welcome bonus is reserved and unlocks upon publishing your first 10 verified templates!`
       );
 
       onClose();
@@ -139,7 +139,7 @@ export const CreatorRegistrationModal: React.FC<CreatorRegistrationModalProps> =
 
   return createPortal(
     <div className="fixed inset-0 z-[9999] flex flex-col items-center justify-center p-4 bg-black/60 backdrop-blur-md animate-fade-in select-none h-screen w-screen overflow-hidden">
-      <div className="relative w-full max-w-xl rounded-shape-xl bg-[var(--surface-card)] border border-[var(--border-default)] shadow-2xl overflow-hidden flex flex-col">
+      <div className="relative w-full max-w-xl rounded-shape-lg bg-[var(--surface-card)] border border-[var(--border-default)] shadow-2xl overflow-hidden flex flex-col">
         
         {/* Header with gradient banner */}
         <div className="relative p-6 bg-gradient-to-r from-[var(--surface-subtle)] via-[color-mix(in_oklab,var(--accent)_10%,transparent)] to-[var(--surface-subtle)] border-b border-[var(--border-default)]">
@@ -157,7 +157,7 @@ export const CreatorRegistrationModal: React.FC<CreatorRegistrationModalProps> =
             <div>
               <div className="flex items-center gap-2">
                 <h3 className="text-lg font-black text-[var(--text-primary)]">
-                  {isAr ? 'الانضمام لنخبة صناع المحتوى في رينكس' : 'Join Rinex Creators Network'}
+                  {isAr ? 'الانضمام لنخبة صناع المحتوى في بيربليكستا' : 'Join Perplexta Creators Network'}
                 </h3>
                 <span className="px-2 py-0.5 rounded-shape-xs bg-[var(--bg-success-muted)] text-[var(--fg-success)] text-[10px] font-black font-mono border border-[color-mix(in_srgb,var(--fg-success)_30%,transparent)]">
                   PRO
@@ -345,7 +345,7 @@ export const CreatorRegistrationModal: React.FC<CreatorRegistrationModalProps> =
               <div className="p-4 rounded-shape-md bg-[var(--surface-subtle)] border border-[var(--border-default)] space-y-3">
                 <h4 className="text-xs font-black text-[var(--text-primary)] flex items-center gap-1.5">
                   <Coins size={14} className="text-amber-500" />
-                  <span>{isAr ? 'ميزات ونظام أرباح صانع محتوى استوديو رينكس في بيربليكستا:' : 'Rinex & Perplexta Creator Earnings & Perks:'}</span>
+                  <span>{isAr ? 'ميزات ونظام أرباح صناع المحتوى في بيربليكستا:' : 'Perplexta Creator Earnings & Perks:'}</span>
                 </h4>
                 
                 <ul className="space-y-2 text-[11px] text-[var(--text-secondary)] font-medium">

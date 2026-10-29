@@ -174,7 +174,7 @@ export const ResetPasswordPage: React.FC = () => {
                 <button 
                   type="submit" 
                   disabled={isLoading} 
-                  className="w-full min-h-[44px] h-12 bg-[var(--comp-button-primary-bg)] text-[var(--comp-button-primary-fg)] rounded-shape-sm font-bold uppercase tracking-wider text-xs flex items-center justify-center gap-2 hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed transition-theme shadow-xs active:scale-[0.98] cursor-pointer touch-target-44"
+                  className="w-full min-h-[44px] h-10 bg-[var(--comp-button-primary-bg)] text-[var(--comp-button-primary-fg)] rounded-shape-sm font-bold uppercase tracking-wider text-xs flex items-center justify-center gap-2 hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed transition-theme shadow-xs active:scale-[0.98] cursor-pointer touch-target-44"
                 >
                   {isLoading ? (
                     <Loader2 className="w-5 h-5 animate-spin" />

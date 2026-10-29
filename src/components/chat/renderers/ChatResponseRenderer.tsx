@@ -318,7 +318,7 @@ export const ChatResponseRenderer: React.FC<ChatResponseRendererProps> = ({
         }
         
         return (
-          <div className="my-6 max-w-full sm:max-w-[500px] w-full rounded-[var(--radius-md)] overflow-hidden border border-[var(--border-default)] shadow-sm bg-[var(--surface-card)]">
+          <div className="my-6 max-w-full sm:max-w-[500px] w-full rounded-shape-md overflow-hidden border border-[var(--border-default)] shadow-sm bg-[var(--surface-card)]">
             <MediaFormatPlayer 
               url={href.split('#')[0]} 
               aspectRatio={aspect as any} 

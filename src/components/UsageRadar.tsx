@@ -79,14 +79,14 @@ export const UsageRadar: React.FC = () => {
 
   if (loading) {
     return (
-      <div className="space-y-6 sm:space-y-8 animate-pulse">
+      <div className="space-y-4 sm:space-y-6 animate-pulse max-w-4xl mx-auto">
         {/* Skeleton Header */}
-        <div className="h-64 sm:h-80 w-full rounded-[var(--radius-md)] border border-[var(--border-default)] bg-[var(--surface-card)]" />
+        <div className="h-44 sm:h-56 w-full rounded-shape-md border border-[var(--border-default)] bg-[var(--surface-card)]" />
         
         {/* Skeleton Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pb-20">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4 pb-12">
           {[1, 2, 3, 4].map(i => (
-            <div key={`usage-radar-skel-${i}`} className="h-36 rounded-[var(--radius-md)] border border-[var(--border-default)] bg-[var(--surface-card)]" />
+            <div key={`usage-radar-skel-${i}`} className="h-24 sm:h-32 rounded-shape-md border border-[var(--border-default)] bg-[var(--surface-card)]" />
           ))}
         </div>
       </div>
@@ -95,16 +95,17 @@ export const UsageRadar: React.FC = () => {
 
   if (error || !data) {
     return (
-      <div className="flex flex-col items-center justify-center py-12 p-6 rounded-[var(--radius-md)] border border-rose-500/20 bg-rose-500/5 text-rose-400 space-y-4 max-w-md mx-auto text-center">
-        <AlertCircle size={36} />
+      <div className="flex flex-col items-center justify-center py-12 p-6 rounded-shape-md border border-rose-500/20 bg-rose-500/5 text-rose-400 space-y-4 max-w-md mx-auto text-center">
+        <AlertCircle size={32} />
         <p className="font-bold text-xs sm:text-sm">{error || 'Unknown error occurred'}</p>
         <button 
+          type="button"
           onClick={() => {
             setError(null);
             setLoading(true);
             fetchUsage();
           }}
-          className="px-5 py-2 rounded-[var(--radius-sm)] bg-rose-600 hover:bg-rose-500 text-white font-bold text-xs transition-all cursor-pointer"
+          className="h-8 px-5 rounded-shape-sm bg-rose-600 hover:bg-rose-500 text-white font-bold text-xs flex items-center justify-center transition-all cursor-pointer"
         >
           {t('retry') || 'Retry'}
         </button>
@@ -119,16 +120,16 @@ export const UsageRadar: React.FC = () => {
   return (
     <div className="space-y-4 sm:space-y-6 max-w-4xl mx-auto pb-12">
       {/* Usage Radar Header */}
-      <div className="p-4 sm:p-7 rounded-[var(--radius-md)] border border-[var(--border-default)] bg-[var(--surface-card)] relative overflow-hidden shadow-xs">
+      <div className="ide-card p-3.5 sm:p-6 rounded-shape-md border border-[var(--border-default)] bg-[var(--surface-card)] relative overflow-hidden shadow-xs space-y-3.5">
         
         {/* Header Row */}
-        <div className="flex justify-between items-start mb-4 sm:mb-6">
-          <div className="flex items-center gap-3">
-            <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-[var(--radius-sm)] flex items-center justify-center bg-[var(--bg-accent-muted)] text-[var(--fg-accent)] border border-[var(--border-accent)]/20 shrink-0">
-               <Activity size={18} className="animate-pulse" />
+        <div className="flex justify-between items-center pb-3 border-b border-[var(--border-default)]">
+          <div className="flex items-center gap-2.5 sm:gap-3">
+            <div className="w-8 h-8 rounded-shape-sm flex items-center justify-center bg-[var(--bg-accent-muted)] text-[var(--fg-accent)] border border-[var(--border-accent)]/20 shrink-0">
+               <Activity size={16} className="animate-pulse" />
             </div>
             <div>
-              <h2 className="text-sm sm:text-base font-black tracking-tight text-[var(--text-primary)]">
+              <h2 className="text-xs sm:text-sm font-black uppercase tracking-wider text-[var(--text-primary)]">
                 {t('usageRadar') || (dir === 'rtl' ? 'رادار الاستهلاك' : 'Usage Radar')}
               </h2>
               <p className="text-[10px] font-bold text-[var(--text-muted)] uppercase tracking-wider">
@@ -139,38 +140,38 @@ export const UsageRadar: React.FC = () => {
         </div>
 
         {/* Plan Info Card */}
-        <div className="p-4 sm:p-6 rounded-[var(--radius-sm)] border border-[var(--border-default)] bg-[var(--surface-subtle)] flex flex-col items-center relative group">
-           <div className="hidden sm:flex absolute left-4 sm:left-6 top-1/2 -translate-y-1/2 w-16 h-16 sm:w-20 sm:h-20 rounded-[var(--radius-sm)] border border-[var(--border-accent)]/20 items-center justify-center bg-[var(--bg-accent-muted)] text-[var(--fg-accent)]">
-              <BarChart3 size={28} />
+        <div className="p-3.5 sm:p-5 rounded-shape-sm border border-[var(--border-default)] bg-[var(--surface-subtle)] flex flex-col items-center relative group">
+           <div className="hidden sm:flex absolute left-4 sm:left-6 top-1/2 -translate-y-1/2 w-14 h-14 sm:w-16 sm:h-16 rounded-shape-sm border border-[var(--border-accent)]/20 items-center justify-center bg-[var(--bg-accent-muted)] text-[var(--fg-accent)]">
+              <BarChart3 size={24} />
            </div>
 
-           <div className="flex flex-col items-center text-center space-y-2 sm:space-y-3 w-full">
+           <div className="flex flex-col items-center text-center space-y-2 w-full">
               <div className="space-y-0.5">
                 <span className="text-[10px] font-bold uppercase tracking-wider text-[var(--text-muted)]">
                   {t('activeSubscription') || 'Active Subscription'}
                 </span>
-                <h3 className="text-xl sm:text-3xl md:text-4xl font-black leading-none select-none text-[var(--fg-accent)]">
+                <h3 className="text-xl sm:text-2xl md:text-3xl font-black leading-none select-none text-[var(--fg-accent)]">
                   {dir === 'rtl' ? data.plan.name_ar : data.plan.name_en}
                 </h3>
               </div>
 
                {/* Status Badges Row */}
-               <div className="flex flex-wrap items-center justify-center gap-1 sm:gap-2 pt-1">
-                  <div className="flex items-center gap-1 px-3 py-1 rounded-[var(--radius-xs)] bg-[var(--surface-card)] border border-[var(--border-default)]">
-                     <Zap size={12} className={data.plan.id === null || data.plan.status?.toLowerCase() !== 'active' ? "text-rose-400" : "text-[var(--fg-success)]"} />
+               <div className="flex flex-wrap items-center justify-center gap-1.5 pt-1">
+                  <div className="flex items-center gap-1 px-2.5 py-1 rounded-shape-xs bg-[var(--surface-card)] border border-[var(--border-default)]">
+                     <Zap size={11} className={data.plan.id === null || data.plan.status?.toLowerCase() !== 'active' ? "text-rose-400" : "text-[var(--fg-success)]"} />
                      <span className={`text-[10px] font-bold uppercase tracking-wider ${data.plan.id === null || data.plan.status?.toLowerCase() !== 'active' ? "text-rose-400" : "text-[var(--fg-success)]"}`}>
                        {data.plan.id === null || data.plan.status?.toLowerCase() !== 'active' ? (language === 'ar' ? 'غير نشط' : 'Inactive') : (t('active') || 'Active')}
                      </span>
                   </div>
-                  <div className="flex items-center gap-1 px-3 py-1 rounded-[var(--radius-xs)] bg-[var(--surface-card)] border border-[var(--border-default)] text-[var(--text-muted)]">
-                     <Clock size={12} />
+                  <div className="flex items-center gap-1 px-2.5 py-1 rounded-shape-xs bg-[var(--surface-card)] border border-[var(--border-default)] text-[var(--text-muted)]">
+                     <Clock size={11} />
                      <span className="text-[10px] font-bold uppercase tracking-wider">
                        {data.plan.id === null || data.plan.status?.toLowerCase() !== 'active' ? (language === 'ar' ? 'بدون فترة' : 'None') : (t(data.plan.billing_period.toLowerCase()) || data.plan.billing_period)}
                      </span>
                   </div>
                   {data.plan.id !== null && data.plan.status?.toLowerCase() === 'active' && (
-                    <div className="flex items-center gap-1 px-3 py-1 rounded-[var(--radius-xs)] bg-[var(--bg-accent-muted)] border border-[var(--border-accent)]/20 text-[var(--fg-accent)]">
-                       <Calendar size={12} />
+                    <div className="flex items-center gap-1 px-2.5 py-1 rounded-shape-xs bg-[var(--bg-accent-muted)] border border-[var(--border-accent)]/20 text-[var(--fg-accent)]">
+                       <Calendar size={11} />
                        <span className="text-[10px] font-bold tracking-wider">{startDate} - {renewalDate}</span>
                     </div>
                   )}
@@ -193,13 +194,13 @@ export const UsageRadar: React.FC = () => {
 
           return (
             <div 
-              className="rounded-[var(--radius-md)] border border-[var(--border-default)] bg-[var(--surface-card)] transition-all duration-fast overflow-hidden shadow-xs"
+              className="ide-card rounded-shape-md border border-[var(--border-default)] bg-[var(--surface-card)] transition-all duration-fast overflow-hidden shadow-xs"
               key={item.id}
             >
               <div className="p-3.5 sm:p-5">
-                <div className="flex justify-between items-start mb-3">
-                  <div className="space-y-0.5 min-w-0 pr-2">
-                    <h3 className="text-xs font-bold uppercase tracking-wider leading-tight text-[var(--fg-accent)]">
+                <div className="flex justify-between items-start mb-3 gap-2">
+                  <div className="space-y-0.5 min-w-0">
+                    <h3 className="text-xs font-bold uppercase tracking-wider leading-tight text-[var(--fg-accent)] truncate">
                       {t(item.id) || (dir === 'rtl' ? (item.name_ar || item.id) : (item.name_en || item.id))}
                     </h3>
                     <p className="text-[10px] text-[var(--text-muted)] font-medium line-clamp-1 leading-snug">
@@ -209,9 +210,9 @@ export const UsageRadar: React.FC = () => {
                   <button 
                     type="button"
                     onClick={() => setExpanded(isExpanded ? null : item.id)}
-                    className="p-1.5 rounded-[var(--radius-xs)] transition-all duration-fast hover:bg-[var(--bg-accent-muted)] text-[var(--text-muted)] hover:text-[var(--fg-accent)] shrink-0 cursor-pointer"
+                    className="w-8 h-8 flex items-center justify-center rounded-shape-xs border border-[var(--border-default)] bg-[var(--surface-subtle)]/50 transition-all duration-fast hover:bg-[var(--bg-accent-muted)] text-[var(--text-muted)] hover:text-[var(--fg-accent)] shrink-0 cursor-pointer"
                   >
-                    {isExpanded ? <ChevronUp size={15} /> : <ChevronDown size={15} />}
+                    {isExpanded ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
                   </button>
                 </div>
 
@@ -265,12 +266,12 @@ export const UsageRadar: React.FC = () => {
                          )}
 
                         <div className="grid grid-cols-2 gap-2 pt-1">
-                          <div className="p-2.5 rounded-[var(--radius-sm)] flex flex-col items-center justify-center text-center bg-[var(--surface-subtle)] border border-[var(--border-default)]">
+                          <div className="p-2.5 rounded-shape-sm flex flex-col items-center justify-center text-center bg-[var(--surface-subtle)] border border-[var(--border-default)]">
                             <Database size={13} className="text-[var(--text-muted)] mb-1" />
                             <span className="text-[9px] font-bold text-[var(--text-muted)] uppercase tracking-wider">{t('resourceId') || 'ID'}</span>
                             <span className="text-[11px] font-bold font-mono text-[var(--fg-accent)]">{item.id}</span>
                           </div>
-                          <div className="p-2.5 rounded-[var(--radius-sm)] flex flex-col items-center justify-center text-center bg-[var(--surface-subtle)] border border-[var(--border-default)]">
+                          <div className="p-2.5 rounded-shape-sm flex flex-col items-center justify-center text-center bg-[var(--surface-subtle)] border border-[var(--border-default)]">
                             <Clock size={13} className="text-[var(--text-muted)] mb-1" />
                             <span className="text-[9px] font-bold text-[var(--text-muted)] uppercase tracking-wider">{t('renewal') || 'Renewal'}</span>
                             <span className="text-[11px] font-bold text-[var(--text-muted)]">{renewalDate}</span>
@@ -287,9 +288,9 @@ export const UsageRadar: React.FC = () => {
       </div>
 
       {/* Info Section */}
-      <div className="p-4 sm:p-5 rounded-[var(--radius-md)] border border-[var(--border-accent)]/20 bg-[var(--bg-accent-muted)]">
+      <div className="p-4 sm:p-5 rounded-shape-md border border-[var(--border-accent)]/20 bg-[var(--bg-accent-muted)]">
         <div className="flex gap-3 items-start">
-          <div className="w-8 h-8 shrink-0 rounded-[var(--radius-sm)] flex items-center justify-center bg-[var(--bg-accent-muted)] text-[var(--fg-accent)] border border-[var(--border-accent)]/20">
+          <div className="w-8 h-8 shrink-0 rounded-shape-sm flex items-center justify-center bg-[var(--bg-accent-muted)] text-[var(--fg-accent)] border border-[var(--border-accent)]/20">
             <AlertCircle size={16} />
           </div>
           <div className="space-y-1">

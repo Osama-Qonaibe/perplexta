@@ -76,7 +76,7 @@ export const PopCard = forwardRef<HTMLDivElement, PopCardProps>(({
       exit="closed"
       className={`
         ${className.includes('w-full') ? 'w-full min-w-full max-w-full' : 'w-max min-w-[170px] max-w-[280px]'} p-1.5
-        rounded-[var(--radius-md)] border border-[var(--border-default)] bg-[var(--surface-card)] text-[var(--text-primary)]
+        rounded-shape-md border border-[var(--border-default)] bg-[var(--surface-card)] text-[var(--text-primary)]
         shadow-[0_12px_32px_-8px_rgba(0,0,0,0.5),0_4px_12px_-2px_rgba(0,0,0,0.25),inset_0_1px_0_0_color-mix(in_oklab,var(--text-primary)_5%,transparent)]
         space-y-0.5 transform-gpu flex flex-col select-none
         custom-scrollbar overflow-hidden ${originClass}

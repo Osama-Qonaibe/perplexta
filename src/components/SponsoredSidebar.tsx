@@ -147,24 +147,24 @@ export const SponsoredSidebar: React.FC<{ className?: string }> = ({ className =
               exit={{ opacity: 0, y: -12 }}
               transition={{ duration: 0.15 }}
               onClick={(e) => handleAdClick(ad, e)}
-              className="group relative cursor-pointer rounded-[var(--radius-lg)] border border-[var(--border-default)] bg-[var(--surface-card)] p-3 hover:border-[var(--border-accent)] transition-theme flex flex-col gap-2"
+              className="group relative cursor-pointer rounded-shape-lg border border-[var(--border-default)] bg-[var(--surface-card)] p-3 hover:border-[var(--border-accent)] transition-theme flex flex-col gap-2"
             >
               <button
                 onClick={(e) => handleDismissAd(ad.id, e)}
                 title={isRtl ? 'إخفاء الإعلان' : 'Hide Ad'}
-                className="absolute top-2 end-2 z-10 w-5 h-5 rounded-[var(--radius-xs)] bg-[var(--surface-subtle)] hover:bg-[var(--status-danger)] text-[var(--text-muted)] hover:text-white flex items-center justify-center opacity-80 group-hover:opacity-100 transition-theme border border-[var(--border-default)] cursor-pointer"
+                className="absolute top-2 end-2 z-10 w-5 h-5 rounded-shape-xs bg-[var(--surface-subtle)] hover:bg-[var(--status-danger)] text-[var(--text-muted)] hover:text-white flex items-center justify-center opacity-80 group-hover:opacity-100 transition-theme border border-[var(--border-default)] cursor-pointer"
               >
                 <X size={12} />
               </button>
 
-              <div className="relative w-full aspect-[16/9] rounded-[var(--radius-sm)] overflow-hidden bg-[var(--surface-subtle)] border border-[var(--border-default)]">
+              <div className="relative w-full aspect-[16/9] rounded-shape-sm overflow-hidden bg-[var(--surface-subtle)] border border-[var(--border-default)]">
                 <ProgressiveImage
                   src={getMediaUrl(ad.image_url)}
                   alt={title}
                   className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-slow"
                 />
                 {badge && (
-                  <span className="absolute bottom-1.5 start-1.5 z-10 bg-[var(--surface-card)] text-[var(--fg-accent)] text-[10px] font-bold px-1.5 py-0.5 rounded-[var(--radius-xs)] border border-[var(--border-accent)]/40 tracking-tight">
+                  <span className="absolute bottom-1.5 start-1.5 z-10 bg-[var(--surface-card)] text-[var(--fg-accent)] text-[10px] font-bold px-1.5 py-0.5 rounded-shape-xs border border-[var(--border-accent)]/40 tracking-tight">
                     {badge}
                   </span>
                 )}

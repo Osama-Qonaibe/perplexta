@@ -9,7 +9,7 @@ interface PagePreviewModalProps {
 export const PagePreviewModal: React.FC<PagePreviewModalProps> = ({ url, onClose }) => {
   return (
     <div className="fixed inset-0 z-50 overflow-y-auto flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 py-12 md:py-16">
-      <div className="bg-[var(--surface-card)] text-[var(--text-primary)] w-full max-w-sm h-[80vh] rounded-[var(--radius-lg)] overflow-hidden flex flex-col shadow-2xl border border-[var(--border-default)]">
+      <div className="bg-[var(--surface-card)] text-[var(--text-primary)] w-full max-w-sm h-[80vh] rounded-shape-lg overflow-hidden flex flex-col shadow-2xl border border-[var(--border-default)]">
         <div className="flex items-center justify-between p-3 border-b border-[var(--border-default)] bg-[var(--surface-subtle)]">
           <span className="text-xs font-mono font-bold uppercase text-[var(--text-muted)] truncate">{url}</span>
           <button

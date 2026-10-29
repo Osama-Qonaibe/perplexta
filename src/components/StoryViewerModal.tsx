@@ -359,11 +359,11 @@ export const StoryViewerModal: React.FC<StoryViewerModalProps> = ({
           <div className="absolute inset-0 bg-[var(--surface-overlay)] backdrop-blur-2xl" />
         </div>
 
-        <div className="relative w-full h-full rounded-2xl md:rounded-[var(--radius-lg)] bg-[var(--surface-page)] shadow-2xl overflow-hidden z-10 border-0 md:border md:border-[var(--border-default)] flex items-center justify-center md:w-auto md:aspect-[9/16] md:max-w-none md:h-[95vh]">
+        <div className="relative w-full h-full rounded-2xl md:rounded-shape-lg bg-[var(--surface-page)] shadow-2xl overflow-hidden z-10 border-0 md:border md:border-[var(--border-default)] flex items-center justify-center md:w-auto md:aspect-[9/16] md:max-w-none md:h-[95vh]">
           {/* Progress Bars (Persistent) */}
           <div className="absolute top-4 inset-x-0 z-50 flex items-center gap-1 px-4 pointer-events-none">
             {stories.map((story, idx) => (
-              <div key={`story-progress-${story.id || 'story'}-${idx}`} className="h-1 bg-white/20 rounded-[var(--radius-xs)] overflow-hidden flex-1 backdrop-blur-sm">
+              <div key={`story-progress-${story.id || 'story'}-${idx}`} className="h-1 bg-white/20 rounded-shape-xs overflow-hidden flex-1 backdrop-blur-sm">
                 <div 
                   className="h-full bg-white transition-all duration-[20ms] ease-linear"
                   style={{ 
@@ -456,7 +456,7 @@ export const StoryViewerModal: React.FC<StoryViewerModalProps> = ({
                       initial={{ opacity: 0, scale: 0.8 }}
                       animate={{ opacity: 1, scale: 1 }}
                       exit={{ opacity: 0, scale: 0.8 }}
-                      className="absolute top-20 z-40 bg-black/75 backdrop-blur-md px-3.5 py-1.5 rounded-[var(--radius-sm)] border border-[var(--border-accent)] text-white flex items-center gap-2 shadow-2xl pointer-events-auto"
+                      className="absolute top-20 z-40 bg-black/75 backdrop-blur-md px-3.5 py-1.5 rounded-shape-sm border border-[var(--border-accent)] text-white flex items-center gap-2 shadow-2xl pointer-events-auto"
                       onClick={(e) => {
                         e.stopPropagation();
                         resetZoom();
@@ -471,7 +471,7 @@ export const StoryViewerModal: React.FC<StoryViewerModalProps> = ({
                           e.stopPropagation();
                           resetZoom();
                         }}
-                        className="p-1 hover:bg-white/20 rounded-[var(--radius-xs)] transition-colors"
+                        className="p-1 hover:bg-white/20 rounded-shape-xs transition-colors"
                         title={isRtl ? 'إعادة ضبط' : 'Reset'}
                       >
                         <X size={12} />
@@ -560,11 +560,11 @@ export const StoryViewerModal: React.FC<StoryViewerModalProps> = ({
                   animate={{ opacity: 1, scale: 1, y: 0 }}
                   exit={{ opacity: 0, scale: 0.9, y: 20 }}
                   onClick={(e) => e.stopPropagation()}
-                  className="relative w-full max-w-sm overflow-hidden rounded-[var(--radius-lg)] border border-[var(--border-default)] shadow-2xl bg-[var(--surface-card)] text-[var(--text-primary)]"
+                  className="relative w-full max-w-sm overflow-hidden rounded-shape-lg border border-[var(--border-default)] shadow-2xl bg-[var(--surface-card)] text-[var(--text-primary)]"
                 >
                   <div className="p-6">
                     <div className="flex items-center gap-3 mb-4">
-                      <div className="w-10 h-10 rounded-[var(--radius-sm)] bg-[var(--fg-danger)]/10 flex items-center justify-center text-[var(--fg-danger)]">
+                      <div className="w-10 h-10 rounded-shape-sm bg-[var(--fg-danger)]/10 flex items-center justify-center text-[var(--fg-danger)]">
                         <AlertTriangle size={20} />
                       </div>
                       <h3 className="text-base font-black tracking-tight">

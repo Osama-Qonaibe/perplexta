@@ -108,7 +108,7 @@ export const BulletinBoardPage: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const { id: routeIdParam, subPath, subId } = useParams<{ id?: string; subPath?: string; subId?: string }>();
-  const { language, setLanguage, user, token, setIsAuthModalOpen, theme, siteSettings, isMobile, refreshUser, t } = useAppContext();
+  const { language, setLanguage, user, token, setIsAuthModalOpen, theme, siteSettings, isMobile, refreshUser, t, setIsSidebarOpen } = useAppContext();
   const isRtl = language === 'ar';
 
   const activeLogo = (theme === 'light' && siteSettings?.logoLightBase64)
@@ -163,6 +163,27 @@ export const BulletinBoardPage: React.FC = () => {
       if (activeTab !== 'inquiries') {
         setActiveTab('inquiries');
         fetchInquiries();
+      }
+    } else if (urlTab === 'saved' || path.includes('/saved')) {
+      if (activeTab !== 'saved') {
+        setActiveTab('saved');
+      }
+      fetchSavedAds();
+    } else if (urlTab === 'reels' || path.startsWith('/reels') || path.includes('/reels')) {
+      if (activeTab !== 'reels') {
+        setActiveTab('reels');
+      }
+    } else if (urlTab === 'pages' || path.includes('/pages')) {
+      if (activeTab !== 'pages') {
+        setActiveTab('pages');
+      }
+    } else if (urlTab === 'my_ads' || path.includes('/my-ads') || path.includes('/my_ads')) {
+      if (activeTab !== 'my_ads') {
+        setActiveTab('my_ads');
+      }
+    } else if (urlTab === 'analytics' || path.includes('/analytics')) {
+      if (activeTab !== 'analytics') {
+        setActiveTab('analytics');
       }
     } else if (path === '/viralbook' || path === '/bulletin' || path === '/viralbook/' || path === '/bulletin/') {
       if (activeTab !== 'board' && !urlTab) {
@@ -627,11 +648,13 @@ export const BulletinBoardPage: React.FC = () => {
       fetchInquiries();
       fetchMyPages();
       fetchWallet();
+      fetchSavedAds();
     } else {
       setMyAds([]);
       setInquiriesList([]);
       setMyPagesList([]);
       setWalletBalance(0);
+      setSavedAds([]);
     }
   }, [token]);
 
@@ -1007,6 +1030,7 @@ export const BulletinBoardPage: React.FC = () => {
       setIsAuthModalOpen(true);
       return;
     }
+    setActiveReelModalId(null);
     if (directReelInputRef.current) {
       directReelInputRef.current.value = '';
       directReelInputRef.current.click();
@@ -3198,6 +3222,8 @@ export const BulletinBoardPage: React.FC = () => {
       return;
     }
 
+    setActiveReelModalId(null);
+
     if (!isVideoFile(file)) {
       toast.error(isRtl ? 'يرجى اختيار مقطع فيديو لرفع الريلز (9:16)' : 'Please select a video file for Reels (9:16)');
       return;
@@ -3709,7 +3735,6 @@ export const BulletinBoardPage: React.FC = () => {
 
           {}
           <div className="flex items-center gap-2 sm:gap-2.5 min-w-0 shrink-0">
-            {}
             <NavLink
               to="/"
               onClick={() => {
@@ -3978,15 +4003,19 @@ export const BulletinBoardPage: React.FC = () => {
                 navigate('/chat');
               }}
               className="group h-8 px-2.5 sm:px-3 rounded-shape-sm border border-[var(--border-default)] hover:border-[var(--border-accent)] bg-transparent hover:bg-[var(--surface-subtle)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] font-bold text-xs flex items-center gap-1.5 transition-all duration-150 active:scale-95 shadow-2xs cursor-pointer shrink-0 touch-target-44-expanded"
-              title={selectedPageDetail ? (isRtl ? 'رجوع إلى الخلاصة' : 'Back to Feed') : (isRtl ? 'العودة إلى الصفحة الرئيسية' : 'Back to Home')}
+              title={selectedPageDetail ? (isRtl ? 'رجوع إلى الخلاصة' : 'Back to Feed') : (isRtl ? 'المحادثات الذكية' : 'AI Chat')}
             >
-              {isRtl ? (
-                <ArrowLeft size={13} className="text-[var(--text-muted)] group-hover:text-[var(--text-primary)] transition-transform duration-150 group-hover:-translate-x-0.5" />
+              {selectedPageDetail ? (
+                isRtl ? (
+                  <ArrowRight size={13} className="text-[var(--text-muted)] group-hover:text-[var(--text-primary)] transition-transform duration-150 group-hover:translate-x-0.5" />
+                ) : (
+                  <ArrowLeft size={13} className="text-[var(--text-muted)] group-hover:text-[var(--text-primary)] transition-transform duration-150 group-hover:-translate-x-0.5" />
+                )
               ) : (
-                <ArrowRight size={13} className="text-[var(--text-muted)] group-hover:text-[var(--text-primary)] transition-transform duration-150 group-hover:translate-x-0.5" />
+                <MessageSquare size={13} className="text-[var(--text-muted)] group-hover:text-[var(--accent)] transition-colors duration-150" />
               )}
               <span className="hidden xs:inline-flex h-[23px] leading-[23px] items-center font-sans text-xs font-bold text-[var(--text-secondary)] group-hover:text-[var(--text-primary)]">
-                {selectedPageDetail ? (isRtl ? 'رجوع' : 'Back') : (isRtl ? 'الرئيسية' : 'Home')}
+                {selectedPageDetail ? (isRtl ? 'رجوع' : 'Back') : (isRtl ? 'المحادثات' : 'Chat')}
               </span>
             </button>
           </div>
@@ -4217,6 +4246,21 @@ export const BulletinBoardPage: React.FC = () => {
                     >
                       <Plus size={13} />
                       <span className="h-[23px] leading-[23px] inline-flex items-center">{isRtl ? 'نشر إعلان' : 'Publish Ad'}</span>
+                    </button>
+                  </div>
+
+                  {/* Return to Platform AI Chat */}
+                  <div className="pt-2 border-t border-[var(--border-default)]">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setIsMobileSidebarOpen(false);
+                        navigate('/chat');
+                      }}
+                      className="w-full h-8 px-2.5 rounded-shape-sm bg-[var(--surface-subtle)] hover:bg-[var(--surface-card)] border border-[var(--border-default)] text-[var(--text-primary)] font-bold text-xs flex items-center justify-center gap-2 cursor-pointer transition-theme touch-target-44-expanded active:scale-98"
+                    >
+                      <MessageSquare size={14} className="text-accent" />
+                      <span>{isRtl ? 'المحادثات الذكية ومحرك الذكاء' : 'AI Chat & Platform Hub'}</span>
                     </button>
                   </div>
                 </div>
@@ -5234,7 +5278,7 @@ export const BulletinBoardPage: React.FC = () => {
                 </div>
 
                 {/* Page Cover Banner */}
-                <div className="h-44 sm:h-56 md:h-64 w-full bg-[var(--surface-subtle)] relative overflow-hidden rounded-t-[var(--radius-md)] border-b border-[var(--border-default)]">
+                <div className="h-44 sm:h-56 md:h-64 w-full bg-[var(--surface-subtle)] relative overflow-hidden rounded-t-shape-md border-b border-[var(--border-default)]">
                   <img
                     src={getMediaUrl(selectedPageDetail.page.cover_url)}
                     alt={selectedPageDetail.page.name}
@@ -6125,7 +6169,8 @@ export const BulletinBoardPage: React.FC = () => {
           setIsAdModalOpen(false);
         }}
         size="md"
-        layer="modal"
+        layer="lightbox"
+        className="!z-[1350]"
         closeOnBackdrop={false}
         contentClassName="!p-0 !space-y-0 max-w-[480px] w-full h-fit max-h-[86vh] sm:max-h-[82vh] flex flex-col justify-start overflow-hidden rounded-shape-lg shadow-2xl bg-[var(--surface-card)] border border-[var(--border-default)]"
       >
@@ -6516,7 +6561,6 @@ export const BulletinBoardPage: React.FC = () => {
                                 item.type === 'video' ? { ...item, thumbnailUrl: coverUrl } : item
                               )
                             }));
-                            toast.success(isRtl ? 'تم تعيين صورة الغلاف' : 'Cover image selected');
                             if (file) {
                               const formData = new FormData();
                               formData.append('file', file);
@@ -8170,7 +8214,6 @@ export const BulletinBoardPage: React.FC = () => {
               audio_track_id: trimmed.audioTrack.id || ''
             } : {})
           }));
-          toast.success(isRtl ? 'تم تحرير وقص الفيديو بنجاح! جاهز للنشر' : 'Reel trimmed & ready to publish!');
           setIsAdModalOpen(true);
         }}
       />
@@ -8273,7 +8316,7 @@ export const BulletinBoardPage: React.FC = () => {
 
       {}
       <AnimatePresence>
-        {activeReelModalId !== null && (
+        {activeReelModalId !== null && activeTab !== 'reels' && (
           <ReelsFeed
             ads={combinedReelsAds.length > 0 ? combinedReelsAds : ads}
             initialAdId={activeReelModalId}

@@ -35,15 +35,15 @@ export const ELEVATION = {
  * Concentric Radii Scale
  */
 export const CONCENTRIC_RADII = {
-  button: 'rounded-[var(--radius-sm)]',       // 8px - buttons, inputs, menu action items
-  input: 'rounded-[var(--radius-sm)]',
-  actionItem: 'rounded-[var(--radius-sm)]',
-  popover: 'rounded-[var(--radius-md)]',      // 12px - popovers, modals, containers, floating cards
-  modal: 'rounded-[var(--radius-md)]',
-  container: 'rounded-[var(--radius-md)]',
-  card: 'rounded-[var(--radius-md)]',
-  badge: 'rounded-[var(--radius-xs)]',        // 4px-6px - mini badges, segmented control chips
-  chip: 'rounded-[var(--radius-xs)]',
+  button: 'rounded-shape-sm',       // 8px - buttons, inputs, menu action items
+  input: 'rounded-shape-sm',
+  actionItem: 'rounded-shape-sm',
+  popover: 'rounded-shape-md',      // 12px - popovers, modals, containers, floating cards
+  modal: 'rounded-shape-md',
+  container: 'rounded-shape-md',
+  card: 'rounded-shape-md',
+  badge: 'rounded-shape-xs',        // 4px-6px - mini badges, segmented control chips
+  chip: 'rounded-shape-xs',
   avatar: 'rounded-full',                     // 9999px - live status dots, user avatars
   statusDot: 'rounded-full',
 } as const;

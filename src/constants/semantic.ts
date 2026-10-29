@@ -127,7 +127,7 @@ export const ELEVATION = {
  */
 export const SHAPE = {
   xs: 'rounded-shape-xs',     // 4px - Micro badges & tags
-  sm: 'rounded-shape-sm',     // 8px - Buttons & input fields (replaces rounded-[8px])
+  sm: 'rounded-shape-sm',     // 8px - Buttons & input fields (replaces rounded-shape-sm)
   md: 'rounded-shape-md',     // 12px - Standard cards & dialogs (default)
   lg: 'rounded-shape-lg',     // 16px - Large modals & drawers (replaces rounded-2xl)
   full: 'rounded-shape-full', // 9999px - Capsule navigation, pills & circular avatars

@@ -906,29 +906,40 @@ const ChatPage: React.FC = () => {
                 exit="exit"
                 className="flex-1 flex flex-col w-full h-full min-h-0 overflow-hidden relative"
               >
-                {/* Logged-In Home State: Cohesive Minimalist Layout matching Visitor Shell */}
-                <div className={themeConfig.visitor.shell}>
+                {/* Desktop Logged-In Home State: Centered Hero Layout */}
+                <div className={`hidden sm:flex ${themeConfig.visitor.shell}`}>
                   <div className={themeConfig.visitor.content}>
-                    <div className="w-full flex-1 flex flex-col justify-center items-center py-2 sm:py-6">
-                      <div className={`${contentMaxWidthClass} ${contentPaddingClass} mb-2 sm:mb-4 ${dir === 'rtl' ? 'text-right' : 'text-left'} select-none`}>
-                        <h1 className="text-xl sm:text-2xl md:text-3xl font-extrabold sm:font-black text-[var(--text-primary)] tracking-tight font-sans leading-snug">
-                          <span className="sm:hidden">{dir === 'rtl' ? 'ما الذي تريد معرفته اليوم؟' : 'What to explore today?'}</span>
-                          <span className="hidden sm:inline">{dir === 'rtl' ? 'ما الذي ترغب في معرفته أو تحليله اليوم؟' : 'What do you want to know?'}</span>
+                    <div className="w-full flex-1 flex flex-col justify-center items-center py-6">
+                      <div className={`${contentMaxWidthClass} ${contentPaddingClass} mb-4 ${dir === 'rtl' ? 'text-right' : 'text-left'} select-none`}>
+                        <h1 className="text-2xl md:text-3xl font-black text-[var(--text-primary)] tracking-tight font-sans leading-snug">
+                          {dir === 'rtl' ? 'ما الذي ترغب في معرفته أو تحليله اليوم؟' : 'What do you want to know?'}
                         </h1>
                       </div>
                       
-                      <div 
-                        className={`${contentMaxWidthClass} ${contentPaddingClass} py-2.5`}
-                      >
+                      <div className={`${contentMaxWidthClass} ${contentPaddingClass} py-2.5`}>
                         <ChatComposer {...composerProps} />
                       </div>
                     </div>
                   </div>
 
-                  {/* Footer App Info */}
-                  <div className="text-center pt-2.5 sm:pt-4 pb-[calc(8px+env(safe-area-inset-bottom,0px))] sm:pb-3 border-none select-none text-[11px] font-medium text-[var(--text-muted)] px-1 sm:px-2 bg-transparent leading-relaxed">
-                    <span className="sm:hidden">{t('appName')} {dir === 'rtl' ? 'قد يخطئ أحياناً. تحقق من النتائج المهمة.' : 'may be inaccurate. Verify facts.'}</span>
-                    <span className="hidden sm:inline">{t('appName')} {dir === 'rtl' ? 'قد يقدم معلومات غير دقيقة أحياناً. يُرجى التحقق من النتائج المهمة.' : 'may display inaccurate info. Verify important facts.'}</span>
+                  {/* Desktop Footer App Info */}
+                  <div className="text-center pt-4 pb-3 border-none select-none text-[11px] font-medium text-[var(--text-muted)] px-2 bg-transparent leading-relaxed">
+                    {t('appName')} {dir === 'rtl' ? 'قد يقدم معلومات غير دقيقة أحياناً. يُرجى التحقق من النتائج المهمة.' : 'may display inaccurate info. Verify important facts.'}
+                  </div>
+                </div>
+
+                {/* Mobile Logged-In Home State: Uncrowded Open Center + Bottom-Docked Composer */}
+                <div className="flex sm:hidden flex-col flex-1 w-full h-full min-h-0 justify-between overflow-hidden">
+                  <div className="flex-1 flex flex-col items-center justify-center px-6 select-none">
+                    <h1 className="text-xl font-extrabold text-[var(--text-primary)] tracking-tight font-sans leading-snug text-center">
+                      {dir === 'rtl' ? 'ما الذي تريد معرفته اليوم؟' : 'What to explore today?'}
+                    </h1>
+                  </div>
+
+                  <div className="w-full bg-[var(--surface-page)] relative z-20 shrink-0">
+                    <div className={`${contentMaxWidthClass} ${contentPaddingClass} pt-1.5 pb-[calc(8px+env(safe-area-inset-bottom,0px))]`}>
+                      <ChatComposer {...composerProps} />
+                    </div>
                   </div>
                 </div>
               </motion.div>
@@ -1095,7 +1106,7 @@ const ChatPage: React.FC = () => {
                       <button
                         type="button"
                         onClick={() => scrollToBottom()}
-                        className="w-10 h-10 rounded-full bg-[var(--surface-card)] hover:bg-[var(--surface-subtle)] text-[var(--text-primary)] hover:text-[var(--fg-accent)] border border-[var(--border-default)] hover:border-[var(--border-accent)]/80 shadow-2xl transition-all duration-fast cursor-pointer flex items-center justify-center group active:scale-95 touch-target-44"
+                        className="w-9 h-9 rounded-shape-sm bg-[var(--surface-card)] hover:bg-[var(--surface-subtle)] text-[var(--text-primary)] hover:text-[var(--fg-accent)] border border-[var(--border-default)] hover:border-[var(--border-accent)]/80 shadow-md transition-all duration-fast cursor-pointer flex items-center justify-center group active:scale-95 touch-target-44"
                         title={dir === 'rtl' ? 'النزول لآخر سجل المحادثة' : 'Scroll to latest message'}
                         aria-label={dir === 'rtl' ? 'النزول لآخر سجل المحادثة' : 'Scroll to latest message'}
                       >

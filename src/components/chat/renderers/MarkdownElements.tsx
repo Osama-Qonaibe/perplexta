@@ -11,7 +11,7 @@ export const ThinkingSteps = ({ steps, dir, query }: { steps: any[], dir: 'ltr' 
   return (
     <div className="mb-4 sm:mb-6 space-y-2 sm:space-y-3" id="thinking-steps-container">
       <div className="flex items-center gap-2 mb-2 sm:mb-4 opacity-70">
-         <div className="w-1 h-3 sm:w-1.5 sm:h-4 bg-[var(--fg-accent)]/60 rounded-[var(--radius-xs)]" />
+         <div className="w-1 h-3 sm:w-1.5 sm:h-4 bg-[var(--fg-accent)]/60 rounded-shape-xs" />
          <span className="text-[9px] sm:text-[10px] font-bold uppercase tracking-[0.2em] text-[var(--text-muted)]">
            {dir === 'rtl' ? 'مراحل التحليل والبحث' : 'ANALYSIS & RESEARCH PHASES'}
          </span>
@@ -26,15 +26,15 @@ export const ThinkingSteps = ({ steps, dir, query }: { steps: any[], dir: 'ltr' 
             className="flex items-center gap-2 sm:gap-4 group"
           >
             {step.status === 'completed' ? (
-              <div className="w-3.5 h-3.5 sm:w-4 sm:h-4 rounded-[var(--radius-xs)] bg-[var(--surface-subtle)] flex items-center justify-center text-[var(--fg-accent)]">
+              <div className="w-3.5 h-3.5 sm:w-4 sm:h-4 rounded-shape-xs bg-[var(--surface-subtle)] flex items-center justify-center text-[var(--fg-accent)]">
                 <Check size={10} strokeWidth={3} />
               </div>
             ) : step.status === 'processing' ? (
-              <div className="w-3.5 h-3.5 sm:w-4 sm:h-4 rounded-[var(--radius-xs)] bg-[var(--surface-subtle)] flex items-center justify-center">
+              <div className="w-3.5 h-3.5 sm:w-4 sm:h-4 rounded-shape-xs bg-[var(--surface-subtle)] flex items-center justify-center">
                 <div className="w-1 h-1 rounded-[var(--radius-full)] bg-[var(--fg-accent)] animate-pulse" />
               </div>
             ) : (
-              <div className="w-3.5 h-3.5 sm:w-4 sm:h-4 rounded-[var(--radius-xs)] bg-[var(--surface-card)] border border-[var(--border-default)] flex items-center justify-center">
+              <div className="w-3.5 h-3.5 sm:w-4 sm:h-4 rounded-shape-xs bg-[var(--surface-card)] border border-[var(--border-default)] flex items-center justify-center">
                 <div className="w-1 h-1 rounded-[var(--radius-full)] bg-[var(--text-muted)]" />
               </div>
             )}
@@ -85,11 +85,11 @@ export const CitationRow = ({ cite, idx, dir, query }: { cite: any, idx: number,
       href={cleanUrl || '#'}
       target="_blank"
       rel="noopener noreferrer"
-      className="flex items-center gap-3.5 p-2.5 rounded-[var(--radius-xs)] hover:bg-[var(--surface-subtle)] transition-theme group min-w-0 cursor-pointer border-b border-[var(--border-default)]/30 last:border-0"
+      className="flex items-center gap-3.5 p-2.5 rounded-shape-xs hover:bg-[var(--surface-subtle)] transition-theme group min-w-0 cursor-pointer border-b border-[var(--border-default)]/30 last:border-0"
     >
       <div className="flex-shrink-0">
         <div 
-          className="w-7 h-7 rounded-[var(--radius-xs)] flex items-center justify-center border border-[var(--border-default)]/60 bg-[var(--surface-card)] shadow-sm transition-theme group-hover:scale-105 group-hover:border-[var(--border-accent)]"
+          className="w-7 h-7 rounded-shape-xs flex items-center justify-center border border-[var(--border-default)]/60 bg-[var(--surface-card)] shadow-sm transition-theme group-hover:scale-105 group-hover:border-[var(--border-accent)]"
           style={{ color: brand ? brand.color : 'inherit' }}
         >
           {brand ? (
@@ -107,7 +107,7 @@ export const CitationRow = ({ cite, idx, dir, query }: { cite: any, idx: number,
 
       <div className="flex-1 min-w-0">
         <div className="flex items-center gap-1.5 min-w-0">
-          <div className="w-4 h-4 rounded-[var(--radius-xs)] bg-[var(--surface-subtle)] flex items-center justify-center text-[9px] font-black text-[var(--fg-accent)] shrink-0 group-hover:bg-[var(--fg-accent)] group-hover:text-white transition-theme">
+          <div className="w-4 h-4 rounded-shape-xs bg-[var(--surface-subtle)] flex items-center justify-center text-[9px] font-black text-[var(--fg-accent)] shrink-0 group-hover:bg-[var(--fg-accent)] group-hover:text-white transition-theme">
             {cite.index || (idx + 1)}
           </div>
           <span className="text-[11px] font-semibold text-[var(--text-primary)] truncate group-hover:text-[var(--fg-accent)] transition-theme">
@@ -192,7 +192,7 @@ export const MarkdownLink = ({ href, children }: { href?: string, children: Reac
       </a>
 
       {showTooltip && (meta?.title || meta?.description) && (
-        <div className="absolute z-[9999] bottom-full left-1/2 -translate-x-1/2 mb-2 w-[280px] p-3 bg-[var(--surface-card)] rounded-[var(--radius-md)] shadow-xl border border-[var(--border-default)] flex flex-col gap-2 pointer-events-none transition-theme">
+        <div className="absolute z-[9999] bottom-full left-1/2 -translate-x-1/2 mb-2 w-[280px] p-3 bg-[var(--surface-card)] rounded-shape-md shadow-xl border border-[var(--border-default)] flex flex-col gap-2 pointer-events-none transition-theme">
           <div className="flex items-start gap-2 min-w-0">
             <div className="w-5.5 h-5.5 rounded overflow-hidden bg-[var(--surface-inset)] flex-shrink-0 flex items-center justify-center border border-[var(--border-default)]/40 text-accent">
               {brand ? brand.icon("w-3.5 h-3.5") : <img src={favicon} className="w-3.5 h-3.5 object-contain" alt="" />}
@@ -261,12 +261,12 @@ export const MarkdownCitationLink = ({ citation, index }: { citation: any, index
           className="w-3.5 h-3.5 flex items-center justify-center shrink-0 text-[var(--text-muted)] group-hover/cite:text-[var(--fg-accent)] transition-theme"
           style={{ color: brand ? brand.color : 'inherit' }}
         >
-          {brand ? brand.icon("w-3.5 h-3.5 rounded-[var(--radius-xs)]") : <img src={favicon} className="w-3.5 h-3.5 object-contain rounded-[var(--radius-xs)] bg-[var(--surface-card)]" alt="" />}
+          {brand ? brand.icon("w-3.5 h-3.5 rounded-shape-xs") : <img src={favicon} className="w-3.5 h-3.5 object-contain rounded-shape-xs bg-[var(--surface-card)]" alt="" />}
         </span>
       </a>
 
       {showTooltip && (displayTitle || displayDesc) && (
-        <div className="absolute z-[9999] bottom-full left-1/2 -translate-x-1/2 mb-2 w-[280px] p-3 bg-[var(--surface-card)] rounded-[var(--radius-md)] shadow-xl border border-[var(--border-default)] flex flex-col gap-2 pointer-events-none transition-theme">
+        <div className="absolute z-[9999] bottom-full left-1/2 -translate-x-1/2 mb-2 w-[280px] p-3 bg-[var(--surface-card)] rounded-shape-md shadow-xl border border-[var(--border-default)] flex flex-col gap-2 pointer-events-none transition-theme">
           <div className="flex items-start gap-2 min-w-0">
             <div className="w-5.5 h-5.5 rounded overflow-hidden bg-[var(--surface-inset)] flex-shrink-0 flex items-center justify-center border border-[var(--border-default)]/40 text-[var(--fg-accent)]">
               {brand ? brand.icon("w-3.5 h-3.5") : <img src={favicon} className="w-3.5 h-3.5 object-contain" alt="" />}

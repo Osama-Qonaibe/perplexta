@@ -311,6 +311,8 @@ export const MobileChatHistoryDrawer: React.FC = () => {
                   type="button"
                   onClick={() => setIsOpen(false)}
                   className="w-8 h-8 rounded-shape-sm bg-[var(--surface-subtle)] border border-[var(--border-default)] text-[var(--text-muted)] hover:text-[var(--text-primary)] flex items-center justify-center active:scale-95 transition-colors cursor-pointer"
+                  aria-label={isRtl ? 'إغلاق' : 'Close'}
+                  title={isRtl ? 'إغلاق' : 'Close'}
                 >
                   <X size={16} />
                 </button>
@@ -426,15 +428,17 @@ export const MobileChatHistoryDrawer: React.FC = () => {
                                     setEditingChatId(chat.id);
                                     setEditingTitle(chat.title || '');
                                   }}
-                                  className="w-7 h-7 rounded-lg hover:bg-[var(--surface-subtle)] text-[var(--text-muted)] hover:text-[var(--text-primary)] flex items-center justify-center"
+                                  className="w-7 h-7 rounded-lg hover:bg-[var(--surface-subtle)] text-[var(--text-muted)] hover:text-[var(--text-primary)] flex items-center justify-center cursor-pointer"
                                   title={isRtl ? 'إعادة تسمية' : 'Rename'}
+                                  aria-label={isRtl ? 'إعادة تسمية' : 'Rename'}
                                 >
                                   <Edit2 size={13} />
                                 </button>
                                 <button
                                   onClick={() => setDeletingChatId(chat.id)}
-                                  className="w-7 h-7 rounded-lg hover:bg-rose-500/10 text-[var(--text-muted)] hover:text-rose-500 flex items-center justify-center"
+                                  className="w-7 h-7 rounded-lg hover:bg-rose-500/10 text-[var(--text-muted)] hover:text-rose-500 flex items-center justify-center cursor-pointer"
                                   title={isRtl ? 'حذف' : 'Delete'}
+                                  aria-label={isRtl ? 'حذف' : 'Delete'}
                                 >
                                   <Trash2 size={13} />
                                 </button>

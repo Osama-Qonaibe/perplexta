@@ -3577,7 +3577,7 @@ export const AppStudioPage: React.FC = () => {
                   <h2 className="text-xs font-bold leading-none uppercase tracking-wider text-[var(--text-primary)]">
                     {language === 'ar' ? 'قاعدة البيانات' : 'Database'}
                   </h2>
-                  <button onClick={() => setIsDbModalOpen(true)} className="w-7 h-7 rounded-shape-xs bg-[var(--surface-subtle)] border border-[var(--border-default)] inline-flex items-center justify-center hover:border-accent/40 text-accent transition-colors cursor-pointer shrink-0" title={language === 'ar' ? 'تكبير' : 'Expand'}><ArrowUpRight size={13} /></button>
+                  <button onClick={() => setIsDbModalOpen(true)} className="w-8 h-8 rounded-shape-xs bg-[var(--surface-subtle)] border border-[var(--border-default)] inline-flex items-center justify-center hover:border-accent/40 text-accent transition-colors cursor-pointer shrink-0" title={language === 'ar' ? 'تكبير' : 'Expand'}><ArrowUpRight size={13} /></button>
                 </div>
                 <div className="flex-1 overflow-y-auto p-3 space-y-3">
                   <div className="space-y-1.5">

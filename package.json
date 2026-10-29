@@ -17,6 +17,7 @@
     "db:reset:destructive": "tsx server/scripts/destructive_reset_db.ts",
     "clean": "rm -rf dist",
     "check:colors": "node scripts/check-color-governance.js",
+    "check:heights": "node scripts/check-height-governance.cjs",
     "audit:colors": "tsx scripts/audit-colors.ts",
     "validate:pwa": "tsx scripts/validate-pwa.ts",
     "validate:manifest": "tsx scripts/validate-pwa.ts",

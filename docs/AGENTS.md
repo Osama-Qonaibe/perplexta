@@ -28,6 +28,10 @@ This project is governed by immutable architectural principles. Any developer, A
    It is **STRICTLY FORBIDDEN** to store GPU compute nodes, serverless endpoints (such as RunPod), or specialized multimodal workers inside `api_keys_vault`. They must remain permanently isolated inside `gpu_providers` and `gpu_provider_models`. Visual and media tools (`vision`, `image`, `video`) must strictly resolve their models through the GPU Infrastructure vault and never contaminate or be contaminated by general text-based LLM APIs.
    *(يُمنع منعاً باتاً دمج خوادم الـ GPU ومزودي معالجة الصور والفيديو مع مفاتيح الـ LLM النصية؛ العزل الهرمي التام لقواعد البيانات وقوائم النماذج أمر سيادي صارم).*
 
+6. **Immutable Mobile Architecture & Total Desktop Decoupling (ميثاق قدسية عزل واستقلالية نسخة الموبايل ومنع ربطها بتطويرات الديسكتوب)**:
+   It is **STRICTLY FORBIDDEN** to modify, disrupt, or bind the dedicated mobile configuration (`MobileAppLayout`, `MobileNavigation`, `MobileWalletView`, and mobile gateway views) to any future desktop changes or layout evolutions. The mobile user experience is a sovereign, lightweight, high-performance ecosystem governed by strict M3 standards, 40px/32px button height alignments, zero dead spaces, and complete isolation from heavy desktop sidebars and multi-column panels. Any attempt to compromise the mobile experience or couple it with desktop-only features is a terminal architectural violation.
+   *(يُمنع منعاً باتاً كسر أو تعديل إعدادات وتصميم نسخة الموبايل القائمة، أو ربط أي تطويرات لسطح المكتب ببيئة الموبايل المستقلة. تجربة الموبايل منظومة سيادية خفيفة وموحدة الهوية ومحمية كلياً من أي تغيير مستقبلي).*
+
 *Failure to comply with these tenets is a direct violation of project perplexta and will be treated as sabotage. Any assistant or developer who attempts to "simplify" by breaking the architectural segregation or restructuring existing components will be permanently blocked from the system.*
 
 ---
@@ -116,6 +120,45 @@ This identity serves as our compass. Every engineering decision—from the "Sile
     - **Dedicated Identity Route (`GET /api/rinex/creators/me`)**: Added an authenticated sub-millisecond endpoint returning the user's authentic creator status (`{ isCreator: boolean, creator: RinexCreator | null }`), preventing client-side heuristics from failing.
     - **Dynamic Join Button Elimination for Certified Creators**: In `CreatorProfilePage.tsx`, registered creators never see the "هل أنت مصمم محترف؟ انضم لشبكة المبدعين" button; it is automatically swapped for an interactive M3 status card showing their certified handle `@username`, a direct link to their Creator Dashboard (`/settings/creators-hub`), and a public profile shortcut.
     - **Modal Defensive Shield (`CreatorRegistrationModal.tsx`)**: The registration modal actively detects authenticated creator status upon opening; if already certified, it renders an informative certificate card and suppresses the registration form, permanently closing the multiple-account loophole.
+  - **Sovereign Mobile UI/UX & Cross-Platform Responsive Architecture (Zero-Contradiction Protocol)**:
+    - **M3 Corner Radii Strict Hierarchy Enforcement**:
+      - `16px` (`rounded-shape-lg` / `rounded-2xl`): Enforced exclusively for outer hero containers, card wrappers, and bottom sheet drawers (`MobileChatHistoryDrawer`, `MobileWalletView`, `DesktopOnlyNotice`).
+      - `12px` (`rounded-shape-md` / `rounded-xl`): Enforced exclusively for sub-cards, modals, dropdowns, and wallet subpanels.
+      - `8px` (`rounded-shape-sm` / `rounded-lg`): Enforced exclusively for interactive buttons, input fields (`<input>`, `<textarea>`), and quick action buttons.
+      - `4px` (`rounded-shape-xs` / `rounded`): Enforced exclusively for micro-badges, status tags, and code blocks.
+    - **Interactive Heights & Horizontal Alignment Lock**:
+      - `32px` (`h-8`): Enforced standard height for mini action buttons, preset chips, and table/card filters.
+      - `40px` (`h-10`): Enforced standard height for input fields and primary action buttons forming matching, unified horizontal blocks.
+    - **44px Touch Target Optimization & Safe Area Insets**:
+      - Enforced 44px minimum touch target size across all mobile bottom nav items, drawer controls, and interactive buttons via `.touch-target-44` and `min-h-[44px]` hitboxes. Integrated native safe area insets (`env(safe-area-inset-top)`, `env(safe-area-inset-bottom)`).
+  - **Mobile Gateway Navigation & Formal Copy Standardization**:
+    - **Dignified Title & Language Precision**: Purged language mixing and sovereign terminology in `ProjectOverviewPage.tsx` mobile header:
+      - Top Badge: `isRtl ? 'منصة بيربليكستا للمحمول' : 'Perplexta Mobile Workspace'`
+      - Main Title: `isRtl ? 'منصة الذكاء الاصطناعي والأبحاث المتقدمة' : 'Integrated AI Research & Analytics Platform'`
+      - Subtitle: `وصول مخصص وسريع للإنتاج العلمي، المحادثات الذكية، توليد الصور، وإدارة الحملات الإعلانية.`
+    - **Standardized Mobile Gateway CTAs**:
+      - Converted community feed CTA to **فيرال بوك** (`ViralBook`).
+      - Replaced duplicate chat button.
+      - Updated category chips to formal designations: **توليد الصور** (Image Generation), **باحث أكاديمي** (Academic Researcher), **مساعد الإعلانات** (Ad Assistant), and **استوديو التطبيقات** (Apps Studio).
+    - **Mobile Top Hamburger Purge & Single Nav Source**: Eliminated redundant top header hamburger menu and overlay modal in `ProjectOverviewPage.tsx`, unifying 100% of mobile navigation into `MobileNavigation.tsx` and `MobileAppLayout.tsx`.
+  - **Complete 4-Phase Zero-Contradiction Protocol Execution & Governance**:
+    - *Phase 1 (Mobile Reels & Offscreen Virtualization)*: Hardened `ReelsFeed.tsx` with offscreen video DOM virtualization (`activeIndex ± 2`), automatically unloading distant video elements onto image posters to preserve GPU RAM. Unified global mute state broadcasting across media views (`getGlobalMuteState`).
+    - *Phase 2 (Mobile Modals & Touch Target Governance)*: Refactored mobile comments drawer and overlay modals (`ActionConfirmationModal`, `StoryUploadModal`, `ReelsFeed`) to strictly comply with M3 container hierarchy (`rounded-t-shape-lg` 16px / `rounded-shape-lg` 16px) and 44px minimum touch targets.
+    - *Phase 3 (Clean Imports & W3C WCAG 2.1 Accessibility)*: Verified zero duplicate icon imports and added explicit `aria-label` attributes on all mobile icon-only buttons.
+    - *Phase 4 (Final Exit Gate Validation)*: Passed all automated governance checks (`npm run check:heights` with 0 violations, `check:colors` with 0 violations, `tsc` type checking, and `vite build` production compilation).
+  - **AdStats Database Foreign Key Violation Resolution**:
+    - *Root Cause Analysis*: Impression and click logging endpoints (`/api/bulletin/ads/:id/impression` & `/api/bulletin/ads/:id/click`) record metrics for posts in the `bulletin_ads` table. However, `ad_stats` had a legacy constraint (`fk_ad_stats_advertisement`) referencing the separate `advertisements` table, causing PostgreSQL foreign key violation errors (`insert or update on table "ad_stats" violates foreign key constraint "fk_ad_stats_advertisement"`).
+    - *Database Schema & Migration Fix*: Updated `server/db/migrations/core.schema.ts` to map `ad_stats.ad_id` foreign key to `bulletin_ads(id)` (`fk_ad_stats_bulletin_ad`). Added versioned migration `v137_ad_stats_bulletin_ads_foreign_key` in `server/db/migrations/versioned.ts` to automatically drop `fk_ad_stats_advertisement` and apply `fk_ad_stats_bulletin_ad`.
+  - **Mobile Reels Motion Transition & Duplicate Portal Resolution**:
+    - *Motion Video Audit Analysis*: Video recording analysis revealed that upon publishing a new Reel post, the application switched to `activeTab = 'reels'` (rendering inline `ReelsFeed` in `BulletinBoardPage.tsx:4270`) AND simultaneously set `activeReelModalId` (rendering a second `ReelsFeed` overlay modal portal in `BulletinBoardPage.tsx:8276`). Both portals created duplicate `fixed inset-0 z-[1220]` layers on `document.body`, causing dual video audio, split-screen video frame rendering (00:22–00:27), and closing flickering (00:28).
+    - *Portal Resolution*: Restructured `BulletinBoardPage.tsx` so that the `ReelsFeed` overlay portal renders strictly when `activeTab !== 'reels'`. Wrapped `ReelsFeed` portal in `motion.div` with GPU acceleration (`transform-gpu`) and opacity transitions for 60fps smooth modal animation.
+  - **Live Assistant Multi-Model Failover & Resilient Conversational Chain**:
+    - Refactored `/api/ai/live-assistant` in `server/routes/ai.ts` to execute a multi-tier fallback loop (`primary_model` -> `fallback_1_model` -> `fallback_2_model` -> default) with an 8-second candidate timeout (`headerTimeoutMs: 8000`), eliminating 15s timeout errors and guaranteeing continuous conversational fallback.
+  - **DevOps & Production Release Verification (Zero-Contradiction Exit Gate)**:
+    - Deep root clean-up purging `dist/`, `.vite/`, and `node_modules/.cache`.
+    - Verified 0 TypeScript errors via `tsc -p tsconfig.json --noEmit` (`lint_applet`).
+    - Verified 0 color governance violations via `npm run check:colors`.
+    - Verified 100% successful production build via `compile_applet`.
 
 ---
 
@@ -136,6 +179,17 @@ This identity serves as our compass. Every engineering decision—from the "Sile
       - `nodemailer` (Moderate GHSA-8c8m-p3m8-cjg8): Upgraded to `^10.2.1` in dependencies.
       - `serialize-javascript` (Moderate GHSA-m5mm-p8h7-m29v): Patched via overrides to `^7.1.4`.
     - **Immutable Preservation Mandate**: It is strictly forbidden to downgrade these packages or delete their overrides from `package.json` in any future work.
+  - **Sovereign Mobile Architecture & Total Desktop Decoupling Covenant (ميثاق استقلالية نسخة الموبايل الصارم)**:
+    - **Total Visual Contradiction Elimination**:
+      - *ViralBook Header Clutter Elimination*: Stripped the redundant mobile hamburger menu button from `BulletinBoardPage.tsx`, positioning the brand logo cleanly as the leading header anchor.
+      - *Guest Mobile Gateway Standardization*: Eliminated dark mode green button mismatches, aligning the primary action CTA to Perplexta Royal Blue (`bg-blue-600 hover:bg-blue-500 text-white`), swapping generic status dots for purposeful icons (`ImageIcon`, `BookOpen`, `Megaphone`, `MessageSquare`), and reducing viewport dead spacing (`pt-14 pb-4`).
+      - *Circular Button Purge*: Converted non-standard `rounded-full` controls (such as chat scroll-to-bottom) to canonical M3 `rounded-shape-sm` (8px).
+      - *Settings Double-Header Elimination*: Integrated `isSettingsRoute` into `isIsolatedMobileView` inside `MobileAppLayout.tsx`, completely removing the duplicate global header and replacing static home redirects with native history back-navigation (`navigate(-1)`).
+      - *Edge Border Line Annihilation*: Isolated `Sidebar.tsx` with explicit `hidden lg:flex` so collapsed sidebar borders never leak onto mobile or tablet viewports.
+      - *Tablet Base Offset Precision*: Coupled `DesktopLayout.tsx` base offset to `(min-width: 1024px)` media queries, eliminating the 50px white/dark phantom margins on 768px–1023px displays.
+    - **Supreme Non-Interference Covenant (ميثاق عدم المساس بنسخة الموبايل وعدم ربطها بتطويرات الديسكتوب)**:
+      - The mobile layout (`MobileAppLayout`, `MobileNavigation`, `MobileWalletView`) is hereby locked as an independent, immutable system.
+      - Future desktop features (e.g. multi-column layouts, heavy editor panels, expanded toolbars) MUST NEVER alter or bleed into the mobile experience.
 - **Tomorrow's Milestone (خطوة الغد)**: البدء في تطوير **استوديو الفيديو الاحترافي لإنشاء المقاطع الطويلة والسينمائية (Cinematic Long-Form Video Studio)**، وتحويل أداة الفيديو الحالية إلى بيئة إنتاج سينمائي متكاملة تدعم المشاهد المتتابعة، التحكم باللقطات، والإنتاج فائق الدقة.
 
 ---

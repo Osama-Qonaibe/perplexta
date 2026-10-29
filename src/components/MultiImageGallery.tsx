@@ -89,11 +89,11 @@ export const MultiImageGallery: React.FC<MultiImageGalleryProps> = ({
             />
             {/* Play Badge Overlay */}
             <div className="absolute inset-0 flex items-center justify-center pointer-events-none bg-black/15 group-hover:bg-black/25 transition-colors">
-              <div className="w-11 h-11 sm:w-13 sm:h-13 rounded-[var(--radius-xs)] bg-black/60 hover:bg-black/75 text-white flex items-center justify-center backdrop-blur-md border border-white/30 shadow-xl group-hover:scale-110 transition-transform duration-media">
+              <div className="w-11 h-11 sm:w-13 sm:h-13 rounded-shape-xs bg-black/60 hover:bg-black/75 text-white flex items-center justify-center backdrop-blur-md border border-white/30 shadow-xl group-hover:scale-110 transition-transform duration-media">
                 <Play size={22} className="fill-white translate-x-0.5" />
               </div>
             </div>
-            <span className="absolute bottom-2 start-2 px-1.5 py-0.5 rounded-[var(--radius-xs)] bg-black/70 text-white text-[10px] font-bold flex items-center gap-1 backdrop-blur-md shadow-sm z-10">
+            <span className="absolute bottom-2 start-2 px-1.5 py-0.5 rounded-shape-xs bg-black/70 text-white text-[10px] font-bold flex items-center gap-1 backdrop-blur-md shadow-sm z-10">
               <Film size={11} className="text-[var(--fg-accent)]" />
               <span>{isRtl ? 'فيديو' : 'Video'}</span>
             </span>
@@ -120,7 +120,7 @@ export const MultiImageGallery: React.FC<MultiImageGalleryProps> = ({
 
         {/* Caption badge if item has caption */}
         {item.caption && (
-          <div className="absolute top-2 start-2 px-2 py-0.5 rounded-[var(--radius-xs)] bg-black/65 text-white text-[10px] font-medium backdrop-blur-md opacity-0 group-hover:opacity-100 transition-opacity max-w-[85%] truncate pointer-events-none">
+          <div className="absolute top-2 start-2 px-2 py-0.5 rounded-shape-xs bg-black/65 text-white text-[10px] font-medium backdrop-blur-md opacity-0 group-hover:opacity-100 transition-opacity max-w-[85%] truncate pointer-events-none">
             {item.caption}
           </div>
         )}
@@ -166,7 +166,7 @@ export const MultiImageGallery: React.FC<MultiImageGalleryProps> = ({
         />
 
         <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center pointer-events-none rounded-none z-10">
-          <span className="px-3.5 py-1.5 rounded-[var(--radius-xs)] bg-black/85 text-white text-xs font-extrabold shadow-xl flex items-center gap-1 backdrop-blur-md">
+          <span className="px-3.5 py-1.5 rounded-shape-xs bg-black/85 text-white text-xs font-extrabold shadow-xl flex items-center gap-1 backdrop-blur-md">
             <Sparkles size={14} className="text-[var(--fg-accent)]" />
             <span>{isRtl ? 'عرض بصورة مكبرة' : 'Expand Media'}</span>
           </span>
@@ -183,7 +183,7 @@ export const MultiImageGallery: React.FC<MultiImageGalleryProps> = ({
         <button
           type="button"
           onClick={isRtl ? handleNext : handlePrev}
-          className="absolute left-3 top-1/2 -translate-y-1/2 w-9 h-9 rounded-[var(--radius-xs)] bg-black/60 hover:bg-black/80 text-white flex items-center justify-center z-10 transition-colors cursor-pointer opacity-0 group-hover:opacity-100 backdrop-blur-xs"
+          className="absolute left-3 top-1/2 -translate-y-1/2 w-9 h-9 rounded-shape-xs bg-black/60 hover:bg-black/80 text-white flex items-center justify-center z-10 transition-colors cursor-pointer opacity-0 group-hover:opacity-100 backdrop-blur-xs"
         >
           <ChevronLeft size={20} />
         </button>
@@ -191,7 +191,7 @@ export const MultiImageGallery: React.FC<MultiImageGalleryProps> = ({
         <button
           type="button"
           onClick={isRtl ? handlePrev : handleNext}
-          className="absolute right-3 top-1/2 -translate-y-1/2 w-9 h-9 rounded-[var(--radius-xs)] bg-black/60 hover:bg-black/80 text-white flex items-center justify-center z-10 transition-colors cursor-pointer opacity-0 group-hover:opacity-100 backdrop-blur-xs"
+          className="absolute right-3 top-1/2 -translate-y-1/2 w-9 h-9 rounded-shape-xs bg-black/60 hover:bg-black/80 text-white flex items-center justify-center z-10 transition-colors cursor-pointer opacity-0 group-hover:opacity-100 backdrop-blur-xs"
         >
           <ChevronRight size={20} />
         </button>
@@ -203,7 +203,7 @@ export const MultiImageGallery: React.FC<MultiImageGalleryProps> = ({
           {renderSingleMediaItem(currentItem, activeIndex)}
         </div>
 
-        <div className="absolute top-3 left-3 bg-black/60 backdrop-blur-md text-white text-[10px] font-bold font-mono px-2.5 py-1 rounded-[var(--radius-xs)] shadow z-10">
+        <div className="absolute top-3 left-3 bg-black/60 backdrop-blur-md text-white text-[10px] font-bold font-mono px-2.5 py-1 rounded-shape-xs shadow z-10">
           {activeIndex + 1} / {totalCount}
         </div>
 
@@ -215,7 +215,7 @@ export const MultiImageGallery: React.FC<MultiImageGalleryProps> = ({
                 e.stopPropagation();
                 setActiveIndex(idx);
               }}
-              className={`h-1.5 rounded-[var(--radius-xs)] transition-all cursor-pointer ${
+              className={`h-1.5 rounded-shape-xs transition-all cursor-pointer ${
                 idx === activeIndex ? 'bg-[var(--fg-accent)] w-4' : 'bg-white/60 hover:bg-white/90 w-1.5'
               }`}
             />

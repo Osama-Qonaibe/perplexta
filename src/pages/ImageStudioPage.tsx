@@ -1045,7 +1045,7 @@ export const ImageStudioPage: React.FC = () => {
                 <button
                   type="button"
                   onClick={() => setIsCustomModalOpen(true)}
-                  className="h-9 px-3.5 rounded-shape-sm bg-[var(--comp-button-primary-bg)] text-[var(--comp-button-primary-fg)] hover:opacity-90 font-bold text-xs flex items-center gap-2 shadow-2xs transition-all active:scale-95 cursor-pointer"
+                  className="h-8 px-3.5 rounded-shape-sm bg-[var(--comp-button-primary-bg)] text-[var(--comp-button-primary-fg)] hover:opacity-90 font-bold text-xs flex items-center gap-2 shadow-2xs transition-all active:scale-95 cursor-pointer"
                 >
                   <Sliders size={13} />
                   <span>{isAr ? 'مقاس مخصص' : 'Custom Size'}</span>
@@ -1600,7 +1600,7 @@ export const ImageStudioPage: React.FC = () => {
                                     : `Loaded "${tpl.titleEn}" in ${isVideo ? 'Video Studio 🎬' : 'Poster Studio 🎨'}!`
                                 );
                               }}
-                              className="h-9 px-3.5 rounded-shape-sm bg-[var(--comp-button-primary-bg)] text-[var(--comp-button-primary-fg)] text-xs font-bold leading-none transition-transform active:scale-95 cursor-pointer shadow inline-flex items-center justify-center gap-1.5"
+                              className="h-8 px-3.5 rounded-shape-sm bg-[var(--comp-button-primary-bg)] text-[var(--comp-button-primary-fg)] text-xs font-bold leading-none transition-transform active:scale-95 cursor-pointer shadow inline-flex items-center justify-center gap-1.5"
                             >
                               <span>{isAr ? 'استخدم القالب' : 'Use Template'}</span>
                             </button>

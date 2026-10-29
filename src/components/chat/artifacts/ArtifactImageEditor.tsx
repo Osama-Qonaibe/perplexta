@@ -6373,7 +6373,7 @@ export const ArtifactImageEditor: React.FC<ArtifactImageEditorProps> = ({
               <button
                 type="button"
                 onClick={() => handleSendToChat(chatPromptInput)}
-                className="h-7 px-3 rounded-shape-xs bg-[var(--comp-button-primary-bg)] text-[var(--comp-button-primary-fg)] hover:opacity-90 text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 shadow-2xs active:scale-95 shrink-0"
+                className="h-8 px-3 rounded-shape-xs bg-[var(--comp-button-primary-bg)] text-[var(--comp-button-primary-fg)] hover:opacity-90 text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 shadow-2xs active:scale-95 shrink-0"
                 title={isAr ? 'إرسال الصورة والتوجيه للشات مباشرة' : 'Send Image & Prompt to Chat'}
               >
                 <Send size={12} />
@@ -6535,7 +6535,7 @@ export const ArtifactImageEditor: React.FC<ArtifactImageEditorProps> = ({
                               navigator.clipboard.writeText(`${window.location.origin}/image-studio?project=${projectId || 'new'}`);
                               toast.success(isAr ? 'تم نسخ رابط التصميم بنجاح' : 'Design link copied successfully');
                             }}
-                            className="h-7.5 px-2.5 rounded-shape-sm bg-[var(--comp-button-primary-bg)] text-[var(--comp-button-primary-fg)] hover:opacity-90 font-bold text-[10px] cursor-pointer transition-colors flex items-center gap-1 shrink-0"
+                            className="h-8 px-2.5 rounded-shape-sm bg-[var(--comp-button-primary-bg)] text-[var(--comp-button-primary-fg)] hover:opacity-90 font-bold text-[10px] cursor-pointer transition-colors flex items-center gap-1 shrink-0"
                           >
                             <Copy size={11} />
                             <span>{isAr ? 'نسخ' : 'Copy'}</span>
@@ -6789,7 +6789,7 @@ export const ArtifactImageEditor: React.FC<ArtifactImageEditorProps> = ({
                       <button
                         type="button"
                         onClick={handleExecuteExport}
-                        className="w-full h-9 rounded-shape-sm bg-[var(--comp-button-primary-bg)] text-[var(--comp-button-primary-fg)] hover:opacity-90 text-xs font-extrabold cursor-pointer transition-all shadow-md flex items-center justify-center gap-2 active:scale-[0.98]"
+                        className="w-full h-8 rounded-shape-sm bg-[var(--comp-button-primary-bg)] text-[var(--comp-button-primary-fg)] hover:opacity-90 text-xs font-extrabold cursor-pointer transition-all shadow-md flex items-center justify-center gap-2 active:scale-[0.98]"
                       >
                         <Download size={14} />
                         <span>{isAr ? `تنزيل بصيغة ${exportFormat.toUpperCase()}` : `Download ${exportFormat.toUpperCase()}`}</span>
@@ -8246,7 +8246,7 @@ export const ArtifactImageEditor: React.FC<ArtifactImageEditorProps> = ({
                       <button
                         type="button"
                         onClick={() => brandLogoInputRef.current?.click()}
-                        className="h-6 px-2 text-[10px] font-bold rounded-shape-xs bg-[var(--comp-button-primary-bg)] text-[var(--comp-button-primary-fg)] hover:opacity-90 transition-all flex items-center gap-1 cursor-pointer shadow-2xs"
+                        className="h-8 px-2 text-[10px] font-bold rounded-shape-xs bg-[var(--comp-button-primary-bg)] text-[var(--comp-button-primary-fg)] hover:opacity-90 transition-all flex items-center gap-1 cursor-pointer shadow-2xs"
                       >
                         <Plus size={11} />
                         <span>{isAr ? 'رفع شعار' : 'Upload Logo'}</span>
@@ -10603,7 +10603,7 @@ export const ArtifactImageEditor: React.FC<ArtifactImageEditorProps> = ({
                     <button
                       type="button"
                       onClick={() => handleSetImageAsBackground(selectedElement)}
-                      className="h-7 px-2.5 rounded-shape-xs bg-[var(--comp-button-primary-bg)] text-[var(--comp-button-primary-fg)] hover:opacity-90 text-[11px] font-bold flex items-center gap-1.5 cursor-pointer shadow-2xs transition-all active:scale-95"
+                      className="h-8 px-2.5 rounded-shape-xs bg-[var(--comp-button-primary-bg)] text-[var(--comp-button-primary-fg)] hover:opacity-90 text-[11px] font-bold flex items-center gap-1.5 cursor-pointer shadow-2xs transition-all active:scale-95"
                       title={isAr ? 'تعيين هذه الصورة كخلفية لمساحة العمل' : 'Set as Canvas Background'}
                     >
                       <ImageIcon size={12} />
@@ -12083,7 +12083,7 @@ export const ArtifactImageEditor: React.FC<ArtifactImageEditorProps> = ({
                             setActiveSidebarTab('transitions' as any);
                             setIsSidebarOpen(true);
                           }}
-                          className="group/tr-btn shrink-0 px-2 h-7 rounded-full bg-slate-900 hover:bg-[var(--accent)] text-slate-300 hover:text-slate-950 border border-slate-700 hover:border-[var(--accent)] flex items-center justify-center gap-1 transition-all cursor-pointer shadow-md hover:scale-105 active:scale-95"
+                          className="group/tr-btn shrink-0 px-2 h-8 rounded-full bg-slate-900 hover:bg-[var(--accent)] text-slate-300 hover:text-slate-950 border border-slate-700 hover:border-[var(--accent)] flex items-center justify-center gap-1 transition-all cursor-pointer shadow-md hover:scale-105 active:scale-95"
                           title={isAr ? `تعديل الانتقال إلى المشهد ${idx + 2} (${sc.transitionToNext?.type || 'إذابة'})` : 'Edit Scene Transition'}
                         >
                           <Sparkles size={11} className="group-hover/tr-btn:rotate-12 transition-transform text-[var(--accent)] group-hover/tr-btn:text-slate-950" />
@@ -13382,7 +13382,7 @@ export const ArtifactImageEditor: React.FC<ArtifactImageEditorProps> = ({
               <button
                 type="button"
                 onClick={() => executeApplyTemplateReplace(pendingTemplatePrompt)}
-                className="w-full h-11 px-4 rounded-shape-sm bg-[var(--comp-button-primary-bg)] text-[var(--comp-button-primary-fg)] hover:opacity-90 font-bold text-xs flex items-center justify-between cursor-pointer transition-all active:scale-[0.99] shadow-2xs"
+                className="w-full h-10 px-4 rounded-shape-sm bg-[var(--comp-button-primary-bg)] text-[var(--comp-button-primary-fg)] hover:opacity-90 font-bold text-xs flex items-center justify-between cursor-pointer transition-all active:scale-[0.99] shadow-2xs"
               >
                 <div className="flex items-center gap-2">
                   <RefreshCw size={15} />
