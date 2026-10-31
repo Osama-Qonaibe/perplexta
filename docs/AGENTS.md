@@ -28,9 +28,9 @@ This project is governed by immutable architectural principles. Any developer, A
    It is **STRICTLY FORBIDDEN** to store GPU compute nodes, serverless endpoints (such as RunPod), or specialized multimodal workers inside `api_keys_vault`. They must remain permanently isolated inside `gpu_providers` and `gpu_provider_models`. Visual and media tools (`vision`, `image`, `video`) must strictly resolve their models through the GPU Infrastructure vault and never contaminate or be contaminated by general text-based LLM APIs.
    *(يُمنع منعاً باتاً دمج خوادم الـ GPU ومزودي معالجة الصور والفيديو مع مفاتيح الـ LLM النصية؛ العزل الهرمي التام لقواعد البيانات وقوائم النماذج أمر سيادي صارم).*
 
-6. **Immutable Mobile Architecture & Total Desktop Decoupling (ميثاق قدسية عزل واستقلالية نسخة الموبايل ومنع ربطها بتطويرات الديسكتوب)**:
-   It is **STRICTLY FORBIDDEN** to modify, disrupt, or bind the dedicated mobile configuration (`MobileAppLayout`, `MobileNavigation`, `MobileWalletView`, and mobile gateway views) to any future desktop changes or layout evolutions. The mobile user experience is a sovereign, lightweight, high-performance ecosystem governed by strict M3 standards, 40px/32px button height alignments, zero dead spaces, and complete isolation from heavy desktop sidebars and multi-column panels. Any attempt to compromise the mobile experience or couple it with desktop-only features is a terminal architectural violation.
-   *(يُمنع منعاً باتاً كسر أو تعديل إعدادات وتصميم نسخة الموبايل القائمة، أو ربط أي تطويرات لسطح المكتب ببيئة الموبايل المستقلة. تجربة الموبايل منظومة سيادية خفيفة وموحدة الهوية ومحمية كلياً من أي تغيير مستقبلي).*
+6. **Immutable Mobile Covenant & Sovereign Desktop Decoupling (ميثاق قدسية عزل واستقلالية نسخة الموبايل وحظر تغيير إعداداتها مستقبلاً)**:
+   It is **STRICTLY FORBIDDEN** to modify, alter settings, or disrupt the dedicated mobile configuration (`MobileAppLayout`, `MobileNavigation`, `MobileWalletView`, and `PublicGuestLanding` mobile gateway) in any future development turn. The mobile user experience is an immutable sovereign ecosystem governed by strict M3 tokens, 44px touch targets, zero dead spaces, and complete isolation from desktop-only features. No future desktop enhancement or layout change may EVER be coupled with, or break, the established mobile settings.
+   *(ميثاق صارم ودائم: يُمنع منعاً باتاً تعديل إعدادات وتصميم وتنسيقات نسخة الموبايل مستقبلاً، أو ربط أي تطوير على سطح المكتب بنسخة الموبايل. نسخة الموبايل بيئة سيادية مستقلة ومحمية بالكامل من أي تغيير).*
 
 *Failure to comply with these tenets is a direct violation of project perplexta and will be treated as sabotage. Any assistant or developer who attempts to "simplify" by breaking the architectural segregation or restructuring existing components will be permanently blocked from the system.*
 
@@ -155,10 +155,29 @@ This identity serves as our compass. Every engineering decision—from the "Sile
   - **Live Assistant Multi-Model Failover & Resilient Conversational Chain**:
     - Refactored `/api/ai/live-assistant` in `server/routes/ai.ts` to execute a multi-tier fallback loop (`primary_model` -> `fallback_1_model` -> `fallback_2_model` -> default) with an 8-second candidate timeout (`headerTimeoutMs: 8000`), eliminating 15s timeout errors and guaranteeing continuous conversational fallback.
   - **DevOps & Production Release Verification (Zero-Contradiction Exit Gate)**:
-    - Deep root clean-up purging `dist/`, `.vite/`, and `node_modules/.cache`.
-    - Verified 0 TypeScript errors via `tsc -p tsconfig.json --noEmit` (`lint_applet`).
-    - Verified 0 color governance violations via `npm run check:colors`.
-    - Verified 100% successful production build via `compile_applet`.
+  - **Serene Conversational Architecture & Editorial Table System (Reference Video Audit Execution)**:
+    - *Forensic Analysis & Architectural Refactoring*: In strict alignment with the reference video forensic analysis (`20261029-1948-11.7690249_87eb59f2.mp4`), eliminated visual noise, jarring page jumps, and intrusive toolbars to deliver an exceptionally peaceful, rock-solid conversational experience across 4 executed phases:
+      - **Phase 1: Editorial Quiet Table System (`CollapsibleTable.tsx` & `ChatResponseRenderer.tsx`)**:
+        - Purged bulky top and bottom banners ("جدول المقارنة والبيانات" and "قالب جدول تفاعلي موثق") that created unnecessary visual weight.
+        - Rendered data tables directly inside a serene container (`rounded-shape-md border border-[var(--border-default)]/70 bg-[var(--surface-card)]/40 overflow-hidden shadow-2xs`).
+        - Removed harsh vertical cell borders (`border-e`) from both `th` and `td`, relying strictly on subtle horizontal dividers (`divide-y divide-[var(--border-default)]/35`) and soft header rows (`bg-[var(--surface-subtle)]/80`).
+        - Added floating micro-actions (Copy Table & Download CSV) that appear unobtrusively on group hover / focus-within in the top corner (`touch-target-44`, 32px height) without taking any vertical layout space or causing layout reflows.
+      - **Phase 2: Minimalist Execution Radar (`ThinkingSteps.tsx`)**:
+        - Replaced busy orbit rings and bulky buttons with a calm, low-profile inline status pill: `Working {s}s` -> `Finished {s}s` (in Arabic: `جاري المعالجة` -> `اكتمل`).
+        - Preserved deep internal reasoning traces (`rawThinking`) within a quiet accordion with cognitive trace inspection.
+      - **Phase 3: Multimodal Top Tabs (`Answer` | `Links` | `Images` in `AssistantMessageBubble.tsx`)**:
+        - Integrated clean in-place tab switching at the top of assistant responses when web citations or imagery are present.
+        - Allowed immediate switching between conversational response, verified source cards (`CitationRow`), and visual image preview galleries without layout shifts or reloading.
+      - **Phase 4: Serene Follow-ups & Citations (`FollowUps.tsx`)**:
+        - Refactored suggestion chips into hairline-bordered, tranquil query buttons with subtle directional arrows (`CornerDownLeft` / `CornerDownRight`), strictly complying with 32px standard height and 44px minimum touch targets (`touch-target-44`).
+  - **Master Design Sovereign Restoration & Absolute Baseline (`image_12092fff.png`)**:
+    - *Full Visual Recovery*: Restored the definitive, authentic master presentation of the central chat composer and home greeting view matching `image_12092fff.png` without any compromise:
+      1. **Centered Greeting Typography**: Centered the headline "ما الذي ترغب في معرفته أو تحليله اليوم؟" (`text-center`) perfectly above the search composer.
+      2. **Unified Seamless Input Box**: Eliminated the split-background bottom panel and redundant gradient divider, restoring the single, clean, dark card structure with an internal subtle hairline divider (`border-default/40`).
+      3. **Exact Toolbar Sequence & Spacing**:
+         - Right to Left: `سريع ⚡ ˅` (Model Selector) -> `تحليل 🔍 ˅` (Analysis Tools) -> `صوت 🎙️` (Voice Input) -> `إرفاق 📎` (File Attach).
+         - Far Left: `[ ↑ ]` (Single Send button with dark idle state and crisp up-arrow stroke).
+      4. **Verification**: 100% height governance compliance (32px / 40px), 44px touch targets, 0 lint errors, and successful production compilation.
 
 ---
 
@@ -190,6 +209,18 @@ This identity serves as our compass. Every engineering decision—from the "Sile
     - **Supreme Non-Interference Covenant (ميثاق عدم المساس بنسخة الموبايل وعدم ربطها بتطويرات الديسكتوب)**:
       - The mobile layout (`MobileAppLayout`, `MobileNavigation`, `MobileWalletView`) is hereby locked as an independent, immutable system.
       - Future desktop features (e.g. multi-column layouts, heavy editor panels, expanded toolbars) MUST NEVER alter or bleed into the mobile experience.
+  - **Sovereign Chat Composer & Input Field Restoration (`Osama-Qonaibe/perplexta` Exact Alignment)**:
+    - *Pixel-Perfect Layout Alignment*: Restored the official master input field structure, hairline divider, and button distribution from the official Perplexta GitHub repository (`Osama-Qonaibe/perplexta`) and reference blueprint (`image_12092fff.png`).
+    - *Centered Sovereign Headline*: Unified the conversational headline ("ما الذي ترغب في معرفته أو تحليله اليوم؟") centered directly above the input box on both desktop and mobile viewports.
+    - *RTL Button Distribution & Micro-Interactions*:
+      - **Right Side (Start in RTL)**:
+        1. **Model Selector Chip (`سريع ⚡ ˅`)**: Opens upward model popover (`FAST`, `PRO`, `THINKING`) with outside-click listener and instant selection.
+        2. **Analysis Tools Chip (`تحليل 🔍 ˅`)**: Opens upward tools popover (Search, Code, Studio tools) with smooth backdrop blur.
+        3. **Voice Input Chip (`صوت 🎙️`)**: Web Speech API audio recording with real-time waveform and transcription injection.
+        4. **File Attachment Chip (`إرفاق 📎`)**: Direct file upload handler with multi-format and PDF forensic scanning support.
+      - **Left Side (End in RTL)**:
+        - **Action Button (`[ ↑ ]`)**: Canonical M3 `rounded-shape-sm` (8px) send/stop action button, transitioning smoothly from quiet dark-mode idle state to active vibrant royal blue when content is typed.
+    - *Unified Surface Box & Hairline Divider*: Replaced fragmented footers with a single, calm card container (`.ide-input-box`) and a delicate hairline separator (`h-px bg-[var(--border-default)]/40 mt-1 mb-2.5`).
 - **Tomorrow's Milestone (خطوة الغد)**: البدء في تطوير **استوديو الفيديو الاحترافي لإنشاء المقاطع الطويلة والسينمائية (Cinematic Long-Form Video Studio)**، وتحويل أداة الفيديو الحالية إلى بيئة إنتاج سينمائي متكاملة تدعم المشاهد المتتابعة، التحكم باللقطات، والإنتاج فائق الدقة.
 
 ---

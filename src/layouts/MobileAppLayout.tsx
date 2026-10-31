@@ -19,9 +19,10 @@ export const MobileAppLayout: React.FC = () => {
   const isChatRoute = location.pathname.startsWith('/chat');
   const isViralbookRoute = location.pathname.startsWith('/viralbook') || location.pathname.startsWith('/bulletin') || location.pathname.startsWith('/reels') || location.pathname.startsWith('/p/') || location.pathname.startsWith('/post/');
   const isStudioRoute = location.pathname.startsWith('/image-studio') || location.pathname.startsWith('/app') || location.pathname.startsWith('/audio-studio') || location.pathname.startsWith('/creator/');
+  const isTemplateDetailRoute = location.pathname.startsWith('/studio/template/') || location.pathname.startsWith('/template/');
   const isLandingRoute = location.pathname === '/' || location.pathname === '/overview' || location.pathname === '/welcome' || location.pathname === '/docs/overview';
   const isSettingsRoute = location.pathname.startsWith('/settings');
-  const isIsolatedMobileView = isViralbookRoute || isStudioRoute || isLandingRoute || isSettingsRoute;
+  const isIsolatedMobileView = isViralbookRoute || isStudioRoute || isTemplateDetailRoute || isLandingRoute || isSettingsRoute;
 
   // Capture native touch swipe gestures across PWA shell components
   const { touchHandlers } = usePWASwipeNavigation({

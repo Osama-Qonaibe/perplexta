@@ -683,6 +683,21 @@ Real-time verified web sources have been retrieved for this request and supplied
     refinedSystemPromptSegment = refinedSystemPromptSegment ? `${refinedSystemPromptSegment}\n${searchInstructions}` : searchInstructions;
   }
 
+  if (history.length > 0) {
+    const continuityDirective = userLang === 'ar'
+      ? `[توجيه الاستمرارية السياقية للمحادثة الجارية - حاسم جداً]:
+هذه الرسالة هي متابعة واستكمال داخل محادثة قائمة بالفعل (تحتوي على ${history.length} رسائل سابقة).
+1. يُمنع منعاً باتاً التعامل مع سؤال المستخدم كطلب منفصل يبدأ من الصفر، ويُمنع إنشاء "عنوان دراسة مقترح جديد" (1. العنوان الأكاديمي المقترح...) أو إعادة تكرار القالب الكامل للأقسام السبعة من البداية إلا إذا طلب المستخدم صراحةً بدء موضوع جديد كلياً.
+2. أجب مباشرةً وبعمق تحليلي على السؤال الفرعي أو التفصيلي الذي طرحه المستخدم الآن، مع البناء على السياق والمتغيرات والنتائج التي تأسست في الرسائل السابقة، باستخدام عناوين فرعية وجداول مخصصة لهذا السؤال تحديداً.`
+      : `[MULTI-TURN CONTEXTUAL CONTINUITY DIRECTIVE - CRITICAL]:
+This message is a follow-up turn inside an active ongoing conversation (${history.length} prior messages in history).
+1. DO NOT treat this follow-up query as a brand-new standalone request, and STRICTLY DO NOT generate a new "1. Proposed Study Title" or repeat the full multi-section initial blueprint from scratch unless the user explicitly asks to start a completely new topic.
+2. Directly and deeply answer the specific follow-up question asked right now, building seamlessly upon the context, variables, and findings established in the prior turns using focused headings and tables tailored strictly to this question.`;
+    refinedSystemPromptSegment = refinedSystemPromptSegment
+      ? `${refinedSystemPromptSegment}\n\n${continuityDirective}`
+      : continuityDirective;
+  }
+
   const finalSystemPrompt = `${protocol}
 [OBJECTIVE]: ${taskDesc || 'Professional precision execution.'}
 ${contextSummary}${userMemoriesStr}

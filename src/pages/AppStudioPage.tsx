@@ -9,6 +9,35 @@ import JSZip from 'jszip';
 import { saveAs } from 'file-saver';
 import { resolveImageUrl, DEFAULT_AVATAR } from '../utils/imageResolver';
 import { NotificationIconRenderer } from '../utils/imageProcessor';
+import { TemplatesHub } from '../components/studio/TemplatesHub';
+import { StudioConversation } from '../components/studio/StudioConversation';
+import { StudioComposer } from '../components/studio/StudioComposer';
+import { StudioStartScreen } from '../components/studio/StudioStartScreen';
+import { StudioWorkspaceLayout } from '../components/studio/StudioWorkspaceLayout';
+import { StudioHeader } from '../components/studio/StudioHeader';
+import { StudioProjectDrawer } from '../components/studio/StudioProjectDrawer';
+import { StudioPreviewPanel } from '../components/studio/StudioPreviewPanel';
+import { StudioPreviewToolbar } from '../components/studio/StudioPreviewToolbar';
+import { StudioCodeWorkspace } from '../components/studio/StudioCodeWorkspace';
+import { StudioVersionsPanel } from '../components/studio/StudioVersionsPanel';
+import { StudioIssuesPanel, type StudioIssueItem } from '../components/studio/StudioIssuesPanel';
+import { StudioPublishPopover } from '../components/studio/StudioPublishPopover';
+import { StudioNewFileDialog, StudioRenameDialog, StudioDeleteConfirmDialog } from '../components/studio/StudioProjectDialogs';
+import type { StudioToolProgressStep } from '../components/studio/StudioBuildProgress';
+import type { StudioTodoItem } from '../components/studio/StudioTodoList';
+import type { StudioClarifyQuestion } from '../components/studio/StudioClarifyCard';
+import type { StudioQueuedMessageItem } from '../components/studio/StudioMessageQueue';
+import { SYSTEM_PROMPT } from '../components/studio/prompt';
+import {
+  getDynamicSystemPrompt,
+  friendlyTodoLabelForFile,
+  prepareHistoryForAI,
+  formatClarificationRecap,
+  buildFollowUpSuggestions
+} from '../components/studio/studioEngine';
+import { CORE_TEMPLATES_PAYLOADS, fetchStudioTemplateFiles } from '../components/studio/templateLoader';
+import { CORE_TEMPLATES_MAP } from '../components/studio/templatesData';
+import type { StudioTemplate, StudioChatMessage, StudioEditTarget } from '../components/studio/types';
 
 interface ProjectFile {
   name: string;
@@ -18,15 +47,6 @@ interface ProjectFile {
   isEntry?: boolean;
 }
 
-interface StudioChatMessage {
-  id: string;
-  role: 'user' | 'assistant';
-  text: string;
-  timestamp: string;
-  logs?: string[];
-  filesUpdated?: string[];
-  suggestions?: string[];
-}
 
 export const AppStudioPage: React.FC = () => {
   const { theme, language, siteSettings, dir, token, user, setIsAuthModalOpen, logout, t } = useAppContext();
@@ -47,6 +67,7 @@ export const AppStudioPage: React.FC = () => {
 
   // Project Files State (Clean Initial Sovereign Launchpad with Logo)
   const isArInit = language === 'ar';
+  const isDarkInit = theme === 'dark';
   const [files, setFiles] = useState<Record<string, ProjectFile>>({
     'index.html': {
       name: 'index.html',
@@ -54,19 +75,28 @@ export const AppStudioPage: React.FC = () => {
       type: 'html',
       isEntry: true,
       content: `<!DOCTYPE html>
-<html lang="${isArInit ? 'ar' : 'en'}" dir="${dir}">
+<html lang="${isArInit ? 'ar' : 'en'}" dir="${dir}" class="${isDarkInit ? 'dark' : ''} h-full">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>${isArInit ? 'استوديو البرمجيات - مشروع جديد' : 'Software Studio - New Project'}</title>
-  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="/api/studio/proxy/tailwind"></script>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Tajawal:wght@300;400;500;700;800;900&display=swap" rel="stylesheet">
+  <style>
+    html, body {
+      margin: 0;
+      padding: 0;
+      width: 100%;
+      min-height: 100%;
+    }
+  </style>
 </head>
-<body class="bg-slate-50 dark:bg-slate-950 text-slate-800 dark:text-slate-100 font-['Inter','Tajawal',sans-serif] min-h-screen flex items-center justify-center p-6 selection:bg-blue-600 selection:text-white">
-  <div class="max-w-md w-full text-center space-y-6">
+<body class="${isDarkInit ? 'bg-slate-950 text-slate-100' : 'bg-slate-50 text-slate-900'} font-['Inter','Tajawal',sans-serif] min-h-screen w-full selection:bg-blue-600 selection:text-white">
+  <div class="w-full min-h-screen flex flex-col items-center justify-center p-6 sm:p-10">
+    <div class="max-w-md w-full text-center space-y-6">
     <!-- Brand Logo Glow Icon -->
     <div class="relative mx-auto w-16 h-16 rounded-shape-md bg-gradient-to-tr from-blue-600 to-indigo-600 p-0.5 shadow-xl shadow-blue-500/25 flex items-center justify-center">
-      <div class="w-full h-full bg-slate-900 rounded-shape-sm flex items-center justify-center">
+      <div class="w-full h-full ${isDarkInit ? 'bg-slate-900' : 'bg-white'} rounded-shape-sm flex items-center justify-center">
         <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" class="text-blue-500" style="width: 32px; height: 32px; max-width: 32px; max-height: 32px;">
           <polygon points="12 2 2 7 12 12 22 7 12 2"></polygon>
           <polyline points="2 17 12 22 22 17"></polyline>
@@ -76,13 +106,13 @@ export const AppStudioPage: React.FC = () => {
     </div>
     
     <div class="space-y-3">
-      <div class="inline-flex items-center gap-2 px-3 py-1 rounded-shape-full bg-blue-500/10 border border-blue-500/20 text-blue-500 dark:text-blue-400 text-xs font-bold">
+      <div class="inline-flex items-center gap-2 px-3 py-1 rounded-shape-full bg-blue-500/10 border border-blue-500/20 text-blue-600 dark:text-blue-400 text-xs font-bold">
         <span class="w-2 h-2 rounded-shape-full bg-blue-500 animate-ping"></span>
-        <span>${language === 'ar' ? 'جاهز للتطوير' : 'Ready to Build'}</span>
+        <span>${isArInit ? 'جاهز للتطوير' : 'Ready to Build'}</span>
       </div>
-      <h1 class="text-2xl font-black text-slate-900 dark:text-white">${language === 'ar' ? 'استوديو تطوير البرمجيات' : 'Software Studio'}</h1>
-      <p class="text-xs text-slate-500 dark:text-slate-400 leading-relaxed max-w-sm mx-auto">
-        ${language === 'ar'
+      <h1 class="text-2xl font-black text-slate-900 dark:text-white">${isArInit ? 'استوديو تطوير البرمجيات' : 'Software Studio'}</h1>
+      <p class="text-xs text-slate-600 dark:text-slate-400 leading-relaxed max-w-sm mx-auto">
+        ${isArInit
           ? 'أدخل وصف التطبيق أو الميزة المطلوبة في لوحة المحادثة لتوليد ملفات المشروع وتشغيل المعاينة المباشرة.'
           : 'Enter your application description in the chat panel to generate project files and launch the live preview.'}
       </p>
@@ -120,7 +150,6 @@ export const AppStudioPage: React.FC = () => {
     setOpenTabs(prev => (prev.includes(path) ? prev : [...prev, path]));
     if (activeTab !== 'code') {
       setActiveTab('code');
-      setSideNavActiveTab('files');
     }
     setMobileActiveTab('preview');
   };
@@ -225,49 +254,10 @@ export const AppStudioPage: React.FC = () => {
     }
   ];
 
-  const resolveSuggestionChip = useCallback((rawSuggestion: string): { label: string; fullPrompt: string } => {
-    const trimmed = (rawSuggestion || '').trim();
-    const isAr = language === 'ar';
 
-    // 1. Check catalog match (matches label, full prompt, or aliases)
-    const matched = STUDIO_SUGGESTIONS_CATALOG.find(item =>
-      item.labelAr === trimmed ||
-      item.labelEn === trimmed ||
-      item.fullAr === trimmed ||
-      item.fullEn === trimmed ||
-      (item.aliases && item.aliases.includes(trimmed))
-    );
-
-    if (matched) {
-      return {
-        label: isAr ? matched.labelAr : matched.labelEn,
-        fullPrompt: isAr ? matched.fullAr : matched.fullEn
-      };
-    }
-
-    // 2. Dynamic AI suggestion: extract concise 2-4 word title for chip and ensure rich fullPrompt in background
-    const strippedPrefix = trimmed
-      .replace(/^(صمم|أنشئ|طور|ابنِ|أضف|إضافة|تطوير|برمجة|تصميم|تحسين|اربط|ربط|إنشاء|بناء)\s+/i, '')
-      .replace(/^(design|create|develop|build|add|connect|implement|optimize|improve)\s+(a\s+|an\s+|the\s+)?/i, '')
-      .trim();
-
-    const words = (strippedPrefix || trimmed).split(/\s+/);
-    const shortLabel = words.slice(0, 2).join(' ').replace(/[.,،؛:]$/g, '');
-
-    const fullPrompt = trimmed.length > 45
-      ? trimmed
-      : (isAr
-          ? `قم بتطوير وإضافة الميزة التالية إلى المشروع بشكل احترافي ومتكامل مع ربطها بالواجهة التفاعلية والبيانات: ${trimmed}، مع الحفاظ الكامل على هوية وتصميم المشروع.`
-          : `Develop and integrate the following interactive feature into the project with full UI state and data binding while preserving the existing design: ${trimmed}.`);
-
-    return {
-      label: shortLabel || trimmed.slice(0, 22),
-      fullPrompt
-    };
-  }, [language]);
-
-  // Sync initial splash screen when language changes (if project is still empty/default)
+  // Sync initial splash screen or template payload when project opens
   useEffect(() => {
+
     const existingFileKeys = Object.keys(files);
     const indexContent = files['index.html']?.content || '';
     const isDefaultSplash = 
@@ -276,22 +266,66 @@ export const AppStudioPage: React.FC = () => {
       (indexContent.includes('جاهز للتطوير') || indexContent.includes('Ready to Build') || indexContent.includes('Software Studio') || indexContent.includes('استوديو تطوير البرمجيات')) &&
       indexContent.length < 2500;
 
+    const normName = (projectName || '').toLowerCase().trim();
+    
+    // Auto-detect template slug from project name
+    let targetSlug = '';
+    if (normName.includes('auto repair') || normName.includes('copperhill')) targetSlug = 'auto-repair';
+    else if (normName.includes('ai image') || normName.includes('image generator')) targetSlug = 'ai-image-studio';
+    else if (normName.includes('barber') || normName.includes('blade & comb')) targetSlug = 'barbershop';
+    else if (normName.includes('coffee') || normName.includes('brew & bean')) targetSlug = 'coffee-shop';
+    else if (normName.includes('bakery') || normName.includes('golden crust')) targetSlug = 'bakery';
+    else if (normName.includes('law') || normName.includes('sterling')) targetSlug = 'law-firm';
+    else if (normName.includes('ai chat')) targetSlug = 'ai-chat';
+    else if (normName.includes('landing')) targetSlug = 'landing-page';
+
+    if (isDefaultSplash && targetSlug && CORE_TEMPLATES_PAYLOADS[targetSlug]) {
+      const payload = CORE_TEMPLATES_PAYLOADS[targetSlug];
+      const newFiles: Record<string, ProjectFile> = {};
+      Object.entries(payload).forEach(([path, content]) => {
+        const ext = path.split('.').pop() || 'txt';
+        newFiles[path] = {
+          name: path,
+          path: path,
+          content: String(content),
+          type: ext,
+          isEntry: path === 'index.html'
+        };
+      });
+      setFiles(newFiles);
+      setSavedFiles(JSON.parse(JSON.stringify(newFiles)));
+      setActiveFilePath('index.html');
+      setOpenTabs(['index.html']);
+      setIframeKey(prev => prev + 1);
+      return;
+    }
+
     if (isDefaultSplash) {
       const isAr = language === 'ar';
+      const isDark = theme === 'dark';
       const updatedContent = `<!DOCTYPE html>
-<html lang="${isAr ? 'ar' : 'en'}" dir="${dir}">
+<html lang="${isAr ? 'ar' : 'en'}" dir="${dir}" class="${isDark ? 'dark' : ''} h-full">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>${isAr ? 'استوديو البرمجيات - مشروع جديد' : 'Software Studio - New Project'}</title>
-  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="/api/studio/proxy/tailwind"></script>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Tajawal:wght@300;400;500;700;800;900&display=swap" rel="stylesheet">
+  <style>
+    html, body {
+      margin: 0;
+      padding: 0;
+      width: 100%;
+      min-height: 100%;
+    }
+  </style>
 </head>
-<body class="bg-slate-50 dark:bg-slate-950 text-slate-800 dark:text-slate-100 font-['Inter','Tajawal',sans-serif] min-h-screen flex items-center justify-center p-6 selection:bg-blue-600 selection:text-white">
-  <div class="max-w-md w-full text-center space-y-6">
+<body class="${isDark ? 'bg-slate-950 text-slate-100' : 'bg-slate-50 text-slate-900'} font-['Inter','Tajawal',sans-serif] min-h-screen w-full selection:bg-blue-600 selection:text-white">
+  <div class="w-full min-h-screen flex flex-col items-center justify-center p-6 sm:p-10">
+    <div class="max-w-md w-full text-center space-y-6">
     <!-- Brand Logo Glow Icon -->
     <div class="relative mx-auto w-16 h-16 rounded-shape-md bg-gradient-to-tr from-blue-600 to-indigo-600 p-0.5 shadow-xl shadow-blue-500/25 flex items-center justify-center">
-      <div class="w-full h-full bg-slate-900 rounded-shape-sm flex items-center justify-center">
+      <div class="w-full h-full ${isDark ? 'bg-slate-900' : 'bg-white'} rounded-shape-sm flex items-center justify-center">
         <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" class="text-blue-500" style="width: 32px; height: 32px; max-width: 32px; max-height: 32px;">
           <polygon points="12 2 2 7 12 12 22 7 12 2"></polygon>
           <polyline points="2 17 12 22 22 17"></polyline>
@@ -301,12 +335,12 @@ export const AppStudioPage: React.FC = () => {
     </div>
     
     <div class="space-y-3">
-      <div class="inline-flex items-center gap-2 px-3 py-1 rounded-shape-full bg-blue-500/10 border border-blue-500/20 text-blue-500 dark:text-blue-400 text-xs font-bold">
+      <div class="inline-flex items-center gap-2 px-3 py-1 rounded-shape-full bg-blue-500/10 border border-blue-500/20 text-blue-600 dark:text-blue-400 text-xs font-bold">
         <span class="w-2 h-2 rounded-shape-full bg-blue-500 animate-ping"></span>
         <span>${isAr ? 'جاهز للتطوير' : 'Ready to Build'}</span>
       </div>
       <h1 class="text-2xl font-black text-slate-900 dark:text-white">${isAr ? 'استوديو تطوير البرمجيات' : 'Software Studio'}</h1>
-      <p class="text-xs text-slate-500 dark:text-slate-400 leading-relaxed max-w-sm mx-auto">
+      <p class="text-xs text-slate-600 dark:text-slate-400 leading-relaxed max-w-sm mx-auto">
         ${isAr
           ? 'أدخل وصف التطبيق أو الميزة المطلوبة في لوحة المحادثة لتوليد ملفات المشروع وتشغيل المعاينة المباشرة.'
           : 'Enter your application description in the chat panel to generate project files and launch the live preview.'}
@@ -325,13 +359,32 @@ export const AppStudioPage: React.FC = () => {
       }));
       setIframeKey(prev => prev + 1);
     }
-  }, [language, dir]);
+  }, [language, dir, projectName, theme]);
 
   // Pro Cloud Studio Features (Inspect Mode, Env Vars, Self-Healing)
   const [isInspectMode, setIsInspectMode] = useState(false);
   const [isEnvModalOpen, setIsEnvModalOpen] = useState(false);
   const [isMoreMenuOpen, setIsMoreMenuOpen] = useState(false);
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
+  const [isTemplatesHubOpen, setIsTemplatesHubOpen] = useState(false);
+  const [selectedStudioTemplate, setSelectedStudioTemplate] = useState<StudioTemplate | null>(null);
+  const [isStartScreenOpen, setIsStartScreenOpen] = useState(true);
+  const [isProjectDrawerOpen, setIsProjectDrawerOpen] = useState(false);
+  const [isVersionsPanelOpen, setIsVersionsPanelOpen] = useState(false);
+  const [isIssuesPanelOpen, setIsIssuesPanelOpen] = useState(false);
+  const [isPublishPopoverOpen, setIsPublishPopoverOpen] = useState(false);
+  const [isPublished, setIsPublished] = useState(false);
+  const [isChatCollapsed, setIsChatCollapsed] = useState(false);
+  const [editTarget, setEditTarget] = useState<StudioEditTarget | null>(null);
+  const [queuedMessages, setQueuedMessages] = useState<StudioQueuedMessageItem[]>([]);
+  const [clarifyQuestions, setClarifyQuestions] = useState<StudioClarifyQuestion[]>([]);
+  const [clarifyLeadIn, setClarifyLeadIn] = useState<string>('');
+  const [pendingClarifyPrompt, setPendingClarifyPrompt] = useState<string>('');
+  const [streamedTodos, setStreamedTodos] = useState<StudioTodoItem[]>([]);
+  const [isRegeneratingSuggestions, setIsRegeneratingSuggestions] = useState(false);
+  const recentSuggestionLabelsRef = useRef<string[]>([]);
+  const [userIssues, setUserIssues] = useState<StudioIssueItem[]>([]);
+  const [templateOrigin, setTemplateOrigin] = useState<{ slug: string; name: string; category?: string; thumbnail?: string } | null>(null);
   const [envVars, setEnvVars] = useState<Record<string, string>>({
     VITE_APP_TITLE: 'Perplexta App',
     VITE_API_URL: '/api'
@@ -396,36 +449,6 @@ export const AppStudioPage: React.FC = () => {
     }
   ]);
 
-  // Sync initial welcome message when language changes
-  useEffect(() => {
-    setChatMessages(prev => {
-      if (prev.length === 1 && (prev[0].id === 'welcome_1' || prev[0].id.startsWith('welcome_'))) {
-        return [
-          {
-            ...prev[0],
-            text: language === 'ar' 
-              ? 'مرحباً بك في استوديو تطوير البرمجيات. صف التطبيق أو الميزة التي ترغب في بنائها لتوليد الكود وتشغيل المعاينة.'
-              : 'Welcome to Software Studio. Describe the application or feature you want to build to generate code and launch the preview.',
-            suggestions: language === 'ar' 
-              ? [
-                  'صمم متجر إلكتروني احترافي للمنتجات الرقمية يضم واجهة هبوط عصرية مع سكرول أنيميشن، شبكة منتجات قابلة للتصفية، وسلة مشتريات منبثقة تفاعلية تحسب المجموع تلقائياً.',
-                  'أنشئ صفحة هبوط (SaaS) تفاعلية للشركات التقنية مع قسم مميزات متحرك، جدول خطط أسعار مقارن، ونموذج تواصل ذكي مع التحقق من البيانات.',
-                  'طور لوحة تحكم وإحصائيات متكاملة (Admin Dashboard) تضم رسوم بيانية تفاعلية لبيانات المبيعات، جداول قابلة للفرز، ونظام إدارة مستخدمين مع حالات ظهور مختلفة.',
-                  'ابنِ موقع محفظة أعمال (Portfolio) إبداعي للمصممين مع معرض أعمال شبكي، نظام تبديل الوضع الليلي والنهاري، وتأثيرات انتقال سلسة بين الأقسام.'
-                ]
-              : [
-                  'Design a professional digital products store featuring a modern landing interface with scroll animations, a filterable product grid, and an interactive popup shopping cart that auto-calculates totals.',
-                  'Create an interactive SaaS landing page for tech startups with animated feature sections, a comparative pricing table, and a smart contact form with validation logic.',
-                  'Develop a comprehensive Admin Dashboard featuring interactive sales data charts, sortable data tables, and a user management system with various UI states.',
-                  'Build a creative Portfolio website for designers with a grid-based work gallery, seamless dark/light mode switching, and smooth section transition effects.'
-                ]
-          }
-        ];
-      }
-      return prev;
-    });
-  }, [language]);
-
   const [terminalInput, setTerminalInput] = useState('');
 
   const handleTerminalCommand = (e: React.FormEvent) => {
@@ -470,33 +493,10 @@ export const AppStudioPage: React.FC = () => {
     }
   };
 
-  // AI Assistant Chat Messages & State
-  const [chatMessages, setChatMessages] = useState<StudioChatMessage[]>([
-    {
-      id: 'welcome_1',
-      role: 'assistant',
-      text: language === 'ar' 
-        ? 'مرحباً بك في استوديو تطوير البرمجيات. صف التطبيق أو الميزة التي ترغب في بنائها لتوليد الكود وتشغيل المعاينة.'
-        : 'Welcome to Software Studio. Describe the application or feature you want to build to generate code and launch the preview.',
-      timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-      suggestions: language === 'ar' 
-        ? [
-            'صمم متجر إلكتروني احترافي للمنتجات الرقمية يضم واجهة هبوط عصرية مع سكرول أنيميشن، شبكة منتجات قابلة للتصفية، وسلة مشتريات منبثقة تفاعلية تحسب المجموع تلقائياً.',
-            'أنشئ صفحة هبوط (SaaS) تفاعلية للشركات التقنية مع قسم مميزات متحرك، جدول خطط أسعار مقارن، ونموذج تواصل ذكي مع التحقق من البيانات.',
-            'طور لوحة تحكم وإحصائيات متكاملة (Admin Dashboard) تضم رسوم بيانية تفاعلية لبيانات المبيعات، جداول قابلة للفرز، ونظام إدارة مستخدمين مع حالات ظهور مختلفة.',
-            'ابنِ موقع محفظة أعمال (Portfolio) إبداعي للمصممين مع معرض أعمال شبكي، نظام تبديل الوضع الليلي والنهاري، وتأثيرات انتقال سلسة بين الأقسام.'
-          ]
-        : [
-            'Design a professional digital products store featuring a modern landing interface with scroll animations, a filterable product grid, and an interactive popup shopping cart that auto-calculates totals.',
-            'Create an interactive SaaS landing page for tech startups with animated feature sections, a comparative pricing table, and a smart contact form with validation logic.',
-            'Develop a comprehensive Admin Dashboard featuring interactive sales data charts, sortable data tables, and a user management system with various UI states.',
-            'Build a creative Portfolio website for designers with a grid-based work gallery, seamless dark/light mode switching, and smooth section transition effects.'
-          ]
-    }
-  ]);
+  // AI Assistant Chat Messages & State (starts empty on new project, matching Osama-Qonaibe/builder)
+  const [chatMessages, setChatMessages] = useState<StudioChatMessage[]>([]);
 
   const hasExecutedHubPromptRef = useRef(false);
-  const chatFeedRef = useRef<HTMLDivElement>(null);
 
   // Keep syncStatus accurately aligned with authentication state
   useEffect(() => {
@@ -618,40 +618,45 @@ export const AppStudioPage: React.FC = () => {
           localStorage.setItem('perplexta_active_project_name', cleanName);
         }
         if (parsed.files && Object.keys(parsed.files).length > 0) {
-          if (parsed.files['index.html'] && typeof parsed.files['index.html'].content === 'string') {
-            parsed.files['index.html'].content = parsed.files['index.html'].content
-              .replace(/استوديو تطوير البرمجيات \(IDE\)/g, 'استوديو تطوير البرمجيات')
-              .replace(/مشروع جديد فارغ • جاهز للبناء والتوليد/g, 'جاهز للتطوير');
-          }
-          setFiles(parsed.files);
-          setSavedFiles(parsed.files);
           const restoredKeys = Object.keys(parsed.files);
-          const targetActive = (parsed.activeFilePath && parsed.files[parsed.activeFilePath])
-            ? parsed.activeFilePath
-            : (restoredKeys.includes('index.html') ? 'index.html' : (restoredKeys[0] || 'index.html'));
-          setActiveFilePath(targetActive);
-          setOpenTabs(restoredKeys.slice(0, 5));
-          if (parsed.envVars && typeof parsed.envVars === 'object') {
-            setEnvVars(prev => ({ ...prev, ...parsed.envVars }));
+          const idxContent = String(parsed.files['index.html']?.content || '');
+          const isSavedLaunchpad =
+            restoredKeys.length === 1 &&
+            restoredKeys[0] === 'index.html' &&
+            (idxContent.includes('جاهز للتطوير') ||
+              idxContent.includes('Ready to Build') ||
+              idxContent.includes('مشروع جديد فارغ') ||
+              idxContent.includes('أدخل وصف التطبيق أو الميزة المطلوبة') ||
+              idxContent.includes('Enter your application description in the chat panel'));
+
+          if (!isSavedLaunchpad || (parsed.templateOrigin && parsed.templateOrigin.slug)) {
+            setFiles(parsed.files);
+            setSavedFiles(parsed.files);
+            const targetActive = (parsed.activeFilePath && parsed.files[parsed.activeFilePath])
+              ? parsed.activeFilePath
+              : (restoredKeys.includes('index.html') ? 'index.html' : (restoredKeys[0] || 'index.html'));
+            setActiveFilePath(targetActive);
+            setOpenTabs(restoredKeys.slice(0, 5));
+            if (parsed.envVars && typeof parsed.envVars === 'object') {
+              setEnvVars(prev => ({ ...prev, ...parsed.envVars }));
+            }
+            if (Array.isArray(parsed.chatMessages) && parsed.chatMessages.length > 0) {
+              const filteredMsgs = parsed.chatMessages.filter(
+                (m: StudioChatMessage) =>
+                  m.id !== 'welcome_1' &&
+                  !(String(m.id || '').startsWith('welcome_') && !String(m.id || '').startsWith('welcome_tmpl_'))
+              );
+              setChatMessages(filteredMsgs);
+            }
+            if (Array.isArray(parsed.terminalLogs) && parsed.terminalLogs.length > 0) {
+              setTerminalLogs(parsed.terminalLogs);
+            }
+            if (parsed.templateOrigin && typeof parsed.templateOrigin === 'object' && parsed.templateOrigin.slug) {
+              setTemplateOrigin(parsed.templateOrigin);
+            }
+            setIsStartScreenOpen(false);
+            setIframeKey(prev => prev + 1);
           }
-          if (Array.isArray(parsed.chatMessages) && parsed.chatMessages.length > 0) {
-            const sanitizedMsgs = parsed.chatMessages.map((m: StudioChatMessage) => {
-              if (m.role === 'assistant' && typeof m.text === 'string' && (m.text.includes('السيادي') || m.text.includes('(IDE)') || m.text.includes('⚡'))) {
-                return {
-                  ...m,
-                  text: dir === 'rtl'
-                    ? 'مرحباً بك في استوديو تطوير البرمجيات. صف التطبيق أو الميزة التي ترغب في بنائها لتوليد الكود وتشغيل المعاينة.'
-                    : 'Welcome to Software Studio. Describe the application or feature you want to build to generate code and launch the preview.'
-                };
-              }
-              return m;
-            });
-            setChatMessages(sanitizedMsgs);
-          }
-          if (Array.isArray(parsed.terminalLogs) && parsed.terminalLogs.length > 0) {
-            setTerminalLogs(parsed.terminalLogs);
-          }
-          setIframeKey(prev => prev + 1);
         }
       }
     } catch (e) {
@@ -712,6 +717,7 @@ export const AppStudioPage: React.FC = () => {
             activeFilePath,
             envVars,
             chatMessages,
+            templateOrigin,
             terminalLogs: terminalLogs.slice(-30)
           }));
 
@@ -814,15 +820,11 @@ export const AppStudioPage: React.FC = () => {
     chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [chatMessages, isGenerating]);
 
-  // Smooth auto-scroll using chatFeedRef
-  useEffect(() => {
-    if (chatFeedRef.current) {
-      chatFeedRef.current.scrollTo({
-        top: chatFeedRef.current.scrollHeight,
-        behavior: 'smooth'
-      });
-    }
-  }, [chatMessages, liveStreamText, isGenerating]);
+
+  // Terminal & Logs State
+  const addLog = useCallback((type: 'log' | 'error' | 'success', text: string) => {
+    setTerminalLogs(prev => [...prev, { type, text, time: new Date().toLocaleTimeString() }]);
+  }, []);
 
   // SQLite Database via sql.js
   const [sqlDb, setSqlDb] = useState<any>(null);
@@ -833,26 +835,47 @@ export const AppStudioPage: React.FC = () => {
   const [sqlCustomQuery, setSqlCustomQuery] = useState('SELECT * FROM products;');
   const [queryResult, setQueryResult] = useState<any>(null);
 
+  const refreshTables = useCallback((db: any) => {
+    try {
+      if (!db) return;
+      const res = db.exec("SELECT name FROM sqlite_master WHERE type='table';");
+      if (res && res[0] && res[0].values) {
+        const tables = res[0].values.map((v: any) => v[0] as string);
+        setSqlTables(tables);
+        if (tables.length > 0 && !tables.includes(selectedTable)) {
+          setSelectedTable(tables[0]);
+        }
+      }
+    } catch (e) {}
+  }, [selectedTable]);
+
   // Initialize SQLite
   useEffect(() => {
     let isMounted = true;
-    initSqlJs({
-      locateFile: file => `https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.8.0/${file}`
-    }).then(SQL => {
-      if (!isMounted) return;
-      const db = new SQL.Database();
-      const schema = files['db/schema.sql']?.content || '';
-      try {
-        db.run(schema);
-        setSqlDb(db);
-        refreshTables(db);
-        addLog('success', 'تم تهيئة محرك SQLite الافتراضي بنجاح من schema.sql');
-      } catch (err: any) {
-        addLog('error', `خطأ في تهيئة قاعدة البيانات: ${err.message}`);
+    try {
+      const sqlInitializer = typeof initSqlJs === 'function' ? initSqlJs : (initSqlJs as any)?.default;
+      if (typeof sqlInitializer === 'function') {
+        sqlInitializer({
+          locateFile: (file: string) => `/${file}`
+        }).then((SQL: any) => {
+          if (!isMounted) return;
+          const db = new SQL.Database();
+          const schema = files['db/schema.sql']?.content || '';
+          try {
+            if (schema) db.run(schema);
+            setSqlDb(db);
+            refreshTables(db);
+            addLog('success', 'تم تهيئة محرك SQLite الافتراضي بنجاح من schema.sql');
+          } catch (err: any) {
+            addLog('error', `خطأ في تهيئة قاعدة البيانات: ${err.message}`);
+          }
+        }).catch((err: any) => {
+          console.warn('sql.js load error:', err);
+        });
       }
-    }).catch(err => {
-      console.warn('sql.js load error:', err);
-    });
+    } catch (err) {
+      console.warn('sql.js initialization error:', err);
+    }
 
     return () => {
       isMounted = false;
@@ -869,20 +892,7 @@ export const AppStudioPage: React.FC = () => {
     } catch (err: any) {
       // Ignore duplicate table creation notices during incremental typing
     }
-  }, [files['db/schema.sql']?.content, sqlDb]);
-
-  const refreshTables = (db: any) => {
-    try {
-      const res = db.exec("SELECT name FROM sqlite_master WHERE type='table';");
-      if (res && res[0] && res[0].values) {
-        const tables = res[0].values.map((v: any) => v[0] as string);
-        setSqlTables(tables);
-        if (tables.length > 0 && !tables.includes(selectedTable)) {
-          setSelectedTable(tables[0]);
-        }
-      }
-    } catch (e) {}
-  };
+  }, [files, sqlDb, refreshTables]);
 
   // Load table data when selectedTable changes
   useEffect(() => {
@@ -918,10 +928,6 @@ export const AppStudioPage: React.FC = () => {
       setQueryResult({ error: err.message });
       addLog('error', `خطأ SQL: ${err.message}`);
     }
-  };
-
-  const addLog = (type: 'log' | 'error' | 'success', text: string) => {
-    setTerminalLogs(prev => [...prev, { type, text, time: new Date().toLocaleTimeString() }]);
   };
 
   useEffect(() => {
@@ -1158,11 +1164,20 @@ export const AppStudioPage: React.FC = () => {
     setSavedFiles(loadedFiles);
     setActiveFilePath(entryFile);
     setOpenTabs(loadedKeys.length > 0 ? loadedKeys.slice(0, 5) : ['index.html']);
+    setIsStartScreenOpen(false);
     if (ws.metadata && typeof ws.metadata === 'object' && ws.metadata.envVars) {
       setEnvVars(ws.metadata.envVars);
     }
     if (Array.isArray(ws.chat_history) && ws.chat_history.length > 0) {
-      setChatMessages(ws.chat_history);
+      setChatMessages(
+        ws.chat_history.filter(
+          (m: StudioChatMessage) =>
+            m.id !== 'welcome_1' &&
+            !(String(m.id || '').startsWith('welcome_') && !String(m.id || '').startsWith('welcome_tmpl_'))
+        )
+      );
+    } else {
+      setChatMessages([]);
     }
     setIframeKey(prev => prev + 1);
 
@@ -1496,7 +1511,7 @@ export const AppStudioPage: React.FC = () => {
       .replace(/https:\/\/cdn\.tailwindcss\.com/gi, '/api/studio/proxy/tailwind');
 
     // Collect all CSS files
-    const allCss = Object.keys(files)
+    let allCss = Object.keys(files)
       .filter(p => p.endsWith('.css'))
       .map(p => {
         let c = files[p].content || '';
@@ -1504,6 +1519,22 @@ export const AppStudioPage: React.FC = () => {
         return `/* --- ${p} --- */\n${c}`;
       })
       .join('\n\n');
+
+    // Resolve relative asset references (e.g. icon.svg, logo.svg) from project files into data URIs
+    Object.entries(files).forEach(([filePath, fileObj]) => {
+      if (!fileObj || typeof fileObj.content !== 'string') return;
+      const fileName = filePath.replace(/^\/+/, '');
+      if (fileName.endsWith('.svg')) {
+        const svgContent = fileObj.content.trim();
+        if (svgContent.startsWith('<svg') || svgContent.includes('<svg')) {
+          const dataUri = `data:image/svg+xml;utf8,${encodeURIComponent(svgContent)}`;
+          const escapedName = fileName.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+          const regex = new RegExp(`(['"])(?:\\.\\/|\\/)?${escapedName}(['"])`, 'g');
+          htmlContent = htmlContent.replace(regex, `$1${dataUri}$2`);
+          allCss = allCss.replace(regex, `$1${dataUri}$2`);
+        }
+      }
+    });
 
     // Collect and topologically sort all JS, JSX, TS, TSX files (filtering out build/config files)
     const configBlacklist = ['vite.config.js', 'vite.config.ts', 'tailwind.config.js', 'tailwind.config.cjs', 'postcss.config.js', 'package.json', 'tsconfig.json'];
@@ -1519,13 +1550,36 @@ export const AppStudioPage: React.FC = () => {
       if (lower.includes('utils') || lower.includes('helpers') || lower.includes('services') || lower.includes('api')) return 3;
       if (lower.includes('context') || lower.includes('hooks')) return 4;
       if (lower.includes('components') || lower.includes('ui') || lower.includes('widgets')) return 5;
-      if (lower.includes('pages') || lower.includes('views') || lower.includes('sections')) return 6;
+      if (lower.includes('pages') || lower.includes('sections')) return 6;
       if (lower.endsWith('app.jsx') || lower.endsWith('app.tsx')) return 7;
       if (lower.endsWith('main.jsx') || lower.endsWith('main.tsx') || lower.endsWith('index.jsx') || lower.endsWith('index.tsx') || lower === 'src/app.js' || lower === 'app.js' || lower === 'script.js' || lower === 'main.js') return 8;
       return 5;
     };
 
     const sortedFiles = [...allCodeFiles].sort((a, b) => getFilePriority(a) - getFilePriority(b));
+
+    // If the project contains custom React code, and index.html still contains the initial launchpad splash card,
+    // upgrade index.html automatically to an app container so the app can mount cleanly.
+    const isDarkTheme = theme === 'dark';
+    const isLaunchpadSplash = (htmlContent.includes('Ready to Build') || htmlContent.includes('جاهز للتطوير') || htmlContent.includes('Software Studio') || htmlContent.includes('استوديو تطوير البرمجيات')) && htmlContent.length < 3200;
+    const hasReactMount = sortedFiles.some(p => {
+      const c = files[p]?.content || '';
+      return c.includes('createRoot') || c.includes('ReactDOM.render') || c.includes("getElementById('root')") || c.includes("getElementById('app')");
+    });
+    if (hasReactMount && isLaunchpadSplash) {
+      htmlContent = `<!DOCTYPE html>
+<html lang="${language === 'ar' ? 'ar' : 'en'}" dir="${dir}" class="${isDarkTheme ? 'dark' : ''}">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>${projectName || 'Studio Live Preview'}</title>
+</head>
+<body class="min-h-screen ${isDarkTheme ? 'bg-[#0d1117] text-slate-100' : 'bg-white text-slate-900'} font-['Inter','Tajawal',sans-serif] selection:bg-blue-600 selection:text-white antialiased">
+  <div id="root"></div>
+  <div id="app"></div>
+</body>
+</html>`;
+    }
 
     const cleanEsmForBrowser = (code: string) => {
       if (!code) return '';
@@ -1571,7 +1625,15 @@ export const AppStudioPage: React.FC = () => {
         .replace(/export\s+(let|var|class|type|interface)\s+/g, '$1 ');
     };
 
-    // Detect entry file dynamically across all possible framework patterns
+    // Separate JS code files from CSS style files to prevent syntax errors from wrapping CSS in script tags
+    const jsCodeFiles = sortedFiles.filter(p => 
+      p.endsWith('.js') || p.endsWith('.jsx') || p.endsWith('.ts') || p.endsWith('.tsx')
+    );
+    const cssFiles = sortedFiles.filter(p => p.endsWith('.css'));
+    const cssStylesHtml = cssFiles
+      .map(p => `<style data-file="${p}">\n/* --- CSS File: ${p} --- */\n${files[p]?.content || ''}\n</style>`)
+      .join('\n');
+
     const entryCandidates = [
       'src/main.tsx', 'src/main.jsx', 'src/main.js', 'src/main.ts',
       'src/index.tsx', 'src/index.jsx', 'src/index.js', 'src/index.ts',
@@ -1582,13 +1644,13 @@ export const AppStudioPage: React.FC = () => {
       'app.js', 'script.js', 'index.js'
     ];
 
-    const entryFilePath = entryCandidates.find(p => files[p] && typeof files[p].content === 'string' && files[p].content.trim().length > 0) || (sortedFiles.length > 0 ? sortedFiles[sortedFiles.length - 1] : '');
+    const entryFilePath = entryCandidates.find(p => files[p] && typeof files[p].content === 'string' && files[p].content.trim().length > 0) || (jsCodeFiles.length > 0 ? jsCodeFiles[jsCodeFiles.length - 1] : '');
 
-    const hasBabelFiles = sortedFiles.some(p => p.endsWith('.jsx') || p.endsWith('.tsx'));
+    const hasBabelFiles = jsCodeFiles.some(p => p.endsWith('.jsx') || p.endsWith('.tsx'));
 
     let combinedScriptsHtml = '';
     if (hasBabelFiles) {
-      const combinedBabelCode = sortedFiles
+      const combinedBabelCode = jsCodeFiles
         .map(p => `/* --- File: ${p} --- */\n${cleanEsmForBrowser(files[p].content)}`)
         .join('\n\n');
       combinedScriptsHtml = `
@@ -1602,18 +1664,20 @@ export const AppStudioPage: React.FC = () => {
         }, 120);
       </script>`;
     } else {
-      const otherJsScripts = sortedFiles
-        .filter(p => p !== entryFilePath)
+      const otherJsFiles = jsCodeFiles.filter(p => p !== entryFilePath);
+      const otherJsScripts = otherJsFiles
         .map(p => `
         <script data-file="${p}">
           /* --- File: ${p} --- */
           ${cleanEsmForBrowser(files[p].content)}
         </script>`).join('\n');
       const rawEntry = entryFilePath && files[entryFilePath] ? files[entryFilePath].content : '';
-      const entryJs = cleanEsmForBrowser(rawEntry);
+      const entryJs = (entryFilePath && (entryFilePath.endsWith('.js') || entryFilePath.endsWith('.ts') || entryFilePath.endsWith('.jsx') || entryFilePath.endsWith('.tsx')))
+        ? cleanEsmForBrowser(rawEntry)
+        : '';
       combinedScriptsHtml = `
       ${otherJsScripts}
-      <script data-file="${entryFilePath || 'entry'}">
+      ${entryJs ? `<script data-file="${entryFilePath || 'entry'}">
         /* --- Entry File: ${entryFilePath} --- */
         ${entryJs}
         window.addEventListener('DOMContentLoaded', function() {
@@ -1625,32 +1689,39 @@ export const AppStudioPage: React.FC = () => {
         setTimeout(function() {
           if (typeof window.initLucideIcons === 'function') window.initLucideIcons();
         }, 80);
-      </script>`;
+      </script>` : ''}`;
     }
 
-    // Guarantee both #root and #app containers exist for React and Vanilla JS rendering
-    if (!htmlContent.includes('id="root"') && !htmlContent.includes('id="app"')) {
+    // Guarantee both #root and #app containers exist only when React/JSX/TSX mount is present
+    if (hasReactMount && !htmlContent.includes('id="root"') && !htmlContent.includes('id="app"')) {
       const defaultContainers = '<div id="root"></div><div id="app"></div>';
       if (htmlContent.includes('</body>')) {
-        htmlContent = htmlContent.replace('</body>', defaultContainers + '</body>');
+        htmlContent = htmlContent.replace('</body>', () => defaultContainers + '</body>');
       } else {
         htmlContent += defaultContainers;
       }
     }
+
+    // Only inject Tailwind CDN if the project does not have its own comprehensive custom CSS stylesheet or explicitly uses Tailwind
+    const hasSubstantialCustomCss = allCss.trim().length > 400;
+    const usesTailwind = rawHtml.includes('tailwind') || !hasSubstantialCustomCss || hasBabelFiles;
 
     const injectionHead = `
       <meta charset="UTF-8">
       <meta name="viewport" content="width=device-width, initial-scale=1.0">
       <link rel="preconnect" href="https://fonts.googleapis.com">
       <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-      <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Tajawal:wght@300;400;500;700;800;900&display=swap" rel="stylesheet">
+      <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Tajawal:wght@300;400;500;700;800;900&family=Oswald:wght@500;700&display=swap" rel="stylesheet">
       <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" crossorigin="anonymous" referrerpolicy="no-referrer" />
-      <script src="/api/studio/proxy/tailwind"></script>
+      ${usesTailwind ? '<script src="/api/studio/proxy/tailwind"></script>' : ''}
+      ${hasBabelFiles || hasReactMount ? `
       <script src="/api/studio/proxy/react"></script>
       <script src="/api/studio/proxy/react-dom"></script>
       <script src="/api/studio/proxy/babel"></script>
       <script src="/api/studio/proxy/lucide"></script>
-      <script src="/api/studio/proxy/chartjs"></script>
+      <script src="/api/studio/proxy/chartjs"></script>` : ''}`;
+
+    const injectionHeadEnd = `
       <script>
         // Event listener race-condition polyfill for DOMContentLoaded and load events in iframes
         (function() {
@@ -1716,24 +1787,39 @@ export const AppStudioPage: React.FC = () => {
         if (window.ReactDOM && window.ReactDOM.createRoot) {
           window.createRoot = window.ReactDOM.createRoot.bind(window.ReactDOM);
         }
-        tailwind.config = {
-          darkMode: 'class',
-          theme: {
-            extend: {
-              fontFamily: {
-                sans: ['Inter', 'Tajawal', 'system-ui', 'sans-serif'],
-                tajawal: ['Tajawal', 'sans-serif'],
+        if (typeof tailwind !== 'undefined') {
+          tailwind.config = {
+            darkMode: 'class',
+            theme: {
+              extend: {
+                fontFamily: {
+                  sans: ['Inter', 'Tajawal', 'system-ui', 'sans-serif'],
+                  tajawal: ['Tajawal', 'sans-serif'],
+                }
               }
             }
-          }
+          };
         }
       </script>
       <style>
-        ${allCss}
-        body {
+        :where(html) {
+          margin: 0;
+          padding: 0;
+          width: 100%;
+          min-height: 100%;
+          background-color: ${isDarkTheme ? '#0d1117' : '#ffffff'};
+          color: ${isDarkTheme ? '#f1f5f9' : '#0f172a'};
+        }
+        :where(body) {
+          margin: 0;
+          padding: 0;
+          width: 100%;
+          min-height: 100vh;
           font-family: 'Inter', 'Tajawal', system-ui, sans-serif;
           -webkit-font-smoothing: antialiased;
         }
+        ${hasReactMount ? `#root, #app { width: 100%; min-height: 100vh; }` : ''}
+        ${allCss}
       </style>
       <script>
         (function() {
@@ -1817,26 +1903,70 @@ export const AppStudioPage: React.FC = () => {
 
     const injectionScripts = combinedScriptsHtml;
 
-    // Robustly inject head scripts using case-insensitive regex to handle attributes (e.g. <html lang="ar">)
-    if (/<head[^>]*>/i.test(htmlContent)) {
-      htmlContent = htmlContent.replace(/(<head[^>]*>)/i, `$1${injectionHead}`);
-    } else if (/<html[^>]*>/i.test(htmlContent)) {
-      htmlContent = htmlContent.replace(/(<html[^>]*>)/i, `$1<head>${injectionHead}</head>`);
-    } else {
-      htmlContent = `<!DOCTYPE html><html lang="${language === 'ar' ? 'ar' : 'en'}" dir="${dir}"><head>${injectionHead}</head><body>${htmlContent}</body></html>`;
+    // Clean up flex-centering body classes from generated/loaded apps so websites take full viewport width and flow naturally
+    if (/<body[^>]*>/i.test(htmlContent)) {
+      const isNotSplashOnly = sortedFiles.length > 0 || (!htmlContent.includes('Ready to Build') && !htmlContent.includes('جاهز للتطوير'));
+      if (isNotSplashOnly) {
+        htmlContent = htmlContent.replace(/<body([^>]*)>/i, (_m, attrs) => {
+          if (/class=["']/i.test(attrs)) {
+            const cleanAttrs = attrs.replace(/class=["']([^"']*)["']/i, (_match: string, cVal: string) => {
+              const cleaned = cVal
+                .replace(/\bitems-center\b/g, '')
+                .replace(/\bjustify-center\b/g, '')
+                .replace(/\bflex-col\b/g, '')
+                .replace(/\bflex\b/g, '')
+                .replace(/\s+/g, ' ')
+                .trim();
+              return `class="${cleaned}"`;
+            });
+            return `<body${cleanAttrs}>`;
+          }
+          return `<body${attrs}>`;
+        });
+      }
     }
 
-    // Robustly inject body scripts
+    // Robustly inject head scripts using callback replacer to prevent $1/$& string corruption
+    const fullHead = injectionHead + injectionHeadEnd;
+    if (/<head[^>]*>/i.test(htmlContent)) {
+      htmlContent = htmlContent.replace(/(<head[^>]*>)/i, (match) => `${match}${fullHead}`);
+    } else if (/<html[^>]*>/i.test(htmlContent)) {
+      htmlContent = htmlContent.replace(/(<html[^>]*>)/i, (match) => `${match}<head>${fullHead}</head>`);
+    } else {
+      htmlContent = `<!DOCTYPE html><html lang="${language === 'ar' ? 'ar' : 'en'}" dir="${dir}" class="${isDarkTheme ? 'dark' : ''}"><head>${fullHead}</head><body>${htmlContent}</body></html>`;
+    }
+
+    // Ensure <html> tag class is synchronized with active platform theme
+    if (/<html[^>]*>/i.test(htmlContent)) {
+      htmlContent = htmlContent.replace(/<html([^>]*)>/i, (m, attrs) => {
+        if (isDarkTheme) {
+          if (/class=["']/i.test(attrs)) {
+            return attrs.includes('dark') ? m : `<html${attrs.replace(/class=["']([^"']*)["']/i, 'class="$1 dark"')}>`;
+          }
+          return `<html${attrs} class="dark">`;
+        } else {
+          if (/class=["']/i.test(attrs)) {
+            return `<html${attrs.replace(/class=["']([^"']*)["']/i, (_match: string, cVal: string) => {
+              const cleaned = cVal.replace(/\bdark\b/g, '').trim();
+              return cleaned ? `class="${cleaned}"` : '';
+            })}>`;
+          }
+          return m;
+        }
+      });
+    }
+
+    // Robustly inject body scripts using callback replacer to prevent $1/$& string corruption in JS code
     if (/<\/body>/i.test(htmlContent)) {
-      htmlContent = htmlContent.replace(/(<\/body>)/i, `${injectionScripts}$1`);
+      htmlContent = htmlContent.replace(/(<\/body>)/i, (match) => `${injectionScripts}${match}`);
     } else if (/<\/html>/i.test(htmlContent)) {
-      htmlContent = htmlContent.replace(/(<\/html>)/i, `${injectionScripts}$1`);
+      htmlContent = htmlContent.replace(/(<\/html>)/i, (match) => `${injectionScripts}${match}`);
     } else {
       htmlContent = htmlContent + injectionScripts;
     }
 
     return htmlContent;
-  }, [files, language, dir, isInspectMode, envVars]);
+  }, [files, language, dir, isInspectMode, envVars, theme]);
 
   const handleOpenInNewTab = async () => {
     try {
@@ -1914,8 +2044,16 @@ export const AppStudioPage: React.FC = () => {
     recognition.start();
   };
 
-  // Handle Send Prompt (Real AI Code Engine with Real-Time File Tree Scaffolding & Chat History)
-  const handleSendPrompt = async (customPrompt?: string) => {
+  // Handle Send Prompt (Real AI Assistant Engine with Clarify, Todos, Surgical Edits, Template Context & Live Preview Verification)
+  const handleSendPrompt = async (
+    customPrompt?: string,
+    turnOptions?: {
+      allowClarify?: boolean;
+      clarificationContext?: string;
+      skipUserMessage?: boolean;
+      displayUserText?: string;
+    }
+  ) => {
     const promptToSend = (typeof customPrompt === 'string' ? customPrompt : promptQuery).trim();
     if (!promptToSend || isGenerating) return;
 
@@ -1929,6 +2067,7 @@ export const AppStudioPage: React.FC = () => {
 
     if (typeof customPrompt === 'string') {
       setClickedSuggestions(prev => [...prev, customPrompt]);
+      recentSuggestionLabelsRef.current = [...recentSuggestionLabelsRef.current, customPrompt].slice(-25);
     }
 
     const activeProjId = projectId || ('proj_' + Date.now());
@@ -1940,19 +2079,21 @@ export const AppStudioPage: React.FC = () => {
     setPromptQuery('');
     setIsGenerating(true);
     setCurrentlyWritingFile('');
+    setRuntimeError(null);
 
     const controller = new AbortController();
     abortControllerRef.current = controller;
 
-    const userMsgId = `user_${Date.now()}`;
-    const userMsg: StudioChatMessage = {
-      id: userMsgId,
-      role: 'user',
-      text: promptToSend,
-      timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-    };
-
-    setChatMessages(prev => [...prev, userMsg]);
+    if (!turnOptions?.skipUserMessage) {
+      const userMsgId = `user_${Date.now()}`;
+      const userMsg: StudioChatMessage = {
+        id: userMsgId,
+        role: 'user',
+        text: turnOptions?.displayUserText || promptToSend,
+        timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+      };
+      setChatMessages(prev => [...prev, userMsg]);
+    }
     addLog('log', `إرسال طلب التطوير: "${promptToSend}"`);
 
     const existingFileKeys = Object.keys(files);
@@ -1975,20 +2116,47 @@ export const AppStudioPage: React.FC = () => {
       finalPrompt += incrementalInstruction;
     }
 
+    setIsStartScreenOpen(false);
     setPipelinePhase(1);
-    setStreamStatusMessage(language === 'ar' ? 'المرحلة 1: تحليل المتطلبات وهندسة شجرة ملفات المشروع...' : 'Phase 1: Analyzing requirements & scaffolding project file tree...');
+    setStreamStatusMessage(language === 'ar' ? 'جاري التخطيط والتحضير...' : 'Planning and preparing...');
     setLiveStreamText('');
+    setStreamedTodos([]);
 
     let streamedFilesMap: Record<string, ProjectFile> = {};
     let latestBlueprint: any = null;
     let rawChunkAccumulator = '';
+    let clarifyReceivedInStream = false;
+    let streamOpeningText = '';
+    let latestStreamedTodos: StudioTodoItem[] = [];
 
     try {
       const token = getAuthToken();
-      const historyPayload = chatMessages.slice(-6).map(m => ({
-        role: m.role,
-        content: m.text
-      }));
+      const historyPayload = prepareHistoryForAI(chatMessages, { maxMessages: 12 });
+
+      // Filter out remote image asset placeholders when sending code files to the AI
+      const codeOnlyFiles: Record<string, ProjectFile> = {};
+      Object.entries(files).forEach(([k, v]) => {
+        if (!/\.(png|jpg|jpeg|webp|gif|ico)$/i.test(k)) {
+          codeOnlyFiles[k] = v;
+        }
+      });
+
+      const activeTemplateInstructions = templateOrigin?.slug
+        ? CORE_TEMPLATES_MAP[templateOrigin.slug]?.instructions
+        : '';
+      const effectiveSystemPrompt = getDynamicSystemPrompt(
+        projectName,
+        codeOnlyFiles as any,
+        activeFilePath,
+        templateOrigin
+          ? {
+              slug: templateOrigin.slug,
+              name: templateOrigin.name,
+              instructions: activeTemplateInstructions
+            }
+          : null,
+        language
+      );
 
       const res = await fetch('/api/studio/generate', {
         method: 'POST',
@@ -2000,10 +2168,20 @@ export const AppStudioPage: React.FC = () => {
         signal: controller.signal,
         body: JSON.stringify({
           prompt: finalPrompt,
-          files,
+          systemPrompt: effectiveSystemPrompt,
+          files: codeOnlyFiles,
           activeFilePath,
           isNewProject: isDefaultLaunchpad,
           history: historyPayload,
+          templateOrigin: templateOrigin
+            ? {
+                ...templateOrigin,
+                instructions: activeTemplateInstructions
+              }
+            : null,
+          allowClarify: turnOptions?.allowClarify ?? (!turnOptions?.clarificationContext),
+          clarificationContext: turnOptions?.clarificationContext || '',
+          language,
           stream: true
         })
       });
@@ -2034,10 +2212,37 @@ export const AppStudioPage: React.FC = () => {
                   if (ev.type === 'step') {
                     setStreamStatusMessage(ev.message);
                     addLog('log', ev.message);
+                  } else if (ev.type === 'opening' && ev.text) {
+                    streamOpeningText = String(ev.text).trim();
+                    setStreamStatusMessage(streamOpeningText);
+                    addLog('log', streamOpeningText);
+                  } else if (ev.type === 'clarify' && Array.isArray(ev.questions) && ev.questions.length > 0) {
+                    clarifyReceivedInStream = true;
+                    setPendingClarifyPrompt(promptToSend);
+                    setClarifyLeadIn(ev.leadIn || streamOpeningText || '');
+                    setClarifyQuestions(ev.questions);
+                  } else if (ev.type === 'todo' && Array.isArray(ev.todos)) {
+                    const mappedTodos: StudioTodoItem[] = ev.todos.map((t: any, idx: number) => ({
+                      id: typeof t === 'object' && t.id ? String(t.id) : `todo_${idx}`,
+                      title: typeof t === 'string' ? t : String(t.title || t.content || `Step ${idx + 1}`),
+                      status: t?.status === 'completed' ? 'completed' : t?.status === 'in_progress' ? 'in_progress' : 'pending'
+                    }));
+                    latestStreamedTodos = mappedTodos;
+                    setStreamedTodos(mappedTodos);
                   } else if (ev.type === 'blueprint' && ev.blueprint) {
                     latestBlueprint = ev.blueprint;
                     setActiveBlueprint(ev.blueprint);
                     setPipelinePhase(2);
+
+                    if (Array.isArray(ev.blueprint.todos) && ev.blueprint.todos.length > 0 && latestStreamedTodos.length === 0) {
+                      const mappedBpTodos: StudioTodoItem[] = ev.blueprint.todos.map((t: any, idx: number) => ({
+                        id: typeof t === 'object' && t.id ? String(t.id) : `todo_${idx}`,
+                        title: typeof t === 'string' ? t : String(t.title || t.content || `Step ${idx + 1}`),
+                        status: idx === 0 ? 'in_progress' : 'pending'
+                      }));
+                      latestStreamedTodos = mappedBpTodos;
+                      setStreamedTodos(mappedBpTodos);
+                    }
 
                     const plannedOrder: string[] = Array.isArray(ev.blueprint.file_tree_order)
                       ? ev.blueprint.file_tree_order
@@ -2083,20 +2288,12 @@ export const AppStudioPage: React.FC = () => {
                         return next;
                       });
                     }
-
-                    const bpMsg = dir === 'rtl'
-                      ? `المرحلة 2: تم اعتماد المخطط الهيكلي (${plannedOrder.length || 1} ملفات) وجاري كتابة الكود...`
-                      : `Phase 2: Blueprint approved (${plannedOrder.length || 1} files), writing code...`;
-                    setStreamStatusMessage(bpMsg);
-                    addLog('success', bpMsg);
                   } else if (ev.type === 'file_writing' && ev.path) {
                     const targetPath = String(ev.path).replace(/^\/+/, '').trim();
                     setPipelinePhase(2);
                     setCurrentlyWritingFile(targetPath);
                     setStreamStatusMessage(
-                      dir === 'rtl'
-                        ? `المرحلة 2: جاري إنشاء وكتابة الملف: ${targetPath}`
-                        : `Phase 2: Writing file: ${targetPath}`
+                      ev.message || friendlyTodoLabelForFile(targetPath, true, language)
                     );
                     setFileStatuses(prev => ({
                       ...prev,
@@ -2132,6 +2329,18 @@ export const AppStudioPage: React.FC = () => {
                       ...prev,
                       [targetPath]: 'completed'
                     }));
+                    setStreamedTodos(prev => {
+                      if (prev.length === 0) return prev;
+                      const inProgIdx = prev.findIndex(t => t.status === 'in_progress');
+                      if (inProgIdx === -1) return prev;
+                      const next = prev.map((t, i) => {
+                        if (i === inProgIdx) return { ...t, status: 'completed' as const };
+                        if (i === inProgIdx + 1 && t.status === 'pending') return { ...t, status: 'in_progress' as const };
+                        return t;
+                      });
+                      latestStreamedTodos = next;
+                      return next;
+                    });
                     setCurrentlyWritingFile(prev => (prev === targetPath ? '' : prev));
                     if (targetPath === 'index.html' || targetPath.endsWith('.js') || targetPath.endsWith('.jsx') || targetPath.endsWith('.tsx')) {
                       setIframeKey(prev => prev + 1);
@@ -2141,9 +2350,12 @@ export const AppStudioPage: React.FC = () => {
                     rawChunkAccumulator += ev.chunk;
                     // Strip out XML tags and blueprint JSON so the live code monitor displays clean source code
                     const cleanPreview = rawChunkAccumulator
+                      .replace(/<perplexta_opening>[\s\S]*?<\/perplexta_opening>/gi, '')
+                      .replace(/<perplexta_clarify>[\s\S]*?<\/perplexta_clarify>/gi, '')
+                      .replace(/<perplexta_todo>[\s\S]*?<\/perplexta_todo>/gi, '')
                       .replace(/<perplexta_blueprint>[\s\S]*?<\/perplexta_blueprint>/gi, '')
                       .replace(/<perplexta_blueprint>[\s\S]*/gi, '')
-                      .replace(/<\/?perplexta_file[^>]*>/gi, '\n')
+                      .replace(/<\/?perplexta_(?:file|edit)[^>]*>/gi, '\n')
                       .trim();
                     if (cleanPreview) {
                       setLiveStreamText(cleanPreview.slice(-360));
@@ -2174,6 +2386,18 @@ export const AppStudioPage: React.FC = () => {
         }
 
         const data = completedData;
+
+        // If the turn was a Clarifying Questions turn (clarifyOnly), wait for user's response without overwriting files
+        if (data?.clarifyOnly || (clarifyReceivedInStream && (!data?.updatedFiles || data.updatedFiles.length === 0))) {
+          if (Array.isArray(data?.clarifyQuestions) && data.clarifyQuestions.length > 0) {
+            setPendingClarifyPrompt(promptToSend);
+            setClarifyLeadIn(data.leadIn || streamOpeningText || '');
+            setClarifyQuestions(data.clarifyQuestions);
+          }
+          addLog('log', language === 'ar' ? 'بانتظار إجابات الأسئلة التوضيحية للمتابعة...' : 'Waiting for clarifying answers to proceed...');
+          return;
+        }
+
         if (data && data.files && Object.keys(data.files).length > 0) {
           // Filter out any empty placeholder files that were never populated
           const finalFiles: Record<string, ProjectFile> = {};
@@ -2184,6 +2408,12 @@ export const AppStudioPage: React.FC = () => {
             }
           });
           const resolvedFiles = Object.keys(finalFiles).length > 0 ? finalFiles : data.files;
+          // Preserve any image assets (photos/*, images/*, assets/*) from the current project
+          Object.entries(files).forEach(([k, v]) => {
+            if (/\.(png|jpg|jpeg|webp|gif|ico)$/i.test(k) && !resolvedFiles[k]) {
+              resolvedFiles[k] = v;
+            }
+          });
 
           setFiles(resolvedFiles);
           setSavedFiles(resolvedFiles);
@@ -2224,9 +2454,8 @@ export const AppStudioPage: React.FC = () => {
           });
           setFileStatuses(statuses);
 
-          // Phase 3: Dry-Run Validation & Auto Interceptor Check
           setPipelinePhase(3);
-          setStreamStatusMessage(language === 'ar' ? 'المرحلة 3: فحص سلامة الملفات وتحديث المعاينة الحية...' : 'Phase 3: Validating files & mounting live preview...');
+          setStreamStatusMessage(language === 'ar' ? 'جاري التحقق من المعاينة الحية...' : 'Verifying live preview...');
 
           let dryRunPassed = true;
           if (resolvedFiles['index.html']) {
@@ -2238,21 +2467,24 @@ export const AppStudioPage: React.FC = () => {
           }
 
           if (dryRunPassed) {
-            addLog('success', language === 'ar' ? `المرحلة 3: اجتاز الفحص بنجاح (${allResolvedKeys.length} ملفات في شجرة المشروع)` : `Phase 3: Validation passed (${allResolvedKeys.length} files in project tree)`);
+            addLog('success', language === 'ar' ? `تم التحقق من المعاينة الحية بنجاح (${allResolvedKeys.length} ملفات)` : `Verified live preview (${allResolvedKeys.length} files)`);
           }
 
           // Dynamic SQLite Schema Synchronization
           if (resolvedFiles['db/schema.sql'] && resolvedFiles['db/schema.sql'].content.trim()) {
             try {
-              initSqlJs({
-                locateFile: file => `https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.8.0/${file}`
-              }).then(SQL => {
-                const newDb = new SQL.Database();
-                newDb.run(resolvedFiles['db/schema.sql'].content);
-                setSqlDb(newDb);
-                refreshTables(newDb);
-                addLog('success', language === 'ar' ? 'تمت مزامنة مخطط قاعدة البيانات (db/schema.sql) بنجاح' : 'Database schema synchronized');
-              }).catch(() => {});
+              const sqlInitializer = typeof initSqlJs === 'function' ? initSqlJs : (initSqlJs as any)?.default;
+              if (typeof sqlInitializer === 'function') {
+                sqlInitializer({
+                  locateFile: (file: string) => `/${file}`
+                }).then((SQL: any) => {
+                  const newDb = new SQL.Database();
+                  newDb.run(resolvedFiles['db/schema.sql'].content);
+                  setSqlDb(newDb);
+                  refreshTables(newDb);
+                  addLog('success', language === 'ar' ? 'تمت مزامنة مخطط قاعدة البيانات (db/schema.sql) بنجاح' : 'Database schema synchronized');
+                }).catch(() => {});
+              }
             } catch (err: any) {
               console.warn('SQLite reload error:', err);
             }
@@ -2261,69 +2493,79 @@ export const AppStudioPage: React.FC = () => {
           const cleanReplyText = (rawText: string) => {
             if (!rawText) {
               return dir === 'rtl'
-                ? `تم إنشاء وتحديث شجرة ملفات المشروع (${updatedKeys.length} ملفات): ${updatedKeys.join('، ')}`
-                : `Scaffolded and updated project files (${updatedKeys.length} files): ${updatedKeys.join(', ')}`;
+                ? 'أصبح مشروعك جاهزاً الآن في المعاينة الحية! يمكنك تجربته مباشرة أو طلب أي تعديل إضافي.'
+                : 'Your project is now ready in the live preview! Try it out or ask for any further changes.';
             }
             const cleaned = rawText
+              .replace(/<perplexta_opening>[\s\S]*?<\/perplexta_opening>/gi, '')
+              .replace(/<perplexta_clarify>[\s\S]*?<\/perplexta_clarify>/gi, '')
+              .replace(/<perplexta_todo>[\s\S]*?<\/perplexta_todo>/gi, '')
               .replace(/<perplexta_blueprint>[\s\S]*?<\/perplexta_blueprint>/gi, '')
               .replace(/<perplexta_blueprint>[\s\S]*/gi, '')
               .replace(/<perplexta_file[\s\S]*?<\/perplexta_file>/gi, '')
               .replace(/<perplexta_file[\s\S]*/gi, '')
+              .replace(/<perplexta_edit[\s\S]*?<\/perplexta_edit>/gi, '')
+              .replace(/<perplexta_edit[\s\S]*/gi, '')
               .replace(/<perplexta_delete[\s\S]*?\/?>/gi, '')
               .replace(/```[\s\S]*?```/gi, '')
               .replace(/```[\s\S]*/gi, '')
               .trim();
 
             if (!cleaned || cleaned.includes('{') || cleaned.length < 5) {
-              const projName = bp?.project_name || updatedProjectTitle || (language === 'ar' ? 'المشروع' : 'Project');
               return dir === 'rtl'
-                ? `تم بناء وتحديث ملفات (${projName}) بنجاح في شجرة الملفات والمعاينة الحية (${updatedKeys.length} ملفات).`
-                : `Built and updated (${projName}) files in the project tree and live preview (${updatedKeys.length} files).`;
+                ? 'تم بناء وتحديث المشروع بنجاح في شاشة المعاينة الحية.'
+                : 'Built and updated your project in the live preview.';
             }
             return cleaned;
           };
 
           const nextClicked = [...clickedSuggestions, promptToSend];
           setClickedSuggestions(nextClicked);
-          const rawSuggestions: string[] = Array.isArray(data.suggestions) && data.suggestions.length > 0
-            ? data.suggestions
-            : (
-              Object.keys(resolvedFiles).some(f => f.toLowerCase().includes('products') || f.toLowerCase().includes('cart') || f.toLowerCase().includes('store'))
-                ? [
-                    language === 'ar' ? 'تطوير بطاقة تسجيل دخول وقاعدة بيانات للمستخدمين' : 'Build user login card & SQLite DB',
-                    language === 'ar' ? 'إضافة نظام كوبونات خصم وتخفيضات تفاعلي' : 'Add discount coupons system',
-                    language === 'ar' ? 'ربط سلة المشتريات ببوابات دفع ذكية وفواتير مفصلة' : 'Connect dynamic checkout & checkout forms'
-                  ]
-                : [
-                    language === 'ar' ? 'تصميم قسم مراجعات وآراء العملاء بشكل تفاعلي متحرك' : 'Design dynamic animated testimonials section',
-                    language === 'ar' ? 'تحسين التجاوب البصري الكامل مع شاشات الجوال والتابلت' : 'Perfect full mobile and tablet responsive layouts',
-                    language === 'ar' ? 'برمجة لوحة إحصائيات وإدارة للمشروع' : 'Build interactive admin dashboard panel'
-                  ]
-            );
-          const evolvedFromPrompt = PROGRESSIVE_SUGGESTIONS_MAP[promptToSend];
-          const uniqueMapped = Array.from(new Set(
-            [...(evolvedFromPrompt ? [evolvedFromPrompt] : []), ...rawSuggestions]
-              .map(s => PROGRESSIVE_SUGGESTIONS_MAP[s] && nextClicked.includes(s) ? PROGRESSIVE_SUGGESTIONS_MAP[s] : s)
-              .filter(s => !nextClicked.includes(s))
-          )).slice(0, 3);
+
+          // Combine AI-returned suggestions with context-aware Builder follow-ups (never suggesting features already in the HTML)
+          const templateSugs = templateOrigin?.slug ? CORE_TEMPLATES_MAP[templateOrigin.slug]?.suggestions : undefined;
+          const engineSuggestions = buildFollowUpSuggestions(
+            resolvedFiles,
+            [...nextClicked, ...recentSuggestionLabelsRef.current],
+            Array.isArray(data.suggestions) && data.suggestions.length > 0 ? data.suggestions : templateSugs,
+            language
+          );
+
+          engineSuggestions.forEach(s => {
+            if (!recentSuggestionLabelsRef.current.includes(s.label)) {
+              recentSuggestionLabelsRef.current.push(s.label);
+            }
+          });
+          recentSuggestionLabelsRef.current = recentSuggestionLabelsRef.current.slice(-25);
+
+          const finalTodosForMsg: StudioTodoItem[] = Array.isArray(data.todos) && data.todos.length > 0
+            ? data.todos.map((t: any, idx: number) => ({
+                id: typeof t === 'object' && t.id ? String(t.id) : `todo_${idx}`,
+                title: typeof t === 'string' ? t : String(t.title || t.content || `Step ${idx + 1}`),
+                status: 'completed' as const
+              }))
+            : latestStreamedTodos.map(t => ({ ...t, status: 'completed' as const }));
 
           const assistantMsg: StudioChatMessage = {
             id: `assistant_${Date.now()}`,
             role: 'assistant',
+            openingContent: data.opening || streamOpeningText || undefined,
+            todos: finalTodosForMsg.length > 0 ? finalTodosForMsg : undefined,
             text: cleanReplyText(data.reply || data.summary),
             logs: Array.isArray(data.logs) ? data.logs : [],
             filesUpdated: updatedKeys,
-            suggestions: uniqueMapped.length > 0 ? uniqueMapped : rawSuggestions.slice(0, 3),
+            suggestions: engineSuggestions.slice(0, 4),
             timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
           };
 
+          setStreamedTodos([]);
           setChatMessages(prev => [...prev, assistantMsg]);
           if (Array.isArray(data.logs)) {
             data.logs.forEach((logText: string) => addLog('success', logText));
           } else {
             addLog('success', data.summary || 'تم تحديث المشروع بنجاح');
           }
-          toast.success(language === 'ar' ? (data.summary || `تم بناء ${updatedKeys.length} ملفات بنجاح!`) : 'Project files built successfully!');
+          toast.success(language === 'ar' ? 'تم تحديث المعاينة الحية بنجاح!' : 'Live preview updated!');
           
           await saveProjectToDb(activeProjId, updatedProjectTitle, resolvedFiles);
           if (user && token && activeProjId) {
@@ -2372,6 +2614,74 @@ export const AppStudioPage: React.FC = () => {
     }
   };
 
+  // On-demand follow-up suggestion regeneration ("New ideas" / "أفكار جديدة", ported from generateContinueSuggestions in app.js)
+  const handleRegenerateSuggestions = useCallback(async () => {
+    if (isGenerating || isRegeneratingSuggestions) return;
+    setIsRegeneratingSuggestions(true);
+    try {
+      const token = getAuthToken();
+      const htmlSnapshot = files['index.html']?.content || '';
+      const transcript = chatMessages
+        .slice(-6)
+        .map(m => `${m.role.toUpperCase()}: ${(m.text || m.content || '').slice(0, 400)}`)
+        .join('\n\n');
+
+      const res = await fetch('/api/studio/suggestions', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+        },
+        body: JSON.stringify({
+          htmlSnapshot,
+          transcript,
+          recentLabels: recentSuggestionLabelsRef.current,
+          language
+        })
+      });
+
+      let nextSugs: Array<{ label: string; prompt: string }> = [];
+      if (res.ok) {
+        const data = await res.json().catch(() => null);
+        if (data?.suggestions && Array.isArray(data.suggestions) && data.suggestions.length > 0) {
+          nextSugs = data.suggestions;
+        }
+      }
+
+      if (nextSugs.length === 0) {
+        nextSugs = buildFollowUpSuggestions(
+          files,
+          recentSuggestionLabelsRef.current,
+          templateOrigin?.slug ? CORE_TEMPLATES_MAP[templateOrigin.slug]?.suggestions : undefined,
+          language
+        );
+      }
+
+      if (nextSugs.length > 0) {
+        nextSugs.forEach(s => {
+          if (!recentSuggestionLabelsRef.current.includes(s.label)) {
+            recentSuggestionLabelsRef.current.push(s.label);
+          }
+        });
+        recentSuggestionLabelsRef.current = recentSuggestionLabelsRef.current.slice(-25);
+
+        setChatMessages(prev => {
+          const copy = [...prev];
+          for (let i = copy.length - 1; i >= 0; i--) {
+            if (copy[i].role === 'assistant') {
+              copy[i] = { ...copy[i], suggestions: nextSugs };
+              break;
+            }
+          }
+          return copy;
+        });
+      }
+    } catch (_) {
+    } finally {
+      setIsRegeneratingSuggestions(false);
+    }
+  }, [isGenerating, isRegeneratingSuggestions, getAuthToken, files, chatMessages, language, templateOrigin]);
+
   const handleCreateNewProject = () => {
     if (!user) {
       setIsAuthModalOpen(true);
@@ -2401,16 +2711,25 @@ export const AppStudioPage: React.FC = () => {
         type: 'html',
         isEntry: true,
         content: `<!DOCTYPE html>
-<html lang="${isAr ? 'ar' : 'en'}" dir="${dir}">
+<html lang="${isAr ? 'ar' : 'en'}" dir="${dir}" class="h-full">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>${newProjName}</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Tajawal:wght@300;400;500;700;800;900&display=swap" rel="stylesheet">
+  <style>
+    html, body {
+      margin: 0;
+      padding: 0;
+      width: 100%;
+      min-height: 100%;
+    }
+  </style>
 </head>
-<body class="bg-slate-50 dark:bg-slate-950 text-slate-800 dark:text-slate-100 font-['Inter','Tajawal',sans-serif] min-h-screen flex items-center justify-center p-6 selection:bg-blue-600 selection:text-white">
-  <div class="max-w-md w-full text-center space-y-6">
+<body class="bg-slate-50 dark:bg-slate-950 text-slate-800 dark:text-slate-100 font-['Inter','Tajawal',sans-serif] min-h-screen w-full selection:bg-blue-600 selection:text-white">
+  <div class="w-full min-h-screen flex flex-col items-center justify-center p-6 sm:p-10">
+    <div class="max-w-md w-full text-center space-y-6">
     <!-- Brand Logo Glow Icon -->
     <div class="relative mx-auto w-16 h-16 rounded-shape-md bg-gradient-to-tr from-blue-600 to-indigo-600 p-0.5 shadow-xl shadow-blue-500/25 flex items-center justify-center">
       <div class="w-full h-full bg-slate-900 rounded-shape-sm flex items-center justify-center">
@@ -2445,31 +2764,14 @@ export const AppStudioPage: React.FC = () => {
     setActiveFilePath('index.html');
     setOpenTabs(['index.html']);
     setIframeKey(prev => prev + 1);
-
-    // Reset Chat Messages for this clean new project
-    setChatMessages([
-      {
-        id: `welcome_${Date.now()}`,
-        role: 'assistant',
-        text: isAr 
-          ? `تم إنشاء مساحة عمل جديدة للمشروع (${newProjName}). صف التطبيق أو الميزة التي ترغب في بنائها للبدء.`
-          : `Created new workspace for (${newProjName}). Describe the application or feature you want to build to begin.`,
-        timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-        suggestions: isAr 
-          ? [
-              'صمم متجر إلكتروني احترافي للمنتجات الرقمية يضم واجهة هبوط عصرية مع سكرول أنيميشن، شبكة منتجات قابلة للتصفية، وسلة مشتريات منبثقة تفاعلية تحسب المجموع تلقائياً.',
-              'أنشئ صفحة هبوط (SaaS) تفاعلية للشركات التقنية مع قسم مميزات متحرك، جدول خطط أسعار مقارن، ونموذج تواصل ذكي مع التحقق من البيانات.',
-              'طور لوحة تحكم وإحصائيات متكاملة (Admin Dashboard) تضم رسوم بيانية تفاعلية لبيانات المبيعات، جداول قابلة للفرز، ونظام إدارة مستخدمين مع حالات ظهور مختلفة.',
-              'ابنِ موقع محفظة أعمال (Portfolio) إبداعي للمصممين مع معرض أعمال شبكي، نظام تبديل الوضع الليلي والنهاري، وتأثيرات انتقال سلسة بين الأقسام.'
-            ]
-          : [
-              'Design a professional digital products store featuring a modern landing interface with scroll animations, a filterable product grid, and an interactive popup shopping cart that auto-calculates totals.',
-              'Create an interactive SaaS landing page for tech startups with animated feature sections, a comparative pricing table, and a smart contact form with validation logic.',
-              'Develop a comprehensive Admin Dashboard featuring interactive sales data charts, sortable data tables, and a user management system with various UI states.',
-              'Build a creative Portfolio website for designers with a grid-based work gallery, seamless dark/light mode switching, and smooth section transition effects.'
-            ]
-      }
-    ]);
+    setTemplateOrigin(null);
+    setClarifyQuestions([]);
+    setClarifyLeadIn('');
+    setPendingClarifyPrompt('');
+    setStreamedTodos([]);
+    recentSuggestionLabelsRef.current = [];
+    setChatMessages([]);
+    setIsStartScreenOpen(true);
 
     setTerminalLogs([
       {
@@ -2536,112 +2838,342 @@ export const AppStudioPage: React.FC = () => {
     return () => clearTimeout(timer);
   }, []);
 
+  // Automatically drain queued messages when streaming finishes
+  useEffect(() => {
+    if (!isGenerating && queuedMessages.length > 0) {
+      const nextItem = queuedMessages[0];
+      setQueuedMessages(prev => prev.slice(1));
+      handleSendPrompt(nextItem.text);
+    }
+  }, [isGenerating, queuedMessages]);
+
+  // Load any of the 46 Builder templates into Perplexta Studio
+  const handleLoadStudioTemplate = useCallback(async (tmpl: StudioTemplate, initialPrompt?: string) => {
+    setProjectName(tmpl.name);
+    localStorage.setItem('perplexta_active_project_name', tmpl.name);
+    setTemplateOrigin({
+      slug: tmpl.slug,
+      name: tmpl.name,
+      category: tmpl.category,
+      thumbnail: tmpl.thumbnail
+    });
+    setIsStartScreenOpen(false);
+    setIsTemplatesHubOpen(false);
+    setSelectedStudioTemplate(null);
+    setActiveTab('preview');
+    setMobileActiveTab('preview');
+
+    const fetchedMap = await fetchStudioTemplateFiles(tmpl);
+    const newFiles: Record<string, ProjectFile> = {};
+    Object.entries(fetchedMap).forEach(([path, content]) => {
+      const ext = path.split('.').pop() || 'txt';
+      newFiles[path] = {
+        name: path.split('/').pop() || path,
+        path,
+        content: String(content),
+        type: ext,
+        isEntry: path === 'index.html'
+      };
+    });
+
+    if (Object.keys(newFiles).length > 0) {
+      setFiles(newFiles);
+      setSavedFiles(JSON.parse(JSON.stringify(newFiles)));
+      const codeKeys = Object.keys(newFiles).filter(k => !/\.(png|jpg|jpeg|webp|gif|ico)$/i.test(k));
+      const entry = codeKeys.includes('index.html') ? 'index.html' : (codeKeys[0] || Object.keys(newFiles)[0]);
+      setActiveFilePath(entry);
+      setOpenTabs(codeKeys.slice(0, 4));
+      setIframeKey(prev => prev + 1);
+      saveProjectToDb(projectId, tmpl.name, newFiles);
+    }
+
+    const welcomeMsg: StudioChatMessage = {
+      id: `welcome_tmpl_${Date.now()}`,
+      role: 'assistant',
+      text: language === 'ar'
+        ? `تم تحميل قالب "${tmpl.name}" بجميع ملفاته بنجاح! يمكنك معاينته مباشرة أو اختيار أحد الاقتراحات أدناه لتخصيصه.`
+        : `Loaded "${tmpl.name}" template with all source files! Preview it live or pick a suggestion below to customize it.`,
+      timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+      suggestions: tmpl.suggestions || []
+    };
+    setChatMessages([welcomeMsg]);
+    toast.success(language === 'ar' ? `تم تحميل قالب: ${tmpl.name}` : `Loaded template: ${tmpl.name}`);
+
+    if (initialPrompt && initialPrompt.trim()) {
+      setPromptQuery(initialPrompt.trim());
+      setTimeout(() => {
+        promptInputRef.current?.focus();
+      }, 150);
+    }
+  }, [language, projectId]);
+
+  const lastHandledHandoffIdRef = useRef<string>('');
+
+  // Cross-tab & same-tab template handoff listener (ensures only ONE Studio tab stays open)
+  useEffect(() => {
+    let channel: BroadcastChannel | null = null;
+    try {
+      if (typeof BroadcastChannel !== 'undefined') {
+        channel = new BroadcastChannel('perplexta_studio_channel');
+      }
+    } catch (_err) {}
+
+    const sendAck = (requestId?: string) => {
+      if (!requestId) return;
+      try {
+        localStorage.setItem('perplexta_studio_ack', JSON.stringify({ requestId, ts: Date.now() }));
+      } catch (_e) {}
+      try {
+        channel?.postMessage({ type: 'STUDIO_ACK', requestId });
+      } catch (_e) {}
+    };
+
+    const processHandoffPayload = (payload: any) => {
+      if (!payload || typeof payload !== 'object') return;
+      const reqId = payload.requestId || `${payload.action || 'USE_TEMPLATE'}_${payload.templateSlug || ''}_${payload.timestamp || ''}`;
+      if (reqId && lastHandledHandoffIdRef.current === reqId) {
+        sendAck(payload.requestId);
+        return;
+      }
+      if (reqId) {
+        lastHandledHandoffIdRef.current = reqId;
+      }
+
+      try {
+        localStorage.removeItem('pending_studio_template');
+      } catch (_e) {}
+
+      sendAck(payload.requestId);
+
+      const action = payload.action || 'USE_TEMPLATE';
+      if (action === 'OPEN_ALL_TEMPLATES') {
+        setSelectedStudioTemplate(null);
+        setIsTemplatesHubOpen(true);
+        try {
+          window.focus();
+        } catch (_e) {}
+        return;
+      }
+
+      if (action === 'FOCUS_STUDIO') {
+        try {
+          window.focus();
+        } catch (_e) {}
+        return;
+      }
+
+      if (payload.templateSlug && CORE_TEMPLATES_MAP[payload.templateSlug]) {
+        handleLoadStudioTemplate(CORE_TEMPLATES_MAP[payload.templateSlug], payload.initialPrompt);
+        try {
+          window.focus();
+        } catch (_e) {}
+      }
+    };
+
+    const consumePendingStudioTemplate = () => {
+      try {
+        const raw = localStorage.getItem('pending_studio_template');
+        if (!raw) return;
+        const parsed = JSON.parse(raw);
+        processHandoffPayload(parsed);
+      } catch (_err) {}
+    };
+
+    const handleStorageEvent = (e: StorageEvent) => {
+      if (e.key === 'pending_studio_template' && e.newValue) {
+        try {
+          const parsed = JSON.parse(e.newValue);
+          processHandoffPayload(parsed);
+        } catch (_err) {}
+      }
+    };
+
+    const handleWindowMessage = (e: MessageEvent) => {
+      if (e.origin !== window.location.origin) return;
+      if (e.data && e.data.type === 'PERPLEXTA_STUDIO_HANDOFF') {
+        processHandoffPayload(e.data);
+      }
+    };
+
+    if (channel) {
+      channel.onmessage = (ev) => {
+        if (ev.data && ev.data.type === 'PERPLEXTA_STUDIO_HANDOFF') {
+          processHandoffPayload(ev.data);
+        }
+      };
+    }
+
+    consumePendingStudioTemplate();
+    window.addEventListener('focus', consumePendingStudioTemplate);
+    window.addEventListener('storage', handleStorageEvent);
+    window.addEventListener('message', handleWindowMessage);
+
+    return () => {
+      window.removeEventListener('focus', consumePendingStudioTemplate);
+      window.removeEventListener('storage', handleStorageEvent);
+      window.removeEventListener('message', handleWindowMessage);
+      try {
+        channel?.close();
+      } catch (_e) {}
+    };
+  }, [handleLoadStudioTemplate]);
+
+  const activeToolSteps: StudioToolProgressStep[] = useMemo(() => {
+    const steps: StudioToolProgressStep[] = [];
+    if (streamStatusMessage && isGenerating) {
+      steps.push({
+        id: 'phase_status',
+        toolName: pipelinePhase ? `Phase ${pipelinePhase}` : 'Studio Engine',
+        targetFile: currentlyWritingFile || undefined,
+        status: 'running',
+        detail: streamStatusMessage
+      });
+    }
+    Object.entries(fileStatuses).forEach(([path, status]) => {
+      steps.push({
+        id: `file_${path}`,
+        toolName: status === 'writing' ? 'Writing file' : status === 'completed' ? 'Updated file' : 'Queued file',
+        targetFile: path,
+        status: status === 'writing' ? 'running' : status === 'completed' ? 'completed' : status === 'error' ? 'error' : 'running'
+      });
+    });
+    return steps;
+  }, [streamStatusMessage, isGenerating, pipelinePhase, currentlyWritingFile, fileStatuses]);
+
+  const activeTodos: StudioTodoItem[] = useMemo(() => {
+    if (streamedTodos.length > 0) {
+      return streamedTodos;
+    }
+    const plannedOrder: string[] = Array.isArray(activeBlueprint?.file_tree_order)
+      ? activeBlueprint.file_tree_order
+      : Array.isArray(activeBlueprint?.files_order)
+        ? activeBlueprint.files_order
+        : [];
+    if (plannedOrder.length === 0) return [];
+    const seenLabels = new Set<string>();
+    const items: StudioTodoItem[] = [];
+    plannedOrder.forEach((rawPath, idx) => {
+      const cleanPath = String(rawPath).replace(/^\/+/, '').trim();
+      const st = fileStatuses[cleanPath];
+      const friendlyTitle = friendlyTodoLabelForFile(cleanPath, true, language);
+      const titleToUse = seenLabels.has(friendlyTitle) ? `${friendlyTitle} (${cleanPath})` : friendlyTitle;
+      seenLabels.add(friendlyTitle);
+      items.push({
+        id: `todo_${idx}_${cleanPath}`,
+        title: titleToUse,
+        status: st === 'completed' ? 'completed' : st === 'writing' ? 'in_progress' : 'pending'
+      });
+    });
+    return items;
+  }, [streamedTodos, activeBlueprint, fileStatuses, language]);
+
+  const unsavedFilesMap = useMemo(() => {
+    const map: Record<string, boolean> = {};
+    Object.keys(files).forEach(k => {
+      if (files[k]?.content !== savedFiles[k]?.content) {
+        map[k] = true;
+      }
+    });
+    return map;
+  }, [files, savedFiles]);
+
+  const combinedIssues: StudioIssueItem[] = useMemo(() => {
+    const list: StudioIssueItem[] = [...userIssues];
+    if (runtimeError) {
+      list.unshift({
+        id: 'runtime_err_active',
+        message: runtimeError.message,
+        source: runtimeError.file || activeFilePath,
+        type: 'runtime'
+      });
+    }
+    terminalLogs
+      .filter(l => l.type === 'error')
+      .slice(-5)
+      .forEach((l, idx) => {
+        if (!list.some(item => item.message === l.text)) {
+          list.push({
+            id: `term_err_${idx}`,
+            message: l.text,
+            type: 'runtime'
+          });
+        }
+      });
+    return list;
+  }, [userIssues, runtimeError, terminalLogs, activeFilePath]);
+
   return (
     <div className="h-[100dvh] max-h-[100dvh] w-full bg-[var(--surface-page)] text-[var(--text-primary)] font-sans flex flex-col overflow-hidden">
-      {/* Top Header Bar - Slim & Clean */}
-      <header className="h-11 bg-[var(--surface-card)] border-b border-[var(--border-default)] px-3 sm:px-4 flex items-center justify-between shrink-0 select-none z-30">
-        <div className="flex items-center gap-2 min-w-0">
-          <button
-            onClick={() => {
+      {/* Studio Header Component */}
+      <div className="relative shrink-0 z-30 flex items-center bg-[var(--surface-card)] border-b border-[var(--border-default)]">
+        <div className="flex-1 min-w-0">
+          <StudioHeader
+            projectName={projectName}
+            onRenameProject={(newName) => {
+              setProjectName(newName);
+              localStorage.setItem('perplexta_active_project_name', newName);
+              saveProjectToDb(projectId, newName);
+            }}
+            onOpenProjectsDrawer={() => {
+              if (!user) {
+                setIsAuthModalOpen(true);
+                return;
+              }
+              fetchUserWorkspaces();
+              setIsProjectDrawerOpen(true);
+            }}
+            onOpenTemplates={() => setIsTemplatesHubOpen(true)}
+            onTriggerAiFix={handleAiFix}
+            onDownloadProject={handleDownloadZip}
+            onTogglePublish={() => setIsPublishPopoverOpen(true)}
+            isPublished={isPublished}
+            isPublishDirty={hasUnsavedChanges}
+            isGenerating={isGenerating}
+            onCreateNewProject={handleCreateNewProject}
+            onOpenVersions={() => setIsVersionsPanelOpen(true)}
+            onSharePreview={handleOpenInNewTab}
+            onBack={() => {
               saveProjectToDb();
               navigate(user || token ? '/chat' : '/');
             }}
-            className="inline-flex items-center justify-center w-8 h-8 rounded-shape-sm bg-[var(--surface-subtle)] border border-[var(--border-default)] hover:bg-[var(--surface-card)] hover:border-accent text-[var(--text-primary)] transition-all cursor-pointer shrink-0 relative touch-target-44-expanded"
-            title={language === 'ar' ? 'الرجوع للبداية' : 'Back to start'}
-          >
-            <ArrowLeft size={14} className="rtl:rotate-180" />
-          </button>
+            onToggleStartScreen={() => setIsStartScreenOpen(prev => !prev)}
+            isStartScreenOpen={isStartScreenOpen}
+            onOpenEnvModal={() => setIsEnvModalOpen(true)}
+            language={language === 'en' ? 'en' : 'ar'}
+          />
+        </div>
+      </div>
 
-          {/* Project Title & Cloud Sync Radar */}
-          <div className="flex items-center gap-2 min-w-0">
-            <UnifiedCloudSyncBadge
-              status={syncStatus}
-              onClick={() => saveProjectToDb()}
-              language={language}
-              className="hidden sm:inline-flex"
+      {/* Start Screen Launchpad Overlay (StudioStartScreen) */}
+      {isStartScreenOpen && (
+        <div className="fixed inset-0 top-12 z-40 bg-[var(--surface-page)] flex flex-col overflow-hidden">
+          <div className="px-4 py-2 bg-[var(--surface-card)] border-b border-[var(--border-default)] flex items-center justify-between">
+            <span className="text-xs font-bold text-[var(--text-secondary)]">
+              {language === 'ar' ? 'شاشة انطلاق الاستوديو — اختر قالباً أو ابدأ بوصف فكرتك' : 'Studio Launchpad — Pick a starter template or describe your idea'}
+            </span>
+            <button
+              type="button"
+              onClick={() => setIsStartScreenOpen(false)}
+              className="px-3 py-1 rounded-shape-xs bg-[var(--surface-subtle)] border border-[var(--border-default)] text-xs font-bold text-[var(--text-primary)] hover:border-blue-500 cursor-pointer"
+            >
+              {language === 'ar' ? 'العودة لمساحة العمل ←' : 'Return to Workspace →'}
+            </button>
+          </div>
+          <div className="flex-1 overflow-y-auto">
+            <StudioStartScreen
+              language={language === 'en' ? 'en' : 'ar'}
+              onSendPrompt={(promptText: string) => {
+                setIsStartScreenOpen(false);
+                handleSendPrompt(promptText);
+              }}
+              onSelectTemplate={(tmpl) => {
+                setSelectedStudioTemplate(tmpl);
+              }}
+              onOpenAllTemplates={() => setIsTemplatesHubOpen(true)}
             />
           </div>
         </div>
-
-        <div className="flex items-center gap-1.5 shrink-0">
-          {studioUsage && typeof (studioUsage.projectCount ?? studioUsage.usedProjects) === 'number' && (
-            <span className="hidden lg:inline-flex items-center justify-center gap-1.5 h-8 px-2.5 rounded-shape-sm bg-[var(--surface-subtle)] border border-[var(--border-default)] text-[11px] font-mono font-bold leading-none text-[var(--text-muted)] shrink-0" title={language === 'ar' ? 'عدد المشاريع السحابية المستخدمة' : 'Cloud Projects Quota'}>
-              <Layers size={13} className="text-accent shrink-0" />
-              <span>{studioUsage.projectCount ?? studioUsage.usedProjects}/{(studioUsage.maxProjects === 'unlimited' || !studioUsage.maxProjects) ? '∞' : studioUsage.maxProjects}</span>
-            </span>
-          )}
-
-          <button
-            onClick={handleAiFix}
-            disabled={isGenerating}
-            className="h-8 px-3 rounded-shape-sm bg-[var(--surface-subtle)] border border-[var(--border-default)] hover:border-accent/50 hover:text-accent text-[var(--text-secondary)] text-[11px] font-bold leading-none inline-flex items-center justify-center gap-1.5 transition-all cursor-pointer shrink-0 disabled:opacity-40 relative touch-target-44-expanded"
-            title={language === 'ar' ? 'فحص وإصلاح الأخطاء ذكياً' : 'AI Diagnose & Fix'}
-          >
-            <Wand2 size={13} className="text-accent shrink-0" />
-            <span className="hidden md:inline">{language === 'ar' ? 'إصلاح ذكي' : 'AI Fix'}</span>
-          </button>
-
-          <button
-            onClick={handleDownloadZip}
-            className="w-8 h-8 rounded-shape-sm bg-[var(--surface-subtle)] border border-[var(--border-default)] hover:bg-[var(--surface-card)] hover:border-accent text-[var(--text-muted)] hover:text-[var(--text-primary)] inline-flex items-center justify-center transition-all cursor-pointer shrink-0 relative touch-target-44-expanded"
-            title={language === 'ar' ? 'تنزيل المشروع ZIP' : 'Download ZIP'}
-          >
-            <Download size={14} />
-          </button>
-
-          <div className="relative flex items-center">
-            <button
-              onClick={() => setIsMoreMenuOpen(!isMoreMenuOpen)}
-              className={`w-8 h-8 rounded-shape-sm bg-[var(--surface-subtle)] border border-[var(--border-default)] hover:bg-[var(--surface-card)] hover:border-accent text-[var(--text-muted)] hover:text-[var(--text-primary)] inline-flex items-center justify-center transition-all cursor-pointer shrink-0 relative touch-target-44-expanded ${isMoreMenuOpen ? 'bg-[var(--surface-subtle)] text-accent border-accent/60' : ''}`}
-              title={language === 'ar' ? 'خيارات إضافية' : 'More Options'}
-            >
-              <Sliders size={14} />
-            </button>
-
-            <AnimatePresence>
-              {isMoreMenuOpen && (
-                <PopCard 
-                  className="absolute top-9 end-0 w-56 z-50 p-2 space-y-1"
-                  onClose={() => setIsMoreMenuOpen(false)}
-                >
-                  <button
-                    onClick={() => {
-                      setIsEnvModalOpen(true);
-                      setIsMoreMenuOpen(false);
-                    }}
-                    className="w-full h-9 px-3 rounded-shape-sm text-xs font-semibold flex items-center gap-2.5 text-[var(--text-primary)] hover:bg-[var(--surface-subtle)] cursor-pointer"
-                  >
-                    <Key size={14} className="text-blue-500" />
-                    <span>{language === 'ar' ? 'متغيرات البيئة' : 'Env Variables'}</span>
-                  </button>
-                  <div className="h-px bg-[var(--border-default)] my-1" />
-                  <button
-                    onClick={async () => {
-                      if (!user) {
-                        setIsAuthModalOpen(true);
-                        return;
-                      }
-                      await saveProjectToDb();
-                      const lang = language === 'ar' ? 'ar' : 'en';
-                      const direction = language === 'ar' ? 'rtl' : 'ltr';
-                      const shareUrl = `${window.location.origin}/api/studio/workspaces/${projectId}/preview?lang=${lang}&dir=${direction}`;
-                      navigator.clipboard.writeText(shareUrl);
-                      toast.success(language === 'ar' ? 'تم نسخ رابط المعاينة' : 'Copied preview link');
-                      setIsMoreMenuOpen(false);
-                    }}
-                    className="w-full h-9 px-3 rounded-shape-sm text-xs font-semibold flex items-center gap-2.5 text-[var(--text-primary)] hover:bg-[var(--surface-subtle)] cursor-pointer"
-                  >
-                    <Globe size={14} className="text-accent" />
-                    <span>{language === 'ar' ? 'مشاركة المعاينة' : 'Share Preview'}</span>
-                  </button>
-                </PopCard>
-              )}
-            </AnimatePresence>
-          </div>
-
-
-        </div>
-      </header>
+      )}
 
       {/* Mobile Viewport Navigation Switcher (< md) */}
       <div className="md:hidden flex items-center bg-[var(--surface-card)] border-b border-[var(--border-default)] px-2 py-1.5 shrink-0 justify-around select-none">
@@ -2652,7 +3184,7 @@ export const AppStudioPage: React.FC = () => {
           }}
           className={`flex-1 h-8 px-2 rounded-shape-sm text-xs font-semibold flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
             mobileActiveTab === 'chat'
-              ? 'bg-accent text-white shadow-2xs'
+              ? 'bg-blue-600 text-white shadow-2xs'
               : 'text-[var(--text-secondary)] hover:bg-[var(--surface-subtle)]'
           }`}
         >
@@ -2666,7 +3198,7 @@ export const AppStudioPage: React.FC = () => {
           }}
           className={`flex-1 h-8 px-2 rounded-shape-sm text-xs font-semibold flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
             mobileActiveTab === 'files'
-              ? 'bg-accent text-white shadow-2xs'
+              ? 'bg-blue-600 text-white shadow-2xs'
               : 'text-[var(--text-secondary)] hover:bg-[var(--surface-subtle)]'
           }`}
         >
@@ -2677,7 +3209,7 @@ export const AppStudioPage: React.FC = () => {
           onClick={() => setMobileActiveTab('preview')}
           className={`flex-1 h-8 px-2 rounded-shape-sm text-xs font-semibold flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
             mobileActiveTab === 'preview'
-              ? 'bg-accent text-white shadow-2xs'
+              ? 'bg-blue-600 text-white shadow-2xs'
               : 'text-[var(--text-secondary)] hover:bg-[var(--surface-subtle)]'
           }`}
         >
@@ -2685,9 +3217,9 @@ export const AppStudioPage: React.FC = () => {
           <span>{language === 'ar' ? 'المعاينة' : 'Preview'}</span>
         </button>
       </div>
-      <div className="flex-1 flex overflow-hidden">
+      <div className="flex-1 flex overflow-hidden bg-[var(--surface-page)]">
         {/* Primary Sidebar - Icon Only Navigation */}
-        <aside className="w-13 sm:w-14 bg-[var(--surface-card)] border-e border-[var(--border-default)] flex flex-col items-center py-3.5 gap-3 shrink-0 z-20 select-none">
+        <aside className="w-13 sm:w-14 bg-[var(--surface-card)] border-r border-[var(--border-default)] flex flex-col items-center py-3.5 gap-3 shrink-0 z-20 select-none">
           <button
             onClick={() => {
               setSideNavActiveTab('chat');
@@ -2989,7 +3521,9 @@ export const AppStudioPage: React.FC = () => {
         </aside>
 
         {/* Secondary Contextual Tool Panel */}
-        <aside className={`w-full md:w-80 sm:md:w-96 bg-[var(--surface-card)] border-e border-[var(--border-default)] flex-col overflow-hidden shrink-0 z-10 ${
+        <aside className={`w-full md:w-80 sm:md:w-96 bg-[var(--surface-card)] border-r border-[var(--border-default)] flex-col overflow-hidden shrink-0 z-10 text-[var(--text-primary)] transition-all duration-200 ${
+          isChatCollapsed ? 'md:!w-0 md:opacity-0 md:border-r-0' : ''
+        } ${
           mobileActiveTab !== 'preview' ? 'flex' : 'hidden md:flex'
         }`}>
           <AnimatePresence mode="wait">
@@ -3001,344 +3535,210 @@ export const AppStudioPage: React.FC = () => {
                 exit={{ opacity: 0, x: -10 }}
                 className="flex-1 flex flex-col overflow-hidden"
               >
-                <div className="h-10 px-4 border-b border-[var(--border-default)] flex items-center justify-between bg-[var(--surface-card)] relative shrink-0">
-                  <div className="flex items-center gap-2 overflow-hidden flex-1">
-                    {isEditingProjectName ? (
-                      <input
-                        type="text"
-                        value={projectName}
-                        autoFocus
-                        onBlur={() => {
-                          setIsEditingProjectName(false);
-                          localStorage.setItem('perplexta_active_project_name', projectName);
-                          saveProjectToDb(projectId, projectName);
-                        }}
-                        onKeyDown={(e) => {
-                          if (e.key === 'Enter') {
-                            setIsEditingProjectName(false);
-                            localStorage.setItem('perplexta_active_project_name', projectName);
-                            saveProjectToDb(projectId, projectName);
-                          }
-                        }}
-                        onChange={(e) => setProjectName(e.target.value)}
-                        className="bg-[var(--surface-subtle)] border border-accent/30 outline-none text-[11px] font-bold text-[var(--text-primary)] h-7 px-2 rounded-shape-xs w-full"
-                      />
-                    ) : (
-                      <div className="flex items-center overflow-hidden">
-                        <h2 
-                          onClick={() => setIsEditingProjectName(true)}
-                          className="text-[11px] font-black leading-none uppercase tracking-widest text-[var(--text-primary)] cursor-pointer hover:text-accent transition-colors truncate"
-                        >
-                          {projectName}
-                        </h2>
-                      </div>
-                    )}
+                <div className="h-10 px-3.5 border-b border-[var(--border-default)] flex items-center justify-between bg-[var(--surface-card)] relative shrink-0 select-none">
+                  <div className="flex items-center gap-2">
+                    <span className="w-2 h-2 rounded-shape-full bg-green-500 animate-pulse" />
+                    <span className="text-xs font-black text-[var(--text-primary)] uppercase tracking-wider">
+                      {language === 'ar' ? 'المساعد الذكي للاستوديو' : 'Studio AI Architect'}
+                    </span>
                   </div>
+                  <span className="text-[10px] font-mono font-bold text-[var(--text-muted)] bg-[var(--surface-subtle)] px-2 py-0.5 rounded-shape-xs border border-[var(--border-default)]">
+                    {isGenerating ? (language === 'ar' ? 'جاري البناء...' : 'Building...') : (language === 'ar' ? 'جاهز' : 'Ready')}
+                  </span>
                   <div className="absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-accent/20 to-transparent" />
                 </div>
                 
-                <div className="flex-1 flex flex-col overflow-hidden bg-[var(--surface-inset)]/30">
-                  {/* Chat messages feed will follow */}
-                  <div ref={chatFeedRef} className="flex-1 overflow-y-auto p-4 space-y-6 scroll-smooth scrollbar-thin">
-                    {!user && (
-                      <div className="p-4 rounded-shape-md bg-gradient-to-r from-blue-950/80 via-slate-900 to-indigo-950/80 border border-blue-500/30 text-slate-100 flex flex-col items-start gap-3 shadow-lg backdrop-blur-xs shrink-0">
-                        <div className="flex items-center gap-3 w-full text-start">
-                          <div className="p-2 rounded-shape-sm bg-blue-500/15 border border-blue-500/30 text-blue-400 shrink-0">
-                            <ShieldCheck size={20} />
-                          </div>
-                          <div className="flex-1 min-w-0">
-                            <h4 className="text-xs font-bold leading-tight truncate">{language === 'ar' ? 'وضع الضيف نشط' : 'Guest Mode Active'}</h4>
-                            <p className="text-[10px] text-slate-300 mt-0.5 whitespace-normal leading-relaxed">{language === 'ar' ? 'سجل دخولك لحفظ مشاريعك وتوسيع مساحة التخزين' : 'Sign in to save projects and expand storage'}</p>
-                          </div>
-                        </div>
-                        <button
-                          onClick={() => setIsAuthModalOpen(true)}
-                          className="w-full h-8 bg-blue-600 hover:bg-blue-500 text-white rounded-shape-sm text-[11px] font-bold transition-all shadow-sm flex items-center justify-center gap-2 cursor-pointer"
-                        >
-                          <Lock size={12} />
-                          <span>{language === 'ar' ? 'تسجيل الدخول / إنشاء حساب' : 'Sign In / Register'}</span>
-                        </button>
-                      </div>
-                    )}
-
-                    {chatMessages.map((msg, idx) => (
-                      <div key={msg.id} className={`flex flex-col ${msg.role === 'user' ? 'items-end' : 'items-start'} group/msg animate-in fade-in slide-in-from-bottom-2 duration-300`}>
-                        <div className={`flex items-center gap-1.5 mb-1 px-1 text-[10px] text-[var(--text-muted)] font-medium ${msg.role === 'user' ? 'flex-row-reverse' : ''}`}>
-                          <span>{msg.role === 'user' ? (language === 'ar' ? 'أنت' : 'You') : (language === 'ar' ? 'المساعد البرمجي' : 'Assistant')}</span>
-                          <span>•</span>
-                          <span>{msg.timestamp}</span>
-                        </div>
-                        <div className="relative group/bubble max-w-[92%] flex flex-col items-end">
-                          <div className={`rounded-shape-lg p-3 text-xs leading-relaxed shadow-sm transition-all ${
-                            msg.role === 'user' 
-                              ? 'bg-accent text-white rounded-te-none' 
-                              : 'bg-[var(--surface-card)] border border-[var(--border-default)] text-[var(--text-primary)] rounded-ts-none'
-                          }`}>
-                            <div className="whitespace-pre-wrap break-words">{msg.text}</div>
-                            {msg.role === 'assistant' && msg.text === liveStreamText && isGenerating && (
-                              <span className="inline-block w-1 h-3.5 bg-accent/40 animate-pulse ms-1 align-middle" />
-                            )}
-                          </div>
-
-                          {/* Professional, Lightweight User Prompt Actions: Edit, Copy, Resend */}
-                          {msg.role === 'user' && (
-                            <div className="flex items-center gap-0.5 mt-1 px-1.5 py-0.5 rounded-shape-xs bg-[var(--surface-card)]/90 backdrop-blur-xs border border-[var(--border-default)] opacity-80 group-hover/bubble:opacity-100 group-hover/msg:opacity-100 transition-opacity duration-fast shadow-2xs">
-                              {/* Edit Action */}
-                              <button
-                                type="button"
-                                onClick={() => {
-                                  setPromptQuery(msg.text);
-                                  if (promptInputRef.current) {
-                                    promptInputRef.current.focus();
-                                    promptInputRef.current.setSelectionRange(msg.text.length, msg.text.length);
-                                  }
-                                  toast.info(language === 'ar' ? 'تم تجهيز البرومبت للتعديل' : 'Prompt loaded for editing');
-                                }}
-                                className="px-1.5 py-0.5 rounded-shape-2xs text-[10px] text-[var(--text-secondary)] hover:text-accent hover:bg-[var(--surface-subtle)] transition-colors flex items-center gap-1 font-medium cursor-pointer"
-                                title={language === 'ar' ? 'تعديل البرومبت' : 'Edit Prompt'}
-                              >
-                                <Edit2 size={11} />
-                                <span className="hidden sm:inline">{language === 'ar' ? 'تعديل' : 'Edit'}</span>
-                              </button>
-
-                              <span className="w-px h-2.5 bg-[var(--border-default)]" />
-
-                              {/* Copy Action */}
-                              <button
-                                type="button"
-                                onClick={() => {
-                                  navigator.clipboard.writeText(msg.text);
-                                  setCopiedMsgId(msg.id);
-                                  toast.success(language === 'ar' ? 'تم نسخ البرومبت' : 'Prompt copied');
-                                  setTimeout(() => setCopiedMsgId(null), 2000);
-                                }}
-                                className="px-1.5 py-0.5 rounded-shape-2xs text-[10px] text-[var(--text-secondary)] hover:text-accent hover:bg-[var(--surface-subtle)] transition-colors flex items-center gap-1 font-medium cursor-pointer"
-                                title={language === 'ar' ? 'نسخ البرومبت' : 'Copy Prompt'}
-                              >
-                                {copiedMsgId === msg.id ? (
-                                  <>
-                                    <Check size={11} className="text-[var(--fg-success)]" />
-                                    <span className="text-[var(--fg-success)] hidden sm:inline">{language === 'ar' ? 'تم النسخ' : 'Copied'}</span>
-                                  </>
-                                ) : (
-                                  <>
-                                    <Copy size={11} />
-                                    <span className="hidden sm:inline">{language === 'ar' ? 'نسخ' : 'Copy'}</span>
-                                  </>
-                                )}
-                              </button>
-
-                              <span className="w-px h-2.5 bg-[var(--border-default)]" />
-
-                              {/* Resend Action */}
-                              <button
-                                type="button"
-                                onClick={() => {
-                                  if (isGenerating) {
-                                    toast.warning(language === 'ar' ? 'جاري تنفيذ طلب حالي بالفعالية...' : 'A prompt is currently generating...');
-                                    return;
-                                  }
-                                  handleSendPrompt(msg.text);
-                                }}
-                                disabled={isGenerating}
-                                className={`px-1.5 py-0.5 rounded-shape-2xs text-[10px] transition-colors flex items-center gap-1 font-medium cursor-pointer ${
-                                  isGenerating 
-                                    ? 'text-[var(--text-muted)] opacity-50 cursor-not-allowed' 
-                                    : 'text-[var(--text-secondary)] hover:text-accent hover:bg-[var(--surface-subtle)]'
-                                }`}
-                                title={language === 'ar' ? 'إعادة الإرسال' : 'Resend Prompt'}
-                              >
-                                <RotateCcw size={11} />
-                                <span className="hidden sm:inline">{language === 'ar' ? 'إعادة إرسال' : 'Resend'}</span>
-                              </button>
-                            </div>
-                          )}
-                        </div>
-                        
-                        {msg.role === 'assistant' && msg.filesUpdated && msg.filesUpdated.length > 0 && (
-                          <div className="mt-2 flex flex-wrap gap-1.5 max-w-full">
-                            {msg.filesUpdated.map(fp => (
-                              <button
-                                key={fp}
-                                onClick={() => openFile(fp)}
-                                className={`px-2 py-0.5 rounded-shape-xs text-[9px] font-mono font-bold border transition-all cursor-pointer ${
-                                  activeFilePath === fp ? 'bg-accent text-white border-accent' : 'bg-[var(--surface-subtle)] border-[var(--border-default)] text-[var(--text-secondary)] hover:text-accent hover:border-accent/40'
-                                }`}
-                              >
-                                {fp}
-                              </button>
-                            ))}
-                          </div>
-                        )}
-
-                        {msg.role === 'assistant' && msg.logs && msg.logs.length > 0 && (
-                          <div className="mt-2 w-full max-w-[92%]">
-                            <button
-                              type="button"
-                              onClick={() => toggleLogs(msg.id)}
-                              className="inline-flex items-center gap-1.5 text-[10px] font-semibold text-[var(--text-muted)] hover:text-accent transition-colors cursor-pointer"
-                            >
-                              <ChevronDown size={11} className={`transition-transform ${expandedLogs[msg.id] ? 'rotate-180' : ''}`} />
-                              <span>{language === 'ar' ? `سجل العمليات الهندسية (${msg.logs.length})` : `Build Steps (${msg.logs.length})`}</span>
-                            </button>
-                            {expandedLogs[msg.id] && (
-                              <div className="mt-1.5 p-2 rounded-shape-sm bg-[var(--surface-subtle)] border border-[var(--border-default)] space-y-1 text-[10px] font-mono text-[var(--text-secondary)]">
-                                {msg.logs.map((logItem, lIdx) => (
-                                  <div key={lIdx} className="flex items-start gap-1.5">
-                                    <Check size={11} className="text-[var(--fg-success)] shrink-0 mt-0.5" />
-                                    <span>{logItem}</span>
-                                  </div>
-                                ))}
-                              </div>
-                            )}
-                          </div>
-                        )}
-                      </div>
-                    ))}
-
-                    {isGenerating && (
-                      <div className="flex flex-col items-start gap-3 w-full">
-                        <div className="p-3.5 rounded-shape-lg bg-[var(--surface-subtle)] border border-accent/30 text-xs text-[var(--text-primary)] flex flex-col gap-2.5 shadow-xs w-full">
-                          <div className="flex items-center justify-between gap-2">
-                            <div className="flex items-center gap-2 font-bold text-accent min-w-0">
-                              <RefreshCw size={13} className="animate-[spin_1s_linear_infinite_reverse] text-accent shrink-0" />
-                              <span className="truncate">{streamStatusMessage || (language === 'ar' ? 'جاري البناء...' : 'Building...')}</span>
-                            </div>
-                            {pipelinePhase && (
-                              <span className="px-1.5 py-0.5 rounded-shape-full bg-accent/10 text-accent text-[9px] font-mono font-bold shrink-0">
-                                {language === 'ar' ? `المرحلة ${pipelinePhase}/3` : `Phase ${pipelinePhase}/3`}
-                              </span>
-                            )}
-                          </div>
-                          {currentlyWritingFile && (
-                            <div className="px-2 py-1 rounded-shape-xs bg-[var(--surface-card)] border border-accent/20 flex items-center justify-between text-[10px] font-mono">
-                              <span className="text-[var(--text-secondary)] truncate">{currentlyWritingFile}</span>
-                              <span className="text-accent font-bold text-[9px] shrink-0 animate-pulse">{language === 'ar' ? 'كتابة' : 'Writing'}</span>
-                            </div>
-                          )}
-                          {liveStreamText && (
-                            <pre className="p-2 rounded-shape-xs bg-slate-950 text-slate-300 font-mono text-[9px] max-h-24 overflow-hidden leading-tight whitespace-pre-wrap break-all border border-white/5">
-                              {liveStreamText}
-                            </pre>
-                          )}
-                        </div>
-                      </div>
-                    )}
+                <div className="flex-1 flex flex-col overflow-hidden bg-[var(--surface-page)] relative">
+                  <div className="flex-1 overflow-hidden flex flex-col">
+                    <StudioConversation 
+                      messages={chatMessages.map(m => ({
+                        id: m.id,
+                        role: m.role as any,
+                        content: m.text || m.content || '',
+                        openingContent: m.openingContent,
+                        todos: m.todos,
+                        clarifyRecap: m.clarifyRecap,
+                        timestamp: m.timestamp,
+                        thinking: m.logs?.join('\n'),
+                        filesUpdated: m.filesUpdated,
+                        suggestions: m.suggestions,
+                        attachments: m.attachments
+                      }))}
+                      isStreaming={isGenerating}
+                      language={language === 'en' ? 'en' : 'ar'}
+                      onSelectSuggestion={(s, label) => {
+                        if (label) {
+                          recentSuggestionLabelsRef.current = [...recentSuggestionLabelsRef.current, label].slice(-25);
+                        }
+                        if (s.trim().endsWith(':')) {
+                          setPromptQuery(s.endsWith(' ') ? s : `${s} `);
+                          toast.info(
+                            language === 'ar'
+                              ? 'أضف بياناتك الخاصة بعد النقطتين في صندوق المحادثة ثم اضغط إرسال'
+                              : 'Type your details in the input box and press Send'
+                          );
+                        } else {
+                          setPromptQuery(s);
+                          handleSendPrompt(s, { allowClarify: false });
+                        }
+                      }}
+                      onRegenerateSuggestions={handleRegenerateSuggestions}
+                      isRegeneratingSuggestions={isRegeneratingSuggestions}
+                      onSelectFile={(path) => {
+                        openFile(path);
+                        setActiveTab('code');
+                      }}
+                      toolSteps={activeToolSteps}
+                      todos={activeTodos}
+                      clarifyQuestions={clarifyQuestions}
+                      clarifyLeadIn={clarifyLeadIn}
+                      onSubmitClarification={(answers) => {
+                        const activeQs = [...clarifyQuestions];
+                        const leadInSnapshot = clarifyLeadIn;
+                        const basePrompt = pendingClarifyPrompt || promptQuery || (language === 'ar' ? 'ابنِ المشروع المطلوب' : 'Build the requested project');
+                        setClarifyQuestions([]);
+                        setClarifyLeadIn('');
+                        setPendingClarifyPrompt('');
+                        const recap = formatClarificationRecap(activeQs, answers, { language });
+                        const recapItems = activeQs
+                          .map(q => ({
+                            question: q.question,
+                            answer: (answers[q.id] || []).join(', ')
+                          }))
+                          .filter(item => item.answer.trim().length > 0);
+                        setChatMessages(prev => [
+                          ...prev,
+                          ...(leadInSnapshot
+                            ? [
+                                {
+                                  id: `clarify_lead_${Date.now()}`,
+                                  role: 'assistant' as const,
+                                  text: leadInSnapshot,
+                                  timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+                                }
+                              ]
+                            : []),
+                          {
+                            id: `clarify_recap_${Date.now()}`,
+                            role: 'assistant' as const,
+                            text: recap.userDisplayMessage,
+                            clarifyRecap: {
+                              skipped: false,
+                              items: recapItems
+                            },
+                            timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+                          }
+                        ]);
+                        handleSendPrompt(basePrompt, {
+                          allowClarify: false,
+                          clarificationContext: recap.promptContext,
+                          skipUserMessage: true
+                        });
+                      }}
+                      onSkipClarification={() => {
+                        const activeQs = [...clarifyQuestions];
+                        const leadInSnapshot = clarifyLeadIn;
+                        const basePrompt = pendingClarifyPrompt || promptQuery || (language === 'ar' ? 'ابنِ المشروع المطلوب' : 'Build the requested project');
+                        setClarifyQuestions([]);
+                        setClarifyLeadIn('');
+                        setPendingClarifyPrompt('');
+                        const recap = formatClarificationRecap(activeQs, {}, { skipped: true, language });
+                        setChatMessages(prev => [
+                          ...prev,
+                          ...(leadInSnapshot
+                            ? [
+                                {
+                                  id: `clarify_lead_${Date.now()}`,
+                                  role: 'assistant' as const,
+                                  text: leadInSnapshot,
+                                  timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+                                }
+                              ]
+                            : []),
+                          {
+                            id: `clarify_recap_${Date.now()}`,
+                            role: 'assistant' as const,
+                            text: recap.userDisplayMessage,
+                            clarifyRecap: {
+                              skipped: true,
+                              items: []
+                            },
+                            timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+                          }
+                        ]);
+                        handleSendPrompt(basePrompt, {
+                          allowClarify: false,
+                          clarificationContext: recap.promptContext,
+                          skipUserMessage: true
+                        });
+                      }}
+                      queuedMessages={queuedMessages}
+                      onRemoveQueued={(id) => setQueuedMessages(prev => prev.filter(q => q.id !== id))}
+                      onEditQueued={(id) => {
+                        const target = queuedMessages.find(q => q.id === id);
+                        if (target) {
+                          setPromptQuery(target.text);
+                          setQueuedMessages(prev => prev.filter(q => q.id !== id));
+                        }
+                      }}
+                      onSendQueuedNow={(id) => {
+                        const target = queuedMessages.find(q => q.id === id);
+                        if (target) {
+                          setQueuedMessages(prev => prev.filter(q => q.id !== id));
+                          handleStopGeneration();
+                          setTimeout(() => handleSendPrompt(target.text, { allowClarify: false }), 120);
+                        }
+                      }}
+                      templateOrigin={templateOrigin}
+                    />
                   </div>
 
-                  {/* AI Input Area */}
-                  <div className="p-3 bg-[var(--surface-card)] border-t border-[var(--border-default)]">
-                    {/* Suggestions: Concise titles with M3 rounded-shape-sm edges -> Populates full prompt in input on click */}
-                    <AnimatePresence>
-                      {chatMessages.length > 0 && chatMessages[chatMessages.length - 1].role === 'assistant' && chatMessages[chatMessages.length - 1].suggestions && !isGenerating && (
-                        <motion.div 
-                          initial={{ opacity: 0, y: 6 }}
-                          animate={{ opacity: 1, y: 0 }}
-                          className="grid grid-cols-2 gap-1.5 mb-2.5"
-                        >
-                          {chatMessages[chatMessages.length - 1].suggestions?.slice(0, 4).map((s, i) => {
-                            const { label, fullPrompt } = resolveSuggestionChip(s);
-                            const isSelected = promptQuery.trim() === fullPrompt.trim();
-                            return (
-                              <button
-                                key={i}
-                                type="button"
-                                onClick={() => {
-                                  setPromptQuery(fullPrompt);
-                                  setTimeout(() => {
-                                    if (promptInputRef.current) {
-                                      promptInputRef.current.focus();
-                                      promptInputRef.current.setSelectionRange(fullPrompt.length, fullPrompt.length);
-                                    }
-                                  }, 20);
-                                }}
-                                title={fullPrompt}
-                                className={`h-8 px-3 rounded-shape-full border text-[11px] font-bold flex items-center gap-1.5 transition-all cursor-pointer text-start overflow-hidden ${
-                                  isSelected
-                                    ? 'bg-accent/10 border-accent text-accent shadow-2xs'
-                                    : 'bg-[var(--surface-subtle)] border-[var(--border-default)] text-[var(--text-secondary)] hover:text-accent hover:border-accent/40 hover:bg-[var(--surface-card)]'
-                                }`}
-                              >
-                                <Sparkles size={11} className="text-accent shrink-0" />
-                                <span className="truncate">{label}</span>
-                              </button>
-                            );
-                          })}
-                        </motion.div>
-                      )}
-                    </AnimatePresence>
-
-                    <form
-                      onSubmit={(e) => {
-                        e.preventDefault();
-                        if (promptQuery.trim() && !isGenerating) handleSendPrompt();
+                  <div className="p-3 border-t border-[var(--border-default)] bg-[var(--surface-card)] shadow-2xl z-10">
+                    <StudioComposer 
+                      onSendMessage={(text) => {
+                        // If a Clarify card is currently active, typing a direct reply resolves it immediately (like clarify.js submitDirectReply)
+                        if (clarifyQuestions.length > 0) {
+                          const activeQs = [...clarifyQuestions];
+                          const basePrompt = pendingClarifyPrompt || text;
+                          setClarifyQuestions([]);
+                          setClarifyLeadIn('');
+                          setPendingClarifyPrompt('');
+                          const recap = formatClarificationRecap(activeQs, {}, { directReply: text, language });
+                          handleSendPrompt(basePrompt, {
+                            allowClarify: false,
+                            clarificationContext: recap.promptContext,
+                            displayUserText: text
+                          });
+                          return;
+                        }
+                        const prefix = editTarget
+                          ? `[Target Element: <${editTarget.tag.toLowerCase()}${editTarget.id ? `#${editTarget.id}` : ''}${editTarget.classes ? `.${editTarget.classes.trim().replace(/\s+/g, '.')}` : ''}>]\n`
+                          : '';
+                        if (editTarget) setEditTarget(null);
+                        handleSendPrompt(`${prefix}${text}`, { allowClarify: !prefix });
                       }}
-                      className="relative rounded-shape-md bg-[var(--surface-subtle)] border border-[var(--border-default)] focus-within:border-accent/50 transition-all p-1.5"
-                    >
-                      <textarea
-                        ref={promptInputRef}
-                        value={promptQuery}
-                        onChange={(e) => setPromptQuery(e.target.value)}
-                        placeholder={language === 'ar' ? 'صف التعديل أو الميزة المطلوبة...' : 'Describe feature or change...'}
-                        className="w-full min-h-[80px] max-h-[200px] p-2 bg-transparent text-xs text-[var(--text-primary)] outline-none resize-none leading-relaxed placeholder:text-[var(--text-muted)]"
-                        onKeyDown={(e) => {
-                          if (e.key === 'Enter' && !e.shiftKey) {
-                            e.preventDefault();
-                            if (promptQuery.trim() && !isGenerating) handleSendPrompt();
+                      onQueueMessage={(text) => {
+                        setQueuedMessages(prev => [
+                          ...prev,
+                          {
+                            id: `q_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`,
+                            text,
+                            createdAt: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
                           }
-                        }}
-                      />
-                      
-                      <div className="flex items-center justify-between px-1 pb-1">
-                        <div className="flex items-center gap-1">
-                          <button
-                            type="button"
-                            onClick={toggleVoiceRecording}
-                            className={`w-8 h-8 rounded-shape-sm flex items-center justify-center transition-all cursor-pointer ${
-                              isRecordingVoice ? 'bg-red-500 text-white animate-pulse' : 'text-[var(--text-muted)] hover:text-accent hover:bg-accent/10'
-                            }`}
-                            title={language === 'ar' ? 'إدخال صوتي' : 'Voice Input'}
-                          >
-                            <Mic size={16} />
-                          </button>
-                          <label className="w-8 h-8 rounded-shape-sm flex items-center justify-center text-[var(--text-muted)] hover:text-accent hover:bg-accent/10 transition-all cursor-pointer relative before:absolute before:-inset-1.5" title={language === 'ar' ? 'إرفاق ملف إلى المشروع' : 'Attach File to Project'}>
-                            <Paperclip size={16} />
-                            <input
-                              type="file"
-                              multiple
-                              onChange={(e) => {
-                                const attached = e.target.files;
-                                if (!attached || attached.length === 0) return;
-                                const names = Array.from(attached).map(f => f.name).join(', ');
-                                handleUploadFile(e);
-                                setPromptQuery(prev => prev ? `${prev}\n[الملفات المرفقة: ${names}]` : (language === 'ar' ? `استخدم الملفات المرفقة (${names}) في تطوير المشروع` : `Integrate attached files (${names}) into the project`));
-                              }}
-                              className="hidden"
-                            />
-                          </label>
-                        </div>
-
-                        {isGenerating ? (
-                          <button
-                            type="button"
-                            onClick={handleStopGeneration}
-                            className="w-8 h-8 rounded-shape-sm bg-red-500 text-white flex items-center justify-center hover:bg-red-600 transition-all cursor-pointer shadow-xs shrink-0"
-                            title={language === 'ar' ? 'إيقاف التوليد' : 'Stop Generation'}
-                          >
-                            <Square size={14} fill="currentColor" />
-                          </button>
-                        ) : (
-                          <button
-                            type="submit"
-                            disabled={!promptQuery.trim()}
-                            className="h-8 px-3.5 rounded-shape-sm bg-accent text-white text-[11px] font-bold flex items-center gap-1.5 hover:opacity-90 disabled:opacity-40 transition-all cursor-pointer shadow-xs shrink-0"
-                          >
-                            <span>{language === 'ar' ? 'إرسال' : 'Send'}</span>
-                            <Send size={14} className={language === 'ar' ? 'rotate-180' : ''} />
-                          </button>
-                        )}
-                      </div>
-                    </form>
+                        ]);
+                      }}
+                      isStreaming={isGenerating}
+                      onStopStreaming={handleStopGeneration}
+                      initialValue={promptQuery}
+                      editTarget={editTarget}
+                      onClearEditTarget={() => setEditTarget(null)}
+                      language={language === 'en' ? 'en' : 'ar'}
+                      placeholder={
+                        clarifyQuestions.length > 0
+                          ? (language === 'ar' ? 'أو أجب مباشرة هنا...' : 'Or reply directly…')
+                          : (language === 'ar' ? 'اطلب ميزة، تعديل، أو إصلاح...' : 'Ask for changes, new features, or fixes...')
+                      }
+                    />
                   </div>
                 </div>
               </motion.div>
@@ -3610,268 +4010,89 @@ export const AppStudioPage: React.FC = () => {
           </AnimatePresence>
         </aside>
         {/* Main Canvas Area */}
-        <main className={`flex-1 flex flex-col overflow-hidden relative ${
+        <main className={`flex-1 flex flex-col overflow-hidden relative bg-[var(--surface-page)] p-2 md:p-3 md:pb-3.5 ${
           mobileActiveTab === 'preview' ? 'flex' : 'hidden md:flex'
         }`}>
-          <div className="flex-1 flex flex-col overflow-hidden relative">
-            {/* Control Bar for Canvas */}
-            <div className="h-10 border-b border-[var(--border-default)] bg-[var(--surface-card)] px-3 grid grid-cols-3 items-center z-20 shrink-0">
-              {/* Left: View Switcher */}
-              <div className="flex items-center h-full">
-                <div className="h-7 p-0.5 bg-[var(--surface-subtle)] rounded-shape-xs border border-[var(--border-default)] inline-flex items-center">
-                  <button
-                    onClick={() => {
-                      setActiveTab('preview');
-                      setSideNavActiveTab('chat');
-                    }}
-                    className={`h-full px-2.5 rounded-[3px] text-[11px] font-bold leading-none transition-all cursor-pointer inline-flex items-center justify-center gap-1.5 ${
-                      activeTab === 'preview' ? 'bg-[var(--surface-card)] text-accent shadow-2xs' : 'text-[var(--text-muted)] hover:text-[var(--text-primary)]'
-                    }`}
-                  >
-                    <Globe size={12} className="shrink-0" />
-                    <span>{language === 'ar' ? 'المعاينة' : 'Preview'}</span>
-                  </button>
-                  <button
-                    onClick={() => {
-                      setActiveTab('code');
-                      setSideNavActiveTab('files');
-                    }}
-                    className={`h-full px-2.5 rounded-[3px] text-[11px] font-bold leading-none transition-all cursor-pointer inline-flex items-center justify-center gap-1.5 ${
-                      activeTab === 'code' ? 'bg-[var(--surface-card)] text-accent shadow-2xs' : 'text-[var(--text-muted)] hover:text-[var(--text-primary)]'
-                    }`}
-                  >
-                    <Code size={12} className="shrink-0" />
-                    <span>{language === 'ar' ? 'الكود' : 'Code'}</span>
-                  </button>
-                </div>
-              </div>
-
-              {/* Center: Device controls (Only in Preview) */}
-              <div className="flex justify-center h-full items-center">
-                {activeTab === 'preview' && (
-                  <div className="flex items-center gap-1.5">
-                    <div className="relative group flex items-center">
-                      <button
-                        onClick={() => setIsDeviceMenuOpen(!isDeviceMenuOpen)}
-                        className="h-7 px-2.5 rounded-shape-xs bg-[var(--surface-subtle)] border border-[var(--border-default)] hover:border-accent/40 text-[11px] font-bold leading-none text-[var(--text-primary)] inline-flex items-center justify-center gap-1.5 transition-all cursor-pointer shrink-0"
-                      >
-                        {deviceMode === 'responsive' ? <Monitor size={12} className="shrink-0" /> : deviceMode === 'mobile' ? <Smartphone size={12} className="shrink-0" /> : <Tablet size={12} className="shrink-0" />}
-                        <span className="hidden sm:inline">{deviceMode === 'responsive' ? (language === 'ar' ? 'تلقائي' : 'Desktop') : deviceMode === 'mobile' ? (language === 'ar' ? 'هاتف' : 'Mobile') : (language === 'ar' ? 'لوحي' : 'Tablet')}</span>
-                        <ChevronDown size={10} className={`shrink-0 transition-transform ${isDeviceMenuOpen ? 'rotate-180' : ''}`} />
-                      </button>
-                      
-                      <AnimatePresence>
-                        {isDeviceMenuOpen && (
-                          <PopCard className="absolute left-1/2 -translate-x-1/2 top-8 w-48 z-50 p-1" onClose={() => setIsDeviceMenuOpen(false)}>
-                            <button onClick={() => { setDeviceMode('responsive'); setIsDeviceMenuOpen(false); }} className="w-full h-8 px-2 rounded-shape-xs hover:bg-[var(--surface-subtle)] text-[11px] flex items-center gap-2 transition-colors cursor-pointer">
-                              <Monitor size={12} /> <span>{language === 'ar' ? 'تلقائي (شاشة كاملة)' : 'Responsive'}</span>
-                            </button>
-                            <button onClick={() => { setDeviceMode('mobile'); setIsDeviceMenuOpen(false); }} className="w-full h-8 px-2 rounded-shape-xs hover:bg-[var(--surface-subtle)] text-[11px] flex items-center gap-2 transition-colors cursor-pointer">
-                              <Smartphone size={12} /> <span>{language === 'ar' ? 'هاتف (375×667)' : 'Mobile'}</span>
-                            </button>
-                            <button onClick={() => { setDeviceMode('tablet'); setIsDeviceMenuOpen(false); }} className="w-full h-8 px-2 rounded-shape-xs hover:bg-[var(--surface-subtle)] text-[11px] flex items-center gap-2 transition-colors cursor-pointer">
-                              <Tablet size={12} /> <span>{language === 'ar' ? 'لوحي (820×1000)' : 'Tablet'}</span>
-                            </button>
-                          </PopCard>
-                        )}
-                      </AnimatePresence>
-                    </div>
-
-                    <div className="w-px h-4 bg-[var(--border-default)] mx-0.5 shrink-0" />
-
-                    <button
-                      onClick={() => setIframeKey(prev => prev + 1)}
-                      className="w-7 h-7 rounded-shape-xs bg-[var(--surface-subtle)] border border-[var(--border-default)] text-[var(--text-muted)] hover:text-accent hover:border-accent/40 inline-flex items-center justify-center transition-all cursor-pointer shrink-0"
-                      title={language === 'ar' ? 'تحديث المعاينة' : 'Refresh'}
-                    >
-                      <RefreshCw size={13} />
-                    </button>
-
-                    <button
-                      onClick={() => setIsInspectMode(!isInspectMode)}
-                      className={`h-7 px-2.5 rounded-shape-xs border text-[11px] font-bold leading-none inline-flex items-center justify-center gap-1.5 transition-all cursor-pointer shrink-0 ${
-                        isInspectMode ? 'bg-accent/10 text-accent border-accent/30' : 'bg-[var(--surface-subtle)] border-[var(--border-default)] text-[var(--text-muted)] hover:text-[var(--text-primary)] hover:border-accent/40'
-                      }`}
-                    >
-                      <MousePointer size={12} className="shrink-0" />
-                      <span className="hidden lg:inline">{language === 'ar' ? 'فحص' : 'Inspect'}</span>
-                    </button>
-                  </div>
-                )}
-              </div>
-
-              {/* Right: File name (Code mode) or Extra Actions (Preview mode) */}
-              <div className="flex justify-end gap-2 items-center h-full overflow-hidden">
-                {activeTab === 'code' ? (
-                  <div className="h-7 px-2.5 rounded-shape-xs bg-[var(--surface-subtle)] border border-[var(--border-default)] text-[10px] font-mono leading-none text-[var(--text-muted)] inline-flex items-center gap-1.5 truncate">
-                    <FileCode size={12} className="text-accent shrink-0" />
-                    <span className="truncate max-w-[150px]">{activeFilePath}</span>
-                  </div>
-                ) : (
-                  <button
-                    onClick={handleOpenInNewTab}
-                    className="h-7 px-2.5 rounded-shape-xs bg-[var(--surface-subtle)] border border-[var(--border-default)] text-[var(--text-muted)] hover:text-accent hover:border-accent/40 inline-flex items-center justify-center gap-1.5 text-[11px] font-bold leading-none transition-all cursor-pointer shrink-0"
-                    title={language === 'ar' ? 'فتح في نافذة جديدة' : 'Open in New Tab'}
-                  >
-                    <ArrowUpRight size={12} className="shrink-0" />
-                    <span className="hidden xl:inline">{language === 'ar' ? 'فتح' : 'Pop out'}</span>
-                  </button>
-                )}
-              </div>
-            </div>
+          {/* Framed Studio Canvas Card (inspired by Builder .preview-pane) */}
+          <div className="flex-1 flex flex-col overflow-hidden relative bg-[var(--surface-card)] border border-[var(--border-default)] rounded-xl shadow-xs">
+            {/* Control Bar for Canvas (StudioPreviewToolbar) */}
+            <StudioPreviewToolbar
+              activeTab={activeTab}
+              onChangeTab={setActiveTab}
+              viewportDevice={deviceMode === 'responsive' ? 'desktop' : deviceMode}
+              onChangeViewportDevice={(dev) => setDeviceMode(dev === 'desktop' ? 'responsive' : dev)}
+              onRefreshPreview={() => setIframeKey(prev => prev + 1)}
+              isInspectMode={isInspectMode}
+              onToggleInspectMode={() => setIsInspectMode(prev => !prev)}
+              onPopOutPreview={handleOpenInNewTab}
+              isChatCollapsed={isChatCollapsed}
+              onToggleChatCollapsed={() => setIsChatCollapsed(prev => !prev)}
+              hasUnsavedCode={hasUnsavedChanges}
+              issuesCount={combinedIssues.filter(i => !i.resolved).length}
+              isIssuesOpen={isIssuesPanelOpen}
+              onToggleIssues={() => setIsIssuesPanelOpen(prev => !prev)}
+              versionsCount={workspaceSnapshots.length}
+              isVersionsOpen={isVersionsPanelOpen}
+              onToggleVersions={() => setIsVersionsPanelOpen(prev => !prev)}
+              language={language === 'en' ? 'en' : 'ar'}
+            />
 
             {/* View Content: Preview vs Code */}
-            <div className="flex-1 relative overflow-hidden flex flex-col">
+            <div className="flex-1 relative overflow-hidden w-full min-h-0">
               {/* Live Preview Panel */}
-              <div className={`flex-1 w-full h-full bg-[var(--surface-page)] ${
-                deviceMode !== 'responsive' ? 'p-4 overflow-auto flex items-center justify-center bg-[var(--surface-inset)]/50' : 'p-0 m-0 relative flex flex-col overflow-hidden'
-              } ${activeTab !== 'preview' ? 'hidden' : ''}`}>
-                
-                {runtimeError && (
-                  <div className="absolute top-0 inset-x-0 bg-red-500/10 border-b border-red-500/30 px-4 py-2 flex items-center justify-between gap-3 text-[11px] z-40 backdrop-blur-md">
-                    <div className="flex items-center gap-2 truncate">
-                      <AlertTriangle size={14} className="text-red-500 shrink-0 animate-pulse" />
-                      <span className="font-bold text-red-500">{language === 'ar' ? 'خطأ:' : 'Error:'}</span>
-                      <span className="font-mono truncate text-[var(--text-secondary)]">{runtimeError.message}</span>
-                    </div>
-                    <button
-                      onClick={() => {
-                        handleSendPrompt(language === 'ar' ? `إصلاح الخطأ: "${runtimeError.message}"` : `Fix error: "${runtimeError.message}"`);
-                        setRuntimeError(null);
-                      }}
-                      className="h-7 px-3 bg-red-500 text-white hover:bg-red-600 rounded-shape-sm text-[10px] font-bold transition-all cursor-pointer flex items-center gap-1 shadow-sm"
-                    >
-                      <Wand2 size={11} />
-                      <span>{language === 'ar' ? 'إصلاح تلقائي' : 'Auto Fix'}</span>
-                    </button>
-                  </div>
-                )}
-
-                <div className={`flex flex-col bg-[var(--surface-card)] transition-all ${
-                  deviceMode === 'mobile' 
-                    ? 'w-[375px] h-[667px] rounded-shape-lg border border-[var(--border-default)] shadow-2xl overflow-hidden shrink-0 my-auto' 
-                    : deviceMode === 'tablet' 
-                    ? 'w-[820px] h-[1000px] max-w-[95%] max-h-[95%] rounded-shape-lg border border-[var(--border-default)] shadow-2xl overflow-hidden shrink-0 my-auto' 
-                    : 'w-full h-full rounded-none border-0 shadow-none flex flex-col'
-                }`}>
-                  <div className="flex-1 w-full h-full bg-white relative overflow-hidden">
-                    <iframe
-                      key={iframeKey}
-                      srcDoc={previewSrcDoc}
-                      title="App Live Preview"
-                      className="w-full h-full min-h-full border-0 bg-white"
-                      sandbox="allow-scripts allow-modals allow-forms allow-same-origin"
-                    />
-                  </div>
-                </div>
+              <div className={`absolute inset-0 w-full h-full overflow-hidden ${activeTab !== 'preview' ? 'hidden' : 'block'}`}>
+                <StudioPreviewPanel
+                  key={iframeKey}
+                  iframeSrcDoc={previewSrcDoc}
+                  viewportDevice={deviceMode === 'responsive' ? 'desktop' : deviceMode}
+                  isInspectMode={isInspectMode}
+                  onInspectElementCaptured={(target) => {
+                    setEditTarget(target);
+                    setIsInspectMode(false);
+                    setSideNavActiveTab('chat');
+                    setMobileActiveTab('chat');
+                    toast.success(
+                      language === 'ar'
+                        ? `تم تحديد العنصر <${target.tag.toLowerCase()}> للتعديل`
+                        : `Selected <${target.tag.toLowerCase()}> for editing`
+                    );
+                  }}
+                  isUpdating={isGenerating}
+                  errorMsg={runtimeError?.message || null}
+                  onAutoFixError={(errMsg) => {
+                    handleSendPrompt(language === 'ar' ? `إصلاح الخطأ: "${errMsg}"` : `Fix error: "${errMsg}"`);
+                    setRuntimeError(null);
+                  }}
+                  onReload={() => setIframeKey(prev => prev + 1)}
+                  language={language === 'en' ? 'en' : 'ar'}
+                />
               </div>
 
               {/* Code Editor Panel */}
-              <div className={`flex-1 flex flex-col bg-[var(--surface-card)] overflow-hidden ${activeTab !== 'code' ? 'hidden' : ''}`}>
-                {/* Editor Tabs */}
-                <div className="h-9 border-b border-[var(--border-default)] bg-[var(--surface-subtle)] flex items-center px-1 gap-0.5 overflow-x-auto no-scrollbar shrink-0">
-                  {openTabs.map(tabPath => {
-                    const isActive = activeFilePath === tabPath;
-                    const isUnsaved = savedFiles[tabPath]?.content !== files[tabPath]?.content;
-                    return (
-                      <div
-                        key={tabPath}
-                        onClick={() => setActiveFilePath(tabPath)}
-                        className={`h-7 px-3 rounded-t-shape-xs flex items-center gap-2 text-[10px] cursor-pointer transition-all border-b-2 border-transparent ${
-                          isActive 
-                            ? 'bg-[var(--surface-card)] text-accent border-b-accent font-bold shadow-sm' 
-                            : 'text-[var(--text-muted)] hover:bg-[var(--surface-card)]/50 hover:text-[var(--text-primary)]'
-                        }`}
-                      >
-                        <FileCode size={11} className={isActive ? 'text-accent' : 'text-[var(--text-muted)]'} />
-                        <span className="truncate max-w-[120px]">{tabPath}</span>
-                        {isUnsaved && <span className="w-1.5 h-1.5 rounded-full bg-amber-500 shrink-0" />}
-                        <button 
-                          onClick={(e) => closeTab(tabPath, e)}
-                          className="relative p-0.5 before:absolute before:-inset-2 rounded-full hover:bg-[var(--surface-subtle)] text-[var(--text-muted)] hover:text-red-500 transition-colors"
-                        >
-                          <X size={10} />
-                        </button>
-                      </div>
-                    );
-                  })}
-                  {openTabs.length === 0 && (
-                    <div className="px-4 text-[10px] text-[var(--text-muted)] italic">
-                      {language === 'ar' ? 'لا توجد ملفات مفتوحة' : 'No open files'}
-                    </div>
-                  )}
-                </div>
-
-                {/* Editor Breadcrumbs */}
-                {activeFilePath && (
-                  <div className="h-7 px-4 border-b border-[var(--border-default)]/50 bg-[var(--surface-card)] flex items-center gap-1.5 text-[9px] text-[var(--text-muted)] shrink-0">
-                    <Folder size={10} />
-                    <span>{projectName}</span>
-                    <ChevronRight size={10} className={language === 'ar' ? 'rotate-180' : ''} />
-                    <span className="text-[var(--text-primary)] font-medium">{activeFilePath}</span>
-                  </div>
-                )}
-
-                <div className="flex-1 relative overflow-hidden">
-                  {activeFilePath ? (
-                    <textarea
-                      value={activeFile?.content || ''}
-                      onChange={(e) => {
-                        const val = e.target.value;
-                        setFiles(prev => ({
-                          ...prev,
-                          [activeFilePath]: { ...prev[activeFilePath], content: val }
-                        }));
-                      }}
-                      className="w-full h-full p-6 font-mono text-xs sm:text-sm bg-[var(--surface-inset)] text-[var(--text-primary)] outline-none resize-none leading-relaxed border-0 scrollbar-thin"
-                      spellCheck={false}
-                    />
-                  ) : (
-                    <div className="w-full h-full flex flex-col items-center justify-center bg-[var(--surface-inset)] text-[var(--text-muted)] p-12 text-center">
-                      <div className="w-16 h-16 rounded-full bg-[var(--surface-subtle)] flex items-center justify-center mb-4">
-                        <FileCode size={32} className="opacity-20" />
-                      </div>
-                      <h3 className="text-sm font-bold text-[var(--text-primary)] mb-2">
-                        {language === 'ar' ? 'محرر الأكواد' : 'Code Editor'}
-                      </h3>
-                      <p className="max-w-xs text-[11px] leading-relaxed">
-                        {language === 'ar' 
-                          ? 'اختر ملفاً من مستعرض الملفات للبدء في تحريره، أو اطلب من المساعد الذكي إضافة ميزات جديدة لمشروعك.' 
-                          : 'Select a file from the explorer to start editing, or ask the AI assistant to add new features to your project.'}
-                      </p>
-                    </div>
-                  )}
-                </div>
-                
-                <div className="h-10 px-4 bg-[var(--surface-card)] border-t border-[var(--border-default)] flex items-center justify-between shrink-0">
-                  <div className="flex items-center gap-3">
-                    <span className="text-[10px] font-mono text-[var(--text-muted)]">
-                      {activeFile?.content.split('\n').length || 0} {language === 'ar' ? 'سطر' : 'lines'}
-                    </span>
-                    {hasUnsavedChanges && (
-                      <span className="text-[10px] font-bold text-amber-500 flex items-center gap-1.5 animate-pulse">
-                        <span className="w-1.5 h-1.5 rounded-full bg-amber-500" />
-                        <span>{language === 'ar' ? 'تعديلات غير محفوظة' : 'Unsaved changes'}</span>
-                      </span>
-                    )}
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <button
-                      onClick={handleUndoChanges}
-                      disabled={!hasUnsavedChanges}
-                      className="h-7 px-3 rounded-shape-sm text-[10px] font-bold bg-[var(--surface-subtle)] border border-[var(--border-default)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:border-accent disabled:opacity-40 transition-all cursor-pointer"
-                    >
-                      {language === 'ar' ? 'تراجع' : 'Revert'}
-                    </button>
-                    <button
-                      onClick={handleSaveChanges}
-                      disabled={!hasUnsavedChanges}
-                      className="h-7 px-4 rounded-shape-sm text-[10px] font-bold bg-accent text-white hover:opacity-90 disabled:opacity-40 transition-all cursor-pointer shadow-sm"
-                    >
-                      {language === 'ar' ? 'حفظ' : 'Save'}
-                    </button>
-                  </div>
-                </div>
+              <div className={`absolute inset-0 w-full h-full overflow-hidden ${activeTab !== 'code' ? 'hidden' : 'flex'}`}>
+                <StudioCodeWorkspace
+                  files={files}
+                  activeFilePath={activeFilePath}
+                  openTabs={openTabs}
+                  onSelectFile={openFile}
+                  onCloseTab={closeTab}
+                  onUpdateFileContent={(path, content) => {
+                    setFiles(prev => ({
+                      ...prev,
+                      [path]: { ...prev[path], content }
+                    }));
+                  }}
+                  onCreateNewFile={() => setIsNewFileModalOpen(true)}
+                  onDeleteFile={(path) => setFileToDelete(path)}
+                  onRenameFile={(path) => {
+                    setFileToRename(path);
+                    setNewFilePathRename(path);
+                  }}
+                  onSaveFile={() => handleSaveChanges()}
+                  onRevertFile={() => handleUndoChanges()}
+                  unsavedFiles={unsavedFilesMap}
+                  language={language === 'en' ? 'en' : 'ar'}
+                />
               </div>
             </div>
             {/* Terminal Drawer (Bottom Docked) */}
@@ -4702,6 +4923,118 @@ export const AppStudioPage: React.FC = () => {
           </motion.div>
         )}
       </AnimatePresence>
+
+      <StudioProjectDrawer
+        isOpen={isProjectDrawerOpen}
+        onClose={() => setIsProjectDrawerOpen(false)}
+        projects={userWorkspaces.map(ws => ({
+          id: ws.id,
+          name: ws.title,
+          updatedAt: new Date(ws.updated_at).toLocaleDateString(),
+          filesCount: ws.files ? Object.keys(ws.files).length : undefined
+        }))}
+        activeProjectId={projectId}
+        onSelectProject={(id) => {
+          const targetWs = userWorkspaces.find(w => w.id === id);
+          if (targetWs) {
+            handleSwitchWorkspace(targetWs);
+          }
+        }}
+        onCreateNewProject={handleCreateNewProject}
+        onDeleteProject={(id, name) => handleDeleteWorkspacePrompt(id, name)}
+        onRenameProject={(id, name) => handleRenameWorkspacePrompt(id, name)}
+        language={language === 'en' ? 'en' : 'ar'}
+      />
+
+      <StudioVersionsPanel
+        isOpen={isVersionsPanelOpen}
+        onClose={() => setIsVersionsPanelOpen(false)}
+        snapshots={workspaceSnapshots.map(s => ({
+          id: String(s.id),
+          timestamp: new Date(s.created_at).toLocaleString(),
+          label: s.version_name,
+          filesCount: Object.keys(files).length
+        }))}
+        onRestoreSnapshot={(snapId) => {
+          const target = workspaceSnapshots.find(s => String(s.id) === String(snapId));
+          if (target) {
+            handleRestoreSnapshot(target.id, target.version_name);
+          }
+        }}
+        onCreateSnapshot={(label) => {
+          setNewSnapshotName(label);
+          handleCreateSnapshot(label);
+        }}
+        language={language === 'en' ? 'en' : 'ar'}
+      />
+
+      <StudioIssuesPanel
+        isOpen={isIssuesPanelOpen}
+        onClose={() => setIsIssuesPanelOpen(false)}
+        issues={combinedIssues}
+        onTriggerAiFix={(issueMsg) => {
+          if (issueMsg) {
+            handleSendPrompt(language === 'ar' ? `الرجاء إصلاح المشكلة التالية:\n${issueMsg}` : `Please fix the following issue:\n${issueMsg}`);
+            setRuntimeError(null);
+          } else {
+            handleAiFix();
+          }
+        }}
+        onAddUserIssue={(msg) => {
+          setUserIssues(prev => [
+            ...prev,
+            {
+              id: `usr_iss_${Date.now()}`,
+              message: msg,
+              type: 'user',
+              resolved: false
+            }
+          ]);
+        }}
+        onToggleResolveIssue={(id) => {
+          if (id === 'runtime_err_active') {
+            setRuntimeError(null);
+            return;
+          }
+          setUserIssues(prev => prev.map(i => (i.id === id ? { ...i, resolved: !i.resolved } : i)));
+        }}
+        onClearResolved={() => {
+          setUserIssues(prev => prev.filter(i => !i.resolved));
+        }}
+        language={language === 'en' ? 'en' : 'ar'}
+      />
+
+      <StudioPublishPopover
+        isOpen={isPublishPopoverOpen}
+        onClose={() => setIsPublishPopoverOpen(false)}
+        projectName={projectName}
+        isPublished={isPublished}
+        hasUnpublishedChanges={hasUnsavedChanges}
+        onTogglePublishStatus={() => {
+          const next = !isPublished;
+          setIsPublished(next);
+          if (next) {
+            saveProjectToDb(projectId, projectName, files);
+            toast.success(language === 'ar' ? 'تم نشر التطبيق على الرابط المباشر بنجاح!' : 'Application published live!');
+          } else {
+            toast.info(language === 'ar' ? 'تم إلغاء نشر التطبيق' : 'Application unpublished');
+          }
+        }}
+        onUpdatePublished={() => {
+          handleSaveChanges();
+          toast.success(language === 'ar' ? 'تم تحديث النسخة المنشورة بنجاح!' : 'Published version updated!');
+        }}
+        language={language === 'en' ? 'en' : 'ar'}
+      />
+
+      <TemplatesHub
+        isOpen={isTemplatesHubOpen}
+        onClose={() => setIsTemplatesHubOpen(false)}
+        language={language === 'en' ? 'en' : 'ar'}
+        selectedTemplate={selectedStudioTemplate}
+        onSelectTemplate={setSelectedStudioTemplate}
+        onUseTemplate={handleLoadStudioTemplate}
+      />
     </div>
   );
 };

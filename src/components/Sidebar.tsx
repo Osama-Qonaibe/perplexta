@@ -103,6 +103,36 @@ export const Sidebar: React.FC<{ activeLanguage?: string }> = ({ activeLanguage 
   const [editedContext, setEditedContext] = useState('');
   const [isSavingContext, setIsSavingContext] = useState(false);
   const [isContextCollapsed, setIsContextCollapsed] = useState(true);
+  const contextTriggerRef = useRef<HTMLDivElement>(null);
+  const sidebarScrollRef = useRef<HTMLDivElement>(null);
+  const [contextTriggerRect, setContextTriggerRect] = useState<DOMRect | null>(null);
+
+  const updateContextTriggerRect = useCallback(() => {
+    if (contextTriggerRef.current) {
+      setContextTriggerRect(contextTriggerRef.current.getBoundingClientRect());
+    }
+  }, []);
+
+  useEffect(() => {
+    if (isContextCollapsed || !isSidebarOpen || !activeChatId) {
+      return;
+    }
+    updateContextTriggerRect();
+    const scrollEl = sidebarScrollRef.current;
+    const handleUpdate = () => updateContextTriggerRect();
+    scrollEl?.addEventListener('scroll', handleUpdate, { passive: true });
+    window.addEventListener('resize', handleUpdate);
+    return () => {
+      scrollEl?.removeEventListener('scroll', handleUpdate);
+      window.removeEventListener('resize', handleUpdate);
+    };
+  }, [isContextCollapsed, isSidebarOpen, activeChatId, recentChats.length, updateContextTriggerRect]);
+
+  useEffect(() => {
+    if (!isSidebarOpen) {
+      setIsContextCollapsed(true);
+    }
+  }, [isSidebarOpen]);
 
   const currentChat = recentChats.find((c: any) => c.id?.toString() === activeChatId?.toString());
 
@@ -616,7 +646,7 @@ export const Sidebar: React.FC<{ activeLanguage?: string }> = ({ activeLanguage 
                   </div>
                 </div>
 
-                <div className={`flex-1 pb-2 min-h-0 px-1.5 ${SCROLL_STYLES.sidebar}`}>
+                <div ref={sidebarScrollRef} className={`flex-1 pb-2 min-h-0 px-1.5 ${SCROLL_STYLES.sidebar}`}>
                   <div className="min-h-[85px]">
                     {isChatsLoading ? (
                       <SkeletonLoader 
@@ -714,10 +744,23 @@ export const Sidebar: React.FC<{ activeLanguage?: string }> = ({ activeLanguage 
                     ) : null}
                   </div>
 
-                  {/* Context Summary Box in Sidebar - Seamless single scroll layer flow */}
+                  {/* Context Summary Trigger in Sidebar - Opens freely upward or downward based on position */}
                   {isSidebarOpen && activeChatId && (
-                    <div className="mt-4 p-2.5 rounded-shape-md border border-[var(--border-default)] bg-[var(--surface-card)]/50 shadow-sm flex flex-col transition-all duration-fast hover:border-[var(--border-accent)]/30">
-                      <div className="flex items-center justify-between cursor-pointer group/context" onClick={() => setIsContextCollapsed(!isContextCollapsed)}>
+                    <div
+                      ref={contextTriggerRef}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        const rect = e.currentTarget.getBoundingClientRect();
+                        setContextTriggerRect(rect);
+                        setIsContextCollapsed((prev) => !prev);
+                      }}
+                      className={`mt-4 p-2.5 rounded-shape-md border transition-all duration-fast cursor-pointer select-none shadow-sm flex flex-col ${
+                        !isContextCollapsed
+                          ? 'border-[var(--border-accent)]/60 bg-[var(--surface-card)]'
+                          : 'border-[var(--border-default)] bg-[var(--surface-card)]/50 hover:border-[var(--border-accent)]/30'
+                      }`}
+                    >
+                      <div className="flex items-center justify-between group/context">
                         <div className="flex items-center gap-2 min-w-0">
                           <BrainCircuit size={14} className="text-[var(--fg-accent)] flex-shrink-0" />
                           <span className="text-[10px] font-black uppercase tracking-[0.05em] text-[var(--text-muted)] group-hover/context:text-[var(--text-primary)] transition-colors truncate">
@@ -727,7 +770,14 @@ export const Sidebar: React.FC<{ activeLanguage?: string }> = ({ activeLanguage 
                         <div className="flex items-center gap-1" onClick={(e) => e.stopPropagation()}>
                           {!isEditingContext && (
                             <button
-                              onClick={() => setIsEditingContext(true)}
+                              type="button"
+                              onClick={() => {
+                                if (contextTriggerRef.current) {
+                                  setContextTriggerRect(contextTriggerRef.current.getBoundingClientRect());
+                                }
+                                setIsContextCollapsed(false);
+                                setIsEditingContext(true);
+                              }}
                               className="w-5 h-5 flex items-center justify-center rounded-shape-xs text-[var(--text-muted)] hover:text-[var(--fg-accent)] hover:bg-[var(--bg-accent-muted)] transition-all duration-fast active:scale-95 cursor-pointer"
                               title={language === 'ar' ? 'تعديل المعرفة' : 'Edit Context'}
                             >
@@ -735,96 +785,28 @@ export const Sidebar: React.FC<{ activeLanguage?: string }> = ({ activeLanguage 
                             </button>
                           )}
                           <button
-                            onClick={() => setIsContextCollapsed(!isContextCollapsed)}
-                            className={`w-5 h-5 flex items-center justify-center rounded-shape-xs text-[var(--text-muted)] hover:text-[var(--fg-accent)] hover:bg-[var(--bg-accent-muted)] transition-all duration-fast active:scale-95 cursor-pointer transform ${isContextCollapsed ? 'rotate-180' : ''}`}
+                            type="button"
+                            onClick={() => {
+                              if (contextTriggerRef.current) {
+                                setContextTriggerRect(contextTriggerRef.current.getBoundingClientRect());
+                              }
+                              setIsContextCollapsed((prev) => !prev);
+                            }}
+                            className={`w-5 h-5 flex items-center justify-center rounded-shape-xs transition-all duration-fast active:scale-95 cursor-pointer ${
+                              !isContextCollapsed
+                                ? 'text-[var(--fg-accent)] bg-[var(--bg-accent-muted)]'
+                                : 'text-[var(--text-muted)] hover:text-[var(--fg-accent)] hover:bg-[var(--bg-accent-muted)]'
+                            }`}
                           >
-                            <ChevronLeft size={11} className="rotate-270" style={{ transform: isContextCollapsed ? 'rotate(90deg)' : 'rotate(-90deg)' }} />
+                            <ChevronLeft
+                              size={11}
+                              className={`transition-transform duration-200 ${
+                                !isContextCollapsed ? 'rotate-90' : '-rotate-90'
+                              }`}
+                            />
                           </button>
                         </div>
                       </div>
-
-                      <AnimatePresence initial={false}>
-                        {!isContextCollapsed && (
-                          <motion.div
-                            initial={{ opacity: 0, height: 0 }}
-                            animate={{ opacity: 1, height: 'auto' }}
-                            exit={{ opacity: 0, height: 0 }}
-                            transition={{ duration: 0.25, ease: [0.2, 0, 0, 1] }}
-                            className="overflow-hidden"
-                          >
-                            {isEditingContext ? (
-                              <div className="flex flex-col gap-2.5 mt-3">
-                                <textarea
-                                  value={editedContext}
-                                  onChange={(e) => setEditedContext(e.target.value)}
-                                  className="w-full h-24 text-[10.5px] font-sans p-2.5 rounded-shape-sm bg-[var(--surface-inset)] text-[var(--text-primary)] border border-[var(--border-default)] focus:border-[var(--border-accent)] focus:ring-1 focus:ring-[var(--fg-accent)]/20 outline-none resize-none transition-all duration-fast"
-                                  placeholder={language === 'ar' ? 'اكتب سياق المعرفة هنا...' : 'Type active context summary here...'}
-                                  disabled={isSavingContext}
-                                  autoFocus
-                                />
-                                <div className="flex items-center justify-end gap-2">
-                                  <button
-                                    onClick={() => {
-                                      setIsEditingContext(false);
-                                      setEditedContext(currentChat?.context_summary || '');
-                                    }}
-                                    disabled={isSavingContext}
-                                    className="text-[10px] text-[var(--text-muted)] hover:text-[var(--text-primary)] hover:bg-[var(--surface-subtle)] transition-all duration-fast rounded-shape-xs px-2.5 py-1.5 flex items-center gap-1.5 font-bold active:scale-95 cursor-pointer"
-                                  >
-                                    <X size={11} />
-                                    {language === 'ar' ? 'إلغاء' : 'Cancel'}
-                                  </button>
-                                  <button
-                                    onClick={handleSaveContext}
-                                    disabled={isSavingContext}
-                                    className="text-[10px] text-[var(--fg-on-emphasis)] bg-[var(--bg-accent-emphasis)] hover:opacity-90 transition-all duration-fast rounded-shape-xs px-3 py-1.5 flex items-center gap-1.5 font-bold shadow-xs active:scale-95 cursor-pointer"
-                                  >
-                                    {isSavingContext ? (
-                                      <Loader2 size={11} className="animate-spin" />
-                                    ) : (
-                                      <Check size={11} />
-                                    )}
-                                    {language === 'ar' ? 'حفظ التغييرات' : 'Save Synthesis'}
-                                  </button>
-                                </div>
-                              </div>
-                            ) : (
-                              <div className="flex flex-col gap-2 mt-2.5">
-                                <div className="text-[10.5px] text-[var(--text-secondary)] font-sans leading-relaxed tracking-wide select-text whitespace-pre-wrap p-2.5 bg-[var(--surface-inset)]/50 border border-[var(--border-default)] rounded-shape-sm">
-                                  {editedContext ? (
-                                    editedContext
-                                  ) : (
-                                    <span className="text-[var(--text-muted)] italic opacity-60">
-                                      {language === 'ar'
-                                        ? 'لم يتم إنشاء ملخص سياق بعد لهذه المحادثة.'
-                                        : 'No active context synthesis available for this session.'}
-                                    </span>
-                                  )}
-                                </div>
-                                {!editedContext && (
-                                  <button
-                                    onClick={() => setIsEditingContext(true)}
-                                    className="self-start text-[9px] font-black text-[var(--fg-accent)] hover:opacity-80 transition-all duration-fast flex items-center gap-1.5 mt-1 px-1"
-                                  >
-                                    <Plus size={10} />
-                                    {language === 'ar' ? 'توليد سياق يدوي' : 'Manual Synthesis'}
-                                  </button>
-                                )}
-                                <div className="p-2 rounded-shape-xs bg-[var(--bg-accent-muted)]/10 border border-[var(--border-accent)]/10">
-                                  <span className="text-[9px] text-[var(--text-muted)] leading-relaxed flex items-start gap-1.5">
-                                    <Sparkles size={10} className="shrink-0 text-[var(--fg-accent)] mt-0.5" />
-                                    <span>
-                                      {language === 'ar'
-                                        ? 'يتم دمج هذا السياق في ذاكرة النموذج لضمان استمرارية التحليل التقني الدقيق.'
-                                        : 'This context is injected into the model memory to ensure high-precision technical continuity.'}
-                                    </span>
-                                  </span>
-                                </div>
-                              </div>
-                            )}
-                          </motion.div>
-                        )}
-                      </AnimatePresence>
                     </div>
                   )}
                 </div>
@@ -1371,6 +1353,115 @@ export const Sidebar: React.FC<{ activeLanguage?: string }> = ({ activeLanguage 
             </div>
           );
         })()}
+      </FloatingPopover>
+
+      {/* Context Memory Adaptive Popover - Opens freely upward or downward based on trigger position */}
+      <FloatingPopover
+        isOpen={!isContextCollapsed && isSidebarOpen && !!activeChatId}
+        onClose={() => {
+          setIsContextCollapsed(true);
+          setIsEditingContext(false);
+        }}
+        triggerRect={contextTriggerRect}
+        direction={dir}
+        placement={
+          contextTriggerRect &&
+          typeof window !== 'undefined' &&
+          window.innerHeight - contextTriggerRect.bottom < 250 &&
+          contextTriggerRect.top > 250
+            ? 'top-start'
+            : 'auto'
+        }
+        width={contextTriggerRect?.width || 168}
+        closeOnScroll={false}
+        className="!p-2.5"
+      >
+        <div className="flex flex-col w-full font-sans" dir={dir}>
+          {isEditingContext ? (
+            <div className="flex flex-col gap-2">
+              <textarea
+                value={editedContext}
+                onChange={(e) => setEditedContext(e.target.value)}
+                className="w-full h-28 text-[10.5px] font-sans p-2.5 rounded-shape-sm bg-[var(--surface-inset)] text-[var(--text-primary)] border border-[var(--border-default)] focus:border-[var(--border-accent)] focus:ring-1 focus:ring-[var(--fg-accent)]/20 outline-none resize-none transition-all duration-fast"
+                placeholder={language === 'ar' ? 'اكتب سياق المعرفة هنا...' : 'Type active context summary here...'}
+                disabled={isSavingContext}
+                autoFocus
+              />
+              <div className="flex items-center justify-end gap-1.5">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setIsEditingContext(false);
+                    setEditedContext(currentChat?.context_summary || '');
+                  }}
+                  disabled={isSavingContext}
+                  className="text-[10px] text-[var(--text-muted)] hover:text-[var(--text-primary)] hover:bg-[var(--surface-subtle)] transition-all duration-fast rounded-shape-xs px-2 py-1 flex items-center gap-1 font-bold active:scale-95 cursor-pointer"
+                >
+                  <X size={11} />
+                  {language === 'ar' ? 'إلغاء' : 'Cancel'}
+                </button>
+                <button
+                  type="button"
+                  onClick={handleSaveContext}
+                  disabled={isSavingContext}
+                  className="text-[10px] text-[var(--fg-on-emphasis)] bg-[var(--bg-accent-emphasis)] hover:opacity-90 transition-all duration-fast rounded-shape-xs px-2.5 py-1 flex items-center gap-1 font-bold shadow-xs active:scale-95 cursor-pointer"
+                >
+                  {isSavingContext ? (
+                    <Loader2 size={11} className="animate-spin" />
+                  ) : (
+                    <Check size={11} />
+                  )}
+                  {language === 'ar' ? 'حفظ' : 'Save'}
+                </button>
+              </div>
+            </div>
+          ) : (
+            <div className="flex flex-col gap-2">
+              <div className={`text-[10.5px] text-[var(--text-secondary)] font-sans leading-relaxed tracking-wide select-text whitespace-pre-wrap p-2.5 bg-[var(--surface-inset)]/50 border border-[var(--border-default)] rounded-shape-sm max-h-[240px] ${SCROLL_STYLES.dropdown}`}>
+                {editedContext ? (
+                  editedContext
+                ) : (
+                  <span className="text-[var(--text-muted)] italic opacity-60">
+                    {language === 'ar'
+                      ? 'لم يتم إنشاء ملخص سياق بعد لهذه المحادثة.'
+                      : 'No active context synthesis available for this session.'}
+                  </span>
+                )}
+              </div>
+              <div className="flex items-center justify-between gap-1 px-0.5">
+                {!editedContext ? (
+                  <button
+                    type="button"
+                    onClick={() => setIsEditingContext(true)}
+                    className="text-[9.5px] font-black text-[var(--fg-accent)] hover:opacity-80 transition-all duration-fast flex items-center gap-1 cursor-pointer"
+                  >
+                    <Plus size={10} />
+                    {language === 'ar' ? 'توليد سياق يدوي' : 'Manual Synthesis'}
+                  </button>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={() => setIsEditingContext(true)}
+                    className="text-[9.5px] font-bold text-[var(--text-muted)] hover:text-[var(--fg-accent)] transition-all duration-fast flex items-center gap-1 cursor-pointer"
+                  >
+                    <Edit2 size={10} />
+                    {language === 'ar' ? 'تعديل السياق' : 'Edit Context'}
+                  </button>
+                )}
+              </div>
+              <div className="p-2 rounded-shape-xs bg-[var(--bg-accent-muted)]/10 border border-[var(--border-accent)]/10">
+                <span className="text-[9px] text-[var(--text-muted)] leading-relaxed flex items-start gap-1.5">
+                  <Sparkles size={10} className="shrink-0 text-[var(--fg-accent)] mt-0.5" />
+                  <span>
+                    {language === 'ar'
+                      ? 'يتم دمج هذا السياق في ذاكرة النموذج لضمان استمرارية التحليل التقني الدقيق.'
+                      : 'This context is injected into the model memory to ensure high-precision technical continuity.'}
+                  </span>
+                </span>
+              </div>
+            </div>
+          )}
+        </div>
       </FloatingPopover>
     </>
   );

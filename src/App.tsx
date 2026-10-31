@@ -90,6 +90,7 @@ const RecommendationsPage = lazyRetry(() => import('./pages/RecommendationsPage'
 const AudioStudioPage = lazyRetry(() => import('./pages/AudioStudioPage'), 'AudioStudioPage');
 const AppStudioPage = lazyRetry(() => import('./pages/AppStudioPage'), 'AppStudioPage');
 const ImageStudioPage = lazyRetry(() => import('./pages/ImageStudioPage'), 'ImageStudioPage');
+const TemplateDetailPage = lazyRetry(() => import('./pages/TemplateDetailPage'), 'TemplateDetailPage');
 const CreatorProfilePage = lazyRetry(() => import('./pages/CreatorProfilePage'), 'CreatorProfilePage');
 const CreatorDashboardPage = lazyRetry(() => import('./pages/CreatorDashboardPage'), 'CreatorDashboardPage');
 import { IncentiveCard } from './components/IncentiveCard';
@@ -513,6 +514,8 @@ export default function App() {
                             <Route path="google-hub" element={<SectionRouteGuard pathKey="/google-hub"><GoogleHubPage /></SectionRouteGuard>} />
                             <Route path="discover" element={<SectionRouteGuard pathKey="/explore"><RecommendationsPage /></SectionRouteGuard>} />
                             <Route path="studio" element={<Navigate to="/app" replace />} />
+                            <Route path="studio/template/:slug" element={<TemplateDetailPage />} />
+                            <Route path="template/:slug" element={<TemplateDetailPage />} />
                             <Route path="image-studio" element={<ImageStudioPage />} />
                             <Route path="video-studio" element={<Navigate to="/image-studio?category=reels" replace />} />
                             <Route path="studio/image" element={<ImageStudioPage />} />

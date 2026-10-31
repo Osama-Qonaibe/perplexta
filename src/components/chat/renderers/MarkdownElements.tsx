@@ -145,7 +145,7 @@ export const MarkdownLink = ({ href, children }: { href?: string, children: Reac
   const [meta, setMeta] = useState<any>(null);
   const [showTooltip, setShowTooltip] = useState(false);
   const cleanUrl = getCleanUrl(href || '');
-  const displayHost = cleanUrl ? cleanUrl.replace(/^https?:\/\//i, '').split('/')[0] : '';
+  const displayHost = cleanUrl ? cleanUrl.replace(/^https?:\/\/(www\.)?/i, '').split('/')[0] : '';
   const brand = getPlatformBrand(cleanUrl);
 
   useEffect(() => {
@@ -159,62 +159,49 @@ export const MarkdownLink = ({ href, children }: { href?: string, children: Reac
     return () => { active = false; };
   }, [cleanUrl]);
 
-  const displayTitle = meta?.title || (typeof children === 'string' ? children : '') || displayHost;
+  const rawChildText = typeof children === 'string' ? children.trim() : '';
+  const pillLabel = rawChildText && !rawChildText.startsWith('http')
+    ? rawChildText
+    : (displayHost.split('.')[0] ? displayHost.split('.')[0].charAt(0).toUpperCase() + displayHost.split('.')[0].slice(1) : displayHost);
+  const displayTitle = meta?.title || rawChildText || displayHost;
   const displayDesc = meta?.description || '';
   const displayImage = meta?.image || '';
   const favicon = meta?.favicon || getFavicon(cleanUrl);
 
   return (
-    <span className="relative inline-block group/link align-middle" style={{ unicodeBidi: 'isolate' }}>
+    <span className="relative inline-block group/link align-baseline" style={{ unicodeBidi: 'isolate' }}>
       <a
         href={cleanUrl}
         target="_blank"
         rel="noopener noreferrer"
         onMouseEnter={() => setShowTooltip(true)}
         onMouseLeave={() => setShowTooltip(false)}
-        className="inline-flex items-center gap-1.5 px-2.5 py-1 mx-1 rounded-md bg-accent/[0.06] border border-accent/20 hover:border-accent/40 hover:bg-accent/[0.12] transition-theme text-accent font-semibold no-underline text-[12.5px] align-middle shadow-xs hover:cursor-pointer"
+        className="inline-flex items-center gap-1 px-2 py-0.5 mx-0.5 rounded-shape-xs bg-[var(--surface-subtle)]/90 border border-[var(--border-default)]/55 hover:border-[var(--border-default)] hover:bg-[var(--surface-inset)] transition-colors text-[var(--text-secondary)] hover:text-[var(--text-primary)] font-medium no-underline text-[11px] leading-tight align-baseline cursor-pointer"
         style={{ unicodeBidi: 'isolate' }}
       >
-        <span className="shrink-0 flex items-center justify-center" style={{ color: brand ? brand.color : 'inherit' }}>
-          {brand ? (
-            brand.icon("w-3.5 h-3.5")
-          ) : (
-            <img
-              src={favicon}
-              alt=""
-              className="w-3.5 h-3.5 object-contain"
-              onError={(e) => { (e.target as HTMLImageElement).src = 'https://www.google.com/s2/favicons?domain=google.com&sz=32'; }}
-            />
-          )}
-        </span>
-        <span className="truncate max-w-[220px]" style={{ unicodeBidi: 'isolate' }}>{displayTitle}</span>
-        <ExternalLink size={10} className="opacity-0 group-hover/link:opacity-100 transition-opacity shrink-0" />
+        <span className="truncate max-w-[160px]" style={{ unicodeBidi: 'isolate' }}>{pillLabel}</span>
       </a>
 
-      {showTooltip && (meta?.title || meta?.description) && (
-        <div className="absolute z-[9999] bottom-full left-1/2 -translate-x-1/2 mb-2 w-[280px] p-3 bg-[var(--surface-card)] rounded-shape-md shadow-xl border border-[var(--border-default)] flex flex-col gap-2 pointer-events-none transition-theme">
-          <div className="flex items-start gap-2 min-w-0">
-            <div className="w-5.5 h-5.5 rounded overflow-hidden bg-[var(--surface-inset)] flex-shrink-0 flex items-center justify-center border border-[var(--border-default)]/40 text-accent">
-              {brand ? brand.icon("w-3.5 h-3.5") : <img src={favicon} className="w-3.5 h-3.5 object-contain" alt="" />}
+      {showTooltip && (meta?.title || meta?.description || displayHost) && (
+        <div className="absolute z-[9999] bottom-full left-1/2 -translate-x-1/2 mb-2 w-[260px] p-2.5 bg-[var(--surface-card)] rounded-shape-md shadow-xl border border-[var(--border-default)] flex flex-col gap-1.5 pointer-events-none transition-theme text-start">
+          <div className="flex items-center gap-2 min-w-0">
+            <div className="w-4 h-4 rounded-shape-xs overflow-hidden bg-[var(--surface-subtle)] flex-shrink-0 flex items-center justify-center border border-[var(--border-default)]/40">
+              {brand ? brand.icon("w-3 h-3") : <img src={favicon} className="w-3 h-3 object-contain" alt="" />}
             </div>
-            <div className="flex-1 min-w-0">
-              <span className="text-[11px] font-bold text-[var(--text-primary)] block truncate">
-                {displayTitle}
-              </span>
-              <span className="text-[9px] text-[var(--text-muted)] block truncate opacity-70">
-                {displayHost}
-              </span>
-            </div>
+            <span className="text-[10px] font-mono text-[var(--text-muted)] block truncate">
+              {displayHost}
+            </span>
           </div>
-
+          <span className="text-[11.5px] font-semibold text-[var(--text-primary)] line-clamp-2 leading-snug">
+            {displayTitle}
+          </span>
           {displayDesc && (
-            <p className="text-[9.5px] text-[var(--text-muted)] leading-relaxed mt-0.5 pt-1.5 border-t border-[var(--border-default)]/30 font-normal line-clamp-3">
+            <p className="text-[10px] text-[var(--text-muted)] leading-relaxed font-normal line-clamp-2">
               {displayDesc}
             </p>
           )}
-
           {displayImage && (
-            <div className="w-full h-24 overflow-hidden rounded bg-[var(--surface-inset)] border border-[var(--border-default)]/40 mt-1">
+            <div className="w-full h-20 overflow-hidden rounded-shape-xs bg-[var(--surface-inset)] border border-[var(--border-default)]/40 mt-0.5">
               <img src={displayImage} className="w-full h-full object-cover" alt="" referrerPolicy="no-referrer" />
             </div>
           )}
@@ -228,7 +215,7 @@ export const MarkdownCitationLink = ({ citation, index }: { citation: any, index
   const [meta, setMeta] = useState<any>(null);
   const [showTooltip, setShowTooltip] = useState(false);
   const cleanUrl = getCleanUrl(citation.url || citation.link || '');
-  const displayHost = cleanUrl ? cleanUrl.replace(/^https?:\/\//i, '').split('/')[0] : '';
+  const displayHost = cleanUrl ? cleanUrl.replace(/^https?:\/\/(www\.)?/i, '').split('/')[0] : '';
   const brand = getPlatformBrand(cleanUrl);
 
   useEffect(() => {
@@ -242,53 +229,47 @@ export const MarkdownCitationLink = ({ citation, index }: { citation: any, index
     return () => { active = false; };
   }, [cleanUrl]);
 
+  const hostShort = displayHost.split('.')[0]
+    ? displayHost.split('.')[0].charAt(0).toUpperCase() + displayHost.split('.')[0].slice(1)
+    : `${index}`;
   const displayTitle = meta?.title || citation.title || displayHost;
   const displayDesc = meta?.description || citation.snippet || '';
   const displayImage = meta?.image || '';
   const favicon = meta?.favicon || getFavicon(cleanUrl);
 
   return (
-    <span className="relative inline-flex items-center align-middle group/cite mx-0.5">
+    <span className="relative inline-flex items-center align-baseline group/cite mx-0.5">
       <a
         href={cleanUrl}
         target="_blank"
         rel="noopener noreferrer"
         onMouseEnter={() => setShowTooltip(true)}
         onMouseLeave={() => setShowTooltip(false)}
-        className="inline-flex items-center justify-center w-4 h-4 rounded-shape-xs transition-theme transform hover:scale-110 cursor-pointer overflow-hidden border border-transparent hover:border-[var(--border-accent)] relative before:absolute before:-inset-2.5 before:content-['']"
+        className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-shape-xs bg-[var(--surface-subtle)]/90 hover:bg-[var(--surface-inset)] border border-[var(--border-default)]/55 hover:border-[var(--border-default)] text-[10.5px] font-medium text-[var(--text-secondary)] hover:text-[var(--text-primary)] leading-none transition-colors cursor-pointer no-underline"
       >
-        <span 
-          className="w-3.5 h-3.5 flex items-center justify-center shrink-0 text-[var(--text-muted)] group-hover/cite:text-[var(--fg-accent)] transition-theme"
-          style={{ color: brand ? brand.color : 'inherit' }}
-        >
-          {brand ? brand.icon("w-3.5 h-3.5 rounded-shape-xs") : <img src={favicon} className="w-3.5 h-3.5 object-contain rounded-shape-xs bg-[var(--surface-card)]" alt="" />}
-        </span>
+        <span className="truncate max-w-[110px]">{hostShort}</span>
       </a>
 
       {showTooltip && (displayTitle || displayDesc) && (
-        <div className="absolute z-[9999] bottom-full left-1/2 -translate-x-1/2 mb-2 w-[280px] p-3 bg-[var(--surface-card)] rounded-shape-md shadow-xl border border-[var(--border-default)] flex flex-col gap-2 pointer-events-none transition-theme">
-          <div className="flex items-start gap-2 min-w-0">
-            <div className="w-5.5 h-5.5 rounded overflow-hidden bg-[var(--surface-inset)] flex-shrink-0 flex items-center justify-center border border-[var(--border-default)]/40 text-[var(--fg-accent)]">
-              {brand ? brand.icon("w-3.5 h-3.5") : <img src={favicon} className="w-3.5 h-3.5 object-contain" alt="" />}
+        <div className="absolute z-[9999] bottom-full left-1/2 -translate-x-1/2 mb-2 w-[260px] p-2.5 bg-[var(--surface-card)] rounded-shape-md shadow-xl border border-[var(--border-default)] flex flex-col gap-1.5 pointer-events-none transition-theme text-start">
+          <div className="flex items-center gap-2 min-w-0">
+            <div className="w-4 h-4 rounded-shape-xs overflow-hidden bg-[var(--surface-subtle)] flex-shrink-0 flex items-center justify-center border border-[var(--border-default)]/40">
+              {brand ? brand.icon("w-3 h-3") : <img src={favicon} className="w-3 h-3 object-contain" alt="" />}
             </div>
-            <div className="flex-1 min-w-0">
-              <span className="text-[11px] font-bold text-[var(--text-primary)] block truncate border-b border-[var(--border-default)]/35 pb-1 mb-1">
-                {displayTitle}
-              </span>
-              <span className="text-[9px] text-[var(--text-muted)] block truncate opacity-70">
-                {displayHost}
-              </span>
-            </div>
+            <span className="text-[10px] font-mono text-[var(--text-muted)] block truncate">
+              {displayHost}
+            </span>
           </div>
-
+          <span className="text-[11.5px] font-semibold text-[var(--text-primary)] line-clamp-2 leading-snug">
+            {displayTitle}
+          </span>
           {displayDesc && (
-            <p className="text-[9.5px] text-[var(--text-muted)] leading-relaxed mt-0.5 font-normal line-clamp-3">
+            <p className="text-[10px] text-[var(--text-muted)] leading-relaxed font-normal line-clamp-2">
               {displayDesc}
             </p>
           )}
-
           {displayImage && (
-            <div className="w-full h-24 overflow-hidden rounded bg-[var(--surface-inset)] border border-[var(--border-default)]/40 mt-1">
+            <div className="w-full h-20 overflow-hidden rounded-shape-xs bg-[var(--surface-inset)] border border-[var(--border-default)]/40 mt-0.5">
               <img src={displayImage} className="w-full h-full object-cover" alt="" referrerPolicy="no-referrer" />
             </div>
           )}
@@ -377,24 +358,25 @@ export const FollowUps = ({ followUps, onSelect, dir }: { followUps: string[], o
   const items = followUps.slice(0, 3);
 
   return (
-    <div className="mt-3.5 pt-2.5 border-t border-[var(--border-default)]/40 w-full" id="follow-ups-container" dir={dir}>
-      <div className="flex flex-wrap items-center gap-1.5 w-full">
+    <div className="mt-4 pt-1 border-t border-[var(--border-default)]/40 w-full select-none" id="follow-ups-container" dir={dir}>
+      <div className="flex flex-col divide-y divide-[var(--border-default)]/35 w-full">
         {items.map((q, idx) => (
           <button
             key={`follow-up-${idx}-${q.slice(0, 15)}`}
+            type="button"
             onClick={() => onSelect(q)}
             id={`follow-up-${idx}`}
-            className="group flex-1 min-w-[120px] max-w-full inline-flex items-center justify-between gap-2 px-3 h-8 bg-transparent hover:bg-[var(--surface-subtle)] border border-[var(--border-default)] rounded-shape-sm transition-theme text-start cursor-pointer text-[var(--text-primary)] active:scale-95 touch-target-44 box-border relative before:absolute before:-inset-1.5 before:content-['']"
+            className="group w-full min-h-[44px] py-2.5 px-1 flex items-center justify-between gap-3 bg-transparent hover:bg-[var(--surface-subtle)]/35 active:bg-[var(--surface-subtle)]/60 border-0 text-start cursor-pointer transition-colors duration-fast box-border"
             title={q}
           >
-            <span className="text-xs font-medium text-[var(--text-primary)] group-hover:text-[var(--fg-accent)] transition-colors truncate">
+            <span className="text-[13.5px] font-normal text-[var(--text-secondary)] group-hover:text-[var(--text-primary)] transition-colors truncate font-sans">
               {q}
             </span>
-            <div className="shrink-0 text-[var(--text-muted)] group-hover:text-[var(--fg-accent)] rtl:group-hover:-translate-x-0.5 ltr:group-hover:translate-x-0.5 transition-all duration-200">
+            <div className="shrink-0 text-[var(--text-muted)]/75 group-hover:text-[var(--text-primary)] transition-colors">
               {dir === 'rtl' ? (
-                <CornerDownLeft size={13} className="transition-transform" />
+                <CornerDownLeft size={14} className="transition-transform group-hover:-translate-x-0.5" />
               ) : (
-                <CornerDownRight size={13} className="transition-transform" />
+                <CornerDownRight size={14} className="transition-transform group-hover:translate-x-0.5" />
               )}
             </div>
           </button>

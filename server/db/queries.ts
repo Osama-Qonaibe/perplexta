@@ -1,4 +1,4 @@
-import { pool, ledgerPool } from './index.js';
+import { pool, ledgerPool, isPoolAvailable } from './index.js';
 import { decrypt } from '../utils/crypto.js';
 import NodeCache from 'node-cache';
 import type {
@@ -147,8 +147,8 @@ export const userLoader = new DataLoader<number | string, any>(async (ids) => {
  */
 export const walletLoader = new DataLoader<number | string, Wallet | null>(async (userIds) => {
   if (userIds.length === 0) return [];
-  const target = ledgerPool || pool;
-  if (!target) return userIds.map(() => null);
+  if (!isPoolAvailable('ledger')) return userIds.map(() => null);
+  const target = ledgerPool;
   const validIds = Array.from(new Set(userIds))
     .map(id => typeof id === 'number' ? id : parseInt(String(id), 10))
     .filter(id => typeof id === 'number' && !isNaN(id));
@@ -417,11 +417,12 @@ export async function getCachedEconomySettings(): Promise<any> {
     creator_max_daily_royalty_usd:   15.00,
   };
 
-  const target = ledgerPool || pool;
-  if (!target) {
+  if (!isPoolAvailable('ledger')) {
     economySettingsCache.set('global', { data: defaultSettings, timestamp: now });
     return defaultSettings;
   }
+
+  const target = ledgerPool;
 
   try {
     const res = await target.query('SELECT * FROM economy_settings LIMIT 1');

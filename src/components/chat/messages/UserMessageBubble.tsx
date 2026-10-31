@@ -172,12 +172,12 @@ export const UserMessageBubble: React.FC<UserMessageBubbleProps> = ({
             </button>
           </div>
 
-          {/* Clean Compact User Message Bubble */}
+          {/* Delicate, Featherlight User Message Bubble */}
           <div 
-            className="px-3.5 py-2 sm:px-4 sm:py-2.5 rounded-shape-md rounded-se-[2px] border border-[var(--border-default)] bg-[var(--surface-subtle)] text-[var(--text-primary)] shadow-2xs transition-all duration-fast min-w-0 text-start"
+            className="px-4 py-2 sm:px-4 sm:py-2.5 rounded-shape-lg border border-[var(--border-default)]/40 bg-[var(--surface-subtle)]/75 text-[var(--text-primary)] transition-colors duration-fast min-w-0 text-start"
           >
             <p
-              className="text-[13.5px] sm:text-[14.5px] font-medium leading-relaxed tracking-normal font-sans break-words whitespace-pre-wrap"
+              className="text-[13.5px] sm:text-[14.5px] font-normal leading-relaxed tracking-normal font-sans break-words whitespace-pre-wrap"
               dir={dir === 'rtl' ? 'rtl' : 'ltr'}
             >
               {stripProtocolMarkers(msg.content) || msg.content || (dir === 'rtl' ? 'محتوى فارغ' : 'Empty Content')}

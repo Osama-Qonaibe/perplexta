@@ -3,7 +3,6 @@ import react from '@vitejs/plugin-react';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import { defineConfig, loadEnv } from 'vite';
-import { lucideBarrelOptimizerPlugin } from './vite.config';
 
 const rootDir = path.dirname(fileURLToPath(import.meta.url));
 
@@ -14,7 +13,6 @@ export default defineConfig(({ mode }) => {
     base: '/',
     publicDir: path.resolve(rootDir, 'public'),
     plugins: [
-      lucideBarrelOptimizerPlugin(),
       react(),
       tailwindcss(),
     ],

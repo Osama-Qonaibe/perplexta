@@ -291,9 +291,9 @@ export const ChatComposer: React.FC<ChatComposerProps> = ({
           </div>
         )}
 
-        <div className="relative w-full max-w-3xl mx-auto box-border">
+        <div className="relative w-full max-w-3xl mx-auto box-border overflow-visible">
           <motion.div 
-            className="w-full select-none relative flex flex-col box-border min-w-0 ide-input-box p-3.5 shadow-lg"
+            className="w-full select-none relative flex flex-col box-border min-w-0 ide-input-box p-3.5 shadow-lg overflow-visible"
           >
           {isRecording && (
             <div className="px-3.5 py-3.5 bg-[var(--status-danger)]/10 border-b border-dashed border-[var(--status-danger)]/20 flex flex-col gap-2.5 transition-theme mb-3 rounded-shape-md">
@@ -519,32 +519,142 @@ export const ChatComposer: React.FC<ChatComposerProps> = ({
             </span>
           )}
 
-          {/* Dedicated inset floating divider between the textarea and the bottom toolbar - perfectly centered */}
-          <div className="mx-4 h-px bg-gradient-to-r from-transparent via-[var(--border-default)] to-transparent -mt-2 mb-2" />
+          {/* Subtle horizontal hairline divider matching master design */}
+          <div className="w-full h-px bg-[var(--border-default)]/40 mt-1 mb-2.5" />
 
-          {/* 2. Bottom Toolbar (Single-Row Baseline & Language Button Visual Identity) */}
-          <div className="flex items-center justify-between px-3.5 py-2.5 flex-nowrap -mx-3.5 -mb-3.5 sm:-mx-3.5 sm:-mb-3.5 bg-[var(--surface-subtle)] border-t border-[var(--border-subtle)] rounded-b-shape-md transition-colors">
+          {/* 2. Bottom Toolbar */}
+          <div className="flex items-center justify-between gap-2 flex-nowrap pt-0.5 overflow-visible">
             
-            {/* Start Action Chips: Attach (+), Mode/Analysis Dropdown, Model Selector */}
-            <div className="flex items-center gap-1.5 sm:gap-2 flex-nowrap min-w-0">
-              {/* Attach File Button (+ on mobile, Paperclip + Attach on desktop) */}
-              <button
-                type="button"
-                onClick={() => {
-                  if (!isInputDisabled) {
-                    document.getElementById('unified-upload')?.click();
-                  }
-                }}
-                disabled={isInputDisabled}
-                className="w-8 h-8 sm:w-auto sm:px-2.5 sm:h-8 flex items-center justify-center gap-1 sm:gap-1.5 rounded-shape-sm border border-[var(--border-default)] bg-transparent hover:border-[var(--border-accent)]/60 text-[var(--text-muted)] hover:text-[var(--text-primary)] transition-all duration-200 active:scale-95 text-xs font-medium disabled:opacity-30 disabled:cursor-not-allowed shrink-0 cursor-pointer shadow-2xs relative before:absolute before:-inset-1.5 sm:before:hidden before:content-[''] box-border"
-                title={dir === 'rtl' ? 'إرفاق ملف' : 'Attach file'}
-              >
-                <Plus className="w-4 h-4 sm:hidden text-[var(--text-secondary)] shrink-0" />
-                <Paperclip className="w-3.5 h-3.5 hidden sm:inline text-[var(--text-muted)] shrink-0" />
-                <span className="hidden sm:inline whitespace-nowrap">{dir === 'rtl' ? 'إرفاق' : 'Attach'}</span>
-              </button>
+            {/* Start Action Chips: Model Selector (سريع), Analysis Dropdown (تحليل), Voice Input (صوت), Attach File (إرفاق) */}
+            <div className="flex items-center gap-1.5 sm:gap-2 flex-nowrap min-w-0 overflow-visible py-0.5">
+              
+              {/* 1. FAST / Model Selector Chip (سريع) */}
+              <div ref={modelsMenuRef} className="relative shrink-0">
+                {(() => {
+                  const isModelActive = ['chat_fast', 'chat_pro', 'chat_reasoning'].includes(selectedTool);
+                  return (
+                    <>
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          if (!isInputDisabled) {
+                            setIsModelMenuOpen(prev => !prev);
+                            setIsAdvancedToolsOpen(false);
+                          }
+                        }}
+                        className={`w-8 md:w-auto h-8 h-[32px] min-w-[32px] md:min-w-0 px-0 md:px-2.5 flex items-center justify-center gap-1 sm:gap-1.5 rounded-shape-sm border border-[var(--border-default)] hover:border-[var(--border-accent)]/60 transition-all duration-200 active:scale-95 text-xs font-mono cursor-pointer shrink-0 bg-transparent relative box-border touch-target-44-expanded ${
+                          isModelActive 
+                            ? 'text-[var(--text-primary)]' 
+                            : 'text-[var(--text-muted)] hover:text-[var(--text-primary)] shadow-2xs'
+                        }`}
+                        title={dir === 'rtl' ? 'اختيار النموذج الذكي' : 'Select AI Model'}
+                      >
+                        <span className="shrink-0 flex items-center justify-center w-3.5 h-3.5">
+                          {React.isValidElement(currentModel?.icon) 
+                            ? React.cloneElement(currentModel.icon as React.ReactElement<{ size?: number; className?: string }>, { 
+                                size: 14, 
+                                className: `w-3.5 h-3.5 transition-all duration-300 ${
+                                  isModelActive 
+                                    ? 'text-[var(--fg-accent)] fill-[var(--fg-accent)]' 
+                                    : 'text-[var(--text-muted)]'
+                                }` 
+                              })
+                            : <Zap className={`w-3.5 h-3.5 transition-all duration-300 ${
+                                isModelActive 
+                                  ? 'fill-[var(--fg-accent)] text-[var(--fg-accent)]' 
+                                  : 'text-[var(--text-muted)]'
+                              }`} />}
+                        </span>
+                        <span className="hidden md:inline whitespace-nowrap leading-none font-medium text-xs">{isModelActive ? currentModel?.label : (dir === 'rtl' ? 'سريع' : 'FAST')}</span>
+                        <ChevronDown className="hidden md:inline w-3 h-3 ml-0.5 shrink-0 text-[var(--text-muted)] transition-colors" />
+                      </button>
 
-              {/* Analysis / AI Tools Dropdown Chip */}
+                      {isModelMenuOpen && (
+                        <motion.div 
+                          initial={{ opacity: 0, scale: 0.98 }}
+                          animate={{ opacity: 1, scale: 1 }}
+                          exit={{ opacity: 0, scale: 0.98 }}
+                          transition={{ duration: 0.10, ease: [0.16, 1, 0.3, 1] }}
+                          style={{ transformOrigin: dir === 'rtl' ? 'bottom right' : 'bottom left' }}
+                          className={`absolute bottom-full mb-2 ${dir === 'rtl' ? 'right-0' : 'left-0'} w-44 p-1.5 rounded-shape-md border border-[var(--border-default)] shadow-2xl ring-1 ring-black/5 dark:ring-white/10 flex flex-col gap-0.5 z-[200] bg-[var(--surface-card)] backdrop-blur-2xl overflow-visible`}
+                          onClick={(e) => e.stopPropagation()}
+                        >
+                          {sortedModels.map((model, idx) => {
+                            const limit = currentPlan?.limits?.[model.id];
+                            const isZeroLimit = limit?.daily === 0 && limit?.monthly === 0;
+                            const hasBalance = (balance && balance > 0) || (balanceUSD && balanceUSD > 0);
+                            const isLocked = currentPlan ? isZeroLimit && !hasBalance : false;
+                            const isSelected = selectedModel === model.id && isModelActive;
+
+                            return (
+                              <button 
+                                key={`${model.id}-${idx}`} 
+                                onMouseDown={(e) => {
+                                  e.preventDefault();
+                                  e.stopPropagation();
+                                  if (isLocked) return;
+                                  setSelectedModel(model.id as any);
+                                  const targetTool = model.id === 'fast' ? 'chat_fast' : model.id === 'pro' ? 'chat_pro' : model.id === 'thinking' ? 'chat_reasoning' : 'chat_fast';
+                                  setSelectedTool(targetTool);
+                                  setActiveDropdown('model');
+                                  setIsModelMenuOpen(false);
+                                }}
+                                onClick={(e) => {
+                                  e.preventDefault();
+                                  e.stopPropagation();
+                                  if (isLocked) return;
+                                  setSelectedModel(model.id as any);
+                                  const targetTool = model.id === 'fast' ? 'chat_fast' : model.id === 'pro' ? 'chat_pro' : model.id === 'thinking' ? 'chat_reasoning' : 'chat_fast';
+                                  setSelectedTool(targetTool);
+                                  setActiveDropdown('model');
+                                  setIsModelMenuOpen(false);
+                                }}
+                                className={`group flex items-center justify-between w-full h-8 h-[32px] min-h-[32px] px-3 py-1.5 rounded-shape-sm flex-nowrap transition-all duration-fast text-xs font-medium cursor-pointer ${
+                                  isLocked
+                                    ? 'opacity-40 cursor-not-allowed text-[var(--text-disabled)]'
+                                    : isSelected
+                                      ? 'bg-[var(--bg-accent-muted)] text-[var(--fg-accent)] font-semibold border border-[var(--border-accent)]/30'
+                                      : HOVER_STYLES.dropdownItem + ' border border-transparent'
+                                }`}
+                              >
+                                <div className="flex items-center gap-2 flex-nowrap">
+                                  <span className={`shrink-0 flex items-center justify-center w-3.5 h-3.5 transition-colors duration-fast ${
+                                    isLocked 
+                                      ? 'text-[var(--text-disabled)] opacity-60' 
+                                      : isSelected 
+                                        ? 'text-[var(--fg-accent)] fill-[var(--fg-accent)]' 
+                                        : 'text-[var(--text-muted)] group-hover:text-[var(--text-primary)]'
+                                  }`}>
+                                    {React.isValidElement(model.icon) 
+                                      ? React.cloneElement(model.icon as React.ReactElement<{ size?: number; className?: string }>, { 
+                                          size: 14, 
+                                          className: `w-3.5 h-3.5 transition-colors duration-fast ${isSelected ? 'text-[var(--fg-accent)]' : ''}` 
+                                        })
+                                      : <Zap className={`w-3.5 h-3.5 transition-colors duration-fast ${isSelected ? 'fill-[var(--fg-accent)] text-[var(--fg-accent)]' : ''}`} />}
+                                  </span>
+                                  <span className={`whitespace-nowrap transition-colors duration-fast ${
+                                    isLocked ? '' : 'group-hover:text-[var(--text-primary)]'
+                                  }`}>
+                                    {model.label}
+                                  </span>
+                                </div>
+                                <div className="flex items-center gap-0.5 shrink-0">
+                                  {isLocked && (
+                                    <Lock size={11} className="text-[var(--fg-warning)] shrink-0" />
+                                  )}
+                                </div>
+                              </button>
+                            );
+                          })}
+                        </motion.div>
+                      )}
+                    </>
+                  );
+                })()}
+              </div>
+
+              {/* 2. Analysis / AI Tools Dropdown Chip (تحليل) */}
               <div ref={toolsMenuRef} className="relative shrink-0">
                 {(() => {
                   const isToolActive = !['chat_fast', 'chat_pro', 'chat_reasoning'].includes(selectedTool);
@@ -559,11 +669,12 @@ export const ChatComposer: React.FC<ChatComposerProps> = ({
                             setIsModelMenuOpen(false);
                           }
                         }}
-                        className={`h-8 px-2 sm:px-2.5 flex items-center justify-center gap-1 sm:gap-1.5 rounded-shape-sm border border-[var(--border-default)] hover:border-[var(--border-accent)]/60 transition-all duration-200 active:scale-95 text-xs font-medium cursor-pointer shrink-0 bg-transparent relative before:absolute before:-inset-1.5 sm:before:hidden before:content-[''] box-border ${
+                        className={`w-8 md:w-auto h-8 h-[32px] min-w-[32px] md:min-w-0 px-0 md:px-2.5 flex items-center justify-center gap-1 sm:gap-1.5 rounded-shape-sm border border-[var(--border-default)] hover:border-[var(--border-accent)]/60 transition-all duration-200 active:scale-95 text-xs font-medium cursor-pointer shrink-0 bg-transparent relative box-border touch-target-44-expanded ${
                           isToolActive 
                             ? 'text-[var(--text-primary)]' 
                             : 'text-[var(--text-muted)] hover:text-[var(--text-primary)] shadow-2xs'
                         }`}
+                        title={dir === 'rtl' ? 'أدوات التحليل والبحث' : 'Analysis & Search Tools'}
                       >
                         <span className="shrink-0 flex items-center justify-center w-3.5 h-3.5">
                           {React.isValidElement(currentTool?.icon) 
@@ -573,8 +684,8 @@ export const ChatComposer: React.FC<ChatComposerProps> = ({
                               })
                             : <Search className={`w-3.5 h-3.5 shrink-0 transition-all duration-300 ${isToolActive ? 'text-[var(--fg-accent)]' : 'text-[var(--text-muted)]'}`} />}
                         </span>
-                        <span className="hidden sm:inline whitespace-nowrap">{currentTool?.label || (dir === 'rtl' ? 'تحليل' : 'Analysis')}</span>
-                        <ChevronDown className="w-3 h-3 shrink-0 text-[var(--text-muted)] transition-colors" />
+                        <span className="hidden md:inline whitespace-nowrap leading-none font-medium text-xs">{currentTool?.label || (dir === 'rtl' ? 'تحليل' : 'Analysis')}</span>
+                        <ChevronDown className="hidden md:inline w-3 h-3 shrink-0 text-[var(--text-muted)] transition-colors" />
                       </button>
 
                       {isAdvancedToolsOpen && (
@@ -598,7 +709,9 @@ export const ChatComposer: React.FC<ChatComposerProps> = ({
                               return (
                                 <button 
                                   key={`adv-tool-${tool.id}-${tIdx}`} 
-                                  onClick={() => {
+                                  onMouseDown={(e) => {
+                                    e.preventDefault();
+                                    e.stopPropagation();
                                     if (isLocked) return;
                                     if (tool.id === 'code') {
                                       navigate('/app');
@@ -614,7 +727,25 @@ export const ChatComposer: React.FC<ChatComposerProps> = ({
                                     setActiveDropdown('tool');
                                     setIsAdvancedToolsOpen(false);
                                   }}
-                                  className={`group flex items-center justify-between w-full h-[36px] min-h-[36px] px-3 py-2 rounded-shape-sm transition-all duration-fast text-xs font-medium cursor-pointer select-none active:scale-98 ${
+                                  onClick={(e) => {
+                                    e.preventDefault();
+                                    e.stopPropagation();
+                                    if (isLocked) return;
+                                    if (tool.id === 'code') {
+                                      navigate('/app');
+                                      setIsAdvancedToolsOpen(false);
+                                      return;
+                                    }
+                                    if (tool.id === 'audio_studio' || tool.isRouter) {
+                                      navigate('/audio-studio');
+                                      setIsAdvancedToolsOpen(false);
+                                      return;
+                                    }
+                                    setSelectedTool(tool.id);
+                                    setActiveDropdown('tool');
+                                    setIsAdvancedToolsOpen(false);
+                                  }}
+                                  className={`group flex items-center justify-between w-full h-8 h-[32px] min-h-[32px] px-3 py-1.5 rounded-shape-sm transition-all duration-fast text-xs font-medium cursor-pointer select-none active:scale-98 ${
                                     isLocked 
                                       ? 'opacity-40 cursor-not-allowed text-[var(--text-disabled)]'
                                       : isSelected 
@@ -668,128 +799,12 @@ export const ChatComposer: React.FC<ChatComposerProps> = ({
                 })()}
               </div>
 
-              {/* FAST / Model Selector Chip */}
-              <div ref={modelsMenuRef} className="relative shrink-0">
-                {(() => {
-                  const isModelActive = ['chat_fast', 'chat_pro', 'chat_reasoning'].includes(selectedTool);
-                  return (
-                    <>
-                      <button
-                        type="button"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          if (!isInputDisabled) {
-                            setIsModelMenuOpen(prev => !prev);
-                            setIsAdvancedToolsOpen(false);
-                          }
-                        }}
-                        className={`w-8 h-8 sm:w-auto sm:px-2.5 sm:h-8 flex items-center justify-center gap-1 sm:gap-1.5 rounded-shape-sm border border-[var(--border-default)] hover:border-[var(--border-accent)]/60 transition-all duration-200 active:scale-95 text-xs font-mono cursor-pointer shrink-0 bg-transparent relative before:absolute before:-inset-1.5 sm:before:hidden before:content-[''] box-border ${
-                          isModelActive 
-                            ? 'text-[var(--text-primary)]' 
-                            : 'text-[var(--text-muted)] hover:text-[var(--text-primary)] shadow-2xs'
-                        }`}
-                      >
-                        <span className="shrink-0 flex items-center justify-center w-3.5 h-3.5">
-                          {React.isValidElement(currentModel?.icon) 
-                            ? React.cloneElement(currentModel.icon as React.ReactElement<{ size?: number; className?: string }>, { 
-                                size: 14, 
-                                className: `w-3.5 h-3.5 transition-all duration-300 ${
-                                  isModelActive 
-                                    ? 'text-[var(--fg-accent)] fill-[var(--fg-accent)]' 
-                                    : 'text-[var(--text-muted)]'
-                                }` 
-                              })
-                            : <Zap className={`w-3.5 h-3.5 transition-all duration-300 ${
-                                isModelActive 
-                                  ? 'fill-[var(--fg-accent)] text-[var(--fg-accent)]' 
-                                  : 'text-[var(--text-muted)]'
-                              }`} />}
-                        </span>
-                        <span className="hidden sm:inline whitespace-nowrap">{isModelActive ? currentModel?.label : (dir === 'rtl' ? 'سريع' : 'FAST')}</span>
-                        <ChevronDown className="w-3 h-3 hidden sm:inline ml-0.5 shrink-0 text-[var(--text-muted)] transition-colors" />
-                      </button>
-
-                      {isModelMenuOpen && (
-                        <motion.div 
-                          initial={{ opacity: 0, scale: 0.98 }}
-                          animate={{ opacity: 1, scale: 1 }}
-                          exit={{ opacity: 0, scale: 0.98 }}
-                          transition={{ duration: 0.10, ease: [0.16, 1, 0.3, 1] }}
-                          style={{ transformOrigin: dir === 'rtl' ? 'bottom right' : 'bottom left' }}
-                          className={`absolute bottom-full mb-2 ${dir === 'rtl' ? 'right-0' : 'left-0'} w-40 p-1.5 rounded-shape-md border border-[var(--border-default)] shadow-2xl ring-1 ring-black/5 dark:ring-white/10 flex flex-col gap-0.5 z-[200] bg-[var(--surface-card)] backdrop-blur-2xl`}
-                          onClick={(e) => e.stopPropagation()}
-                        >
-                          {sortedModels.map((model, idx) => {
-                            const limit = currentPlan?.limits?.[model.id];
-                            const isZeroLimit = limit?.daily === 0 && limit?.monthly === 0;
-                            const hasBalance = (balance && balance > 0) || (balanceUSD && balanceUSD > 0);
-                            const isLocked = currentPlan ? isZeroLimit && !hasBalance : false;
-                            const isSelected = selectedModel === model.id && isModelActive;
-
-                            return (
-                              <button 
-                                key={`${model.id}-${idx}`} 
-                                onClick={() => {
-                                  if (isLocked) return;
-                                  setSelectedModel(model.id as any);
-                                  const targetTool = model.id === 'fast' ? 'chat_fast' : model.id === 'pro' ? 'chat_pro' : model.id === 'thinking' ? 'chat_reasoning' : 'chat_fast';
-                                  setSelectedTool(targetTool);
-                                  setActiveDropdown('model');
-                                  setIsModelMenuOpen(false);
-                                }}
-                                className={`group flex items-center justify-between w-full h-[36px] min-h-[36px] px-3 py-2 rounded-shape-sm flex-nowrap transition-all duration-fast text-xs font-medium cursor-pointer ${
-                                  isLocked
-                                    ? 'opacity-40 cursor-not-allowed text-[var(--text-disabled)]'
-                                    : isSelected
-                                      ? 'bg-[var(--bg-accent-muted)] text-[var(--fg-accent)] font-semibold border border-[var(--border-accent)]/30'
-                                      : HOVER_STYLES.dropdownItem + ' border border-transparent'
-                                }`}
-                              >
-                                <div className="flex items-center gap-2 flex-nowrap">
-                                  <span className={`shrink-0 flex items-center justify-center w-3.5 h-3.5 transition-colors duration-fast ${
-                                    isLocked 
-                                      ? 'text-[var(--text-disabled)] opacity-60' 
-                                      : isSelected 
-                                        ? 'text-[var(--fg-accent)] fill-[var(--fg-accent)]' 
-                                        : 'text-[var(--text-muted)] group-hover:text-[var(--text-primary)]'
-                                  }`}>
-                                    {React.isValidElement(model.icon) 
-                                      ? React.cloneElement(model.icon as React.ReactElement<{ size?: number; className?: string }>, { 
-                                          size: 14, 
-                                          className: `w-3.5 h-3.5 transition-colors duration-fast ${isSelected ? 'text-[var(--fg-accent)]' : ''}` 
-                                        })
-                                      : <Zap className={`w-3.5 h-3.5 transition-colors duration-fast ${isSelected ? 'fill-[var(--fg-accent)] text-[var(--fg-accent)]' : ''}`} />}
-                                  </span>
-                                  <span className={`whitespace-nowrap transition-colors duration-fast ${
-                                    isLocked ? '' : 'group-hover:text-[var(--text-primary)]'
-                                  }`}>
-                                    {model.label}
-                                  </span>
-                                </div>
-                                <div className="flex items-center gap-0.5 shrink-0">
-                                  {isLocked && (
-                                    <Lock size={11} className="text-[var(--fg-warning)] shrink-0" />
-                                  )}
-                                </div>
-                              </button>
-                            );
-                          })}
-                        </motion.div>
-                      )}
-                    </>
-                  );
-                })()}
-              </div>
-            </div>
-
-            {/* End Action Controls: Voice Input + Submit Button */}
-            <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
-              {/* Voice Input Chip */}
+              {/* 3. Voice Input Chip (صوت) */}
               <button
                 type="button"
                 onClick={toggleRecording}
                 disabled={isInputDisabled}
-                className={`w-8 h-8 sm:w-auto sm:px-2.5 sm:h-8 flex items-center justify-center gap-1 sm:gap-1.5 rounded-shape-sm border transition-all duration-200 active:scale-95 text-xs font-medium disabled:opacity-30 disabled:cursor-not-allowed shrink-0 cursor-pointer bg-transparent relative before:absolute before:-inset-1.5 sm:before:hidden before:content-[''] box-border ${
+                className={`w-8 md:w-auto h-8 h-[32px] min-w-[32px] md:min-w-0 px-0 md:px-2.5 flex items-center justify-center gap-1 sm:gap-1.5 rounded-shape-sm border transition-all duration-200 active:scale-95 text-xs font-medium disabled:opacity-30 disabled:cursor-not-allowed shrink-0 cursor-pointer bg-transparent relative box-border touch-target-44-expanded ${
                   isRecording 
                     ? 'border-[var(--fg-danger)]/60 text-[var(--fg-danger)] animate-pulse' 
                     : 'border-[var(--border-default)] hover:border-[var(--border-accent)]/60 text-[var(--text-muted)] hover:text-[var(--text-primary)] shadow-2xs'
@@ -797,9 +812,29 @@ export const ChatComposer: React.FC<ChatComposerProps> = ({
                 title={isRecording ? (dir === 'rtl' ? 'إيقاف التسجيل الصوتي' : 'Stop voice recording') : (dir === 'rtl' ? 'إدخال صوتي' : 'Voice input')}
               >
                 <Mic className={`w-3.5 h-3.5 shrink-0 transition-all duration-300 ${isRecording ? 'text-[var(--fg-danger)]' : 'text-[var(--text-muted)]'}`} />
-                <span className="hidden sm:inline whitespace-nowrap">{isRecording ? (dir === 'rtl' ? 'تسجيل...' : 'Recording...') : (dir === 'rtl' ? 'صوت' : 'Voice')}</span>
+                <span className="hidden md:inline whitespace-nowrap leading-none font-medium text-xs">{isRecording ? (dir === 'rtl' ? 'تسجيل...' : 'Recording...') : (dir === 'rtl' ? 'صوت' : 'Voice')}</span>
               </button>
 
+              {/* 4. Attach File Button (إرفاق) */}
+              <button
+                type="button"
+                onClick={() => {
+                  if (!isInputDisabled) {
+                    document.getElementById('unified-upload')?.click();
+                  }
+                }}
+                disabled={isInputDisabled}
+                className="w-8 md:w-auto h-8 h-[32px] min-w-[32px] md:min-w-0 px-0 md:px-2.5 flex items-center justify-center gap-1 sm:gap-1.5 rounded-shape-sm border border-[var(--border-default)] bg-transparent hover:border-[var(--border-accent)]/60 text-[var(--text-muted)] hover:text-[var(--text-primary)] transition-all duration-200 active:scale-95 text-xs font-medium disabled:opacity-30 disabled:cursor-not-allowed shrink-0 cursor-pointer shadow-2xs relative box-border touch-target-44-expanded"
+                title={dir === 'rtl' ? 'إرفاق ملف' : 'Attach file'}
+              >
+                <Paperclip className="w-3.5 h-3.5 text-[var(--text-muted)] shrink-0" />
+                <span className="hidden md:inline whitespace-nowrap leading-none font-medium text-xs">{dir === 'rtl' ? 'إرفاق' : 'Attach'}</span>
+              </button>
+
+            </div>
+
+            {/* End Action Control: Submit / Stop Action Button */}
+            <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
               {/* Submit / Stop Action Button */}
               <button
                 type="button"
@@ -807,19 +842,19 @@ export const ChatComposer: React.FC<ChatComposerProps> = ({
                   handleSendOrStop();
                 }}
                 disabled={!query.trim() && !isGenerating}
-                className={`w-8 h-8 rounded-shape-sm flex items-center justify-center shrink-0 active:scale-95 transition-all duration-fast border cursor-pointer relative before:absolute before:-inset-1.5 before:content-[''] box-border ${
+                className={`w-8 h-8 h-[32px] w-[32px] min-w-[32px] min-h-[32px] max-w-[32px] max-h-[32px] rounded-shape-sm flex items-center justify-center shrink-0 active:scale-95 transition-all duration-fast border cursor-pointer relative box-border touch-target-44-expanded ${
                   isGenerating
                     ? 'bg-[var(--fg-danger)] text-white border-[var(--fg-danger)] hover:opacity-90 font-bold shadow-md animate-pulse'
                     : query.trim()
                       ? 'bg-[var(--accent)] text-[var(--fg-on-emphasis)] border-[var(--border-accent)] hover:opacity-90 font-bold shadow-xs'
-                      : 'bg-[var(--surface-card)] text-[var(--text-muted)] border-[var(--border-default)] opacity-40 cursor-not-allowed'
+                      : 'bg-[var(--surface-card)] text-[var(--text-muted)] border-[var(--border-default)]/60 cursor-not-allowed shadow-2xs'
                 }`}
                 title={isGenerating ? (dir === 'rtl' ? 'إيقاف التوليد' : 'Stop Generation') : (dir === 'rtl' ? 'إرسال' : 'Send')}
               >
                 {isGenerating ? (
                   <Square className="w-3.5 h-3.5 fill-current shrink-0 text-white" />
                 ) : (
-                  <ArrowUp className="w-4 h-4 stroke-[2.5]" />
+                  <ArrowUp className="w-4 h-4 stroke-[2]" />
                 )}
               </button>
             </div>

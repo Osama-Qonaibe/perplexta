@@ -3501,8 +3501,12 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
             fontConfigAr: parsedAr,
             fontConfigEn: parsedEn
           });
-        } catch (err) {
-          console.error('[AppContext] Settings fetch error:', err);
+        } catch (err: any) {
+          // Silently retain cached/default siteSettings on transient network/abort errors
+          const msg = err?.message || String(err);
+          if (!msg.includes('Failed to fetch') && !msg.includes('AbortError')) {
+            console.warn('[AppContext] Settings fetch notice (using cache/defaults):', msg);
+          }
         }
       };
 
@@ -3516,7 +3520,10 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
             } catch {}
           }
         } catch (ecoError: any) {
-          console.warn('[AppContext] Economy fetch notice (using cache/defaults):', ecoError?.message || ecoError);
+          const msg = ecoError?.message || String(ecoError);
+          if (!msg.includes('Failed to fetch') && !msg.includes('AbortError')) {
+            console.warn('[AppContext] Economy fetch notice (using cache/defaults):', msg);
+          }
         }
       };
 
@@ -3567,8 +3574,12 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
           try {
             secureStorage.set('app_plans_cache', JSON.stringify(formattedPlans));
           } catch {}
-        } catch (error) {
-          console.error('[AppContext] Plans fetch error:', error);
+        } catch (error: any) {
+          // Silently retain cached/default plans on transient network/abort errors
+          const msg = error?.message || String(error);
+          if (!msg.includes('Failed to fetch') && !msg.includes('AbortError')) {
+            console.warn('[AppContext] Plans fetch notice (using cache/defaults):', msg);
+          }
         } finally {
           setPlansLoaded(true);
         }
@@ -3580,6 +3591,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     // Stale-While-Revalidate: First paint uses cached local settings & plans immediately (0ms).
     // Deferred background sync on interaction or 12s timeout eliminates critical path network chaining.
     let syncLoaded = false;
+    let deferredSyncTimer: ReturnType<typeof setTimeout> | null = null;
     const cleanupSyncListeners = () => {
       ['pointerdown', 'keydown', 'touchstart', 'scroll'].forEach((evt) =>
         window.removeEventListener(evt, triggerSync)
@@ -3590,7 +3602,11 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       if (syncLoaded) return;
       syncLoaded = true;
       cleanupSyncListeners();
-      fetchSettingsAndPlans();
+      deferredSyncTimer = setTimeout(() => {
+        if (document.visibilityState !== 'hidden') {
+          fetchSettingsAndPlans();
+        }
+      }, 250);
     };
 
     ['pointerdown', 'keydown', 'touchstart', 'scroll'].forEach((evt) =>
@@ -3601,6 +3617,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     return () => {
       cleanupSyncListeners();
       clearTimeout(syncTimer);
+      if (deferredSyncTimer) clearTimeout(deferredSyncTimer);
     };
   }, []);
 

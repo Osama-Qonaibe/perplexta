@@ -437,6 +437,10 @@ export function getExternalPool() { return externalPool; }
 export function getSecurityPool() { return securityPool; }
 export function getMediaPool() { return mediaPool; }
 
+export function isPoolAvailable(poolName: 'core' | 'ledger' | 'external' | 'security' | 'media' = 'core'): boolean {
+  return getActiveRawPool(poolName) !== null;
+}
+
 export function isMediaPoolDistinct(): boolean {
   const m = rawMediaPool;
   const c = rawPool;

@@ -5,7 +5,6 @@ import { CollapsibleTable } from './CollapsibleTable';
 import { CodeBlock } from './CodeBlock';
 import { MarkdownLink, BlockquoteWithActions } from './MarkdownElements';
 import { Message } from '../types';
-import { AssistantIcon } from '@/design-system';
 import { useTypewriterBuffer } from '../hooks/useTypewriterBuffer';
 import { MediaFormatPlayer } from '../../MediaFormatPlayer';
 
@@ -45,19 +44,40 @@ function sanitizeStreamingMarkdown(text: string, isStreaming: boolean): string {
   // Auto-complete incomplete markdown table rows
   const lines = sanitized.split('\n');
   let inTable = false;
-  const processedLines = lines.map((line, idx) => {
+  let headerCols = 0;
+
+  const processedLines: string[] = [];
+  for (let idx = 0; idx < lines.length; idx++) {
+    const line = lines[idx];
     const trimmed = line.trim();
+
     if (trimmed.startsWith('|')) {
-      inTable = true;
-      // If last streaming line has pipes but doesn't end with a pipe, auto-close it
-      if (idx === lines.length - 1 && !trimmed.endsWith('|')) {
-        return line + ' |';
+      if (!inTable) {
+        inTable = true;
+        const cells = trimmed.split('|').filter((_, i, arr) => i > 0 && i < arr.length - (trimmed.endsWith('|') ? 1 : 0));
+        headerCols = Math.max(2, cells.length);
       }
-    } else if (inTable && trimmed === '') {
-      inTable = false;
+
+      // If this is the last line while streaming and it's a partial separator row like "|---", synthesize a valid separator row
+      if (idx === lines.length - 1) {
+        if (/^\|[\s\-:|]*$/.test(trimmed)) {
+          processedLines.push(`| ${Array.from({ length: headerCols }, () => '---').join(' | ')} |`);
+          continue;
+        }
+        if (!trimmed.endsWith('|')) {
+          processedLines.push(line + ' |');
+          continue;
+        }
+      }
+      processedLines.push(line);
+    } else {
+      if (inTable && trimmed === '') {
+        inTable = false;
+        headerCols = 0;
+      }
+      processedLines.push(line);
     }
-    return line;
-  });
+  }
 
   return processedLines.join('\n');
 }
@@ -67,7 +87,6 @@ function sanitizeStreamingMarkdown(text: string, isStreaming: boolean): string {
  */
 function detectLanguageDirection(text: string, defaultDir: 'ltr' | 'rtl' = 'rtl'): 'ltr' | 'rtl' {
   if (!text) return defaultDir;
-  // Match Arabic / Hebrew character ranges
   const rtlRegex = /[\u0600-\u06FF\u0750-\u077F\u08A0-\u08FF\uFB50-\uFDFF\uFE70-\uFEFF\u0590-\u05FF]/;
   const firstStrongChar = text.match(/[\w\u0600-\u06FF\u0750-\u077F]/);
   if (firstStrongChar && rtlRegex.test(firstStrongChar[0])) {
@@ -89,7 +108,7 @@ function renderNodeWithBadges(node: any): any {
         const lower = clean.toLowerCase();
         if (['دراسة تجريبية', 'empirical study', 'منهج كمي', 'quantitative'].includes(lower)) {
           return (
-            <span key={index} className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-bold bg-[var(--status-success-subtle)] text-[var(--fg-success)] dark:text-[var(--fg-success)] border border-[var(--fg-success)]/30 my-0.5 me-1.5 shadow-2xs select-none align-middle" style={{ unicodeBidi: 'isolate' }}>
+            <span key={index} className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-bold bg-[var(--status-success-subtle)] text-[var(--fg-success)] border border-[var(--fg-success)]/30 my-0.5 me-1.5 shadow-2xs select-none align-middle" style={{ unicodeBidi: 'isolate' }}>
               <span className="w-1.5 h-1.5 rounded-full bg-[var(--fg-success)] shrink-0" />
               {clean}
             </span>
@@ -129,6 +148,58 @@ function renderNodeWithBadges(node: any): any {
   return node;
 }
 
+/**
+ * Enhances table cells with inline KPI badges and micro progress bars when a cell is a pure string metric.
+ */
+function enhanceTableCellValue(children: any, formattedFallback: () => React.ReactNode): React.ReactNode {
+  const singleString =
+    typeof children === 'string'
+      ? children.trim()
+      : Array.isArray(children) && children.length === 1 && typeof children[0] === 'string'
+      ? children[0].trim()
+      : null;
+
+  if (singleString) {
+    // 1. Positive / Negative Delta KPI (e.g. +14.2%, -3.5%, ▲ 18%)
+    const deltaMatch = singleString.match(/^([+▲-▼])\s*(\d+(?:[.,]\d+)?%?)$/);
+    if (deltaMatch) {
+      const isPositive = deltaMatch[1] === '+' || deltaMatch[1] === '▲';
+      return (
+        <span
+          className={`inline-flex items-center px-1.5 py-0.5 rounded-shape-xs text-[11px] font-mono font-semibold tabular-nums ${
+            isPositive
+              ? 'bg-[var(--status-success-subtle)] text-[var(--fg-success)] border border-[var(--fg-success)]/25'
+              : 'bg-rose-500/10 text-rose-500 border border-rose-500/25'
+          }`}
+        >
+          {singleString}
+        </span>
+      );
+    }
+
+    // 2. Standalone Percentage (0% - 100%) -> Tabular value + delicate micro progress bar
+    const pctMatch = singleString.match(/^(\d{1,3}(?:\.\d+)?)%$/);
+    if (pctMatch) {
+      const pct = parseFloat(pctMatch[1]);
+      if (pct >= 0 && pct <= 100) {
+        return (
+          <span className="inline-flex items-center gap-2">
+            <span className="font-mono tabular-nums font-medium text-[var(--text-primary)]">{singleString}</span>
+            <span className="w-11 h-1.5 rounded-shape-full bg-[var(--surface-subtle)] border border-[var(--border-default)]/40 overflow-hidden inline-block shrink-0 align-middle">
+              <span
+                className="block h-full rounded-shape-full bg-[var(--fg-accent)]/75"
+                style={{ width: `${Math.min(100, Math.max(4, pct))}%` }}
+              />
+            </span>
+          </span>
+        );
+      }
+    }
+  }
+
+  return formattedFallback();
+}
+
 export const ChatResponseRenderer: React.FC<ChatResponseRendererProps> = ({
   content,
   isGenerating = false,
@@ -144,7 +215,6 @@ export const ChatResponseRenderer: React.FC<ChatResponseRendererProps> = ({
     wasGeneratingRef.current = isGenerating;
   }, [isGenerating]);
 
-  // Helper to safely format children with citations if provided and render academic badges
   const formatChildren = (children: any) => {
     let formatted = children;
     if (renderChildrenWithCitations) {
@@ -153,7 +223,7 @@ export const ChatResponseRenderer: React.FC<ChatResponseRendererProps> = ({
     return renderNodeWithBadges(formatted);
   };
 
-  // Smooth, real-time character typewriter buffer
+  // Poised, deliberate character typewriter buffer
   const { displayedText, isStillTyping } = useTypewriterBuffer(
     content,
     isGenerating,
@@ -167,34 +237,34 @@ export const ChatResponseRenderer: React.FC<ChatResponseRendererProps> = ({
   const markdownComponents = useMemo(() => ({
     ...(chatMarkdownComponents || {}),
     h1: ({ children }: any) => (
-      <h1 className="text-[18px] sm:text-[21px] font-black text-[var(--text-primary)] mt-7 mb-4 leading-snug border-b border-[var(--border-default)] pb-2.5 w-full text-start rtl:text-right ltr:text-left" style={{ unicodeBidi: 'isolate' }}>
+      <h1 className="text-[17px] sm:text-[19px] font-bold text-[var(--text-primary)] mt-6 mb-3 leading-snug w-full text-start rtl:text-right ltr:text-left" style={{ unicodeBidi: 'isolate' }}>
         {formatChildren(children)}
       </h1>
     ),
     h2: ({ children }: any) => (
-      <h2 className="text-[16px] sm:text-[18px] font-black text-[var(--text-primary)] mt-6 mb-3.5 leading-snug border-b border-[var(--border-default)] pb-2 w-full text-start rtl:text-right ltr:text-left" style={{ unicodeBidi: 'isolate' }}>
+      <h2 className="text-[15.5px] sm:text-[17px] font-bold text-[var(--text-primary)] mt-5 mb-2.5 leading-snug w-full text-start rtl:text-right ltr:text-left" style={{ unicodeBidi: 'isolate' }}>
         {formatChildren(children)}
       </h2>
     ),
     h3: ({ children }: any) => (
-      <h3 className="text-[14.5px] sm:text-[16px] font-extrabold text-[var(--fg-accent)] mt-5 mb-2.5 leading-snug text-start rtl:text-right ltr:text-left" style={{ unicodeBidi: 'isolate' }}>
+      <h3 className="text-[14.5px] sm:text-[15.5px] font-semibold text-[var(--text-primary)] mt-4 mb-2 leading-snug text-start rtl:text-right ltr:text-left" style={{ unicodeBidi: 'isolate' }}>
         {formatChildren(children)}
       </h3>
     ),
     h4: ({ children }: any) => (
-      <h4 className="text-[13.5px] sm:text-[14.5px] font-bold text-[var(--fg-accent)]/90 mt-4 mb-2 leading-snug text-start rtl:text-right ltr:text-left" style={{ unicodeBidi: 'isolate' }}>
+      <h4 className="text-[13.5px] sm:text-[14.5px] font-semibold text-[var(--text-secondary)] mt-3.5 mb-1.5 leading-snug text-start rtl:text-right ltr:text-left" style={{ unicodeBidi: 'isolate' }}>
         {formatChildren(children)}
       </h4>
     ),
     hr: () => (
-      <hr className="my-6 border-t border-[var(--border-default)] w-full" />
+      <hr className="my-5 border-t border-[var(--border-default)]/45 w-full" />
     ),
     table: ({ children, node }: any) => {
       const linePos = node?.position?.start?.line || '0';
       const tableKey = `${msg.id || msg.client_id || 'msg'}_tbl_${linePos}`;
       const isStreamingTable = isLastMessage && (isGenerating || isStillTyping);
       return (
-        <div className="my-6 w-full">
+        <div className="my-4 w-full">
           <CollapsibleTable tableKey={tableKey} dir={detectedDir} isStreaming={isStreamingTable}>
             {children}
           </CollapsibleTable>
@@ -202,17 +272,17 @@ export const ChatResponseRenderer: React.FC<ChatResponseRendererProps> = ({
       );
     },
     thead: ({ children }: any) => (
-      <thead className="bg-[var(--surface-subtle)] border-b border-[var(--border-default)] text-[var(--text-primary)] font-bold select-none transition-colors">
+      <thead className="bg-[var(--surface-subtle)]/45 border-b border-[var(--border-default)]/55 text-[var(--text-primary)] font-semibold text-xs sm:text-[13px] select-none transition-colors">
         {children}
       </thead>
     ),
     tbody: ({ children }: any) => (
-      <tbody className="divide-y divide-[var(--border-default)]/50 bg-[var(--surface-card)] font-normal transition-colors">
+      <tbody className="divide-y divide-[var(--border-default)]/35 bg-transparent font-normal transition-colors">
         {children}
       </tbody>
     ),
     tr: ({ children }: any) => (
-      <tr className="hover:bg-[var(--surface-subtle)]/50 odd:bg-transparent even:bg-[var(--surface-subtle)]/25 transition-colors">
+      <tr className="hover:bg-[var(--surface-subtle)]/30 transition-colors">
         {children}
       </tr>
     ),
@@ -220,7 +290,7 @@ export const ChatResponseRenderer: React.FC<ChatResponseRendererProps> = ({
       const isCentered = style?.textAlign === 'center';
       return (
         <th
-          className={`py-3.5 px-4 font-bold text-[var(--text-primary)] border-e border-[var(--border-default)]/60 last:border-e-0 min-w-[100px] sm:min-w-[120px] whitespace-normal break-words tabular-nums text-xs sm:text-[13px] leading-relaxed select-none ${
+          className={`py-2.5 px-3.5 font-semibold text-[var(--text-primary)] min-w-[100px] sm:min-w-[120px] whitespace-normal break-words tabular-nums text-xs sm:text-[13px] leading-relaxed select-none ${
             isCentered ? 'text-center' : detectedDir === 'rtl' ? 'text-right' : 'text-left'
           }`}
           style={{
@@ -236,7 +306,7 @@ export const ChatResponseRenderer: React.FC<ChatResponseRendererProps> = ({
       const isCentered = style?.textAlign === 'center';
       return (
         <td
-          className={`py-3.5 px-4 text-[var(--text-secondary)] border-e border-[var(--border-default)]/40 last:border-e-0 align-top leading-relaxed min-w-[100px] sm:min-w-[120px] whitespace-normal break-words tabular-nums text-xs sm:text-[13px] transition-colors ${
+          className={`py-2.5 px-3.5 text-[var(--text-secondary)] align-middle leading-relaxed min-w-[100px] sm:min-w-[120px] whitespace-normal break-words tabular-nums text-xs sm:text-[13px] transition-colors ${
             isCentered ? 'text-center' : detectedDir === 'rtl' ? 'text-right' : 'text-left'
           }`}
           style={{
@@ -244,17 +314,17 @@ export const ChatResponseRenderer: React.FC<ChatResponseRendererProps> = ({
             textAlign: isCentered ? 'center' : detectedDir === 'rtl' ? 'right' : 'left'
           }}
         >
-          {formatChildren(children)}
+          {enhanceTableCellValue(children, () => formatChildren(children))}
         </td>
       );
     },
     ul: ({ children }: any) => (
-      <ul className="list-disc ps-6 pe-4 mb-6 space-y-3 text-[13.5px] sm:text-[14px] text-[var(--text-secondary)] marker:text-[var(--fg-accent)] text-start rtl:text-right ltr:text-left">
+      <ul className="list-disc ps-5 pe-3 mb-4 space-y-2 text-[13.5px] sm:text-[14.5px] text-[var(--text-primary)] marker:text-[var(--text-muted)] text-start rtl:text-right ltr:text-left">
         {children}
       </ul>
     ),
     ol: ({ children }: any) => (
-      <ol className="list-decimal ps-6 pe-4 mb-6 space-y-3 text-[13.5px] sm:text-[14px] text-[var(--text-secondary)] marker:text-[var(--fg-accent)] text-start rtl:text-right ltr:text-left">
+      <ol className="list-decimal ps-5 pe-3 mb-4 space-y-2 text-[13.5px] sm:text-[14.5px] text-[var(--text-primary)] marker:text-[var(--text-muted)] text-start rtl:text-right ltr:text-left">
         {children}
       </ol>
     ),
@@ -263,7 +333,7 @@ export const ChatResponseRenderer: React.FC<ChatResponseRendererProps> = ({
       const isLatinBullet = /^[A-Za-z0-9\s.,:\-_\(\)]+$/.test(childrenStr.trim().slice(0, 30));
       return (
         <li 
-          className="leading-[1.85] text-[13.5px] sm:text-[14px] text-[var(--text-primary)] text-start rtl:text-right ltr:text-left"
+          className="leading-[1.8] text-[13.5px] sm:text-[14.5px] text-[var(--text-primary)] text-start rtl:text-right ltr:text-left"
           dir={isLatinBullet ? 'ltr' : undefined}
           style={{ unicodeBidi: 'isolate' }}
         >
@@ -272,7 +342,7 @@ export const ChatResponseRenderer: React.FC<ChatResponseRendererProps> = ({
       );
     },
     strong: ({ children }: any) => (
-      <strong className="font-bold text-[var(--text-primary)]" style={{ unicodeBidi: 'isolate' }}>
+      <strong className="font-semibold text-[var(--text-primary)]" style={{ unicodeBidi: 'isolate' }}>
         {formatChildren(children)}
       </strong>
     ),
@@ -283,7 +353,7 @@ export const ChatResponseRenderer: React.FC<ChatResponseRendererProps> = ({
         return (
           <code 
             dir="ltr" 
-            className="inline mx-1 px-1.5 py-0.5 rounded-shape-xs bg-[var(--surface-subtle)] border border-[var(--border-default)] text-xs font-mono text-[var(--fg-accent)] font-semibold text-left align-baseline" 
+            className="inline mx-1 px-1.5 py-0.5 rounded-shape-xs bg-[var(--surface-subtle)] border border-[var(--border-default)]/60 text-xs font-mono text-[var(--text-primary)] font-medium text-left align-baseline" 
             style={{ direction: 'ltr', unicodeBidi: 'isolate' }}
             {...props}
           >
@@ -292,7 +362,7 @@ export const ChatResponseRenderer: React.FC<ChatResponseRendererProps> = ({
         );
       }
       return (
-        <div className="my-6 w-full">
+        <div className="my-5 w-full">
           <CodeBlock 
             className={className} 
             dir={detectedDir} 
@@ -318,7 +388,7 @@ export const ChatResponseRenderer: React.FC<ChatResponseRendererProps> = ({
         }
         
         return (
-          <div className="my-6 max-w-full sm:max-w-[500px] w-full rounded-shape-md overflow-hidden border border-[var(--border-default)] shadow-sm bg-[var(--surface-card)]">
+          <div className="my-5 max-w-full sm:max-w-[500px] w-full rounded-shape-md overflow-hidden border border-[var(--border-default)] shadow-sm bg-[var(--surface-card)]">
             <MediaFormatPlayer 
               url={href.split('#')[0]} 
               aspectRatio={aspect as any} 
@@ -331,33 +401,24 @@ export const ChatResponseRenderer: React.FC<ChatResponseRendererProps> = ({
       return <MarkdownLink href={href}>{children}</MarkdownLink>;
     },
     blockquote: ({ children }: any) => <BlockquoteWithActions dir={detectedDir}>{children}</BlockquoteWithActions>,
-    p: ({ children, node }: any) => {
-      const isStreamingActive = isLastMessage && (isGenerating || isStillTyping);
-      const isLastParagraph =
-        node && node.parent && node.parent.children[node.parent.children.length - 1] === node;
+    p: ({ children }: any) => {
       const childrenStr = String(children || '');
       const isLatinParagraph = /^[A-Za-z0-9\s.,:\-_\(\)]+$/.test(childrenStr.trim().slice(0, 30));
 
       return (
         <p 
-          className="mb-5 leading-[1.85] text-[13.5px] sm:text-[14px] text-[var(--text-primary)] text-start rtl:text-right ltr:text-left inline-block w-full font-normal transition-all duration-75"
+          className="mb-4 leading-[1.8] text-[13.5px] sm:text-[14.5px] text-[var(--text-primary)] text-start rtl:text-right ltr:text-left w-full font-normal"
           dir={isLatinParagraph ? 'ltr' : undefined}
           style={{ unicodeBidi: 'isolate' }}
         >
           {formatChildren(children)}
-          {isStreamingActive && isLastParagraph && (
-            <span className="inline-flex items-center gap-1 ms-1.5 align-middle select-none shrink-0 pointer-events-none">
-              <AssistantIcon size={11} isSpinning={true} dir={detectedDir} className="text-accent shrink-0" />
-              <span className="typing-cursor-accent" />
-            </span>
-          )}
         </p>
       );
     }
   }), [detectedDir, msg, theme, isLastMessage, isGenerating, isStillTyping, renderChildrenWithCitations, chatMarkdownComponents]);
 
   return (
-    <div dir={detectedDir} className="w-full text-start rtl:text-right ltr:text-left transition-all leading-relaxed font-sans space-y-6">
+    <div dir={detectedDir} className="w-full text-start rtl:text-right ltr:text-left leading-relaxed font-sans space-y-4">
       <Markdown
         remarkPlugins={[remarkGfm]}
         components={markdownComponents}

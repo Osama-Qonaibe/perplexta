@@ -50,7 +50,7 @@ import { generateAuthMd } from './utils/auth-md.js';
 import { paymentMiddlewareFromConfig } from '@x402/express';
 import wellKnownRouter from './routes/well-known.js';
 
-import { pool, ledgerPool, externalPool, securityPool, mediaPool, getDatabasePool, getPoolMetrics, isDatabaseConnected } from './db/index.js';
+import { pool, ledgerPool, externalPool, securityPool, mediaPool, getDatabasePool, getPoolMetrics, isDatabaseConnected, isPoolAvailable } from './db/index.js';
 import QueryStream from 'pg-query-stream';
 import { UserFile, DepositRequest, ToolOrchestrator } from './db/types.js';
 import { getCachedRouteSeo, getCachedAllActiveRouteSeo, getCachedRouteSeoMetadata, getCachedSeoMetadata, upsertSeoMetadata, getAllSeoMetadata, getCachedOgPreview } from './db/queries.js';
@@ -480,7 +480,7 @@ app.use((req, res, next) => {
 
 app.use((req, res, next) => {
   const isApiOrUploads = req.path.startsWith('/api') || req.path.startsWith('/uploads');
-  const hasStaticExtension = /\.((js|css|json|webmanifest|ico|png|jpg|jpeg|gif|svg|woff2?|ttf|otf|mp4|webm|mp3|wav))$/i.test(req.path);
+  const hasStaticExtension = /\.((js|css|json|webmanifest|ico|png|jpg|jpeg|gif|svg|woff2?|ttf|otf|mp4|webm|mp3|wav|wasm))$/i.test(req.path);
   
   if (!isApiOrUploads && !hasStaticExtension) {
     res.setHeader('Link', '</.well-known/api-catalog>; rel="api-catalog", </.well-known/mcp/server-card.json>; rel="service-desc", </.well-known/acp.json>; rel="acp", </.well-known/oauth-authorization-server>; rel="oauth-authorization-server", </.well-known/oauth-protected-resource>; rel="oauth-protected-resource", </auth.md>; rel="service-doc"');
@@ -843,6 +843,23 @@ app.get('/version.json', (req, res) => {
   });
 });
 
+app.get(/\.wasm$/, (req, res) => {
+  const fileName = path.basename(req.path);
+  const candidates = [
+    path.join(process.cwd(), 'public', fileName),
+    path.join(process.cwd(), 'public', 'assets', fileName),
+    path.join(process.cwd(), 'node_modules', 'sql.js', 'dist', fileName)
+  ];
+  for (const cand of candidates) {
+    if (fs.existsSync(cand)) {
+      res.type('application/wasm');
+      res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');
+      return res.sendFile(cand);
+    }
+  }
+  res.status(404).end();
+});
+
 // ===== AGENT DISCOVERABILITY: High-Priority RFC / llms.txt standard (served as text/markdown before static assets) =====
 const CANONICAL_LLMS_TXT = `# PERPLEXTA Platform
 
@@ -907,7 +924,7 @@ app.use(express.static('public', {
   setHeaders: (res, filePath) => {
     if (filePath.endsWith('sw.js') || filePath.includes('workbox-')) {
       res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
-    } else if (/\.(mp4|webm|mov|ogg|mp3|wav|png|jpg|jpeg|gif|svg|webp|avif|ico|woff2?|ttf|otf|eot|js|css)$/i.test(filePath)) {
+    } else if (/\.(mp4|webm|mov|ogg|mp3|wav|png|jpg|jpeg|gif|svg|webp|avif|ico|woff2?|ttf|otf|eot|js|css|wasm)$/i.test(filePath)) {
       res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');
     }
   }
@@ -1020,7 +1037,8 @@ const mediaMimeTypes: Record<string, string> = {
   '.aac': 'audio/aac',
   '.flac': 'audio/flac',
   '.opus': 'audio/opus',
-  '.wma': 'audio/x-ms-wma'
+  '.wma': 'audio/x-ms-wma',
+  '.wasm': 'application/wasm'
 };
 
 async function checkIsPublicFile(filename: string): Promise<boolean> {
@@ -1530,7 +1548,9 @@ app.use('/uploads', async (req: express.Request, res: express.Response, next: ex
 
       try {
         const filePromise = pool.query('SELECT id FROM user_files WHERE user_id = $1 AND file_url = $2', [user.id, filename]) as Promise<{ rows: { id: UserFile['id'] }[] }>;
-        const proofPromise = (ledgerPool || pool).query('SELECT id FROM deposit_requests WHERE user_id = $1 AND proof_url LIKE $2', [user.id, `%${filename}%`]) as Promise<{ rows: { id: DepositRequest['id'] }[] }>;
+        const proofPromise = isPoolAvailable('ledger')
+          ? ledgerPool.query('SELECT id FROM deposit_requests WHERE user_id = $1 AND proof_url LIKE $2', [user.id, `%${filename}%`]) as Promise<{ rows: { id: DepositRequest['id'] }[] }>
+          : Promise.resolve({ rows: [] });
         const publicPromise = checkIsPublicFile(filename);
         const [isUserFileRes, isProofRes, isPublic] = await Promise.all([filePromise, proofPromise, publicPromise]);
         
@@ -1674,7 +1694,7 @@ app.get('/api/health', async (req, res) => {
       await pool.query('SELECT 1');
       isCoreHealthy = true;
     }
-    if (ledgerPool) {
+    if (isPoolAvailable('ledger')) {
       await ledgerPool.query('SELECT 1');
       isLedgerHealthy = true;
     } else {
@@ -2900,7 +2920,7 @@ if (process.env.NODE_ENV === "production") {
         res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
         res.setHeader('Pragma', 'no-cache');
         res.setHeader('Expires', '0');
-      } else if (/\.(js|css|woff2?|ttf|otf|eot|png|jpg|jpeg|gif|svg|ico|webp|avif|mp4|webm|ogv)$/i.test(filePath) || filePath.includes('/assets/')) {
+      } else if (/\.(js|css|woff2?|ttf|otf|eot|png|jpg|jpeg|gif|svg|ico|webp|avif|mp4|webm|ogv|wasm)$/i.test(filePath) || filePath.includes('/assets/')) {
         res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');
       }
     }
@@ -2923,7 +2943,7 @@ app.use(async (req: express.Request, res: express.Response, next: express.NextFu
     return next();
   }
   const isApiOrUploads = req.path.startsWith('/api') || req.path.startsWith('/uploads') || req.originalUrl.startsWith('/api') || req.originalUrl.startsWith('/uploads');
-  const hasStaticExtension = /\.((js|css|json|webmanifest|ico|png|jpg|jpeg|gif|svg|woff2?|ttf|otf|mp4|webm|mp3|wav))$/i.test(req.path);
+  const hasStaticExtension = /\.((js|css|json|webmanifest|ico|png|jpg|jpeg|gif|svg|woff2?|ttf|otf|mp4|webm|mp3|wav|wasm))$/i.test(req.path);
   
   const isDevVitePath = process.env.NODE_ENV !== 'production' && (
     req.path.startsWith('/@') ||

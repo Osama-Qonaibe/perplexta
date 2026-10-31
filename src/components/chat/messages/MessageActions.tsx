@@ -1,11 +1,12 @@
 import React, { useContext } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { ThumbsUp, ThumbsDown, Pin, PinOff, Volume2, Square, RefreshCw, Copy, Download, Zap, MoreHorizontal, Bookmark, ShieldAlert, Trash2 } from 'lucide-react';
+import { ThumbsUp, ThumbsDown, Pin, PinOff, Volume2, Square, RefreshCw, Copy, Download, MoreHorizontal, Bookmark, ShieldAlert, Trash2 } from 'lucide-react';
 import { Message } from '../types';
 import { toast } from '@/design-system';
 import { ArtifactContext } from '../../../context/ArtifactContext';
 import { MessageFeedbackModal } from './MessageFeedbackModal';
 import { ContentSafetyReportModal } from './ContentSafetyReportModal';
+import { CitationRow, getCleanUrl, getFavicon, getPlatformBrand } from '../renderers/CitationsList';
 
 interface MessageActionsProps {
   msg: Message;
@@ -16,6 +17,7 @@ interface MessageActionsProps {
   playingTTSId: string | number | null;
   openMenuId: string | null;
   token: string | null;
+  query?: string;
   setOpenMenuId: (id: string | null) => void;
   handleFeedback: (messageId: number, feedback: number, details?: any) => void;
   handlePinMessage: (messageId: number, isPinned: boolean) => void;
@@ -87,6 +89,7 @@ export const MessageActions: React.FC<MessageActionsProps> = ({
   playingTTSId,
   openMenuId,
   token,
+  query,
   setOpenMenuId,
   handleFeedback,
   handlePinMessage,
@@ -101,6 +104,7 @@ export const MessageActions: React.FC<MessageActionsProps> = ({
   const [feedbackModalType, setFeedbackModalType] = React.useState<'like' | 'dislike' | null>(null);
   const [isSafetyReportModalOpen, setIsSafetyReportModalOpen] = React.useState(false);
   const [localMenuOpen, setLocalMenuOpen] = React.useState(false);
+  const [isSourcesOpen, setIsSourcesOpen] = React.useState(false);
   const menuRef = React.useRef<HTMLDivElement>(null);
   const currentTTSId = msg.client_id || msg.id || idx;
   const isPlayingCurrentTTS = playingTTSId === currentTTSId;
@@ -390,17 +394,80 @@ export const MessageActions: React.FC<MessageActionsProps> = ({
           </div>
         </div>
 
-        {/* Secondary Meta Information (Generation Time) - Right side */}
+        {/* Stacked Sources Counter (matching reference video: overlapping favicons + "X sources") */}
         <div className="flex items-center gap-2">
-          {/* Execution Time */}
-          {msg.generation_time !== undefined && (
-            <div className="flex items-center gap-1 px-1 h-7 text-[var(--text-muted)] text-[11px] font-mono select-none shrink-0 border-0 bg-transparent">
-              <Zap size={11} className="text-accent opacity-80" />
-              <span>{Number(msg.generation_time).toFixed(1)}s</span>
-            </div>
+          {msg.citations && msg.citations.length > 0 && (
+            <button
+              type="button"
+              onClick={() => setIsSourcesOpen(!isSourcesOpen)}
+              className={`h-8 px-2.5 rounded-shape-full flex items-center gap-2 border transition-colors cursor-pointer touch-target-44 box-border relative before:absolute before:-inset-1.5 before:content-[''] ${
+                isSourcesOpen
+                  ? 'bg-[var(--surface-subtle)] border-[var(--border-default)] text-[var(--text-primary)]'
+                  : 'bg-transparent hover:bg-[var(--surface-subtle)]/60 border-transparent hover:border-[var(--border-default)]/60 text-[var(--text-muted)] hover:text-[var(--text-primary)]'
+              }`}
+              title={dir === 'rtl' ? 'عرض المصادر الموثقة' : 'View verified sources'}
+            >
+              <div className="flex items-center -space-x-1.5 rtl:space-x-reverse">
+                {msg.citations.slice(0, 3).map((cite, cIdx) => {
+                  const rawUrl = cite.url || (cite as any).link || '';
+                  const cleanUrl = getCleanUrl(rawUrl);
+                  const brand = getPlatformBrand(cleanUrl);
+                  return (
+                    <div
+                      key={`stack-fav-${cIdx}`}
+                      className="w-4 h-4 rounded-shape-full bg-[var(--surface-card)] border border-[var(--border-default)] flex items-center justify-center overflow-hidden shrink-0"
+                      style={{ color: brand ? brand.color : 'inherit' }}
+                    >
+                      {brand ? (
+                        brand.icon('w-2.5 h-2.5')
+                      ) : (
+                        <img
+                          src={getFavicon(cleanUrl)}
+                          alt=""
+                          className="w-2.5 h-2.5 object-contain"
+                          onError={(e) => {
+                            (e.target as HTMLImageElement).src = 'https://www.google.com/s2/favicons?domain=google.com&sz=32';
+                          }}
+                        />
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+              <span className="text-xs font-sans font-medium tabular-nums">
+                {msg.citations.length} {dir === 'rtl' ? 'مصادر' : 'sources'}
+              </span>
+            </button>
           )}
         </div>
       </motion.div>
+
+      {/* Expandable Sources Drawer when user clicks the Stacked Sources Counter */}
+      <AnimatePresence initial={false}>
+        {isSourcesOpen && msg.citations && msg.citations.length > 0 && (
+          <motion.div
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: 'auto', opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            transition={{ duration: 0.2, ease: [0.16, 1, 0.3, 1] }}
+            className="overflow-hidden mt-2"
+          >
+            <div className="p-2.5 rounded-shape-md border border-[var(--border-default)]/55 bg-[var(--surface-subtle)]/30 flex flex-col gap-0.5">
+              {msg.citations.map((cite, cIdx) => (
+                <CitationRow
+                  key={`action-cit-${cite.url || cIdx}-${cIdx}`}
+                  cite={cite}
+                  idx={cIdx}
+                  dir={dir}
+                  getCleanUrl={getCleanUrl}
+                  getFavicon={getFavicon}
+                  query={query}
+                />
+              ))}
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
     {feedbackModalType && (
       <MessageFeedbackModal

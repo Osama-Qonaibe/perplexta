@@ -435,69 +435,23 @@ const ChatPage: React.FC = () => {
     }
   };
 
-  // Align view smoothly to center the active prompt and start of response when generation begins across ALL tools without exception
+  // Natural single-shot scroll when a new message is sent: brings the new user prompt and assistant
+  // status indicator smoothly into view without jumping to the top or creating empty blank space.
   useEffect(() => {
     if (messages.length > 0 && isGenerating) {
       isUserScrolledUpRef.current = false;
-      const lastIdx = messages.length - 1;
-
       const timer = setTimeout(() => {
-        const promptEl = document.getElementById(`message-${lastIdx - 1}`);
-        const activeMsgEl = document.getElementById(`message-${lastIdx}`);
-        const targetEl = promptEl || activeMsgEl;
-
-        if (targetEl) {
-          // Center prompt & response start in viewport across ALL tools without exception
-          targetEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
-        }
-      }, 30);
+        const container = scrollViewportRef.current;
+        if (!container) return;
+        container.scrollTo({
+          top: container.scrollHeight,
+          behavior: 'smooth'
+        });
+      }, 40);
 
       return () => clearTimeout(timer);
     }
   }, [messages.length, isGenerating]);
-
-  // Keep view aligned calmly and progressively downward during typewriter streaming without jitter or skipping the header
-  useEffect(() => {
-    if (!scrollViewportRef.current) return;
-    const contentEl = scrollViewportRef.current.firstElementChild;
-    if (!contentEl) return;
-
-    let rafId: number | null = null;
-
-    const smoothScrollStep = () => {
-      if (!scrollViewportRef.current || isUserScrolledUpRef.current || !isGenerating) {
-        return;
-      }
-      const container = scrollViewportRef.current;
-      const desiredScrollTop = container.scrollHeight - container.clientHeight;
-      const currentScrollTop = container.scrollTop;
-      const distance = desiredScrollTop - currentScrollTop;
-
-      if (distance > 0.5) {
-        // Serene, momentum-preserving smooth descent without abrupt jumps, strictly respecting the top header limit
-        const step = Math.min(distance, Math.max(1.2, distance * 0.18));
-        container.scrollTop = currentScrollTop + step;
-
-        if (distance > 2) {
-          rafId = requestAnimationFrame(smoothScrollStep);
-        }
-      }
-    };
-
-    const observer = new ResizeObserver(() => {
-      if (isGenerating && !isUserScrolledUpRef.current) {
-        if (rafId) cancelAnimationFrame(rafId);
-        rafId = requestAnimationFrame(smoothScrollStep);
-      }
-    });
-
-    observer.observe(contentEl);
-
-    return () => {
-      observer.disconnect();
-      if (rafId) cancelAnimationFrame(rafId);
-    };
-  }, [isGenerating]);
 
   // Dispatch Header State Sync for Main Header Buttons
   useEffect(() => {
@@ -910,7 +864,7 @@ const ChatPage: React.FC = () => {
                 <div className={`hidden sm:flex ${themeConfig.visitor.shell}`}>
                   <div className={themeConfig.visitor.content}>
                     <div className="w-full flex-1 flex flex-col justify-center items-center py-6">
-                      <div className={`${contentMaxWidthClass} ${contentPaddingClass} mb-4 ${dir === 'rtl' ? 'text-right' : 'text-left'} select-none`}>
+                      <div className={`${contentMaxWidthClass} ${contentPaddingClass} mb-6 text-center select-none`}>
                         <h1 className="text-2xl md:text-3xl font-black text-[var(--text-primary)] tracking-tight font-sans leading-snug">
                           {dir === 'rtl' ? 'ما الذي ترغب في معرفته أو تحليله اليوم؟' : 'What do you want to know?'}
                         </h1>
@@ -932,7 +886,7 @@ const ChatPage: React.FC = () => {
                 <div className="flex sm:hidden flex-col flex-1 w-full h-full min-h-0 justify-between overflow-hidden">
                   <div className="flex-1 flex flex-col items-center justify-center px-6 select-none">
                     <h1 className="text-xl font-extrabold text-[var(--text-primary)] tracking-tight font-sans leading-snug text-center">
-                      {dir === 'rtl' ? 'ما الذي تريد معرفته اليوم؟' : 'What to explore today?'}
+                      {dir === 'rtl' ? 'ما الذي ترغب في معرفته أو تحليله اليوم؟' : 'What do you want to know?'}
                     </h1>
                   </div>
 
@@ -1093,28 +1047,7 @@ const ChatPage: React.FC = () => {
                   </div>
                 </div>
 
-                {/* Sovereign Foreground Layer (طبقة أمامية عائمة حقيقية z-50): Scroll to Bottom Arrow Button */}
-                <AnimatePresence>
-                  {showScrollBottom && (
-                    <motion.div
-                      initial={{ opacity: 0, y: 12, scale: 0.8 }} 
-                      animate={{ opacity: 1, y: 0, scale: 1 }} 
-                      exit={{ opacity: 0, y: 12, scale: 0.8 }} 
-                      transition={{ duration: 0.18, ease: [0.16, 1, 0.3, 1] }}
-                      className="absolute bottom-28 sm:bottom-32 left-1/2 -translate-x-1/2 z-50 pointer-events-auto"
-                    >
-                      <button
-                        type="button"
-                        onClick={() => scrollToBottom()}
-                        className="w-9 h-9 rounded-shape-sm bg-[var(--surface-card)] hover:bg-[var(--surface-subtle)] text-[var(--text-primary)] hover:text-[var(--fg-accent)] border border-[var(--border-default)] hover:border-[var(--border-accent)]/80 shadow-md transition-all duration-fast cursor-pointer flex items-center justify-center group active:scale-95 touch-target-44"
-                        title={dir === 'rtl' ? 'النزول لآخر سجل المحادثة' : 'Scroll to latest message'}
-                        aria-label={dir === 'rtl' ? 'النزول لآخر سجل المحادثة' : 'Scroll to latest message'}
-                      >
-                        <ArrowDown size={19} className="stroke-[2.5] text-[var(--text-primary)] group-hover:text-[var(--fg-accent)] transition-colors group-hover:translate-y-0.5 transition-transform" />
-                      </button>
-                    </motion.div>
-                  )}
-                </AnimatePresence>
+                {/* Input Area */}
 
                 {/* Input Area */}
                 <div className="w-full bg-[var(--surface-page)] relative z-20 shrink-0 sticky bottom-0 backdrop-blur-md transition-all duration-base">

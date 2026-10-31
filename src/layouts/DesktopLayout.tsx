@@ -18,9 +18,10 @@ export const DesktopLayout: React.FC = () => {
 
   const isViralbookRoute = location.pathname.startsWith('/viralbook') || location.pathname.startsWith('/bulletin') || location.pathname.startsWith('/reels') || location.pathname.startsWith('/p/') || location.pathname.startsWith('/post/');
   const isStudioRoute = location.pathname.startsWith('/app') || location.pathname.startsWith('/image-studio') || location.pathname.startsWith('/audio-studio');
+  const isTemplateDetailRoute = location.pathname.startsWith('/studio/template/') || location.pathname.startsWith('/template/');
   const isCreatorRoute = location.pathname.startsWith('/creator/');
   const isLandingRoute = location.pathname === '/' || location.pathname === '/overview' || location.pathname === '/welcome' || location.pathname === '/docs/overview';
-  const isFullSovereignView = isViralbookRoute || isStudioRoute || isCreatorRoute || isLandingRoute || isFullscreen;
+  const isFullSovereignView = isViralbookRoute || isStudioRoute || isTemplateDetailRoute || isCreatorRoute || isLandingRoute || isFullscreen;
   const [isLgScreen, setIsLgScreen] = React.useState(() => typeof window !== 'undefined' ? window.innerWidth >= 1024 : true);
 
   React.useEffect(() => {

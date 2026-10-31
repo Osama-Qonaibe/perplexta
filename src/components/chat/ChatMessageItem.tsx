@@ -90,12 +90,12 @@ export const ChatMessageItem: React.FC<ChatMessageItemProps> = React.memo(({
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       transition={{
-        duration: 0.25,
+        duration: 0.2,
         ease: [0.2, 0, 0, 1]
       }}
-      className={`w-full ${msg.role === 'user' ? 'user-message-anchor' : ''}`}
+      className={`w-full ${msg.role === 'user' ? 'user-message-anchor scroll-mt-6' : ''}`}
     >
-      <div className={`w-full min-h-[44px] ${msg.role === 'user' ? 'bg-transparent' : 'bg-transparent'} px-0`}>
+      <div className="w-full min-h-[36px] bg-transparent px-0">
         {msg.role === 'user' ? (
           <UserMessageBubble
             msg={msg}

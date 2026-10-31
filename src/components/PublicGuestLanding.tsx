@@ -590,27 +590,27 @@ export const PublicGuestLanding: React.FC = () => {
   return (
     <div className="w-full">
       {/* 1. MOBILE COMPACT GATEWAY (Forced via Tailwind CSS md:hidden for viewports < 768px) */}
-      <div className="block md:hidden w-full space-y-4 py-2">
-        {/* Compact Mobile Gateway Hero */}
-        <div className="p-5 rounded-shape-lg bg-[var(--surface-card)] border border-[var(--border-default)] shadow-xs space-y-4 relative overflow-hidden">
+      <div className="block md:hidden w-full py-2 px-3">
+        {/* Compact Mobile Gateway Hero matching exact sovereign visual identity */}
+        <div className="p-4 rounded-shape-md bg-[var(--surface-card)] border border-[var(--border-default)] shadow-xs space-y-3 relative overflow-hidden text-center">
           <div className="absolute -top-12 -end-12 w-48 h-48 bg-[color-mix(in_oklab,var(--accent)_12%,transparent)] rounded-full blur-2xl pointer-events-none" />
           
-          <div className="flex items-center gap-2 text-xs font-black text-[var(--accent)]">
-            <Sparkles size={14} />
-            <span>PERPLEXTA Mobile • الاستوديو الذكي</span>
+          <div className="inline-flex items-center justify-center gap-1.5 px-3 py-1 rounded-full bg-[var(--surface-subtle)] border border-[var(--border-default)] text-[11px] font-bold text-[var(--accent)] mx-auto">
+            <span className="w-1.5 h-1.5 rounded-full bg-[var(--accent)] animate-pulse" />
+            <span>{isAr ? 'منصة بيربليكستا للمحمول' : 'Perplexta Mobile Workspace'}</span>
           </div>
 
-          <div className="space-y-1.5">
-            <h1 className="text-xl sm:text-2xl font-black text-[var(--text-primary)] leading-snug">
-              {isAr ? 'منصة التحليل والتصميم بالذكاء الاصطناعي' : 'Enterprise AI & Creative Mobile Gateway'}
+          <div className="space-y-1">
+            <h1 className="text-base sm:text-lg font-black text-[var(--text-primary)] leading-snug">
+              {isAr ? 'منصة الذكاء الاصطناعي والأبحاث المتقدمة' : 'Enterprise AI & Creative Mobile Gateway'}
             </h1>
-            <p className="text-xs text-[var(--text-secondary)] leading-relaxed">
-              {isAr ? 'وصول سليم وخفيف لتوليد المحتوى، المحادثات الذكية، واستكشاف التغذية البصرية.' : 'Instant, lightweight mobile access to AI chat, visual canvas, and ViralBook feed.'}
+            <p className="text-[11px] text-[var(--text-secondary)] leading-relaxed">
+              {isAr ? 'وصول مخصص وسريع للإنتاج العلمي، المحادثات الذكية، توليد الصور، وإدارة الحملات الإعلانية.' : 'Instant, lightweight mobile access to AI chat, visual canvas, and ViralBook feed.'}
             </p>
           </div>
 
           {/* Quick Primary CTAs Stack */}
-          <div className="grid grid-cols-1 gap-2.5 pt-2">
+          <div className="grid grid-cols-1 gap-2 pt-1">
             <button
               type="button"
               onClick={() => setIsAuthModalOpen(true)}
@@ -622,41 +622,56 @@ export const PublicGuestLanding: React.FC = () => {
 
             <button
               type="button"
-              onClick={() => navigate('/chat')}
-              className="h-10 px-4 rounded-shape-sm bg-[var(--surface-subtle)] hover:bg-[var(--surface-card)] text-[var(--text-primary)] border border-[var(--border-default)] font-bold text-xs inline-flex items-center justify-center gap-2 shadow-2xs active:scale-95 transition-all cursor-pointer w-full"
-            >
-              <Zap size={15} className="text-[var(--accent)]" />
-              <span>{isAr ? 'المحادثة والذكاء الاصطناعي' : 'AI Assistant Chat'}</span>
-            </button>
-
-            <button
-              type="button"
               onClick={() => navigate('/viralbook')}
               className="h-10 px-4 rounded-shape-sm bg-[var(--surface-subtle)] hover:bg-[var(--surface-card)] text-[var(--text-primary)] border border-[var(--border-default)] font-bold text-xs inline-flex items-center justify-center gap-2 shadow-2xs active:scale-95 transition-all cursor-pointer w-full"
             >
               <Globe size={15} className="text-[var(--fg-success)]" />
-              <span>{isAr ? 'تغذية مجتمع المبدعين' : 'ViralBook Feed'}</span>
+              <span>{isAr ? 'فيرال بوك' : 'ViralBook Feed'}</span>
             </button>
           </div>
 
           {/* Mobile Highlights 2x2 Grid */}
-          <div className="grid grid-cols-2 gap-2 pt-3 border-t border-[var(--border-default)] text-[11px] font-bold text-[var(--text-secondary)]">
-            <div className="flex items-center gap-2 p-2 rounded-shape-xs bg-[var(--surface-subtle)] border border-[var(--border-default)]">
-              <span className="w-2 h-2 rounded-shape-full bg-[var(--accent)]" />
-              <span>{isAr ? 'توليد المحتوى والبوسترات' : 'Poster & Graphic AI'}</span>
-            </div>
-            <div className="flex items-center gap-2 p-2 rounded-shape-xs bg-[var(--surface-subtle)] border border-[var(--border-default)]">
-              <span className="w-2 h-2 rounded-shape-full bg-[var(--fg-success)]" />
-              <span>{isAr ? 'التحليل الأكاديمي المتقدم' : 'Deep Analysis Engine'}</span>
-            </div>
-            <div className="flex items-center gap-2 p-2 rounded-shape-xs bg-[var(--surface-subtle)] border border-[var(--border-default)]">
-              <span className="w-2 h-2 rounded-shape-full bg-[var(--fg-warning)]" />
-              <span>{isAr ? 'المجتمع واستكشاف الريلز' : 'ViralBook Community'}</span>
-            </div>
-            <div className="flex items-center gap-2 p-2 rounded-shape-xs bg-[var(--surface-subtle)] border border-[var(--border-default)]">
-              <span className="w-2 h-2 rounded-shape-full bg-[var(--fg-info)]" />
-              <span>{isAr ? 'الحفظ والعمل السحابي' : 'Cloud Sync & Memory'}</span>
-            </div>
+          <div className="grid grid-cols-2 gap-2 pt-2 border-t border-[var(--border-default)] text-[11px] font-bold text-[var(--text-secondary)]">
+            <button
+              type="button"
+              onClick={() => navigate('/image-studio')}
+              className="flex items-center justify-center gap-1.5 p-2 rounded-shape-xs bg-[var(--surface-subtle)] border border-[var(--border-default)] hover:border-[var(--accent)]/50 transition-colors cursor-pointer"
+            >
+              <span className="w-2 h-2 rounded-full bg-[var(--accent)]" />
+              <span>{isAr ? 'توليد الصور' : 'Image Generation'}</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => navigate('/chat')}
+              className="flex items-center justify-center gap-1.5 p-2 rounded-shape-xs bg-[var(--surface-subtle)] border border-[var(--border-default)] hover:border-[var(--fg-success)]/50 transition-colors cursor-pointer"
+            >
+              <span className="w-2 h-2 rounded-full bg-[var(--fg-success)]" />
+              <span>{isAr ? 'باحث أكاديمي' : 'Academic Researcher'}</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => navigate('/ads-management')}
+              className="flex items-center justify-center gap-1.5 p-2 rounded-shape-xs bg-[var(--surface-subtle)] border border-[var(--border-default)] hover:border-[var(--fg-warning)]/50 transition-colors cursor-pointer"
+            >
+              <span className="w-2 h-2 rounded-full bg-[var(--fg-warning)]" />
+              <span>{isAr ? 'مساعد الإعلانات' : 'Ad Assistant'}</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => navigate('/chat')}
+              className="flex items-center justify-center gap-1.5 p-2 rounded-shape-xs bg-[var(--surface-subtle)] border border-[var(--border-default)] hover:border-[var(--fg-info)]/50 transition-colors cursor-pointer"
+            >
+              <span className="w-2 h-2 rounded-full bg-[var(--fg-info)]" />
+              <span>{isAr ? 'المحادثات الذكية' : 'Smart AI Chat'}</span>
+            </button>
+          </div>
+
+          {/* Footer copyright note */}
+          <div className="text-center pt-2 border-t border-[var(--border-default)]/60 text-[10px] text-[var(--text-muted)] font-mono">
+            © 2026 بيربليكستا. جميع الحقوق محفوظة.
           </div>
         </div>
       </div>

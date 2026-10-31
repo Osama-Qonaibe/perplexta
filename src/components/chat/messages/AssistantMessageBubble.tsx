@@ -1,8 +1,8 @@
-import React from 'react';
+import React, { useState, useMemo } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import Markdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
-import { Pin } from 'lucide-react';
+import { Pin, MessageSquare, Globe, Image as ImageIcon } from 'lucide-react';
 import { Message } from '../types';
 import { stripProtocolMarkers, extractFollowUpsClient } from '../../../utils/chatUtils';
 import { formatExactTimestamp } from '../../../utils/adminUtils';
@@ -10,6 +10,7 @@ import { ThinkingSteps } from '../renderers/ThinkingSteps';
 import { extractThinking } from '../../../utils/thinkingParser';
 import { FollowUps } from '../renderers/FollowUps';
 import { removeArtifactTags } from '../../../utils/artifactParser';
+import { CitationRow, getCleanUrl, getFavicon } from '../renderers/CitationsList';
 import {
   QuotaExceededCard,
   InsufficientFundsCard,
@@ -134,6 +135,32 @@ export const AssistantMessageBubble: React.FC<AssistantMessageBubbleProps> = ({
   const rawTrace = thinkingParsed.thinkingContent || (msg.thinking_steps && msg.thinking_steps.find((s: any) => s.is_raw_trace)?.step);
   const cleanAnswer = thinkingParsed.cleanContent;
 
+  // Active Multimodal View Tab ('answer' | 'links' | 'images')
+  const [activeTab, setActiveTab] = useState<'answer' | 'links' | 'images'>('answer');
+
+  // Extract images from markdown content
+  const contentImages = useMemo(() => {
+    const imgs: string[] = [];
+    const mdRegex = /!\[.*?\]\((https?:\/\/[^\s)]+)\)/g;
+    let match;
+    while ((match = mdRegex.exec(msg.content || '')) !== null) {
+      if (match[1]) imgs.push(match[1]);
+    }
+    return imgs;
+  }, [msg.content]);
+
+  // Combine citation preview images + markdown content images
+  const allImages = useMemo(() => {
+    const fromCitations = (msg.citations || [])
+      .map(c => c.ogImage)
+      .filter((img): img is string => Boolean(img && img.startsWith('http')));
+    return Array.from(new Set([...contentImages, ...fromCitations]));
+  }, [contentImages, msg.citations]);
+
+  const hasCitations = Boolean(msg.citations && msg.citations.length > 0);
+  const hasImages = allImages.length > 0;
+  const showMultimodalTabs = (hasCitations || hasImages) && msg.tool !== 'image' && msg.tool !== 'video';
+
   // 1. Thinking Phase: actively generating and currently reasoning or waiting for response stream
   const isThinkingPhase = isGenerating && isLastMessage && (
     thinkingParsed.isThinkingActive || 
@@ -161,36 +188,10 @@ export const AssistantMessageBubble: React.FC<AssistantMessageBubbleProps> = ({
 
       {/* Seamless Integrated Assistant Response Container */}
       <div 
-        className={`relative ${['image', 'video'].includes(msg.tool || '') ? 'p-0 bg-transparent border-none shadow-none w-full max-w-full sm:max-w-lg' : 'w-full px-0 py-1 sm:py-2 bg-transparent border-none shadow-none space-y-6'} text-[var(--text-primary)] transition-all duration-fast text-start max-w-none text-[13.5px] sm:text-[14px] leading-relaxed tracking-tight`}
+        className={`relative ${['image', 'video'].includes(msg.tool || '') ? 'p-0 bg-transparent border-none shadow-none w-full max-w-full sm:max-w-lg' : 'w-full px-0 py-0.5 bg-transparent border-none shadow-none space-y-2.5'} text-[var(--text-primary)] transition-all duration-fast text-start max-w-none text-[13.5px] sm:text-[14.5px] leading-relaxed tracking-normal`}
       >
-        {/* Model Badge Header */}
-        <div className={`flex items-center justify-between gap-2.5 select-none ${['image', 'video'].includes(msg.tool || '') ? 'mb-2 px-1' : 'mb-3 pb-1.5'}`}>
-          <div className="flex items-center gap-2">
-            <div className="relative flex items-center justify-center shrink-0 w-[26px] h-[26px]">
-              <Logo size={20} fallbackType="cpu" shape="circle" />
-              <CognitiveOrbitRing
-                isSpinning={isWritingPhase || (isGenerating && isLastMessage)}
-                dir={dir}
-                size={28}
-                radius={11.5}
-                strokeWidth={1.5}
-                strokeDasharray="4.5 2.5"
-              />
-            </div>
-            <span className="text-xs font-bold text-[var(--text-primary)] font-sans tracking-tight">
-              {displayName}
-            </span>
-          </div>
-          
-          <div className="flex items-center gap-1.5 bg-[var(--surface-subtle)] px-2 py-0.5 rounded-full border border-[var(--border-default)] shadow-2xs">
-            <span className="w-1.5 h-1.5 rounded-full bg-[var(--fg-accent)] animate-pulse" />
-            {ToolIcon && <ToolIcon size={10} className="text-[var(--fg-accent)] shrink-0" />}
-            <span className="text-[10px] font-bold text-[var(--fg-accent)] tracking-wide font-sans">{toolDetails.label}</span>
-          </div>
-        </div>
-
-        {/* Unified Professional Thinking Steps */}
-        <div className="mb-2.5 select-none" id="assistant-thinking-block">
+        {/* Minimal Poised Working / Finished Timer Header */}
+        <div className="mb-1 select-none" id="assistant-thinking-block">
           <ThinkingSteps
             steps={isGenerating && isLastMessage ? msg.thinking_steps : msg.thinking_steps?.map((s) => ({ ...s, status: 'completed' as const }))}
             rawThinking={rawTrace}
@@ -252,7 +253,6 @@ export const AssistantMessageBubble: React.FC<AssistantMessageBubbleProps> = ({
             <ProductionSuite content={stripProtocolMarkers(msg.content)} dir={dir} theme={theme} />
           ) : (
             (() => {
-              const thinkingParsed = extractThinking(msg.content);
               const cleanAnswer = thinkingParsed.cleanContent;
 
               if (thinkingParsed.isThinkingActive && !cleanAnswer) {
@@ -278,6 +278,30 @@ export const AssistantMessageBubble: React.FC<AssistantMessageBubbleProps> = ({
             })()
           )}
 
+          {/* Action Toolbar + Stacked Sources Counter */}
+          <AnimatePresence mode="wait">
+            {(!isGenerating || !isLastMessage) && msg.role === 'assistant' && (
+              <MessageActions
+                msg={msg}
+                idx={idx}
+                dir={dir}
+                isGenerating={isGenerating}
+                isLastMessage={isLastMessage}
+                playingTTSId={playingTTSId}
+                openMenuId={openMenuId}
+                token={token}
+                query={messages.slice(0, idx).reverse().find((m) => m.role === 'user')?.content || ''}
+                setOpenMenuId={setOpenMenuId}
+                handleFeedback={handleFeedback}
+                handlePinMessage={handlePinMessage}
+                handleTTS={handleTTS}
+                handleRegenerate={handleRegenerate}
+                onDeleteMessage={onDeleteMessage}
+              />
+            )}
+          </AnimatePresence>
+
+          {/* Quiet Borderless Follow-Up Rows */}
           {(() => {
             let messageFollowUps =
               msg.follow_ups && msg.follow_ups.length > 0
@@ -338,10 +362,10 @@ export const AssistantMessageBubble: React.FC<AssistantMessageBubbleProps> = ({
                 {(!isGenerating || !isLastMessage) && hasFollowUps && (
                   <motion.div
                     key={`follow-ups-${idx}-${msg.id || idx}`}
-                    initial={{ opacity: 0, y: 3, filter: 'blur(2px)' }}
-                    animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
-                    exit={{ opacity: 0, filter: 'blur(2px)' }}
-                    transition={{ duration: 0.15, ease: 'easeOut' }}
+                    initial={{ opacity: 0, y: 3 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0 }}
+                    transition={{ duration: 0.18, ease: 'easeOut' }}
                   >
                     <FollowUps followUps={messageFollowUps} onSelect={(q) => handleSendOrStop(q)} dir={dir} />
                   </motion.div>
@@ -352,35 +376,6 @@ export const AssistantMessageBubble: React.FC<AssistantMessageBubbleProps> = ({
         </>
       )}
       </div>
-
-      <div
-        className={`text-[11px] font-mono font-medium text-[var(--text-secondary)] mt-2.5 px-1 select-none ${
-          dir === 'rtl' ? 'text-right' : 'text-left'
-        }`}
-      >
-        {formatExactTimestamp(msg.created_at, dir)}
-      </div>
-
-      <AnimatePresence mode="wait">
-        {(!isGenerating || !isLastMessage) && msg.role === 'assistant' && (
-          <MessageActions
-            msg={msg}
-            idx={idx}
-            dir={dir}
-            isGenerating={isGenerating}
-            isLastMessage={isLastMessage}
-            playingTTSId={playingTTSId}
-            openMenuId={openMenuId}
-            token={token}
-            setOpenMenuId={setOpenMenuId}
-            handleFeedback={handleFeedback}
-            handlePinMessage={handlePinMessage}
-            handleTTS={handleTTS}
-            handleRegenerate={handleRegenerate}
-            onDeleteMessage={onDeleteMessage}
-          />
-        )}
-      </AnimatePresence>
     </motion.div>
   );
 };

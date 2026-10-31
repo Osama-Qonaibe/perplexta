@@ -1,4 +1,4 @@
-import { ledgerPool, pool } from '../db/index.js';
+import { ledgerPool, pool, isPoolAvailable } from '../db/index.js';
 import { encrypt, decrypt } from '../utils/crypto.js';
 import { createNotification } from './notifications.js';
 import { io } from '../config/socket.js';
@@ -225,7 +225,7 @@ export function clearEconomyCache() {
 // ─── Transaction History ──────────────────────────────────────────────────────
 
 export async function getTransactionHistory(userId: string, type: string, limit = MAX_TX_HISTORY, offset = 0) {
-  if (!ledgerPool) throw new Error('Ledger database not available');
+  if (!isPoolAvailable('ledger')) throw new Error('Ledger database not available');
 
   const cappedLimit = Math.min(Math.max(1, limit), MAX_TX_HISTORY);
 
@@ -256,7 +256,7 @@ export async function getTransactionHistory(userId: string, type: string, limit 
 // ─── Points ↔ Balance Conversion ─────────────────────────────────────────────
 
 export async function convertPointsToBalance(userId: string, amountPoints: number) {
-  if (!ledgerPool) throw new Error('Ledger database not available');
+  if (!isPoolAvailable('ledger')) throw new Error('Ledger database not available');
   if (isNaN(amountPoints) || amountPoints <= 0) throw new Error('Points amount must be a positive integer greater than zero.');
 
   const settings  = await getEconomySettings();
@@ -317,7 +317,7 @@ export async function convertPointsToBalance(userId: string, amountPoints: numbe
 // ─── Withdrawal ───────────────────────────────────────────────────────────────
 
 export async function requestWithdrawal(userId: string, amountUSD: number, method: string, details: string) {
-  if (!ledgerPool) throw new Error('Ledger database not available');
+  if (!isPoolAvailable('ledger')) throw new Error('Ledger database not available');
 
   const rawMethod = method?.trim().toLowerCase() ?? '';
   let cleanedMethod = 'paypal';
@@ -441,7 +441,7 @@ export async function requestWithdrawal(userId: string, amountUSD: number, metho
 // ─── Referral ─────────────────────────────────────────────────────────────────
 
 export async function getReferralCount(userId: string | number) {
-  if (!ledgerPool) throw new Error('Ledger database not available');
+  if (!isPoolAvailable('ledger')) throw new Error('Ledger database not available');
   const userIdNum = typeof userId === 'number' ? userId : parseInt(userId, 10);
   if (isNaN(userIdNum)) throw new Error('Invalid User ID');
   const result = await ledgerPool.query(
@@ -451,7 +451,7 @@ export async function getReferralCount(userId: string | number) {
 }
 
 export async function checkReferralActivation(userId: string | number) {
-  if (!ledgerPool) return;
+  if (!isPoolAvailable('ledger')) return;
   const userIdNum = typeof userId === 'number' ? userId : parseInt(userId, 10);
   if (isNaN(userIdNum)) return;
 
@@ -529,7 +529,7 @@ export async function checkReferralActivation(userId: string | number) {
 // ─── Admin / Direct Wallet Operations ────────────────────────────────────────
 
 export async function deductFromWallet(userId: string | number, amount: number, transactionType: string, description: string) {
-  if (!ledgerPool) throw new Error('Ledger database not available');
+  if (!isPoolAvailable('ledger')) throw new Error('Ledger database not available');
   const userIdNum = typeof userId === 'number' ? userId : parseInt(userId, 10);
   if (isNaN(userIdNum)) throw new Error('Invalid User ID');
 
@@ -575,7 +575,7 @@ export async function deductFromWallet(userId: string | number, amount: number, 
 }
 
 export async function refundToWallet(userId: string | number, amount: number, transactionType: string, description: string) {
-  if (!ledgerPool) throw new Error('Ledger database not available');
+  if (!isPoolAvailable('ledger')) throw new Error('Ledger database not available');
   const userIdNum = typeof userId === 'number' ? userId : parseInt(userId, 10);
   if (isNaN(userIdNum)) throw new Error('Invalid User ID');
 
@@ -608,7 +608,7 @@ export async function adjustWalletBalance(
   reason: string,
   target: 'balance' | 'points' = 'balance'
 ) {
-  if (!ledgerPool) throw new Error('Ledger database not available');
+  if (!isPoolAvailable('ledger')) throw new Error('Ledger database not available');
   if (isNaN(amount) || amount <= 0) throw new Error('Adjustment amount must be a positive number greater than zero.');
 
   const userIdNum = typeof userId === 'number' ? userId : parseInt(userId, 10);
@@ -660,7 +660,7 @@ export async function adjustWalletBalance(
 }
 
 export async function depositToWallet(userId: string | number, amount: number, method: string, description: string) {
-  if (!ledgerPool) throw new Error('Ledger database not available');
+  if (!isPoolAvailable('ledger')) throw new Error('Ledger database not available');
   const userIdNum = typeof userId === 'number' ? userId : parseInt(userId, 10);
   if (isNaN(userIdNum)) throw new Error('Invalid User ID');
   if (amount <= 0) throw new Error('Deposit amount must be greater than zero');
@@ -720,7 +720,7 @@ export async function depositToWallet(userId: string | number, amount: number, m
 }
 
 export async function reconcileAllWallets(): Promise<{ audited: number; discrepancies: number; details: any[] }> {
-  if (!ledgerPool) throw new Error('Ledger database not available');
+  if (!isPoolAvailable('ledger')) throw new Error('Ledger database not available');
   const client = await ledgerPool.connect();
   try {
     const walletsRes = await client.query('SELECT id, user_id, balance, points FROM wallets');

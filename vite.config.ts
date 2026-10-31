@@ -18,68 +18,7 @@ try {
 
 const rootDir = path.dirname(fileURLToPath(import.meta.url));
 
-function collectUsedLucideIcons(dir: string, out = new Set<string>()): Set<string> {
-  try {
-    const entries = fs.readdirSync(dir, { withFileTypes: true });
-    for (const entry of entries) {
-      const fullPath = path.join(dir, entry.name);
-      if (entry.isDirectory()) {
-        collectUsedLucideIcons(fullPath, out);
-      } else if (entry.isFile() && /\.(tsx?|jsx?)$/.test(entry.name)) {
-        if (entry.name === 'importedTemplates.ts') continue;
-        const content = fs.readFileSync(fullPath, 'utf8');
-        if (!content.includes('lucide-react')) continue;
-        const importRegex = /import\s+(?:type\s+)?\{([^{}]*)\}\s+from\s+['"]lucide-react['"]/g;
-        let match: RegExpExecArray | null;
-        while ((match = importRegex.exec(content)) !== null) {
-          const block = match[1]
-            .replace(/\/\*[\s\S]*?\*\//g, '')
-            .replace(/\/\/.*$/gm, '');
-          const specifiers = block.split(',');
-          for (const raw of specifiers) {
-            const cleaned = raw.replace(/\btype\b/g, '').trim();
-            if (!cleaned) continue;
-            const importedName = cleaned.split(/\s+as\s+/)[0].trim();
-            if (importedName) out.add(importedName);
-          }
-        }
-      }
-    }
-  } catch (_) {}
-  return out;
-}
 
-export const lucideBarrelOptimizerPlugin = () => {
-  let usedIcons: Set<string> | null = null;
-  return {
-    name: 'lucide-barrel-optimizer',
-    enforce: 'pre' as const,
-    load(id: string) {
-      const cleanId = id.split('?')[0];
-      if (!cleanId.endsWith('lucide-react/dist/esm/lucide-react.js')) return null;
-      if (!usedIcons) {
-        usedIcons = collectUsedLucideIcons(path.resolve(rootDir, 'src'));
-      }
-      if (usedIcons.size === 0 || usedIcons.has('icons')) return null;
-      const source = fs.readFileSync(cleanId, 'utf8');
-      const lines = source.split('\n');
-      const filtered = lines.filter((line) => {
-        if (line.includes('./icons/index.js') || line.includes('export { index as icons }')) {
-          return false;
-        }
-        if (line.includes("from './icons/")) {
-          const aliasMatches = line.matchAll(/\bas\s+([A-Za-z0-9_]+)/g);
-          for (const m of aliasMatches) {
-            if (usedIcons!.has(m[1])) return true;
-          }
-          return false;
-        }
-        return true;
-      });
-      return filtered.join('\n');
-    },
-  };
-};
 
 export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, rootDir, 'VITE_');
@@ -88,7 +27,6 @@ export default defineConfig(({ mode }) => {
     base: '/',
     publicDir: path.resolve(rootDir, 'public'),
     plugins: [
-      lucideBarrelOptimizerPlugin(),
       react(),
       tailwindcss(),
     ],
@@ -98,106 +36,19 @@ export default defineConfig(({ mode }) => {
       emptyOutDir: true,
       copyPublicDir: false,
       sourcemap: false,
-      minify: 'esbuild',
-      cssMinify: 'esbuild',
+      minify: false,
+      cssMinify: false,
       cssCodeSplit: true,
       target: 'esnext',
       reportCompressedSize: false,
-      chunkSizeWarningLimit: 3000,
+      chunkSizeWarningLimit: 10000,
       rollupOptions: {
         input: 'index.html',
-        treeshake: {
-          moduleSideEffects: 'no-external',
-          propertyReadSideEffects: false,
-          tryCatchDeoptimization: false,
-        },
-        output: {
-          manualChunks(id) {
-            if (id.includes('node_modules')) {
-              // React Core & Base UI
-              if (id.includes('/react/') || id.includes('/react-dom/') || id.includes('/scheduler/') || id.includes('@base-ui')) {
-                return 'vendor-react';
-              }
-              // Router
-              if (id.includes('/react-router/') || id.includes('/react-router-dom/')) {
-                return 'vendor-router';
-              }
-              // Motion & Animations
-              if (id.includes('framer-motion') || id.includes('/motion/')) {
-                return 'vendor-motion';
-              }
-              // Icons
-              if (id.includes('lucide-react')) {
-                return 'vendor-icons';
-              }
-              // Data Visualization & Charts
-              if (id.includes('recharts') || id.includes('d3-') || id.includes('/d3/')) {
-                return 'vendor-charts';
-              }
-              // State & Network Queries
-              if (id.includes('@tanstack/react-query')) {
-                return 'vendor-query';
-              }
-              // Heavy Document & Export Tools (PDF, Excel, Word, Image Export)
-              if (
-                id.includes('jspdf') ||
-                id.includes('exceljs') ||
-                id.includes('mammoth') ||
-                id.includes('pdf-parse') ||
-                id.includes('jszip') ||
-                id.includes('file-saver') ||
-                id.includes('html-to-image') ||
-                id.includes('html-to-text')
-              ) {
-                return 'vendor-docs';
-              }
-              // Heavy Media & Video / Audio / Cropping Tools
-              if (
-                id.includes('@ffmpeg') ||
-                id.includes('react-player') ||
-                id.includes('react-easy-crop') ||
-                id.includes('browser-image-compression') ||
-                id.includes('canvas-confetti')
-              ) {
-                return 'vendor-media';
-              }
-              // Code Highlight, Markdown & SQL Tools
-              if (
-                id.includes('prismjs') ||
-                id.includes('sql.js') ||
-                id.includes('react-markdown') ||
-                id.includes('remark-gfm') ||
-                id.includes('rehype-raw')
-              ) {
-                return 'vendor-editor';
-              }
-              // Utilities & Networking
-              if (
-                id.includes('axios') ||
-                id.includes('socket.io-client') ||
-                id.includes('dompurify')
-              ) {
-                return 'vendor-network';
-              }
-            }
-
-            // High-precision data segregation: keep massive design catalogs isolated in their own cacheable chunks
-            if (id.includes('importedTemplates')) {
-              return 'data-imported-templates';
-            }
-            if (
-              id.includes('/data/templates') ||
-              id.includes('/data/rinexTemplates') ||
-              id.includes('/data/rinexStudioCatalog')
-            ) {
-              return 'data-studio-templates';
-            }
-            if (id.includes('/data/publicTemplatesData')) {
-              return 'data-public-templates';
-            }
-          },
-        },
+        output: {},
       }
+    },
+    json: {
+      stringify: true,
     },
     resolve: {
       dedupe: ['react', 'react-dom', 'react-router-dom'],

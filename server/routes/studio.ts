@@ -911,10 +911,205 @@ function tryParseBlueprintJson(rawBp: string): any {
   return null;
 }
 
+const UNICODE_NORM_MAP: Record<string, string> = {
+  '\u2018': "'", '\u2019': "'", '\u201A': "'", '\u201B': "'", '\u2032': "'",
+  '\u201C': '"', '\u201D': '"', '\u201E': '"', '\u201F': '"', '\u2033': '"',
+  '\u00A0': ' ', '\u2002': ' ', '\u2003': ' ', '\u2009': ' ', '\u202F': ' ',
+  '\u2010': '-', '\u2011': '-', '\u2012': '-', '\u2013': '-', '\u2014': '-'
+};
+const UNICODE_NORM_RE = new RegExp(Object.keys(UNICODE_NORM_MAP).join('|'), 'g');
+
+function normalizeUnicodeLookalikes(str: string): string {
+  return str.replace(UNICODE_NORM_RE, ch => UNICODE_NORM_MAP[ch] || ch);
+}
+
+/**
+ * 4-Tier File Edit Matcher (ported from Osama-Qonaibe/builder src/js/helpers.js)
+ */
+function applyFileEditServer(content: string, oldContent: string, newContent: string): string {
+  if (typeof content !== 'string') throw new Error('File content must be a string.');
+  if (typeof oldContent !== 'string' || oldContent.length === 0) {
+    throw new Error('old_content must be a non-empty string.');
+  }
+  if (typeof newContent !== 'string') {
+    throw new Error('new_content must be a string.');
+  }
+
+  const usesCRLF = content.includes('\r\n');
+  const normContent = content.replace(/\r\n/g, '\n');
+  const normOld = oldContent.replace(/\r\n/g, '\n');
+  const normNew = newContent.replace(/\r\n/g, '\n');
+  const finalize = (result: string) => (usesCRLF ? result.replace(/\n/g, '\r\n') : result);
+
+  // Tier 0: Exact match
+  const exactIdx = normContent.indexOf(normOld);
+  if (exactIdx !== -1) {
+    return finalize(
+      normContent.slice(0, exactIdx) + normNew + normContent.slice(exactIdx + normOld.length)
+    );
+  }
+
+  const contentLines = normContent.split('\n');
+  const oldLines = normOld.split('\n');
+  if (oldLines.length > 1 && oldLines[oldLines.length - 1] === '') {
+    oldLines.pop();
+  }
+  const n = oldLines.length;
+
+  const lineStartOffsets: number[] = [0];
+  for (let i = 0; i < contentLines.length; i++) {
+    lineStartOffsets.push(lineStartOffsets[i] + contentLines[i].length + 1);
+  }
+
+  const spliceLines = (startLine: number, endLine: number, replacement: string) => {
+    const startOffset = lineStartOffsets[startLine];
+    const endOffset = lineStartOffsets[endLine] - 1;
+    return finalize(
+      normContent.slice(0, startOffset) +
+      replacement +
+      normContent.slice(Math.min(endOffset, normContent.length))
+    );
+  };
+
+  if (n > 0 && n <= contentLines.length) {
+    // Tier 1: Trailing-whitespace-flexible match
+    const rtrim = (s: string) => s.replace(/[ \t]+$/, '');
+    const oldRTrimmed = oldLines.map(rtrim);
+    for (let i = 0; i <= contentLines.length - n; i++) {
+      let ok = true;
+      for (let j = 0; j < n; j++) {
+        if (rtrim(contentLines[i + j]) !== oldRTrimmed[j]) {
+          ok = false;
+          break;
+        }
+      }
+      if (ok) {
+        return spliceLines(i, i + n, normNew);
+      }
+    }
+
+    // Tier 2: Leading + trailing whitespace flexible with uniform indent delta
+    const strip = (s: string) => s.trim();
+    const leadingSpaces = (s: string) => {
+      const m = s.match(/^[ \t]*/);
+      return m ? m[0].replace(/\t/g, '  ').length : 0;
+    };
+    const oldStripped = oldLines.map(strip);
+    if (oldStripped.some(l => l.length > 0)) {
+      for (let i = 0; i <= contentLines.length - n; i++) {
+        let ok = true;
+        let delta: number | null = null;
+        for (let j = 0; j < n; j++) {
+          if (strip(contentLines[i + j]) !== oldStripped[j]) {
+            ok = false;
+            break;
+          }
+          if (oldStripped[j].length > 0) {
+            const d = leadingSpaces(contentLines[i + j]) - leadingSpaces(oldLines[j]);
+            if (delta === null) delta = d;
+            else if (d !== delta) {
+              ok = false;
+              break;
+            }
+          }
+        }
+        if (ok) {
+          const dVal = delta || 0;
+          const adjustedNew = normNew
+            .split('\n')
+            .map(line => {
+              if (line.trim().length === 0) return line;
+              if (dVal > 0) return ' '.repeat(dVal) + line;
+              if (dVal < 0) {
+                const remove = Math.min(-dVal, leadingSpaces(line));
+                return line.slice(remove);
+              }
+              return line;
+            })
+            .join('\n');
+          return spliceLines(i, i + n, adjustedNew);
+        }
+      }
+    }
+  }
+
+  // Tier 3: Unicode look-alike normalization
+  const uContent = normalizeUnicodeLookalikes(normContent);
+  const uOld = normalizeUnicodeLookalikes(normOld);
+  const uIdx = uContent.indexOf(uOld);
+  if (uIdx !== -1) {
+    return finalize(
+      normContent.slice(0, uIdx) + normNew + normContent.slice(uIdx + normOld.length)
+    );
+  }
+
+  throw new Error('old_content not found in file.');
+}
+
+function applyPatchBlocksToContent(baseContent: string, editBlockBody: string): { updated: string; appliedCount: number } {
+  let working = baseContent;
+  let appliedCount = 0;
+  const blockRegex = /<<<<+\s*SEARCH\s*\r?\n([\s\S]*?)\r?\n====+\s*\r?\n([\s\S]*?)\r?\n>>>>+/gi;
+  let m;
+  while ((m = blockRegex.exec(editBlockBody)) !== null) {
+    try {
+      working = applyFileEditServer(working, m[1], m[2]);
+      appliedCount++;
+    } catch (_) {}
+  }
+  return { updated: working, appliedCount };
+}
+
+function buildServerTemplateNote(
+  templateOrigin: { slug?: string; name?: string; instructions?: string } | null | undefined,
+  fileKeys: string[]
+): string {
+  if (!templateOrigin || !templateOrigin.name) return '';
+  const fileList = fileKeys.join(', ');
+  const instructions = typeof templateOrigin.instructions === 'string' ? templateOrigin.instructions.trim() : '';
+  const lines = [
+    `TEMPLATE CONTEXT (buildTemplateNote):`,
+    `This project started from the "${templateOrigin.name}" template. Its files (${fileList}) are already in the workspace.`,
+    `The live preview is already open and serves the workspace directly — it updates automatically whenever files change.`,
+    `Before changing anything, inspect the files involved and build on the existing code. Keep what already works unless the user asks to replace it, and keep following every rule above.`
+  ];
+  if (instructions) {
+    lines.push(
+      `Rules for this "${templateOrigin.name}" project. Keep following them through every change, even when the user rewrites the app, unless the user explicitly asks to drop one: ${instructions}`
+    );
+  }
+  return lines.join('\n\n');
+}
+
+function tryParseJsonArrayOrObject(raw: string): any {
+  if (!raw) return null;
+  let cleaned = raw.trim().replace(/^```(?:json)?\s*/i, '').replace(/\s*```$/i, '').trim();
+  try {
+    return JSON.parse(cleaned);
+  } catch {
+    try {
+      const relaxed = cleaned.replace(/,\s*([}\]])/g, '$1');
+      return JSON.parse(relaxed);
+    } catch (_) {}
+  }
+  return null;
+}
+
 router.post('/generate', authenticateTokenOptional, async (req: any, res) => {
   try {
     const userId = req.user?.id || req.user?.userId || null;
-    const { prompt, files, errorLogs, activeFilePath, history } = req.body;
+    const {
+      prompt,
+      files,
+      errorLogs,
+      activeFilePath,
+      history,
+      templateOrigin,
+      allowClarify,
+      clarificationContext,
+      language: reqLanguage
+    } = req.body;
+    const isAr = (reqLanguage || 'ar') !== 'en';
     
     if (!prompt && (!errorLogs || errorLogs.length === 0)) {
       return res.status(400).json({ error: 'Prompt or error logs required' });
@@ -981,27 +1176,31 @@ router.post('/generate', authenticateTokenOptional, async (req: any, res) => {
     );
 
     const isNewProjectRequest = req.body.isNewProject === true || fileKeys.length === 0 || isDefaultLaunchpad;
+    const clientSystemPrompt = typeof req.body.systemPrompt === 'string' ? req.body.systemPrompt.trim() : '';
 
-    // Dynamic Task-Aware Status Messages (Clean Executive Style without Emojis)
+    // Determine whether this request can ask clarifying questions (matches Builder's <clarify> rules)
+    const cleanPromptWords = String(prompt || '').trim().split(/\s+/).filter(Boolean);
+    const canAskClarify =
+      allowClarify !== false &&
+      !clarificationContext &&
+      (!errorLogs || errorLogs.length === 0) &&
+      cleanPromptWords.length >= 1 &&
+      cleanPromptWords.length <= 35;
+
+    // Friendly non-technical status messages (matches Builder's tool status labels)
     const lowerPrompt = (prompt || '').toLowerCase();
-    let dynamicAnalyzingMsg = 'تحليل المتطلبات البرمجية وتخطيط البنية...';
-    let dynamicGeneratingMsg = 'كتابة وتنفيذ التعديلات البرمجية في الوقت الفعلي...';
+    let dynamicAnalyzingMsg = isAr ? 'جاري التخطيط والتحضير...' : 'Planning and preparing...';
+    let dynamicGeneratingMsg = isAr ? 'جاري بناء وتحديث المشروع...' : 'Building and updating your project...';
 
     if (isNewProjectRequest) {
-      dynamicAnalyzingMsg = 'تحليل متطلبات المشروع وهندسة شجرة الملفات...';
-      dynamicGeneratingMsg = 'بناء شجرة الملفات وكتابة الكود المصدري للمشروع...';
+      dynamicAnalyzingMsg = isAr ? 'جاري تصميم هيكل التطبيق...' : 'Designing your app structure...';
+      dynamicGeneratingMsg = isAr ? 'جاري بناء صفحات وواجهات التطبيق...' : 'Building your app pages and interface...';
     } else if (/css|ستايل|مظهر|ألوان|تصميم|تنسيق|خلفية|خط|theme|color|style|dark mode|font/i.test(lowerPrompt)) {
-      dynamicAnalyzingMsg = 'فحص ملفات التنسيق والهيكل البصري...';
-      dynamicGeneratingMsg = 'تدقيق وتحسين أنماط CSS والألوان والتجاوب البصري...';
-    } else if (/db|قاعدة|بيانات|جدول|جداول|sql|schema|database|table/i.test(lowerPrompt)) {
-      dynamicAnalyzingMsg = 'تدقيق هيكل البيانات ومخطط SQLite...';
-      dynamicGeneratingMsg = 'كتابة مخطط الجداول واستعلامات SQL المطلوبة...';
-    } else if (/js|جافاسكريبت|دالة|منطق|تفاعل|زر|سلة|بحث|تصفية|search|filter|script|function|cart/i.test(lowerPrompt)) {
-      dynamicAnalyzingMsg = 'مراجعة المنطق البرمجي والأحداث التفاعلية...';
-      dynamicGeneratingMsg = 'برمجة وتطوير منطق JavaScript والوظائف التفاعلية...';
+      dynamicAnalyzingMsg = isAr ? 'جاري مراجعة التصميم والألوان...' : 'Reviewing design and styling...';
+      dynamicGeneratingMsg = isAr ? 'جاري تحديث المظهر البصري والتنسيقات...' : 'Updating visual styling and layout...';
     } else if (/خطأ|error|fix|إصلاح|terminal|طرفية|تصحيح|debug/i.test(lowerPrompt) || (errorLogs && errorLogs.length > 0)) {
-      dynamicAnalyzingMsg = 'فحص سجلات الأخطاء وتتبع المشاكل البرمجية...';
-      dynamicGeneratingMsg = 'تصحيح الأخطاء البرمجية وإعادة المزامنة بدقة...';
+      dynamicAnalyzingMsg = isAr ? 'جاري فحص المشكلة وتشخيص السبب...' : 'Checking the issue...';
+      dynamicGeneratingMsg = isAr ? 'جاري إصلاح المشكلة وتحديث المعاينة...' : 'Applying the fix and refreshing preview...';
     }
 
     const currentFilesSummary = (!isNewProjectRequest && fileKeys.length > 0)
@@ -1011,97 +1210,116 @@ router.post('/generate', authenticateTokenOptional, async (req: any, res) => {
         }).join('\n\n')
       : '(Blank Workspace — Ready for complete multi-file project scaffolding according to user requirements)';
 
-    const systemPrompt = `You are a Senior Software Architect & Full-Stack Code Generation Engine.
-You design, scaffold, and maintain complete, production-ready multi-file web applications in the Studio File Tree with surgical precision and real-time execution.
+    const serverTemplateNote = buildServerTemplateNote(templateOrigin, fileKeys);
 
-1. MULTI-FILE PROJECT ARCHITECTURE TAILORED TO USER REQUIREMENTS (هيكلة شجرة الملفات حسب الاحتياجات):
-When building a new project (NEW_PROJECT_BUILD) or expanding an existing project, you MUST organize the project into a clean, modular multi-file tree inside <perplexta_blueprint> and write every single file in full inside <perplexta_file path="...">.
+    const clarifyInstructionBlock = canAskClarify
+      ? `0. CLARIFYING QUESTIONS PROTOCOL (AskClarifyingQuestions / <perplexta_clarify>):
+- On a new build or a feature request with real ambiguity (where 1 to 3 product, audience, or visual style choices would genuinely shape the result), prefer asking 1–3 brief multiple-choice questions BEFORE writing any files!
+- When asking clarifying questions:
+  1. Write ONE short friendly sentence inside <perplexta_opening>...</perplexta_opening> acknowledging what the user wants to build.
+  2. Immediately output <perplexta_clarify> containing a JSON array of 1 to 3 short, plain-language questions (each with 2–4 concrete options):
+  <perplexta_opening>${isAr ? 'فكرة رائعة! قبل أن أبدأ ببناء التطبيق، لدي بضعة أسئلة سريعة لتخصيصه تماماً كما تريد:' : 'Great idea! Before I build this for you, I have a quick question to tailor it:'}</perplexta_opening>
+  <perplexta_clarify>
+  [
+    {
+      "id": "q1",
+      "question": "...",
+      "options": [
+        { "id": "o1", "label": "...", "recommended": true },
+        { "id": "o2", "label": "..." },
+        { "id": "o3", "label": "..." }
+      ]
+    }
+  ]
+  </perplexta_clarify>
+  3. If you output <perplexta_clarify>, STOP IMMEDIATELY after </perplexta_clarify> and do NOT output <perplexta_blueprint> or <perplexta_file> in this turn.
+- Only skip <perplexta_clarify> if the user's prompt is already very detailed and specific, or is a direct small edit/bugfix.`
+      : `0. BUILD IMMEDIATELY (NO CLARIFYING QUESTIONS):
+- Do NOT output <perplexta_clarify>. Proceed directly to building and updating the project files. If any detail is unspecified, choose smart, high-quality defaults and flesh it out into a complete application.`;
 
-Choose the file structure dynamically according to the project's domain and needs:
+    const systemPrompt = `You are a friendly, expert web builder assistant in Perplexta App Studio (powered by the Osama-Qonaibe/builder Assistant Engine).
+The user may be completely non-technical: always speak in plain, warm, everyday ${isAr ? 'Arabic' : 'English'} without coding jargon or file paths in your user-facing text.
+The live preview sits right next to the chat and refreshes automatically as soon as your files are applied.
 
-- STANDARD MODULAR MULTI-FILE WEB ARCHITECTURE (Default — Fast, Zero-Lag Native Execution):
-  Structure the project into clean, well-organized files based on what the application actually needs:
-  1. "index.html": Complete semantic HTML5 application shell (Navbar/Header, Hero/Stats, Main Dynamic Content Containers, Filter/Search bars, Modals/Drawers markup, Toast container, Footer) using Tailwind CSS and Google Fonts (Tajawal/Cairo/Inter).
-  2. "styles/main.css": Custom CSS rules, smooth animations, custom scrollbars, glassmorphism effects, and dark/light theme styling.
-  3. "src/data/mockData.js" (or domain-specific path like "src/data/productsData.js", "src/data/dashboardData.js", "src/data/bookingsData.js"): Rich, realistic structured dataset assigned to window (e.g., window.STORE_DATA = [...] or const PRODUCTS = window.PRODUCTS = [...]) with 6-10 realistic items, categories, metrics, and Arabic/English labels matching the user's request.
-  4. "src/components/uiRenderer.js" (when the app has reusable cards, tables, modals, or charts): Modular UI rendering functions (e.g. window.renderCard = ..., window.renderModal = ...) that generate rich interactive HTML with inline SVG icons.
-  5. "src/app.js": Core application controller & interactive engine: state management with localStorage persistence, live search & category filtering, cart/drawer/modal open & close handlers, form validation & submission, interactive notifications, dark/light mode toggle, and full DOM event listener bindings.
-  6. "db/schema.sql" (Include whenever the project involves products, orders, users, customers, bookings, tasks, analytics, or inventory): Complete SQLite schema ("CREATE TABLE IF NOT EXISTS ...") with realistic "INSERT INTO ..." seed records so the Studio Database Manager works immediately.
+${clientSystemPrompt ? `\n${clientSystemPrompt}\n` : ''}
+${serverTemplateNote ? `\n${serverTemplateNote}\n` : ''}
+${clarifyInstructionBlock}
 
-- REACT & JSX MULTI-FILE ARCHITECTURE (Use when the user explicitly requests React / JSX):
-  1. "index.html": Contains <div id="root"></div>.
-  2. "styles/main.css": Custom styles and animations.
-  3. "src/data/mockData.js": Realistic structured data exported/bound to window.
-  4. "src/components/Navbar.jsx", "src/components/...": Modular React components (.jsx).
-  5. "src/App.jsx": Main React application component combining all views and state.
-  6. "src/main.jsx": Mounts <App /> to #root via ReactDOM.createRoot.
-  7. "db/schema.sql": SQLite database schema and seed data if applicable.
+1. ASSISTANT WORKFLOW & TASK TRACKING RULES (Ported from Osama-Qonaibe/builder prompt.js):
+- OPENING SENTENCE (<perplexta_opening>): Start your response with ONE short, friendly sentence inside <perplexta_opening>...</perplexta_opening> in ${isAr ? 'Arabic' : 'English'} telling the user what you are about to build or update.
+- PLAIN-LANGUAGE TODOS ("todos" in <perplexta_blueprint> or <perplexta_todo>): Create a short 3 to 5 item checklist written in plain language for a non-technical user (e.g., "${isAr ? 'إنشاء الصفحة الرئيسية' : 'Creating the main page'}", "${isAr ? 'إضافة التصميم والألوان' : 'Adding the styling'}", "${isAr ? 'تفعيل الأزرار والتفاعل الحي' : 'Making it interactive'}"). Never put file paths or function names in todo labels.
+- SILENT TOOL EXECUTION: Do NOT narrate between file blocks.
+- CLOSING SUMMARY: After the last file/edit block, write 2–3 friendly, non-technical sentences in ${isAr ? 'Arabic' : 'English'} summarizing what is now ready in the live preview. Never mention internal tags (<perplexta_blueprint>, <perplexta_file>, <perplexta_edit>) or raw file paths to the user.
 
-2. CRITICAL QUALITY & EXECUTION RULES:
-- REAL MULTI-FILE CREATION: For any new project (NEW_PROJECT_BUILD), you MUST generate at least 4 to 6 modular files in the file tree (e.g. "index.html", "styles/main.css", "src/data/...", "src/components/...", "src/app.js", and "db/schema.sql" when data-driven). NEVER dump everything into a single index.html file when building a project!
-- ZERO OMISSION POLICY: Every file listed in "file_tree_order" of <perplexta_blueprint> MUST be written completely inside a matching <perplexta_file path="...">...</perplexta_file> block. Never output placeholders like "// ... rest of code" or "<!-- TODO -->".
-- NO MARKDOWN FENCES INSIDE <perplexta_file>: Write raw source code directly inside <perplexta_file path="..."> without wrapping it in \`\`\`html or \`\`\`js fences.
-- CROSS-FILE GLOBAL COMPATIBILITY: In JavaScript files ("src/data/...", "src/components/...", "src/app.js"), attach shared data and functions to \`window\` (or declare them at top level as \`const X = window.X = ...\` / \`function fn() {}\`) so all files in the file tree communicate seamlessly in the browser sandbox.
-- 100% WORKING INTERACTIVITY: Every button in "index.html" or dynamically rendered cards (Add to Cart, Open Cart, Checkout, Filter Category, Search Input, Dark Mode Toggle, Login/Register Modal, Add New Record) MUST have a working event listener in "src/app.js".
-- NO BROKEN IMAGES OR ICONS: Use inline SVG icons (<svg>...</svg>) or Lucide icons (data-lucide="..."), and use valid high-resolution Unsplash URLs (https://images.unsplash.com/photo-...) for images.
-- THE "NEVER DESTROY, ONLY EVOLVE" RULE FOR TARGETED UPDATES: When REQUEST TYPE is TARGETED_UPDATE, inspect EXISTING PROJECT FILES carefully. Preserve existing files, layouts, and styles. You may add new modular files to the file tree (e.g. "src/components/authModal.js" or "db/schema.sql") and update "index.html" / "src/app.js" additively without deleting existing features.
+2. MULTI-FILE PROJECT ARCHITECTURE & SURGICAL EDITING:
+- For a NEW PROJECT (NEW_PROJECT_BUILD):
+  Generate a complete, cohesive multi-file project inside <perplexta_blueprint> and write every file in full inside <perplexta_file path="...">:
+  1. "index.html": Complete semantic HTML5 application shell using Tailwind CSS and Google Fonts (Tajawal/Cairo/Inter). Never retain the "Ready to Build" / "جاهز للتطوير" empty splash card.
+  2. "styles/main.css": Custom CSS rules, animations, scrollbars, and theme variables.
+  3. "src/data/mockData.js" (or domain-specific data file): Rich, realistic structured dataset attached to \`window\`.
+  4. "src/components/uiRenderer.js": Modular UI rendering functions attached to \`window\`.
+  5. "src/app.js": Complete interactive controller (localStorage state persistence, live search/filter, modals/drawers, form validation, toast notifications, and DOM event listeners).
+- For an EXISTING PROJECT OR TEMPLATE (TARGETED_UPDATE):
+  - Strictly obey THE "NEVER DESTROY, ONLY EVOLVE" RULE: Read EXISTING PROJECT FILES carefully and keep everything that already works unless the user explicitly asks to replace it.
+  - For targeted changes to an existing file, you can either:
+    (a) Use surgical search-and-replace blocks inside \`<perplexta_edit path="..."><<<< SEARCH\\nexact existing lines\\n====\\nupdated lines\\n>>>></perplexta_edit>\`, OR
+    (b) Output the complete updated file inside \`<perplexta_file path="...">...</perplexta_file>\` preserving all existing working code.
+- ZERO OMISSION POLICY: Inside <perplexta_file path="...">, write the complete file without placeholders ("// ... rest of code") and without outer markdown fences (\`\`\`html).
 
-3. THREE-PHASE OUTPUT FORMAT (MANDATORY):
+3. OUTPUT FORMAT WHEN BUILDING/EDITING:
 
-PHASE 1: ARCHITECTURE BLUEPRINT (<perplexta_blueprint>)
-Start immediately with <perplexta_blueprint> containing valid JSON:
+<perplexta_opening>
+${isAr ? 'سأقوم الآن ببناء التطبيق وتجهيز المعاينة التفاعلية لك.' : 'I will now build the application and set up the live preview for you.'}
+</perplexta_opening>
+
 <perplexta_blueprint>
 {
   "phase": "blueprint",
-  "project_name": "digital-products-store",
+  "project_name": "project-slug-name",
   "framework": "html-tailwind",
   "file_tree_order": [
     "index.html",
     "styles/main.css",
-    "src/data/productsData.js",
+    "src/data/mockData.js",
     "src/components/uiRenderer.js",
-    "src/app.js",
-    "db/schema.sql"
+    "src/app.js"
+  ],
+  "todos": [
+    "${isAr ? 'إنشاء الصفحة الرئيسية وهيكلة الواجهة' : 'Creating the main page'}",
+    "${isAr ? 'إضافة التصميم والألوان المتجاوبة' : 'Adding the visual styling'}",
+    "${isAr ? 'تجهيز المحتوى والبيانات التفاعلية' : 'Setting up the interactive content'}",
+    "${isAr ? 'تفعيل الأزرار والربط مع المعاينة الحية' : 'Making controls interactive'}"
   ],
   "suggestions": [
-    "تطوير نافذة تسجيل دخول وحسابات العملاء",
-    "إضافة نظام كوبونات خصم وحساب الضريبة تلقائياً",
-    "إنشاء لوحة إحصائيات المبيعات وتصدير الفواتير"
+    {
+      "label": "${isAr ? 'إضافة بحث وتصفية فورية' : 'Add live search & filter'}",
+      "prompt": "${isAr ? 'أضف شريط بحث فوري وأزرار تصفية حسب الفئة لتسهيل الوصول للعناصر في الصفحة.' : 'Add an instant search bar and category filter pills that update items in real time.'}"
+    },
+    {
+      "label": "${isAr ? 'تصدير البيانات كملف CSV' : 'Export data to CSV'}",
+      "prompt": "${isAr ? 'أضف زر تصدير يتيح تحميل البيانات المعروضة كملف CSV أو طباعة تقرير منسق.' : 'Add an export button that downloads current records as a CSV file.'}"
+    },
+    {
+      "label": "${isAr ? 'إضافة لوحة إحصائيات وملخص' : 'Add analytics summary cards'}",
+      "prompt": "${isAr ? 'أضف بطاقات ملخص إحصائي تفاعلية في أعلى الصفحة تعرض أهم المؤشرات.' : 'Add interactive summary metric cards at the top of the page.'}"
+    }
   ]
 }
 </perplexta_blueprint>
 
-PHASE 2: COMPLETE FILE SYNTHESIS (<perplexta_file path="...">)
-Immediately write every file in "file_tree_order" in sequence:
-<perplexta_file path="index.html">
-<!DOCTYPE html>
-...
-</perplexta_file>
+Followed by <perplexta_file path="...">...</perplexta_file> or <perplexta_edit path="...">...</perplexta_edit> blocks, and finally 2-3 friendly non-technical summary sentences.`;
 
-<perplexta_file path="styles/main.css">
-...
-</perplexta_file>
+    const userPrompt = `USER REQUEST: ${prompt || 'Build and elevate the project'}
+${clarificationContext ? `\nCLARIFICATION ANSWERS FROM USER:\n${clarificationContext}\n` : ''}
+REQUEST TYPE: ${isNewProjectRequest ? 'NEW_PROJECT_BUILD (Scaffold a complete multi-file project in the file tree tailored to this request)' : 'TARGETED_UPDATE (Evolve existing project/template files additively while preserving working features)'}
+ACTIVE FILE IN EDITOR: ${activeFilePath || 'index.html'}
+${templateOrigin?.name ? `STARTER TEMPLATE: ${templateOrigin.name} (${templateOrigin.slug || ''})` : ''}
 
-<perplexta_file path="src/data/productsData.js">
-...
-</perplexta_file>
+ERROR LOGS (IF ANY):
+${JSON.stringify(errorLogs || [])}
 
-<perplexta_file path="src/components/uiRenderer.js">
-...
-</perplexta_file>
-
-<perplexta_file path="src/app.js">
-...
-</perplexta_file>
-
-<perplexta_file path="db/schema.sql">
-...
-</perplexta_file>
-
-PHASE 3: CONCISE TECHNICAL SUMMARY
-After closing the last </perplexta_file>, write 2-4 concise sentences in Arabic summarizing the architecture built, the files created in the file tree, and the interactive features wired. Use formal technical Arabic without emojis.`;
-
-    const userPrompt = `USER REQUEST: ${prompt || 'Build and elevate the project'}\nREQUEST TYPE: ${isNewProjectRequest ? 'NEW_PROJECT_BUILD (Scaffold a complete multi-file project in the file tree tailored to this request)' : 'TARGETED_UPDATE (Evolve existing project files and add any needed modules)'}\nACTIVE FILE IN EDITOR: ${activeFilePath || 'index.html'}\n\nERROR LOGS (IF ANY):\n${JSON.stringify(errorLogs || [])}\n\nEXISTING PROJECT FILES:\n${currentFilesSummary}`;
+EXISTING PROJECT FILES:
+${currentFilesSummary}`;
 
     const isStreamingRequested = req.headers['accept']?.includes('text/event-stream') || req.body.stream === true;
     
@@ -1127,16 +1345,104 @@ After closing the last </perplexta_file>, write 2-4 concise sentences in Arabic 
     const failedTargets = new Set<string>();
     let stepGeneratingSent = false;
 
-    // Real-time stream state trackers for live File Tree population
+    // Real-time stream state trackers for live File Tree population, Opening, Clarify, and Todos
+    let streamOpeningEmitted = false;
+    let streamClarifyEmitted = false;
     let streamBlueprintEmitted = false;
+    let streamTodoEmitted = false;
+    let liveStreamTodos: Array<{ id: string; title: string; status: 'completed' | 'in_progress' | 'pending' }> = [];
     const streamStartedFiles = new Set<string>();
     const streamCompletedFiles = new Set<string>();
+    const streamCompletedEdits = new Set<string>();
+
+    const advanceLiveTodoOnFileComplete = () => {
+      if (!liveStreamTodos || liveStreamTodos.length === 0) return;
+      const inProgIdx = liveStreamTodos.findIndex(t => t.status === 'in_progress');
+      if (inProgIdx !== -1) {
+        liveStreamTodos[inProgIdx].status = 'completed';
+        const nextPendingIdx = liveStreamTodos.findIndex((t, idx) => idx > inProgIdx && t.status === 'pending');
+        if (nextPendingIdx !== -1) {
+          liveStreamTodos[nextPendingIdx].status = 'in_progress';
+        }
+      } else {
+        const firstPending = liveStreamTodos.findIndex(t => t.status === 'pending');
+        if (firstPending !== -1) {
+          liveStreamTodos[firstPending].status = 'completed';
+          if (firstPending + 1 < liveStreamTodos.length && liveStreamTodos[firstPending + 1].status === 'pending') {
+            liveStreamTodos[firstPending + 1].status = 'in_progress';
+          }
+        }
+      }
+      if (isStreamingRequested && !res.writableEnded) {
+        res.write(`data: ${JSON.stringify({ type: 'todo', todos: liveStreamTodos })}\n\n`);
+      }
+    };
+
+    const friendlyActionForPath = (fPath: string): string => {
+      const lower = fPath.toLowerCase();
+      if (lower.endsWith('index.html') || lower.endsWith('.html')) {
+        return isAr ? 'جاري بناء الصفحة الرئيسية...' : 'Building the main page...';
+      }
+      if (lower.endsWith('.css')) {
+        return isAr ? 'جاري تنسيق الألوان والمظهر...' : 'Updating visual styling...';
+      }
+      if (lower.includes('data') || lower.endsWith('.json') || lower.endsWith('.sql')) {
+        return isAr ? 'جاري تجهيز البيانات والمحتوى...' : 'Preparing sample data and content...';
+      }
+      return isAr ? 'جاري تفعيل التفاعل والخصائص...' : 'Adding interactive behavior...';
+    };
 
     const processRealtimeStream = (accumulatedText: string, chunkText: string) => {
       if (!isStreamingRequested || res.writableEnded) return;
 
       // 1. Emit raw chunk for live code preview
       res.write(`data: ${JSON.stringify({ type: 'chunk', chunk: chunkText })}\n\n`);
+
+      // 1.5 Check if <perplexta_opening>...</perplexta_opening> has completed
+      if (!streamOpeningEmitted) {
+        const openMatch = /<perplexta_opening>([\s\S]*?)<\/perplexta_opening>/i.exec(accumulatedText);
+        if (openMatch && openMatch[1].trim()) {
+          streamOpeningEmitted = true;
+          res.write(`data: ${JSON.stringify({ type: 'opening', text: openMatch[1].trim() })}\n\n`);
+        }
+      }
+
+      // 1.6 Check if <perplexta_clarify>...</perplexta_clarify> has completed
+      if (!streamClarifyEmitted) {
+        const clarifyMatch = /<perplexta_clarify>([\s\S]*?)<\/perplexta_clarify>/i.exec(accumulatedText);
+        if (clarifyMatch) {
+          const parsedQuestions = tryParseJsonArrayOrObject(clarifyMatch[1]);
+          const qArray = Array.isArray(parsedQuestions)
+            ? parsedQuestions
+            : Array.isArray(parsedQuestions?.questions)
+            ? parsedQuestions.questions
+            : null;
+          if (qArray && qArray.length > 0) {
+            streamClarifyEmitted = true;
+            const openMatch = /<perplexta_opening>([\s\S]*?)<\/perplexta_opening>/i.exec(accumulatedText);
+            const leadIn = openMatch ? openMatch[1].trim() : '';
+            res.write(`data: ${JSON.stringify({ type: 'clarify', leadIn, questions: qArray })}\n\n`);
+          }
+        }
+      }
+
+      // 1.7 Check if standalone <perplexta_todo>...</perplexta_todo> has completed
+      if (!streamTodoEmitted) {
+        const todoMatch = /<perplexta_todo>([\s\S]*?)<\/perplexta_todo>/i.exec(accumulatedText);
+        if (todoMatch) {
+          const parsedTodos = tryParseJsonArrayOrObject(todoMatch[1]);
+          const tArray = Array.isArray(parsedTodos) ? parsedTodos : parsedTodos?.todos || parsedTodos?.items;
+          if (Array.isArray(tArray) && tArray.length > 0) {
+            streamTodoEmitted = true;
+            liveStreamTodos = tArray.map((t: any, idx: number) => ({
+              id: typeof t === 'object' && t.id ? String(t.id) : `todo_${idx}`,
+              title: typeof t === 'string' ? t : String(t.title || t.content || `Step ${idx + 1}`),
+              status: idx === 0 ? 'in_progress' : 'pending'
+            }));
+            res.write(`data: ${JSON.stringify({ type: 'todo', todos: liveStreamTodos })}\n\n`);
+          }
+        }
+      }
 
       // 2. Check if <perplexta_blueprint>...</perplexta_blueprint> has completed
       if (!streamBlueprintEmitted) {
@@ -1146,20 +1452,20 @@ After closing the last </perplexta_file>, write 2-4 concise sentences in Arabic 
           const parsedBp = tryParseBlueprintJson(bpMatch[1]);
           if (parsedBp) {
             res.write(`data: ${JSON.stringify({ type: 'blueprint', blueprint: parsedBp })}\n\n`);
-            const count = Array.isArray(parsedBp.file_tree_order) ? parsedBp.file_tree_order.length : 0;
-            res.write(`data: ${JSON.stringify({
-              type: 'step',
-              step: 'scaffolding',
-              phase: 2,
-              message: count > 0
-                ? `تم اعتماد المخطط الهيكلي (${count} ملفات) — جاري إنشاء الملفات في الشجرة...`
-                : 'تم اعتماد المخطط الهيكلي — جاري كتابة ملفات المشروع...'
-            })}\n\n`);
+            if (Array.isArray(parsedBp.todos) && parsedBp.todos.length > 0 && !streamTodoEmitted) {
+              streamTodoEmitted = true;
+              liveStreamTodos = parsedBp.todos.map((t: any, idx: number) => ({
+                id: typeof t === 'object' && t.id ? String(t.id) : `todo_${idx}`,
+                title: typeof t === 'string' ? t : String(t.title || t.content || `Step ${idx + 1}`),
+                status: idx === 0 ? 'in_progress' : 'pending'
+              }));
+              res.write(`data: ${JSON.stringify({ type: 'todo', todos: liveStreamTodos })}\n\n`);
+            }
           }
         }
       }
 
-      // 3. Check for newly completed <perplexta_file ...>...</perplexta_file> blocks first
+      // 3. Check for newly completed <perplexta_file ...>...</perplexta_file> blocks
       const closedFileRegex = /<perplexta_file\s+(?:path|file|name)=["']([^"']+)["'][^>]*>([\s\S]*?)<\/perplexta_file>/gi;
       let cMatch;
       while ((cMatch = closedFileRegex.exec(accumulatedText)) !== null) {
@@ -1182,12 +1488,44 @@ After closing the last </perplexta_file>, write 2-4 concise sentences in Arabic 
                 isEntry: fPath === 'index.html'
               }
             })}\n\n`);
+            advanceLiveTodoOnFileComplete();
           }
         }
       }
 
-      // 4. Check for any <perplexta_file ...> opening tag currently being written
-      const openFileRegex = /<perplexta_file\s+(?:path|file|name)=["']([^"']+)["'][^>]*>/gi;
+      // 3.5 Check for newly completed <perplexta_edit path="...">...</perplexta_edit> blocks
+      const closedEditRegex = /<perplexta_edit\s+(?:path|file|name)=["']([^"']+)["'][^>]*>([\s\S]*?)<\/perplexta_edit>/gi;
+      let eMatch;
+      while ((eMatch = closedEditRegex.exec(accumulatedText)) !== null) {
+        const eKey = `${eMatch.index}:${eMatch[1].trim()}`;
+        const fPath = eMatch[1].trim();
+        if (fPath && !streamCompletedEdits.has(eKey)) {
+          streamCompletedEdits.add(eKey);
+          const existingFile = files?.[fPath];
+          if (existingFile && typeof existingFile.content === 'string') {
+            const { updated, appliedCount } = applyPatchBlocksToContent(existingFile.content, eMatch[2]);
+            if (appliedCount > 0) {
+              const ext = fPath.split('.').pop() || 'txt';
+              const fName = fPath.split('/').pop() || fPath;
+              res.write(`data: ${JSON.stringify({
+                type: 'file_complete',
+                path: fPath,
+                file: {
+                  name: fName,
+                  path: fPath,
+                  type: ext,
+                  content: updated,
+                  isEntry: fPath === 'index.html'
+                }
+              })}\n\n`);
+              advanceLiveTodoOnFileComplete();
+            }
+          }
+        }
+      }
+
+      // 4. Check for any <perplexta_file ...> or <perplexta_edit ...> opening tag currently being written
+      const openFileRegex = /<perplexta_(?:file|edit)\s+(?:path|file|name)=["']([^"']+)["'][^>]*>/gi;
       let oMatch;
       while ((oMatch = openFileRegex.exec(accumulatedText)) !== null) {
         const fPath = oMatch[1].trim();
@@ -1196,7 +1534,7 @@ After closing the last </perplexta_file>, write 2-4 concise sentences in Arabic 
           res.write(`data: ${JSON.stringify({
             type: 'file_writing',
             path: fPath,
-            message: `جاري برمجة الملف: ${fPath}`
+            message: friendlyActionForPath(fPath)
           })}\n\n`);
         }
       }
@@ -1219,9 +1557,13 @@ After closing the last </perplexta_file>, write 2-4 concise sentences in Arabic 
         }
 
         let accumulated = '';
+        streamOpeningEmitted = false;
+        streamClarifyEmitted = false;
         streamBlueprintEmitted = false;
+        streamTodoEmitted = false;
         streamStartedFiles.clear();
         streamCompletedFiles.clear();
+        streamCompletedEdits.clear();
 
         const returnedText = await callAIProvider(
           target.provider,
@@ -1288,9 +1630,13 @@ After closing the last </perplexta_file>, write 2-4 concise sentences in Arabic 
               if (!key) continue;
               const urlKey = await getProviderUrlKey(row.provider).catch(() => undefined);
               let accumulated = '';
+              streamOpeningEmitted = false;
+              streamClarifyEmitted = false;
               streamBlueprintEmitted = false;
+              streamTodoEmitted = false;
               streamStartedFiles.clear();
               streamCompletedFiles.clear();
+              streamCompletedEdits.clear();
 
               const returnedText = await callAIProvider(
                 row.provider,
@@ -1325,21 +1671,77 @@ After closing the last </perplexta_file>, write 2-4 concise sentences in Arabic 
     if (!rawResponse || rawResponse.trim().length === 0) {
       throw new Error('فشلت جميع محاولات الاتصال بمزودي الذكاء الاصطناعي (بما في ذلك خادم Ollama المحلي والاتصال السحابي). يرجى التحقق من مفاتيح واجهة البرمجة (API Keys) في لوحة التحكم أو تشغيل خادم Ollama.');
     }
+
+    // Check if the model returned a <perplexta_clarify> turn (AskClarifyingQuestions)
+    const clarifyBlockMatch = /<perplexta_clarify>([\s\S]*?)<\/perplexta_clarify>/i.exec(rawResponse);
+    if (clarifyBlockMatch && !/<perplexta_file\s/i.test(rawResponse) && !/<perplexta_edit\s/i.test(rawResponse)) {
+      const parsedClarify = tryParseJsonArrayOrObject(clarifyBlockMatch[1]);
+      const qList = Array.isArray(parsedClarify)
+        ? parsedClarify
+        : Array.isArray(parsedClarify?.questions)
+        ? parsedClarify.questions
+        : [];
+      if (qList.length > 0) {
+        const openMatch = /<perplexta_opening>([\s\S]*?)<\/perplexta_opening>/i.exec(rawResponse);
+        const leadInText = openMatch
+          ? openMatch[1].trim()
+          : rawResponse.replace(/<perplexta_clarify>[\s\S]*?<\/perplexta_clarify>/gi, '').trim() ||
+            (isAr ? 'قبل البدء بالبناء، يرجى تحديد تفضيلاتك:' : 'Before building, please select your preferences:');
+
+        const clarifyPayload = {
+          success: true,
+          clarifyOnly: true,
+          leadIn: leadInText,
+          clarifyQuestions: qList,
+          files: files || {},
+          updatedFiles: [],
+          reply: leadInText,
+          summary: isAr ? 'بانتظار إجابات الأسئلة التوضيحية' : 'Awaiting clarifying answers'
+        };
+
+        if (isStreamingRequested) {
+          if (!res.writableEnded) {
+            if (!streamClarifyEmitted) {
+              res.write(`data: ${JSON.stringify({ type: 'clarify', leadIn: leadInText, questions: qList })}\n\n`);
+            }
+            res.write(`data: ${JSON.stringify({ type: 'complete', ...clarifyPayload })}\n\n`);
+            res.end();
+          }
+          return;
+        }
+        return res.json(clarifyPayload);
+      }
+    }
     
     // Universal Multi-Protocol Output Parser
     const newlyGeneratedFiles: Record<string, any> = {};
     let parsedBlueprint: any = null;
     let parsedReply = '';
+    let parsedOpening = '';
     let parsedSummary = '';
     const parsedLogs: string[] = [];
-    const parsedSuggestions: string[] = [];
+    const parsedSuggestions: Array<string | { label: string; prompt: string }> = [];
+
+    const openTagMatch = /<perplexta_opening>([\s\S]*?)<\/perplexta_opening>/i.exec(rawResponse);
+    if (openTagMatch && openTagMatch[1].trim()) {
+      parsedOpening = openTagMatch[1].trim();
+    }
 
     // 0. Parse <perplexta_blueprint> JSON schema
     const bpMatch = /<perplexta_blueprint>([\s\S]*?)<\/perplexta_blueprint>/i.exec(rawResponse);
     if (bpMatch) {
       parsedBlueprint = tryParseBlueprintJson(bpMatch[1]);
       if (parsedBlueprint && Array.isArray(parsedBlueprint.suggestions)) {
-        parsedSuggestions.push(...parsedBlueprint.suggestions.filter((s: any) => typeof s === 'string' && s.trim().length > 0));
+        for (const s of parsedBlueprint.suggestions) {
+          if (typeof s === 'string' && s.trim().length > 0) {
+            parsedSuggestions.push(s.trim());
+          } else if (s && typeof s === 'object' && (s.label || s.prompt)) {
+            parsedSuggestions.push({
+              label: String(s.label || s.prompt).trim(),
+              prompt: String(s.prompt || s.label).trim()
+            });
+          }
+        }
       }
     }
 
@@ -1386,20 +1788,49 @@ After closing the last </perplexta_file>, write 2-4 concise sentences in Arabic 
       }
     }
 
-    // 1.1 Parse <<<< SEARCH ... ==== ... >>>> surgical patches
-    const patchRegex = /<<<<\s*SEARCH\s*\n([\s\S]*?)\n====\s*\n([\s\S]*?)\n>>>>/gi;
+    // 1.08 Parse <perplexta_edit path="..."> surgical edit blocks using 4-tier applyFileEditServer
+    const editTagRegex = /<perplexta_edit\s+(?:path|file|name)=["']([^"']+)["'][^>]*>([\s\S]*?)<\/perplexta_edit>/gi;
+    let editMatch;
+    while ((editMatch = editTagRegex.exec(rawResponse)) !== null) {
+      const targetPath = editMatch[1].trim();
+      const baseFile = newlyGeneratedFiles[targetPath] || files?.[targetPath];
+      if (baseFile && typeof baseFile.content === 'string') {
+        const { updated, appliedCount } = applyPatchBlocksToContent(baseFile.content, editMatch[2]);
+        if (appliedCount > 0) {
+          const ext = targetPath.split('.').pop() || 'txt';
+          const fileName = targetPath.split('/').pop() || targetPath;
+          newlyGeneratedFiles[targetPath] = {
+            ...baseFile,
+            name: fileName,
+            path: targetPath,
+            type: ext,
+            content: updated,
+            isEntry: targetPath === 'index.html'
+          };
+        }
+      }
+    }
+
+    // 1.1 Parse standalone <<<< SEARCH ... ==== ... >>>> surgical patches (using 4-tier applyFileEditServer)
+    const withoutEditTags = rawResponse.replace(/<perplexta_edit[\s\S]*?<\/perplexta_edit>/gi, '');
+    const patchRegex = /<<<<+\s*SEARCH\s*\r?\n([\s\S]*?)\r?\n====+\s*\r?\n([\s\S]*?)\r?\n>>>>+/gi;
     let patchMatch;
-    while ((patchMatch = patchRegex.exec(rawResponse)) !== null) {
+    while ((patchMatch = patchRegex.exec(withoutEditTags)) !== null) {
       const searchTarget = patchMatch[1];
       const replacementText = patchMatch[2];
-      const targetPath = activeFilePath || 'index.html';
-      const existingFile = files[targetPath] || newlyGeneratedFiles[targetPath];
-      if (existingFile && existingFile.content && existingFile.content.includes(searchTarget)) {
-        const patchedContent = existingFile.content.replace(searchTarget, replacementText);
-        newlyGeneratedFiles[targetPath] = {
-          ...existingFile,
-          content: patchedContent
-        };
+      // Try activeFilePath first, then scan all workspace files for a 4-tier match
+      const candidatePaths = Array.from(new Set([activeFilePath || 'index.html', ...Object.keys(files || {})]));
+      for (const candidatePath of candidatePaths) {
+        const existingFile = newlyGeneratedFiles[candidatePath] || files?.[candidatePath];
+        if (!existingFile || !existingFile.content) continue;
+        try {
+          const patchedContent = applyFileEditServer(existingFile.content, searchTarget, replacementText);
+          newlyGeneratedFiles[candidatePath] = {
+            ...existingFile,
+            content: patchedContent
+          };
+          break;
+        } catch (_) {}
       }
     }
 
@@ -1552,12 +1983,17 @@ After closing the last </perplexta_file>, write 2-4 concise sentences in Arabic 
 
     // Extract clean conversational reply text without raw code, search-replace patches, or blueprint dumps
     const cleanReply = rawResponse
+      .replace(/<perplexta_opening>[\s\S]*?<\/perplexta_opening>/gi, '')
+      .replace(/<perplexta_clarify>[\s\S]*?<\/perplexta_clarify>/gi, '')
+      .replace(/<perplexta_todo>[\s\S]*?<\/perplexta_todo>/gi, '')
       .replace(/<perplexta_blueprint>[\s\S]*?<\/perplexta_blueprint>/gi, '')
       .replace(/<perplexta_blueprint>[\s\S]*/gi, '')
       .replace(/<perplexta_file[\s\S]*?<\/perplexta_file>/gi, '')
       .replace(/<perplexta_file[\s\S]*/gi, '')
-      .replace(/<<<<\s*SEARCH[\s\S]*?>>>>/gi, '')
-      .replace(/<<<<\s*SEARCH[\s\S]*/gi, '')
+      .replace(/<perplexta_edit[\s\S]*?<\/perplexta_edit>/gi, '')
+      .replace(/<perplexta_edit[\s\S]*/gi, '')
+      .replace(/<<<<+\s*SEARCH[\s\S]*?>>>>+/gi, '')
+      .replace(/<<<<+\s*SEARCH[\s\S]*/gi, '')
       .replace(/<perplexta_delete[\s\S]*?\/?>/gi, '')
       .replace(/```[\s\S]*?```/gi, '')
       .replace(/```[\s\S]*/gi, '')
@@ -1565,17 +2001,39 @@ After closing the last </perplexta_file>, write 2-4 concise sentences in Arabic 
 
     const updatedFilesKeys = Object.keys(newlyGeneratedFiles);
 
-    if (cleanReply && !cleanReply.includes('{') && cleanReply.length > 15) {
+    if (cleanReply && !cleanReply.includes('{') && cleanReply.length > 10) {
       parsedReply = cleanReply;
     } else if (hasUpdatedFiles) {
-      const updatedFilesList = updatedFilesKeys.map(f => `\`${f}\``).join('، ');
       parsedReply = isNewProjectRequest
-        ? `تم إنشاء المشروع وبناء شجرة الملفات بالكامل (${updatedFilesKeys.length} ملفات).\n\n- الملفات المنشأة: ${updatedFilesList}\n- الحالة: تم ربط الوحدات البرمجية وتشغيل المعاينة المباشرة.`
-        : `تم تطبيق التعديلات البرمجية وتحديث ملفات المشروع بنجاح.\n\n- الملفات المحدثة: ${updatedFilesList}\n- الحالة: تم التحقق من سلامة الربط التفاعلي وتحديث المعاينة.`;
+        ? (isAr
+            ? 'أصبح مشروعك جاهزاً الآن في شاشة المعاينة الحية! يمكنك تجربته مباشرة أو إخباري بأي تعديل أو ميزة إضافية ترغب بها.'
+            : 'Your project is now ready in the live preview! Try it out and let me know what you would like to customize or add next.')
+        : (isAr
+            ? 'تم تطبيق التحديثات المطلوبة وتحديث المعاينة الحية بنجاح. أخبرني إذا كنت ترغب في أي تعديل إضافي.'
+            : 'The updates have been applied and your live preview is refreshed. Let me know if you want any further adjustments.');
     } else if (deletedFilesList.length > 0) {
-      parsedReply = `تم تحديث شجرة المشروع وحذف الملفات المستهدفة (${deletedFilesList.join(', ')}).`;
+      parsedReply = isAr
+        ? 'تم تحديث المشروع وحذف العناصر المطلوبة بنجاح.'
+        : 'Updated the project and removed the requested items.';
     } else {
-      parsedReply = 'لم يتم استخراج ملفات برمجية جديدة من الاستجابة. يرجى إعادة المحاولة أو توضيح المطلوب بدقة.';
+      parsedReply = isAr
+        ? 'لم يتم استخراج تغييرات جديدة من الاستجابة. يرجى إعادة المحاولة أو توضيح المطلوب.'
+        : 'No file changes were extracted from the response. Please try again or clarify what you need.';
+    }
+
+    // Promote all todos to completed when files were built/updated (mirrors promoteFinishedTodos in Builder's app.js)
+    let finalizedTodos = liveStreamTodos.length > 0
+      ? liveStreamTodos.map(t => ({ ...t, status: hasUpdatedFiles ? ('completed' as const) : t.status }))
+      : Array.isArray(parsedBlueprint?.todos)
+      ? parsedBlueprint.todos.map((t: any, idx: number) => ({
+          id: typeof t === 'object' && t.id ? String(t.id) : `todo_${idx}`,
+          title: typeof t === 'string' ? t : String(t.title || t.content || `Step ${idx + 1}`),
+          status: 'completed' as const
+        }))
+      : [];
+
+    if (finalizedTodos.length > 0 && isStreamingRequested && !res.writableEnded) {
+      res.write(`data: ${JSON.stringify({ type: 'todo', todos: finalizedTodos })}\n\n`);
     }
 
     // Generate concise, professional engineering logs without emojis
@@ -1602,21 +2060,41 @@ After closing the last </perplexta_file>, write 2-4 concise sentences in Arabic 
       files: finalFilesMap,
       updatedFiles: updatedFilesKeys,
       blueprint: parsedBlueprint,
+      opening: parsedOpening,
+      todos: finalizedTodos,
       deletedFiles: deletedFilesList,
       reply: parsedReply,
       summary: parsedSummary || (deletedFilesList.length > 0 ? `تم حذف ${deletedFilesList.join(', ')}` : (isNewProjectRequest && hasUpdatedFiles ? `تم إنشاء المشروع (${updatedFilesKeys.length} ملفات)` : hasUpdatedFiles ? `تم تحديث ${updatedFilesKeys.length} ملفات بنجاح` : 'تمت مراجعة المشروع')),
       logs: parsedLogs.length > 0 ? parsedLogs : enhancedLogs,
-      suggestions: parsedSuggestions.length > 0 ? parsedSuggestions.slice(0, 3) : (
+      suggestions: parsedSuggestions.length > 0 ? parsedSuggestions.slice(0, 4) : (
         Object.keys(finalFilesMap).some(f => f.toLowerCase().includes('product') || f.toLowerCase().includes('cart') || f.toLowerCase().includes('store'))
           ? [
-              'تطوير بطاقة تسجيل دخول وقاعدة بيانات للمستخدمين',
-              'إضافة نظام كوبونات خصم وتخفيضات تفاعلي',
-              'ربط سلة المشتريات ببوابات دفع ذكية وفواتير مفصلة'
+              {
+                label: isAr ? 'تطوير بطاقة تسجيل دخول وحسابات العملاء' : 'Add customer login & accounts',
+                prompt: isAr ? 'طور نافذة تسجيل دخول وحسابات للعملاء مع حفظ الجلسة وسجل الطلبات.' : 'Build a customer login modal and account profile view with order history.'
+              },
+              {
+                label: isAr ? 'إضافة نظام كوبونات خصم وتخفيضات' : 'Add discount coupons system',
+                prompt: isAr ? 'أضف حقل لتطبيق كوبونات الخصم في سلة المشتريات مع حساب نسبة الخصم والضريبة تلقائياً.' : 'Add a promo code input in the cart that calculates discounts and tax automatically.'
+              },
+              {
+                label: isAr ? 'لوحة إحصائيات المبيعات وتصدير الفواتير' : 'Sales analytics & invoice export',
+                prompt: isAr ? 'أنشئ لوحة إحصائيات للمبيعات مع إمكانية طباعة وتصدير الفاتورة.' : 'Create a sales analytics view with printable customer invoices.'
+              }
             ]
           : [
-              'تصميم قسم مراجعات وآراء العملاء بشكل تفاعلي متحرك',
-              'تحسين التجاوب البصري الكامل مع شاشات الجوال والتابلت',
-              'برمجة لوحة إحصائيات وإدارة للمشروع'
+              {
+                label: isAr ? 'إضافة بحث وتصفية فورية' : 'Add live search & filter',
+                prompt: isAr ? 'أضف شريط بحث فوري وأزرار تصفية حسب الفئة لتسهيل الوصول للعناصر في الصفحة.' : 'Add an instant search bar and category filter pills that filter items in real time.'
+              },
+              {
+                label: isAr ? 'تصدير البيانات كملف CSV / JSON' : 'Export data to CSV / JSON',
+                prompt: isAr ? 'أضف ميزة تصدير البيانات الحالية إلى ملف CSV أو JSON مع إمكانية الطباعة.' : 'Add an Export button to download current data as CSV or JSON.'
+              },
+              {
+                label: isAr ? 'إضافة لوحة إحصائيات وملخص بصري' : 'Add interactive summary metrics',
+                prompt: isAr ? 'أضف قسم ملخص إحصائي تفاعلي في أعلى التطبيق يعرض المؤشرات الرئيسية.' : 'Add an interactive analytics summary bar at the top of the app.'
+              }
             ]
       )
     };
@@ -1646,4 +2124,92 @@ After closing the last </perplexta_file>, write 2-4 concise sentences in Arabic 
   }
 });
 
+/**
+ * POST /api/studio/suggestions
+ * Ported from generateContinueSuggestions & SUGGESTION_SYSTEM_PROMPT in Osama-Qonaibe/builder (src/js/app.js).
+ * Dynamically generates 4-5 tailored follow-up suggestions { label, prompt } by inspecting the current HTML,
+ * recent conversation transcript, and avoiding any previously suggested labels (_recentSuggestionLabels).
+ * Strictly uses the Database Tool Orchestrator Registry ('code') with zero hardcoded model names.
+ */
+router.post('/suggestions', authenticateTokenOptional, async (req: any, res) => {
+  try {
+    const { htmlSnapshot, transcript, recentLabels, language: reqLang } = req.body || {};
+    const isAr = (reqLang || 'ar') !== 'en';
+
+    const { pool } = await import('../db/index.js');
+    const { callAIProvider, getProviderKey, getProviderUrlKey } = await import('../services/ai.js');
+    const { getCachedOrchestratorConfig } = await import('../db/queries.js');
+
+    let route = await getCachedOrchestratorConfig('code').catch(() => null);
+    if (!route) {
+      const routeRes = await pool.query("SELECT * FROM tool_orchestrator WHERE tool_id = 'code' AND is_active = true LIMIT 1");
+      if (routeRes.rows.length > 0) route = routeRes.rows[0];
+    }
+
+    const targets: Array<{ provider: string; model: string }> = [];
+    if (route && route.is_active && route.primary_provider && route.primary_model) {
+      targets.push({ provider: route.primary_provider.trim(), model: route.primary_model.trim() });
+      if (route.fallback_1_provider && route.fallback_1_model) {
+        targets.push({ provider: route.fallback_1_provider.trim(), model: route.fallback_1_model.trim() });
+      }
+      if (route.fallback_2_provider && route.fallback_2_model) {
+        targets.push({ provider: route.fallback_2_provider.trim(), model: route.fallback_2_model.trim() });
+      }
+    }
+
+    const suggestionSystemPrompt = `You generate next-step suggestions for a user who is building or editing a web app or site with an AI coding assistant.
+Look at the conversation and the current app HTML, then propose 4 to 5 things the user might genuinely want to do next.
+
+Rules:
+- Each suggestion must be specific to THIS project (reference its actual features, sections, controls, or theme). No generic filler.
+- NEVER suggest something the app already has. Read the current HTML carefully — if an element, control, section, or feature is already in the markup or script, do not suggest adding it.
+- Mix categories when relevant: a new feature or interactive behavior, a visual/layout/theme tweak, content or data refinement, or a UX polish improvement.
+- Keep "label" very short (3–6 words, sentence case, no trailing period) in ${isAr ? 'Arabic' : 'English'} — it renders on a compact chip button.
+- Make "prompt" a clear, natural 1–2 sentence instruction in ${isAr ? 'Arabic' : 'English'} the user would send to the assistant to carry out that idea.
+- Output ONLY a valid JSON array of objects: [{"label": "...", "prompt": "..."}, ...] with no markdown fences or extra text.`;
+
+    const avoidLine = Array.isArray(recentLabels) && recentLabels.length > 0
+      ? `\n\nDo NOT repeat or closely paraphrase any of these already-suggested ideas: ${recentLabels.slice(-15).join('; ')}. Come up with fresh angles.`
+      : '';
+
+    const userMsg = `Recent conversation:\n${String(transcript || '').slice(0, 3000)}\n\nCurrent app HTML (truncated):\n${String(htmlSnapshot || '').slice(0, 5000)}${avoidLine}\n\nReturn the JSON array of 4-5 suggestions now.`;
+
+    let rawText = '';
+    for (const target of targets) {
+      try {
+        const key = await getProviderKey(target.provider);
+        if (!key && !target.provider.toLowerCase().includes('ollama')) continue;
+        const urlKey = await getProviderUrlKey(target.provider).catch(() => undefined);
+        const out = await callAIProvider(
+          target.provider,
+          target.model,
+          key || '',
+          userMsg,
+          suggestionSystemPrompt,
+          undefined,
+          [],
+          { stream: false, toolId: 'code', headerTimeoutMs: 10000 },
+          urlKey || undefined
+        );
+        if (out && out.trim()) {
+          rawText = out.trim();
+          break;
+        }
+      } catch (_) {}
+    }
+
+    const parsed = tryParseJsonArrayOrObject(rawText);
+    const list = Array.isArray(parsed) ? parsed : Array.isArray(parsed?.suggestions) ? parsed.suggestions : [];
+    const cleanSuggestions = list
+      .filter((x: any) => x && typeof x.label === 'string' && typeof x.prompt === 'string' && x.label.trim() && x.prompt.trim())
+      .slice(0, 5)
+      .map((x: any) => ({ label: x.label.trim(), prompt: x.prompt.trim() }));
+
+    return res.json({ success: true, suggestions: cleanSuggestions });
+  } catch (err: any) {
+    return res.json({ success: false, suggestions: [] });
+  }
+});
+
 export default router;
+

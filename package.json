@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "NODE_OPTIONS=\"--max-old-space-size=2048\" tsx server.ts",
-    "build": "NODE_OPTIONS=\"--max-old-space-size=2048\" vite build && cp -rlf public/. dist/ && NODE_OPTIONS=\"--max-old-space-size=1024\" npx esbuild server/index.ts --bundle --platform=node --format=cjs --packages=external --minify --outfile=dist/server.cjs",
+    "build": "NODE_OPTIONS=\"--max-old-space-size=1024\" vite build",
     "build:app": "NODE_OPTIONS=\"--max-old-space-size=2048\" vite build --config vite.app.config.ts && cp -rlf public/. dist-app/ && cp -f dist-app/app.html dist-app/index.html",
     "build:all": "bash scripts/build-all.sh",
     "start": "node server.ts",

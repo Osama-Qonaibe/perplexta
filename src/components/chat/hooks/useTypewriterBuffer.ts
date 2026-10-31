@@ -69,34 +69,32 @@ export function useTypewriterBuffer(
       if (backlog > 0) {
         setIsStillTyping(true);
 
-        // Calm, steady typewriter rhythm:
+        // Poised, deliberate typewriter rhythm: steady and calm for comfortable reading
         let step = 1;
-        let delay = 32;
+        let delay = 22;
 
-        if (backlog > 350) {
+        if (backlog > 400) {
+          step = 3;
+          delay = 14;
+        } else if (backlog > 220) {
           step = 2;
+          delay = 16;
+        } else if (backlog > 90) {
+          step = 1;
           delay = 18;
-        } else if (backlog > 180) {
-          step = 1;
-          delay = 22;
-        } else if (backlog > 60) {
-          step = 1;
-          delay = 26;
         } else {
           step = 1;
-          delay = 32;
+          delay = 24;
         }
 
-        // If next character is a pipe '|' or newline '\n', ensure syntactic tokens stay intact
+        // Keep markdown tokens intact so tables, bolding, and inline links never flicker mid-character
         let nextPos = Math.min(currentPos + step, targetLength);
-        
-        // Peek slightly ahead to avoid breaking markdown syntax mid-delimiter (e.g. '|', '**', '```')
+
         if (nextPos < targetLength) {
           const nextChar = target[nextPos];
-          if (nextChar === '|' || nextChar === '*' || nextChar === '`') {
-            // Include adjacent delimiter if available
-            if (nextPos + 1 <= targetLength && target[nextPos + 1] === nextChar) {
-              nextPos = Math.min(nextPos + 2, targetLength);
+          if (nextChar === '|' || nextChar === '*' || nextChar === '`' || nextChar === '-') {
+            while (nextPos < targetLength && target[nextPos] === nextChar && nextPos - currentPos < step + 4) {
+              nextPos++;
             }
           }
         }

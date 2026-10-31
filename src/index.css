@@ -937,11 +937,15 @@ select:focus-visible,
 }
 
 img,
-video,
-iframe {
+video {
   max-width: 100%;
   height: auto;
   object-fit: cover;
+}
+
+iframe {
+  max-width: 100%;
+  border: 0;
 }
 
 body {
