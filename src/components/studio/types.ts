@@ -63,9 +63,20 @@ export interface StudioAttachmentItem {
   content?: string;
 }
 
+export interface StudioToolCall {
+  id: string;
+  name: string; // e.g., 'write_file', 'edit_file', 'delete_file', 'ask_clarification', 'update_todo', 'run_tests'
+  args?: Record<string, any>;
+  result?: any;
+  error?: string;
+  status: 'pending' | 'executing' | 'completed' | 'failed';
+  turnId?: string;
+  timestamp?: string;
+}
+
 export interface StudioChatMessage {
   id: string;
-  role: 'user' | 'assistant' | 'system';
+  role: 'user' | 'assistant' | 'system' | 'tool';
   content?: string;
   text?: string;
   openingContent?: string;
@@ -79,6 +90,9 @@ export interface StudioChatMessage {
   status?: 'busy' | 'done' | 'error';
   logs?: string[];
   filesUpdated?: string[];
+  toolCalls?: StudioToolCall[];
+  toolResults?: Array<{ callId: string; toolName: string; success: boolean; output?: string; error?: string }>;
+  isError?: boolean;
   suggestions?: (string | { label: string; prompt: string })[];
   attachments?: StudioAttachmentItem[];
   editTarget?: StudioEditTarget | null;

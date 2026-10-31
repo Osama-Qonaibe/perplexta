@@ -278,14 +278,17 @@ router.post('/workspaces', authenticateTokenOptional, async (req: any, res) => {
           JSON.stringify(metadata || {})
         ]
       );
-    } catch (dbErr) {
-      console.warn('[Studio Workspaces DB Upsert Notice]:', dbErr);
+    } catch (dbErr: any) {
+      console.error('[Studio Workspaces DB Upsert Error]:', dbErr);
+      if (userId) {
+        return res.status(500).json({ error: 'Failed to persist workspace in cloud database: ' + (dbErr?.message || 'Database error') });
+      }
     }
     
     res.json({ success: true, localOnly: !userId });
-  } catch (error) {
+  } catch (error: any) {
     console.error('[Studio Workspaces Save Error]:', error);
-    res.status(500).json({ error: 'Failed to save workspace' });
+    res.status(500).json({ error: error?.message || 'Failed to save workspace' });
   }
 });
 
@@ -294,15 +297,23 @@ router.get('/workspaces/:id', authenticateTokenOptional, async (req: any, res) =
     const userId = req.user?.id || req.user?.userId;
     const { id } = req.params;
     
-    if (userId) {
-      const result = await pool.query('SELECT * FROM studio_workspaces WHERE id = $1 AND user_id = $2', [id, userId]);
+    if (pool) {
+      const result = await pool.query('SELECT * FROM studio_workspaces WHERE id = $1', [id]);
       if (result.rows.length > 0) {
-        return res.json(result.rows[0]);
+        const ws = result.rows[0];
+        // If workspace is private and belongs to another user, deny access
+        if (ws.user_id && userId && ws.user_id !== userId && !ws.is_public) {
+          return res.status(403).json({ error: 'Access denied to workspace' });
+        }
+        return res.json(ws);
       }
     }
 
     const cached = inMemoryWorkspaces.get(id);
     if (cached) {
+      if (cached.user_id && userId && cached.user_id !== userId && !cached.is_public) {
+        return res.status(403).json({ error: 'Access denied to workspace' });
+      }
       return res.json(cached);
     }
     

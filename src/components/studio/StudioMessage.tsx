@@ -1,8 +1,8 @@
 import React from 'react';
-import { Paperclip, ExternalLink } from 'lucide-react';
+import { Paperclip, ExternalLink, FileCode, CheckCircle2, AlertTriangle } from 'lucide-react';
 import { StudioCodeBlock } from './StudioCodeBlock';
 import { StudioTodoList, type StudioTodoItem } from './StudioTodoList';
-import type { StudioAttachmentItem } from './types';
+import type { StudioAttachmentItem, StudioToolCall } from './types';
 
 export interface StudioClarifyRecapItem {
   question: string;
@@ -22,6 +22,7 @@ export interface StudioMessageData {
   timestamp?: string;
   thinking?: string;
   filesUpdated?: string[];
+  toolCalls?: StudioToolCall[];
   suggestions?: (string | { label: string; prompt: string })[];
   attachments?: StudioAttachmentItem[];
   templateOrigin?: {
@@ -43,7 +44,9 @@ interface StudioMessageProps {
 
 export const StudioMessage: React.FC<StudioMessageProps> = ({
   message,
-  language = 'ar'
+  language = 'ar',
+  onSelectFile,
+  isStreaming = false
 }) => {
   const isUser = message.role === 'user';
   const isAr = language === 'ar';
@@ -93,6 +96,7 @@ export const StudioMessage: React.FC<StudioMessageProps> = ({
     const lines = blockText.split('\n');
     const elements: React.ReactNode[] = [];
     let listItems: { ordered: boolean; text: string }[] = [];
+    let tableLines: string[] = [];
 
     const flushList = (keyPrefix: string) => {
       if (listItems.length === 0) return;
@@ -113,9 +117,74 @@ export const StudioMessage: React.FC<StudioMessageProps> = ({
       listItems = [];
     };
 
+    const flushTable = (keyPrefix: string) => {
+      if (tableLines.length < 2) {
+        tableLines.forEach((tLine, tIdx) => {
+          elements.push(
+            <p key={`${keyPrefix}-t-fallback-${tIdx}`} className="leading-relaxed whitespace-pre-wrap">
+              {renderInlineMarkdown(tLine, `${keyPrefix}-t-fallback-${tIdx}`)}
+            </p>
+          );
+        });
+        tableLines = [];
+        return;
+      }
+
+      const parseRow = (rowStr: string) => {
+        return rowStr
+          .trim()
+          .replace(/^\|/, '')
+          .replace(/\|$/, '')
+          .split('|')
+          .map(c => c.trim());
+      };
+
+      const headerCells = parseRow(tableLines[0]);
+      const dataRows = tableLines.slice(1).filter(r => !/^\s*\|?[\s-:]+\|?[\s-:]*$/.test(r));
+
+      elements.push(
+        <div key={`${keyPrefix}-tbl`} className="my-2.5 overflow-x-auto rounded-shape-sm border border-[var(--border-default)] shadow-2xs">
+          <table className="w-full text-start text-xs border-collapse">
+            <thead className="bg-[var(--surface-subtle)] text-[var(--text-secondary)] font-semibold border-b border-[var(--border-default)]">
+              <tr>
+                {headerCells.map((h, hIdx) => (
+                  <th key={`th-${hIdx}`} className="px-3 py-1.5 text-start font-bold">
+                    {renderInlineMarkdown(h, `th-${keyPrefix}-${hIdx}`)}
+                  </th>
+                ))}
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-[var(--border-default)]">
+              {dataRows.map((rStr, rIdx) => {
+                const cells = parseRow(rStr);
+                return (
+                  <tr key={`tr-${rIdx}`} className="hover:bg-[var(--surface-subtle)]/40 transition-colors">
+                    {cells.map((cell, cIdx) => (
+                      <td key={`td-${rIdx}-${cIdx}`} className="px-3 py-1.5 text-[var(--text-primary)]">
+                        {renderInlineMarkdown(cell, `td-${keyPrefix}-${rIdx}-${cIdx}`)}
+                      </td>
+                    ))}
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
+      );
+      tableLines = [];
+    };
+
     lines.forEach((rawLine, lineIdx) => {
       const line = rawLine.trimEnd();
       const key = `b${blockIdx}-l${lineIdx}`;
+
+      // Table row check (starts and contains pipe)
+      if (/^\s*\|.*\|\s*$/.test(line)) {
+        flushList(key);
+        tableLines.push(line);
+        return;
+      }
+      flushTable(key);
 
       const ulMatch = line.match(/^\s*[-*]\s+(.+)$/);
       const olMatch = line.match(/^\s*\d+\.\s+(.+)$/);
@@ -173,22 +242,45 @@ export const StudioMessage: React.FC<StudioMessageProps> = ({
     });
 
     flushList(`b${blockIdx}-end`);
+    flushTable(`b${blockIdx}-tbl-end`);
     return <div key={`md-${blockIdx}`} className="space-y-0.5">{elements}</div>;
   };
 
-  const renderFormattedContent = (text: string) => {
-    if (!text) return null;
-    const parts = text.split(/(```[\s\S]*?```)/g);
-
-    return parts.map((part, index) => {
-      if (part.startsWith('```') && part.endsWith('```')) {
-        const firstLineEnd = part.indexOf('\n');
-        const lang = firstLineEnd !== -1 ? part.slice(3, firstLineEnd).trim() || 'typescript' : 'typescript';
-        const codeContent = firstLineEnd !== -1 ? part.slice(firstLineEnd + 1, -3) : part.slice(3, -3);
-        return <StudioCodeBlock key={index} language={lang} code={codeContent} />;
+  const renderFormattedContent = (text: string, showStreamCursor: boolean = false) => {
+    if (!text) {
+      if (showStreamCursor) {
+        return <span className="inline-block w-1.5 h-3.5 bg-blue-500 animate-pulse ms-1 align-middle rounded-xs" />;
       }
-      return renderMarkdownBlock(part, index);
-    });
+      return null;
+    }
+
+    // Gracefully handle unclosed / in-flight code blocks during streaming
+    let processedText = text;
+    const fenceMatches = processedText.match(/```/g) || [];
+    const isUnclosedFence = fenceMatches.length % 2 !== 0;
+
+    if (isUnclosedFence) {
+      processedText = processedText + '\n```';
+    }
+
+    const parts = processedText.split(/(```[\s\S]*?```)/g);
+
+    return (
+      <>
+        {parts.map((part, index) => {
+          if (part.startsWith('```') && part.endsWith('```')) {
+            const firstLineEnd = part.indexOf('\n');
+            const lang = firstLineEnd !== -1 ? part.slice(3, firstLineEnd).trim() || 'typescript' : 'typescript';
+            const codeContent = firstLineEnd !== -1 ? part.slice(firstLineEnd + 1, -3) : part.slice(3, -3);
+            return <StudioCodeBlock key={index} language={lang} code={codeContent} />;
+          }
+          return renderMarkdownBlock(part, index);
+        })}
+        {showStreamCursor && (
+          <span className="inline-block w-1.5 h-3.5 bg-blue-500 animate-pulse ms-1 align-middle rounded-xs" />
+        )}
+      </>
+    );
   };
 
   // User Message Bubble (matches .message.user-message in Builder)
@@ -254,13 +346,15 @@ export const StudioMessage: React.FC<StudioMessageProps> = ({
       message.content.trim() &&
       (!hasOpening || message.content.trim() !== message.openingContent?.trim())
   );
+  const hasFilesUpdated = Boolean(message.filesUpdated && message.filesUpdated.length > 0);
+  const hasToolCalls = Boolean(message.toolCalls && message.toolCalls.length > 0);
 
   return (
     <div className="w-full space-y-2.5 font-sans my-1">
       {/* 1. Opening Sentence Bubble (before Todo Checklist) */}
       {hasOpening && (
         <div className="text-xs md:text-[13.5px] text-[var(--text-primary)] leading-relaxed px-1 break-words">
-          {renderFormattedContent(message.openingContent!)}
+          {renderFormattedContent(message.openingContent!, false)}
         </div>
       )}
 
@@ -270,7 +364,45 @@ export const StudioMessage: React.FC<StudioMessageProps> = ({
       {/* 3. Main / Closing Response Bubble */}
       {hasClosing && (
         <div className="text-xs md:text-[13.5px] text-[var(--text-primary)] leading-relaxed px-1 break-words">
-          {renderFormattedContent(message.content)}
+          {renderFormattedContent(message.content, isStreaming)}
+        </div>
+      )}
+
+      {/* 4. Clickable Updated Files Chips (Interactive Navigation to Code Viewer) */}
+      {hasFilesUpdated && (
+        <div className="pt-1 px-1">
+          <div className="text-[11px] text-[var(--text-muted)] mb-1 font-medium">
+            {isAr ? 'الملفات المحدثة:' : 'Updated files:'}
+          </div>
+          <div className="flex flex-wrap items-center gap-1.5">
+            {message.filesUpdated!.map((filePath) => (
+              <button
+                key={filePath}
+                type="button"
+                onClick={() => onSelectFile?.(filePath)}
+                className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-shape-xs bg-[var(--surface-card)] hover:bg-blue-500/10 border border-[var(--border-default)] hover:border-blue-500/40 text-[11px] text-[var(--text-primary)] hover:text-blue-500 transition-colors cursor-pointer group shadow-2xs"
+                title={isAr ? `فتح ${filePath} في المحرر` : `Open ${filePath} in editor`}
+              >
+                <FileCode size={12} className="text-blue-500 shrink-0 group-hover:scale-105 transition-transform" />
+                <span className="font-mono text-[11px] truncate max-w-[200px]">{filePath}</span>
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* 5. Tool Call Execution Badges (Failed Tools or Explicit Status) */}
+      {hasToolCalls && (
+        <div className="flex flex-wrap items-center gap-1.5 px-1 pt-0.5">
+          {message.toolCalls!.filter(tc => tc.status === 'failed' || tc.error).map((tc) => (
+            <div
+              key={tc.id}
+              className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-shape-xs bg-red-500/10 border border-red-500/20 text-[11px] text-red-500 font-medium"
+            >
+              <AlertTriangle size={11} className="shrink-0" />
+              <span>{tc.name}: {tc.error || 'Failed'}</span>
+            </div>
+          ))}
         </div>
       )}
     </div>

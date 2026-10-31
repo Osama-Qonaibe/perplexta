@@ -1,9 +1,9 @@
 import type { StudioToolProgressStep } from './StudioBuildProgress';
 import type { StudioClarifyQuestion } from './StudioClarifyCard';
 import type { StudioTodoItem } from './StudioTodoList';
-import type { StudioFileItem, StudioChatMessage } from './types';
+import type { StudioFileItem, StudioChatMessage, StudioToolCall } from './types';
 
-export type { StudioToolProgressStep, StudioClarifyQuestion, StudioFileItem, StudioTodoItem, StudioChatMessage };
+export type { StudioToolProgressStep, StudioClarifyQuestion, StudioFileItem, StudioTodoItem, StudioChatMessage, StudioToolCall };
 
 export interface TemplateNoteOptions {
   slug?: string;
@@ -365,28 +365,106 @@ export function wellFormedDeep<T>(value: T): T {
 }
 
 /**
+ * Creates a structured tool call record conforming to the Studio Tool Execution Contract
+ */
+export function createStudioToolCall(
+  name: string,
+  args?: Record<string, any>,
+  status: 'pending' | 'executing' | 'completed' | 'failed' = 'completed',
+  options: { turnId?: string; result?: any; error?: string } = {}
+): StudioToolCall {
+  return {
+    id: `tool_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`,
+    name,
+    args: args || {},
+    status,
+    result: options.result,
+    error: options.error,
+    turnId: options.turnId,
+    timestamp: new Date().toISOString()
+  };
+}
+
+/**
+ * Formats structured tool execution results into a closed-loop context block for the model
+ */
+export function formatToolExecutionReport(calls?: StudioToolCall[]): string {
+  if (!Array.isArray(calls) || calls.length === 0) return '';
+  const lines = calls.map(c => {
+    const argsSummary = c.args ? Object.entries(c.args).map(([k, v]) => `${k}=${JSON.stringify(v)}`).join(', ') : '';
+    if (c.status === 'failed' || c.error) {
+      return `- [TOOL FAILED] ${c.name}(${argsSummary}): ${c.error || 'Execution encountered an error'}`;
+    }
+    const resultSummary = typeof c.result === 'string' ? c.result : c.result ? JSON.stringify(c.result).slice(0, 120) : 'OK';
+    return `- [TOOL COMPLETED] ${c.name}(${argsSummary}): ${resultSummary}`;
+  });
+  return `[Tool Execution Results in this Turn]:\n${lines.join('\n')}`;
+}
+
+/**
+ * Intelligent compaction for older conversation turns (replaces naive 160-char slicing)
+ * Preserves user goals, files created/modified, and architectural decisions without losing context.
+ */
+function compactOlderConversationTurn(msg: StudioChatMessage): string {
+  const role = (msg.role || 'user').toUpperCase();
+  const text = String(msg.text || msg.content || '').trim();
+  const files = Array.isArray(msg.filesUpdated) && msg.filesUpdated.length > 0 ? ` (Files: ${msg.filesUpdated.join(', ')})` : '';
+  const todos = Array.isArray(msg.todos) && msg.todos.length > 0 
+    ? ` [Todos: ${msg.todos.map(t => t.title).join('; ')}]` 
+    : '';
+
+  // For tool execution feedback
+  let toolSummary = '';
+  if (Array.isArray(msg.toolCalls) && msg.toolCalls.length > 0) {
+    const summary = msg.toolCalls.map(tc => `${tc.name}:${tc.status}`).join(', ');
+    toolSummary = ` [Tools: ${summary}]`;
+  }
+
+  // Extract clean first paragraph or core intent up to 400 characters, respecting sentence boundaries
+  let cleanText = text
+    .replace(/<perplexta_opening>[\s\S]*?<\/perplexta_opening>/gi, '')
+    .replace(/<perplexta_blueprint>[\s\S]*?<\/perplexta_blueprint>/gi, '')
+    .replace(/<perplexta_file[\s\S]*?<\/perplexta_file>/gi, '')
+    .replace(/<perplexta_edit[\s\S]*?<\/perplexta_edit>/gi, '')
+    .replace(/```[\s\S]*?```/gi, '')
+    .replace(/\s+/g, ' ')
+    .trim();
+
+  if (cleanText.length > 400) {
+    const periodIdx = cleanText.indexOf('.', 250);
+    if (periodIdx !== -1 && periodIdx < 500) {
+      cleanText = cleanText.slice(0, periodIdx + 1);
+    } else {
+      cleanText = cleanText.slice(0, 400) + '...';
+    }
+  }
+
+  return `- [${role}${files}${toolSummary}${todos}]: ${cleanText || 'Project configuration and updates.'}`;
+}
+
+/**
  * Prepare Conversation History for AI Model Dispatch
- * Faithfully ported from src/js/helpers.js (prepareHistoryForAI) & src/js/model-core.js in Osama-Qonaibe/builder.
- * - Strips UI-only properties (id, logs, filesUpdated, suggestions, timestamp, etc.)
- * - Appends text attachment contents to user messages
- * - Compacts older turns when history exceeds maxMessages so long sessions stay fast and accurate
+ * Closed-loop architecture faithful to Osama-Qonaibe/builder:
+ * - Preserves structured tool execution reports (successes, errors, file changes)
+ * - Retains role fidelity without coercing system/tool messages into generic assistant text
+ * - Eliminates naive 160-char truncation; uses architectural compaction for older turns
+ * - Keeps recent turns 100% full, including full tool feedback so the model can self-correct
  */
 export function prepareHistoryForAI(
   messages: StudioChatMessage[],
   options: { maxMessages?: number } = {}
-): Array<{ role: 'user' | 'assistant'; content: string }> {
-  const maxMessages = options.maxMessages ?? 14;
+): Array<{ role: 'user' | 'assistant' | 'system'; content: string }> {
+  const maxMessages = options.maxMessages ?? 16;
   if (!Array.isArray(messages) || messages.length === 0) return [];
 
-  const cleaned: Array<{ role: 'user' | 'assistant'; content: string }> = [];
+  const processedMessages: Array<{ role: 'user' | 'assistant' | 'system'; content: string }> = [];
 
   for (const msg of messages) {
     if (!msg) continue;
-    const role: 'user' | 'assistant' = msg.role === 'user' ? 'user' : 'assistant';
     let text = String(msg.text || msg.content || '').trim();
 
-    // Append text attachments if present (like helpers.js textDocs)
-    if (role === 'user' && Array.isArray(msg.attachments) && msg.attachments.length > 0) {
+    // Append text attachments if present
+    if (msg.role === 'user' && Array.isArray(msg.attachments) && msg.attachments.length > 0) {
       const docBlocks = msg.attachments
         .filter(att => att && att.content)
         .map(att => `--- Attached file: ${att.name} ---\n${att.content}`);
@@ -395,30 +473,54 @@ export function prepareHistoryForAI(
       }
     }
 
+    // Embed structured tool execution outcome for closed-loop self-correction
+    if (msg.role === 'assistant') {
+      const toolReport = formatToolExecutionReport(msg.toolCalls);
+      if (toolReport) {
+        text = text ? `${text}\n\n${toolReport}` : toolReport;
+      }
+      if (Array.isArray(msg.filesUpdated) && msg.filesUpdated.length > 0 && !text.includes('Files updated:')) {
+        text += `\n[Files updated in workspace: ${msg.filesUpdated.join(', ')}]`;
+      }
+    }
+
+    // Role mapping: preserve 'system', map 'tool' to 'user' with explicit tool prefix if needed
+    let role: 'user' | 'assistant' | 'system' = 'user';
+    if (msg.role === 'assistant') {
+      role = 'assistant';
+    } else if (msg.role === 'system') {
+      role = 'system';
+    } else if (msg.role === 'tool') {
+      role = 'user';
+      text = `[Tool Execution Response]:\n${text}`;
+    }
+
     if (!text) continue;
-    cleaned.push({
+
+    processedMessages.push({
       role,
       content: wellFormedDeep(text)
     });
   }
 
-  // Long-context compaction (ported from model-core.js compaction concept)
-  if (cleaned.length > maxMessages) {
-    const olderTurns = cleaned.slice(0, cleaned.length - maxMessages);
-    const recentTurns = cleaned.slice(cleaned.length - maxMessages);
-    const summaryLines = olderTurns
-      .map(t => `- [${t.role.toUpperCase()}]: ${t.content.replace(/\s+/g, ' ').slice(0, 160)}`)
+  // Long-context compaction when history exceeds maxMessages
+  if (processedMessages.length > maxMessages) {
+    const olderRaw = messages.slice(0, messages.length - maxMessages);
+    const recentTurns = processedMessages.slice(processedMessages.length - maxMessages);
+    const summaryLines = olderRaw
+      .map(compactOlderConversationTurn)
       .join('\n');
+
     return [
       {
         role: 'user',
-        content: `[Earlier conversation summary (${olderTurns.length} messages)]:\n${summaryLines}`
+        content: `[Previous Session Architecture & Milestone Summary (${olderRaw.length} earlier turns)]:\n${summaryLines}\n[End of previous summary. Now continuing with current project state.]`
       },
       ...recentTurns
     ];
   }
 
-  return cleaned;
+  return processedMessages;
 }
 
 /**
